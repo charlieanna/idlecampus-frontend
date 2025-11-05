@@ -1,0 +1,269 @@
+import { Box, Code, Network, Server, Terminal, Shield, Cloud, Radio, Database, Globe } from 'lucide-react';
+import { Card } from './ui/card';
+import { Button } from './ui/button';
+import { Badge } from './ui/badge';
+
+interface Course {
+  id: string;
+  title: string;
+  description: string;
+  icon: React.ReactNode;
+  status: 'available' | 'coming-soon';
+  features: string[];
+  color: string;
+}
+
+const courses: Course[] = [
+  {
+    id: 'linux',
+    title: 'Linux Fundamentals',
+    description: 'Build a solid foundation with essential Linux command line skills',
+    icon: <Terminal className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'Filesystem navigation & file operations',
+      'File permissions & ownership',
+      'Text processing & pipes',
+      'Process & network management'
+    ],
+    color: 'from-orange-500 to-orange-700'
+  },
+  {
+    id: 'security',
+    title: 'Security Fundamentals',
+    description: 'Master TLS/SSL, SSH, secrets management & security best practices',
+    icon: <Shield className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'TLS/SSL & HTTPS certificates',
+      'SSH & key-based authentication',
+      'Secrets management & encryption',
+      'Security scanning & hardening'
+    ],
+    color: 'from-red-500 to-red-700'
+  },
+  {
+    id: 'docker',
+    title: 'Docker Fundamentals',
+    description: 'Learn Docker containerization from basics to advanced concepts',
+    icon: <Server className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'Interactive docker terminal',
+      'Container management',
+      'Image creation & optimization',
+      'Docker compose'
+    ],
+    color: 'from-cyan-500 to-cyan-700'
+  },
+  {
+    id: 'kubernetes',
+    title: 'Kubernetes Complete Guide',
+    description: 'Master Kubernetes from basics to advanced topics with hands-on labs and real-world scenarios',
+    icon: <Box className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'Interactive kubectl terminal',
+      'Hands-on labs',
+      'Multiple choice quizzes',
+      'Progressive content unlocking'
+    ],
+    color: 'from-blue-500 to-blue-700'
+  },
+  {
+    id: 'system_design',
+    title: 'System Design & Back-of-Envelope',
+    description: 'Master capacity planning, QPS estimation, and system design fundamentals',
+    icon: <Network className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'Capacity planning exercises',
+      'Back-of-envelope calculations',
+      'Storage & bandwidth estimation',
+      'Interview-style problems'
+    ],
+    color: 'from-indigo-500 to-indigo-700'
+  },
+  {
+    id: 'aws',
+    title: 'AWS Cloud Architecture',
+    description: 'Master AWS services with LocalStack and prepare for Solutions Architect cert',
+    icon: <Cloud className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'S3, EC2, Lambda, VPC',
+      'LocalStack sandbox',
+      'Hands-on AWS CLI labs',
+      'Solutions Architect prep'
+    ],
+    color: 'from-orange-500 to-orange-700'
+  },
+  {
+    id: 'postgresql',
+    title: 'PostgreSQL Database Mastery',
+    description: 'Master SQL, query optimization, transactions, and advanced PostgreSQL features',
+    icon: <Database className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'SQL fundamentals & optimization',
+      'Indexes and performance tuning',
+      'Transactions & ACID properties',
+      'CTEs & window functions'
+    ],
+    color: 'from-purple-500 to-purple-700'
+  },
+  {
+    id: 'networking',
+    title: 'Networking Fundamentals',
+    description: 'Master TCP/IP, DNS, subnetting, CIDR, and prepare for network certifications',
+    icon: <Globe className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'TCP/IP & packet analysis',
+      'Subnetting & CIDR notation',
+      'DNS & routing (BGP)',
+      'AWS networking prep'
+    ],
+    color: 'from-green-500 to-green-700'
+  },
+  {
+    id: 'envoy',
+    title: 'Envoy Proxy Mastery',
+    description: 'Master Envoy proxy, service mesh, and API gateway patterns',
+    icon: <Radio className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'Envoy proxy fundamentals',
+      'Load balancing strategies',
+      'Circuit breaking & retries',
+      'Service mesh concepts'
+    ],
+    color: 'from-teal-500 to-teal-700'
+  },
+  {
+    id: 'coding-interview',
+    title: 'Coding Interview Prep',
+    description: 'Master data structures, algorithms, and coding interview patterns',
+    icon: <Code className="w-12 h-12" />,
+    status: 'coming-soon',
+    features: [
+      'Monaco code editor',
+      'Multiple languages',
+      'Test case validation',
+      'Time & space complexity analysis'
+    ],
+    color: 'from-pink-500 to-pink-700'
+  }
+];
+
+export default function CourseSelectionDashboard() {
+  const handleCourseSelect = (courseId: string) => {
+    // Navigate to course using route path
+    window.location.href = `/${courseId}`;
+  };
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+      {/* Header */}
+      <div className="bg-white border-b border-slate-200">
+        <div className="max-w-7xl mx-auto px-6 py-8">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">
+            Learning Platform
+          </h1>
+          <p className="text-slate-600">
+            Choose a course to start your learning journey
+          </p>
+        </div>
+      </div>
+
+      {/* Course Grid */}
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {courses.map((course) => (
+            <Card
+              key={course.id}
+              className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
+              onClick={() => course.status === 'available' && handleCourseSelect(course.id)}
+            >
+              {/* Card Header with Gradient */}
+              <div className={`bg-gradient-to-r ${course.color} p-6 text-white relative`}>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="mb-3">{course.icon}</div>
+                    <h2 className="text-2xl font-bold mb-2">{course.title}</h2>
+                    <p className="text-white/90 text-sm">{course.description}</p>
+                  </div>
+                  {course.status === 'coming-soon' && (
+                    <Badge className="bg-white/20 text-white border-white/30">
+                      Coming Soon
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Card Body */}
+              <div className="p-6">
+                <h3 className="font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                  <span className="text-lg">📚</span>
+                  What you'll learn:
+                </h3>
+                <ul className="space-y-2 mb-6">
+                  {course.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-slate-600 text-sm">
+                      <span className="text-green-500 mt-0.5">✓</span>
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Action Button */}
+                <Button
+                  className={`w-full ${
+                    course.status === 'available'
+                      ? 'bg-gradient-to-r ' + course.color + ' hover:opacity-90'
+                      : 'bg-slate-300 cursor-not-allowed'
+                  }`}
+                  disabled={course.status === 'coming-soon'}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (course.status === 'available') {
+                      handleCourseSelect(course.id);
+                    }
+                  }}
+                >
+                  {course.status === 'available' ? (
+                    <>
+                      Start Learning
+                      <span className="ml-2 group-hover:translate-x-1 transition-transform">→</span>
+                    </>
+                  ) : (
+                    'Coming Soon'
+                  )}
+                </Button>
+              </div>
+            </Card>
+          ))}
+        </div>
+
+        {/* Stats Footer */}
+        <div className="mt-12 text-center text-slate-600">
+          <div className="flex items-center justify-center gap-8 text-sm">
+            <div>
+              <span className="font-bold text-2xl text-slate-900">
+                {courses.filter(c => c.status === 'available').length}
+              </span>
+              <span className="ml-2">Available Courses</span>
+            </div>
+            <div className="h-8 w-px bg-slate-300"></div>
+            <div>
+              <span className="font-bold text-2xl text-slate-900">
+                {courses.filter(c => c.status === 'coming-soon').length}
+              </span>
+              <span className="ml-2">Coming Soon</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
