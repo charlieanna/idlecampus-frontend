@@ -263,15 +263,20 @@ function IITJEECourseWrapper({ subject }: { subject: 'chemistry' | 'mathematics'
 
       // Fetch detailed course data
       const fullCourse = await apiService.fetchCourse(slug, subject);
-      const modules = await apiService.fetchModules(slug, subject);
+      const moduleSummaries = await apiService.fetchModules(slug, subject);
       const labs = await apiService.fetchLabs(subject);
 
-      if (!modules || modules.length === 0) {
+      if (!moduleSummaries || moduleSummaries.length === 0) {
         throw new Error('No modules found in course. Please check database seeds.');
       }
 
+      // Fetch detailed module data (with items) for each module
+      const detailedModules = await Promise.all(
+        moduleSummaries.map(mod => apiService.fetchModule(slug, mod.slug, subject))
+      );
+
       // Transform API data
-      const transformed = transformCourseData(fullCourse, modules, labs);
+      const transformed = transformCourseData(fullCourse, detailedModules, labs);
 
       console.log('✅ Course data loaded:', {
         type: subject,

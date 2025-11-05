@@ -270,18 +270,21 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
           } as any)
         );
       } else if (t === 'Quiz') {
-        // Represent quizzes as simple content lessons for now
+        // Represent quizzes as content lessons with enhanced description
         const quiz = item.content || {};
+        const timeInfo = quiz.time_limit_minutes ? `\n\n**Time Limit:** ${quiz.time_limit_minutes} minutes` : '';
+        const quizContent = `# ${quiz.title || 'Quiz'}\n\n${quiz.description || 'Interactive quiz for spaced repetition learning.'}${timeInfo}\n\n> 📝 This is an interactive quiz module. Questions will be presented one at a time to help you master the concepts through spaced repetition.\n\n**To begin:** Click through the quiz items to test your knowledge and reinforce your learning.`;
+        
         lessonItems.push({
           id: `quiz-${quiz.id}`,
           title: quiz.title || 'Quiz',
           items: [
             {
               type: 'content' as const,
-              markdown: `# ${quiz.title || 'Quiz'}\n\n${quiz.description || 'Quiz'}`
+              markdown: quizContent
             }
           ],
-          content: quiz.description || '',
+          content: quizContent,
           commands: []
         });
       }
