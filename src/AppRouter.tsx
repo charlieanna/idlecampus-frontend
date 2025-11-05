@@ -9,6 +9,7 @@ import SystemDesignApp from './apps/system-design/SystemDesignApp';
 import PythonApp from './apps/python/PythonApp';
 import GolangApp from './apps/golang/GolangApp';
 import GenericCourseApp from './apps/generic/GenericCourseApp';
+import IITJEECourseSelection from './apps/iit-jee/IITJEECourseSelection';
 import CourseSelectionDashboard from './components/CourseSelectionDashboard';
 import { ProgressiveModuleViewer } from './components/course/ProgressiveModuleViewer';
 import { apiService } from './services/api';
@@ -18,7 +19,7 @@ import { transformCourseData, type Module } from './utils/dataTransformer';
 // TYPES
 // ============================================
 
-type CourseType = 'kubernetes' | 'docker' | 'coding-interview' | 'system-design' | 'system_design' | 'aws' | 'envoy' | 'postgresql' | 'networking' | 'linux' | 'security';
+type CourseType = 'kubernetes' | 'docker' | 'coding-interview' | 'system-design' | 'system_design' | 'aws' | 'envoy' | 'postgresql' | 'networking' | 'linux' | 'security' | 'chemistry' | 'mathematics';
 
 interface CourseData {
   type: CourseType;
@@ -42,7 +43,9 @@ function LoadingScreen({ courseType }: { courseType?: string }) {
     'aws': 'AWS Cloud Architecture',
     'envoy': 'Envoy Proxy',
     'postgresql': 'PostgreSQL',
-    'networking': 'Networking'
+    'networking': 'Networking',
+    'chemistry': 'IIT JEE Chemistry',
+    'mathematics': 'IIT JEE Mathematics'
   };
 
   const courseName = courseType ? (courseNames[courseType] || 'Course') : 'Course';
@@ -91,7 +94,7 @@ function ErrorScreen({ error, onRetry }: { error: string; onRetry: () => void })
 // COURSE PAGE WRAPPER - Loads API data for a specific course
 // ============================================
 
-type ApiCourseType = 'docker' | 'kubernetes' | 'system_design' | 'aws' | 'envoy' | 'postgresql' | 'networking' | 'linux' | 'security';
+type ApiCourseType = 'docker' | 'kubernetes' | 'system_design' | 'aws' | 'envoy' | 'postgresql' | 'networking' | 'linux' | 'security' | 'chemistry' | 'mathematics';
 
 function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
   const [loading, setLoading] = useState(true);
@@ -190,7 +193,9 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
     'aws': { title: 'AWS Cloud Architecture', subtitle: 'Solutions Architect Path' },
     'envoy': { title: 'Envoy Proxy', subtitle: 'Service Mesh Mastery' },
     'postgresql': { title: 'PostgreSQL', subtitle: 'Database Mastery' },
-    'networking': { title: 'Networking Fundamentals', subtitle: 'TCP/IP, DNS, and Routing' }
+    'networking': { title: 'Networking Fundamentals', subtitle: 'TCP/IP, DNS, and Routing' },
+    'chemistry': { title: 'IIT JEE Chemistry', subtitle: 'Organic & Physical Chemistry' },
+    'mathematics': { title: 'IIT JEE Mathematics', subtitle: 'Calculus, Algebra & Trigonometry' }
   };
 
   const courseInfo = courseTitles[courseType] || { title: courseData.title, subtitle: '' };
@@ -238,6 +243,104 @@ function ProgressiveModuleWrapper() {
 }
 
 // ============================================
+// IIT JEE COURSE WRAPPER - Loads a single IIT JEE course
+// ============================================
+
+function IITJEECourseWrapper({ subject }: { subject: 'chemistry' | 'mathematics' }) {
+  const { slug } = useParams<{ slug: string }>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [courseData, setCourseData] = useState<CourseData | null>(null);
+
+  const loadCourseData = async () => {
+    if (!slug) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      console.log(`📡 Loading ${subject} course:`, slug);
+
+      // Fetch detailed course data
+      const fullCourse = await apiService.fetchCourse(slug, subject);
+      const modules = await apiService.fetchModules(slug, subject);
+      const labs = await apiService.fetchLabs(subject);
+
+      if (!modules || modules.length === 0) {
+        throw new Error('No modules found in course. Please check database seeds.');
+      }
+
+      // Transform API data
+      const transformed = transformCourseData(fullCourse, modules, labs);
+
+      console.log('✅ Course data loaded:', {
+        type: subject,
+        course: fullCourse.title,
+        modules: transformed.length,
+        lessons: transformed.reduce((sum, m) => sum + m.lessons.length, 0),
+        labs: labs.length
+      });
+
+      setCourseData({
+        type: subject,
+        title: fullCourse.title,
+        modules: transformed,
+        moduleCount: transformed.length,
+        labCount: labs.length
+      });
+    } catch (err) {
+      console.error(`❌ Error loading ${subject} course:`, err);
+      setError(err instanceof Error ? err.message : 'Unknown error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadCourseData();
+  }, [slug, subject]);
+
+  // Loading state
+  if (loading) {
+    return <LoadingScreen courseType={subject} />;
+  }
+
+  // Error state
+  if (error) {
+    return <ErrorScreen error={error} onRetry={loadCourseData} />;
+  }
+
+  // No data
+  if (!courseData) {
+    return <ErrorScreen error="No course data available" onRetry={loadCourseData} />;
+  }
+
+  const subjectTitles = {
+    chemistry: 'IIT JEE Chemistry',
+    mathematics: 'IIT JEE Mathematics'
+  };
+
+  // Success banner
+  const SuccessBanner = () => (
+    <div className="bg-green-600 text-white text-center py-1.5 text-xs">
+      ✅ Live Content • {courseData.title} • {courseData.moduleCount} Modules • {courseData.labCount} Labs
+    </div>
+  );
+
+  // Render the generic course app
+  return (
+    <>
+      <SuccessBanner />
+      <GenericCourseApp
+        courseModules={courseData.modules}
+        courseTitle={courseData.title}
+        courseSubtitle={subjectTitles[subject]}
+      />
+    </>
+  );
+}
+
+// ============================================
 // APP ROUTER - Main component with routes
 // ============================================
 
@@ -261,6 +364,14 @@ export default function AppRouter() {
       <Route path="/envoy" element={<CoursePageWrapper courseType="envoy" />} />
       <Route path="/postgresql" element={<CoursePageWrapper courseType="postgresql" />} />
       <Route path="/networking" element={<CoursePageWrapper courseType="networking" />} />
+
+      {/* IIT JEE Courses - Course Selection Pages */}
+      <Route path="/chemistry" element={<IITJEECourseSelection subject="chemistry" />} />
+      <Route path="/mathematics" element={<IITJEECourseSelection subject="mathematics" />} />
+
+      {/* IIT JEE Courses - Individual Course Pages */}
+      <Route path="/chemistry/:slug" element={<IITJEECourseWrapper subject="chemistry" />} />
+      <Route path="/mathematics/:slug" element={<IITJEECourseWrapper subject="mathematics" />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

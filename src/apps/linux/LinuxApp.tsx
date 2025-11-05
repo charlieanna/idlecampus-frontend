@@ -59,72 +59,124 @@ interface LinuxAppProps {
 }
 
 export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
-  const [selectedModule, setSelectedModule] = useState<Module | null>(null);
-  const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
+  const [selectedModule, setSelectedModule] = useState<string>('');
+  const [selectedItemId, setSelectedItemId] = useState<string>('');
   const [terminalCommands, setTerminalCommands] = useState<string[]>([]);
+  const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
+  const [completedCommands, setCompletedCommands] = useState<Set<string>>(new Set());
 
   // Select first module and first lesson on mount
   useEffect(() => {
     if (courseModules && courseModules.length > 0 && !selectedModule) {
       const firstModule = courseModules[0];
-      setSelectedModule(firstModule);
+      setSelectedModule(firstModule.id);
 
       // Select first lesson
       if (firstModule.lessons && firstModule.lessons.length > 0) {
-        setSelectedItemId(firstModule.lessons[0].id);
+        setSelectedItemId(`${firstModule.id}-${firstModule.lessons[0].id}`);
       } else if (firstModule.labs && firstModule.labs.length > 0) {
-        setSelectedItemId(firstModule.labs[0].id);
+        setSelectedItemId(`${firstModule.id}-${firstModule.labs[0].id}`);
       } else if (firstModule.quizzes && firstModule.quizzes.length > 0) {
-        setSelectedItemId(firstModule.quizzes[0].id);
+        setSelectedItemId(`${firstModule.id}-${firstModule.quizzes[0].id}`);
       }
     }
   }, [courseModules, selectedModule]);
 
-  const handleModuleChange = (module: Module) => {
-    setSelectedModule(module);
-
-    // Auto-select first available item in the module
-    if (module.lessons && module.lessons.length > 0) {
-      setSelectedItemId(module.lessons[0].id);
-    } else if (module.labs && module.labs.length > 0) {
-      setSelectedItemId(module.labs[0].id);
-    } else if (module.quizzes && module.quizzes.length > 0) {
-      setSelectedItemId(module.quizzes[0].id);
-    }
+  const handleSelectLesson = (moduleId: string, lessonId: string) => {
+    setSelectedModule(moduleId);
+    setSelectedItemId(lessonId);
   };
 
-  const handleItemSelect = (itemId: string) => {
-    setSelectedItemId(itemId);
+  const handleCommandComplete = (commandId: string) => {
+    setCompletedCommands(prev => new Set(prev).add(commandId));
   };
 
   const handleCommandCopy = (command: string) => {
-    setTerminalCommands(prev => [...prev, command]);
+    console.log('🖥️ Command copied:', command);
+    setTerminalCommands(prev => {
+      const newCommands = [...prev, command];
+      console.log('📝 Terminal commands updated:', newCommands);
+      return newCommands;
+    });
+  };
+
+  // Check if command matches expected and mark complete
+  const handleTerminalCommand = (typedCommand: string): string | null => {
+    // Get the current lesson and its items
+    const lesson = currentModule?.lessons?.find(l => `${currentModule.id}-${l.id}` === selectedItemId);
+    if (!lesson || !lesson.items) return null;
+
+    // Find current command index
+    let commandIndex = 0;
+    for (const item of lesson.items) {
+      if (item.type === 'command') {
+        // Use lesson.id (not selectedItemId) to match LessonViewer's key format
+        const commandKey = `${lesson.id}-${commandIndex}`;
+        if (!completedCommands.has(commandKey)) {
+          // This is the current expected command
+          const expectedCmd = item.command.command;
+
+          // Check if typed command matches expected
+          if (typedCommand.trim() === expectedCmd.trim()) {
+            // Success! Mark as complete silently
+            console.log('✅ Command matched:', expectedCmd);
+            handleCommandComplete(commandKey);
+          }
+
+          // Always return null - let terminal execute and show output
+          return null;
+        }
+        commandIndex++;
+      }
+    }
+
+    // No expected command or all completed - just execute normally
+    return null;
   };
 
   // Find current selected item
   let selectedContent = null;
   let contentType: 'lesson' | 'lab' | 'quiz' | null = null;
+  const currentModule = courseModules.find(m => m.id === selectedModule);
 
-  if (selectedModule && selectedItemId) {
+  if (currentModule && selectedItemId) {
     // Check lessons
-    const lesson = selectedModule.lessons?.find(l => l.id === selectedItemId);
+    const lesson = currentModule.lessons?.find(l => `${currentModule.id}-${l.id}` === selectedItemId);
     if (lesson) {
       selectedContent = lesson;
       contentType = 'lesson';
     }
 
     // Check labs
-    const lab = selectedModule.labs?.find(l => l.id === selectedItemId);
+    const lab = currentModule.labs?.find(l => `${currentModule.id}-${l.id}` === selectedItemId);
     if (lab) {
       selectedContent = lab;
       contentType = 'lab';
     }
 
     // Check quizzes
-    const quiz = selectedModule.quizzes?.find(q => q.id === selectedItemId);
+    const quiz = currentModule.quizzes?.find(q => `${currentModule.id}-${q.id}` === selectedItemId);
     if (quiz) {
       selectedContent = quiz;
       contentType = 'quiz';
+    }
+  }
+
+  // Get expected command for terminal validation
+  let expectedCommand: string | null = null;
+  if (contentType === 'lesson' && selectedContent && 'items' in selectedContent) {
+    const lesson = selectedContent;
+    let commandIndex = 0;
+    for (const item of lesson.items) {
+      if (item.type === 'command') {
+        // Use lesson.id to match LessonViewer's key format
+        const commandKey = `${lesson.id}-${commandIndex}`;
+        if (!completedCommands.has(commandKey)) {
+          expectedCommand = item.command.command;
+          break;
+        }
+        commandIndex++;
+      }
     }
   }
 
@@ -149,9 +201,12 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
             <CourseNavigation
               modules={courseModules}
               selectedModule={selectedModule}
-              selectedItemId={selectedItemId}
-              onModuleChange={handleModuleChange}
-              onItemSelect={handleItemSelect}
+              selectedLesson={selectedItemId}
+              onSelectLesson={handleSelectLesson}
+              completedLessons={completedLessons}
+              completedCommands={completedCommands}
+              courseTitle="Linux Fundamentals"
+              courseSubtitle="Master essential Linux skills"
             />
           </ResizablePanel>
 
@@ -170,21 +225,34 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
               )}
 
               {contentType === 'lesson' && selectedContent && (
-                <LessonViewer
-                  lesson={selectedContent}
-                  onCommandCopy={handleCommandCopy}
-                />
+                <>
+                  {console.log('📚 Rendering lesson:', selectedContent.title, 'Commands:', selectedContent.commands?.length || 0)}
+                  <LessonViewer
+                    lesson={selectedContent}
+                    isCompleted={completedLessons.has(selectedItemId)}
+                    completedCommands={completedCommands}
+                    onCommandCopy={handleCommandCopy}
+                    onCommandComplete={handleCommandComplete}
+                  />
+                </>
               )}
 
               {contentType === 'lab' && selectedContent && (
                 <LabExercise
                   lab={selectedContent}
-                  onCommandCopy={handleCommandCopy}
+                  onComplete={() => {
+                    setCompletedLessons(prev => new Set(prev).add(selectedItemId));
+                  }}
                 />
               )}
 
               {contentType === 'quiz' && selectedContent && (
-                <QuizViewer quiz={selectedContent} />
+                <QuizViewer
+                  quiz={selectedContent}
+                  onComplete={() => {
+                    setCompletedLessons(prev => new Set(prev).add(selectedItemId));
+                  }}
+                />
               )}
             </div>
           </ResizablePanel>
@@ -193,10 +261,10 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
 
           {/* Right: Terminal */}
           <ResizablePanel defaultSize={30} minSize={20}>
+            {console.log('🔧 Terminal expected command:', expectedCommand)}
             <Terminal
-              commands={terminalCommands}
-              terminalType="bash"
-              promptText="user@linux:~$"
+              onCommand={handleTerminalCommand}
+              expectedCommand={expectedCommand}
             />
           </ResizablePanel>
         </ResizablePanelGroup>

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Layers, Network, FileKey, GripVertical } from 'lucide-react';
+import { Box, Layers, Network, FileKey, GripVertical, BookOpen, Check } from 'lucide-react';
 import * as ResizablePrimitive from 'react-resizable-panels';
 import { Terminal } from '../../components/course/Terminal';
 import { CourseNavigation, Module } from '../../components/course/CourseNavigation';
@@ -532,6 +532,33 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
 
         if (allCommandsComplete) {
           setCompletedLessons(prev => new Set([...prev, lessonId]));
+
+          // Auto-navigate to next lesson after a short delay
+          setTimeout(() => {
+            const currentModule = modules.find(m => m.lessons.some(l => l.id === lessonId));
+            if (currentModule) {
+              const currentLessonIndex = currentModule.lessons.findIndex(l => l.id === lessonId);
+              const nextLesson = currentModule.lessons[currentLessonIndex + 1];
+
+              if (nextLesson) {
+                // Navigate to next lesson in same module
+                onSelectLesson(currentModule.id, nextLesson.id);
+              } else {
+                // Check if there's a lab to go to
+                if (currentModule.labs && currentModule.labs.length > 0) {
+                  const labId = `${currentModule.id}-${currentModule.labs[0].id}`;
+                  onSelectLesson(currentModule.id, labId);
+                } else {
+                  // Move to next module
+                  const currentModuleIndex = modules.findIndex(m => m.id === currentModule.id);
+                  const nextModule = modules[currentModuleIndex + 1];
+                  if (nextModule && nextModule.lessons.length > 0) {
+                    onSelectLesson(nextModule.id, nextModule.lessons[0].id);
+                  }
+                }
+              }
+            }
+          }, 1500); // 1.5 second delay to show completion state
         }
       }
     }
@@ -637,74 +664,145 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
   // Render the app with unified layout
   return (
     <div className="h-screen flex bg-white">
-      <CourseNavigation
-        modules={modules}
-        selectedModule={selectedModule}
-        selectedLesson={selectedLesson}
-        onSelectLesson={onSelectLesson}
-        completedLessons={completedLessons}
-        completedCommands={completedCommands}
-        courseTitle="Docker Course"
-        courseSubtitle="Docker Fundamentals"
-      />
+      {/* Sidebar with Navigation and Commands Button */}
+      <div className="w-80 flex flex-col border-r border-slate-200 bg-slate-50">
+        {/* Course Header */}
+        <div className="p-4 border-b flex-shrink-0">
+          <h1 className="text-blue-600">Docker Course</h1>
+          <p className="text-slate-600 text-sm mt-1">Docker Fundamentals</p>
+        </div>
 
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
-        <ResizablePanel defaultSize={60} minSize={30}>
-          <div className="h-full overflow-hidden">
-            {currentLesson && (
-              <LessonViewer
-                lesson={currentLesson}
-                isCompleted={completedLessons.has(selectedLesson)}
-                completedCommands={completedCommands}
-                onGoToLab={currentModule?.labs && currentModule.labs.length > 0 ? handleGoToLab : undefined}
-                progressiveMode={isModule1}
-                moduleSlug="container-lifecycle"
-                onProgressiveItemsLoaded={setProgressiveItems}
-              />
-            )}
+        {/* Navigation - Scrollable */}
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-4 space-y-4">
+            {modules.map((module) => {
+              const moduleCompleted = module.lessons.every(lesson =>
+                completedLessons.has(lesson.id)
+              );
 
-            {currentQuiz && (
-              <QuizViewer
-                quiz={currentQuiz}
-                onComplete={handleQuizComplete}
-                isCompleted={completedLessons.has(selectedLesson)}
-                onRegisterCommandHandler={(handler) => setQuizCommandHandler(() => handler)}
-                onGoToLab={currentModule?.labs && currentModule.labs.length > 0 ? handleGoToLab : undefined}
-              />
-            )}
+              return (
+                <div key={module.id} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Box className="w-4 h-4 text-blue-600" />
+                    <h3 className="text-slate-900 text-sm font-semibold">{module.title}</h3>
+                  </div>
 
-            {currentLab && (
-              <LabExercise
-                lab={currentLab}
-                onTaskComplete={handleTaskComplete}
-                completedTasks={completedTasks}
-                onCommand={(command: string) => {
-                  for (const task of currentLab.tasks) {
-                    if (!completedTasks.has(task.id) && task.validation(command)) {
-                      handleTaskComplete(task.id, command);
-                      return `✓ Task completed: ${task.description}`;
-                    }
-                  }
-                  return null;
-                }}
-              />
-            )}
+                  <div className="space-y-1 ml-6">
+                    {module.lessons.map((lesson, index) => {
+                      const isCompleted = completedLessons.has(lesson.id);
+                      const isSelected = selectedModule === module.id && selectedLesson === lesson.id;
+
+                      return (
+                        <button
+                          key={lesson.id}
+                          onClick={() => onSelectLesson(module.id, lesson.id)}
+                          className={cn(
+                            'w-full text-left px-3 py-2 rounded text-sm transition-colors',
+                            isSelected
+                              ? 'bg-blue-100 text-blue-900'
+                              : 'text-slate-700 hover:bg-slate-100'
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-slate-500">{index + 1}.</span>
+                            <span className="flex-1">{lesson.title}</span>
+                            {isCompleted && <Check className="w-3 h-3 text-green-600" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+
+                    {/* Show labs if they exist */}
+                    {module.labs && module.labs.length > 0 && module.labs.map((lab) => {
+                      const labId = `${module.id}-${lab.id}`;
+                      const isCompleted = completedLessons.has(labId);
+                      const isSelected = selectedModule === module.id && selectedLesson === labId;
+
+                      return (
+                        <button
+                          key={lab.id}
+                          onClick={() => onSelectLesson(module.id, labId)}
+                          className={cn(
+                            'w-full text-left px-3 py-2 rounded text-sm transition-colors',
+                            isSelected
+                              ? 'bg-blue-100 text-blue-900'
+                              : 'text-slate-700 hover:bg-slate-100'
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-medium">LAB</span>
+                            <span className="flex-1">{lab.title}</span>
+                            {isCompleted && <Check className="w-3 h-3 text-green-600" />}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </ResizablePanel>
+        </div>
+      </div>
 
-        <ResizableHandle withHandle />
+      {/* Course content with terminal */}
+      <ResizablePanelGroup direction="horizontal" className="flex-1">
+          <ResizablePanel defaultSize={60} minSize={30}>
+            <div className="h-full overflow-hidden">
+              {currentLesson && (
+                <LessonViewer
+                  lesson={currentLesson}
+                  isCompleted={completedLessons.has(selectedLesson)}
+                  completedCommands={completedCommands}
+                  onGoToLab={currentModule?.labs && currentModule.labs.length > 0 ? handleGoToLab : undefined}
+                  progressiveMode={isModule1}
+                  moduleSlug="container-lifecycle"
+                  onProgressiveItemsLoaded={setProgressiveItems}
+                />
+              )}
 
-        <ResizablePanel defaultSize={40} minSize={25}>
-          <Terminal
-            expectedCommand={isQuiz ? null : expectedCommand}
-            onCommand={
-              isQuiz
-                ? handleQuizCommand
-                : handleTerminalCommand
-            }
-          />
-        </ResizablePanel>
-      </ResizablePanelGroup>
+              {currentQuiz && (
+                <QuizViewer
+                  quiz={currentQuiz}
+                  onComplete={handleQuizComplete}
+                  isCompleted={completedLessons.has(selectedLesson)}
+                  onRegisterCommandHandler={(handler) => setQuizCommandHandler(() => handler)}
+                  onGoToLab={currentModule?.labs && currentModule.labs.length > 0 ? handleGoToLab : undefined}
+                />
+              )}
+
+              {currentLab && (
+                <LabExercise
+                  lab={currentLab}
+                  onTaskComplete={handleTaskComplete}
+                  completedTasks={completedTasks}
+                  onCommand={(command: string) => {
+                    for (const task of currentLab.tasks) {
+                      if (!completedTasks.has(task.id) && task.validation(command)) {
+                        handleTaskComplete(task.id, command);
+                        return `✓ Task completed: ${task.description}`;
+                      }
+                    }
+                    return null;
+                  }}
+                />
+              )}
+            </div>
+          </ResizablePanel>
+
+          <ResizableHandle withHandle />
+
+          <ResizablePanel defaultSize={40} minSize={25}>
+            <Terminal
+              expectedCommand={isQuiz ? null : expectedCommand}
+              onCommand={
+                isQuiz
+                  ? handleQuizCommand
+                  : handleTerminalCommand
+              }
+            />
+          </ResizablePanel>
+        </ResizablePanelGroup>
     </div>
   );
 }

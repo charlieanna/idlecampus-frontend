@@ -1,4 +1,4 @@
-import { Box, Code, Network, Server, Terminal, Shield, Cloud, Radio, Database, Globe } from 'lucide-react';
+import { Box, Code, Network, Server, Terminal, Shield, Cloud, Radio, Database, Globe, FlaskConical, Calculator } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -139,6 +139,34 @@ const courses: Course[] = [
       'Service mesh concepts'
     ],
     color: 'from-teal-500 to-teal-700'
+  },
+  {
+    id: 'chemistry',
+    title: 'IIT JEE Chemistry',
+    description: 'Master Organic and Physical Chemistry for IIT JEE Main and Advanced',
+    icon: <FlaskConical className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'Organic Chemistry fundamentals',
+      'Physical Chemistry concepts',
+      'IRT adaptive difficulty',
+      'FSRS spaced repetition'
+    ],
+    color: 'from-emerald-500 to-emerald-700'
+  },
+  {
+    id: 'mathematics',
+    title: 'IIT JEE Mathematics',
+    description: 'Master Calculus, Algebra, Trigonometry for IIT JEE Main and Advanced',
+    icon: <Calculator className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'Calculus & Integration',
+      'Algebra & Coordinate Geometry',
+      'Trigonometry & Vectors',
+      'Formula mastery with SR'
+    ],
+    color: 'from-violet-500 to-violet-700'
   },
   {
     id: 'coding-interview',

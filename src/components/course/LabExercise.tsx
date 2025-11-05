@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { CheckCircle2, Circle, Lightbulb, Code } from 'lucide-react';
+import { CheckCircle2, Circle, Code } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
@@ -37,21 +37,8 @@ export interface LabExerciseProps {
 }
 
 export function LabExercise({ lab, onTaskComplete: _onTaskComplete, completedTasks, onCommand: _onCommand }: LabExerciseProps) {
-  const [showHints, setShowHints] = useState<Set<string>>(new Set());
   const [showSolutions, setShowSolutions] = useState<Set<string>>(new Set());
   const [attemptedCommands, _setAttemptedCommands] = useState<Map<string, string>>(new Map());
-
-  const toggleHint = (taskId: string) => {
-    setShowHints(prev => {
-      const next = new Set(prev);
-      if (next.has(taskId)) {
-        next.delete(taskId);
-      } else {
-        next.add(taskId);
-      }
-      return next;
-    });
-  };
 
   const toggleSolution = (taskId: string) => {
     setShowSolutions(prev => {
@@ -102,7 +89,6 @@ export function LabExercise({ lab, onTaskComplete: _onTaskComplete, completedTas
           <div className="space-y-6">
             {lab.tasks.map((task: Task, index: number) => {
               const isCompleted = completedTasks.has(task.id);
-              const showHint = showHints.has(task.id);
               const showSolution = showSolutions.has(task.id);
               const attemptedCommand = attemptedCommands.get(task.id);
 
@@ -144,36 +130,16 @@ export function LabExercise({ lab, onTaskComplete: _onTaskComplete, completedTas
 
                       <div className="flex gap-2">
                         {!isCompleted && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => toggleHint(task.id)}
-                            >
-                              <Lightbulb className="w-4 h-4 mr-2" />
-                              {showHint ? 'Hide Hint' : 'Show Hint'}
-                            </Button>
-
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => toggleSolution(task.id)}
-                            >
-                              <Code className="w-4 h-4 mr-2" />
-                              {showSolution ? 'Hide Solution' : 'Show Solution'}
-                            </Button>
-                          </>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => toggleSolution(task.id)}
+                          >
+                            <Code className="w-4 h-4 mr-2" />
+                            {showSolution ? 'Hide Solution' : 'Show Solution'}
+                          </Button>
                         )}
                       </div>
-
-                      {showHint && !isCompleted && (
-                        <Alert className="mt-3 bg-blue-50 border-blue-200">
-                          <Lightbulb className="h-4 w-4 text-blue-600" />
-                          <AlertDescription className="text-blue-800">
-                            <span className="text-blue-900">Hint:</span> {task.hint}
-                          </AlertDescription>
-                        </Alert>
-                      )}
 
                       {showSolution && !isCompleted && (
                         <div className="mt-3 p-3 bg-slate-900 rounded">

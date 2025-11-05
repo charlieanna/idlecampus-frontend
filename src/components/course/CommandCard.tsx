@@ -22,14 +22,18 @@ export function CommandCard({ command, state, commandIndex, onCopy }: CommandCar
   const [copied, setCopied] = useState(false);
 
   const handleCopy = () => {
+    console.log('💡 CommandCard: Copy button clicked, command:', command.example);
     navigator.clipboard.writeText(command.example);
     setCopied(true);
-    if (onCopy) onCopy(command.example);
+    if (onCopy) {
+      console.log('💡 CommandCard: Calling onCopy callback');
+      onCopy(command.example);
+    }
     setTimeout(() => setCopied(false), 2000);
   };
 
   const stateStyles = {
-    current: 'bg-blue-50 border-blue-300 border-2 shadow-lg',
+    current: 'bg-blue-50 border-blue-300 border-2 shadow-lg cursor-pointer',
     completed: 'bg-green-50 border-green-200',
     locked: 'bg-white border-slate-200'
   };
@@ -50,7 +54,10 @@ export function CommandCard({ command, state, commandIndex, onCopy }: CommandCar
         delay: commandIndex ? commandIndex * 0.1 : 0
       }}
     >
-      <Card className={`p-4 transition-all duration-300 ${stateStyles[state]}`}>
+      <Card
+        className={`p-4 transition-all duration-300 ${stateStyles[state]}`}
+        onClick={state === 'current' ? handleCopy : undefined}
+      >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
             {/* Command Name with Icon */}
@@ -87,8 +94,13 @@ export function CommandCard({ command, state, commandIndex, onCopy }: CommandCar
               <Button
                 size="sm"
                 variant="ghost"
-                className="opacity-0 group-hover:opacity-100 transition-opacity text-slate-400 hover:text-white h-6 w-6 p-0 ml-2"
-                onClick={handleCopy}
+                className={`transition-opacity text-slate-400 hover:text-white h-6 w-6 p-0 ml-2 ${
+                  state === 'current' ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                }`}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent card click when clicking button directly
+                  handleCopy();
+                }}
               >
                 {copied ? (
                   <Check className="w-3 h-3" />

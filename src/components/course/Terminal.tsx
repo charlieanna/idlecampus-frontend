@@ -24,8 +24,8 @@ export interface TerminalProps {
 
 export function Terminal({ onCommand, expectedCommand }: TerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([
-    { type: 'output', content: 'Welcome to Docker Training Terminal' },
-    { type: 'output', content: 'Type "help" for available commands' },
+    { type: 'output', content: 'Welcome to Interactive Terminal' },
+    { type: 'output', content: 'Type commands to practice. Use "clear" or Ctrl+L to clear screen.' },
     { type: 'output', content: '' }
   ]);
   const [currentInput, setCurrentInput] = useState('');
@@ -44,20 +44,29 @@ export function Terminal({ onCommand, expectedCommand }: TerminalProps) {
     const trimmedCmd = cmd.trim();
     if (!trimmedCmd) return;
 
+    // Handle clear command
+    if (trimmedCmd === 'clear') {
+      setLines([
+        { type: 'output', content: 'Welcome to Interactive Terminal' },
+        { type: 'output', content: 'Type commands to practice. Use "clear" or Ctrl+L to clear screen.' },
+        { type: 'output', content: '' }
+      ]);
+      setHistory(prev => [...prev, trimmedCmd]);
+      setHistoryIndex(-1);
+      return;
+    }
+
     setLines(prev => [...prev, { type: 'command', content: `$ ${trimmedCmd}` }]);
     setHistory(prev => [...prev, trimmedCmd]);
     setHistoryIndex(-1);
-
-    let validationOutput = '';
 
     // If onCommand handler is provided (for validation), get validation result
     if (onCommand) {
       const customOutput = onCommand(trimmedCmd);
       if (customOutput !== null) {
-        validationOutput = customOutput;
         // If validation failed (starts with ✗), show error and don't execute
-        if (validationOutput.startsWith('✗')) {
-          const outputLines = validationOutput.split('\n');
+        if (customOutput.startsWith('✗')) {
+          const outputLines = customOutput.split('\n');
           setLines(prev => [
             ...prev,
             ...outputLines.map(line => ({
@@ -71,14 +80,10 @@ export function Terminal({ onCommand, expectedCommand }: TerminalProps) {
     }
 
     // Execute real Docker command via API
-    const dockerOutput = await executeDockerCommand(trimmedCmd);
+    const commandOutput = await executeDockerCommand(trimmedCmd);
 
-    // Show validation success message first, then Docker output
-    const allOutput = validationOutput
-      ? `${validationOutput}\n\n--- Docker Output ---\n${dockerOutput}`
-      : dockerOutput;
-
-    const outputLines = allOutput.split('\n');
+    // Show command output only (no validation messages)
+    const outputLines = commandOutput.split('\n');
     setLines(prev => [
       ...prev,
       ...outputLines.map(line => ({
@@ -89,33 +94,84 @@ export function Terminal({ onCommand, expectedCommand }: TerminalProps) {
   };
 
   const executeDockerCommand = async (cmd: string): Promise<string> => {
-    try {
-      const response = await fetch('/api/v1/docker/execute', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ command: cmd }),
-      });
+    // Mock output for common Linux commands
+    const linuxCommands: Record<string, string> = {
+      'whoami': 'user',
+      'date': new Date().toString(),
+      'pwd': '/home/user',
+      'ls': 'Desktop  Documents  Downloads  Pictures  Videos',
+      'hostname': 'linux-training',
+      'uname': 'Linux',
+      'echo hello': 'hello',
+      'cat /etc/os-release': 'NAME="Ubuntu"\nVERSION="20.04 LTS"',
+    };
 
-      if (!response.ok) {
-        return `Error: Failed to execute command (${response.status})`;
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        return data.output || 'Command executed successfully';
-      } else {
-        return data.error || 'Command execution failed';
-      }
-    } catch (error) {
-      return `Error: ${error instanceof Error ? error.message : 'Failed to connect to server'}`;
+    // Check if it's a known Linux command
+    const mockOutput = linuxCommands[cmd.trim()];
+    if (mockOutput) {
+      return mockOutput;
     }
+
+    // Try Docker API for docker commands
+    if (cmd.trim().startsWith('docker')) {
+      try {
+        const response = await fetch('/api/v1/docker/execute', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ command: cmd }),
+        });
+
+        if (!response.ok) {
+          return `Error: Failed to execute command (${response.status})`;
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          return data.output || 'Command executed successfully';
+        } else {
+          return data.error || 'Command execution failed';
+        }
+      } catch (error) {
+        return `Error: ${error instanceof Error ? error.message : 'Failed to connect to server'}`;
+      }
+    }
+
+    // Command not found - check for typos and suggest corrections
+    const trimmedCmd = cmd.trim();
+    const commandName = trimmedCmd.split(' ')[0];
+    const knownCommands = Object.keys(linuxCommands).map(c => c.split(' ')[0]);
+
+    // Find similar commands using simple string distance
+    const suggestions = knownCommands.filter(known => {
+      // Check if it's a close match (off by 1-2 characters)
+      if (Math.abs(known.length - commandName.length) > 2) return false;
+
+      let differences = 0;
+      for (let i = 0; i < Math.max(known.length, commandName.length); i++) {
+        if (known[i] !== commandName[i]) differences++;
+      }
+      return differences <= 2;
+    });
+
+    if (suggestions.length > 0) {
+      return `bash: ${commandName}: command not found\n\nDid you mean: ${suggestions[0]}?`;
+    }
+
+    return `bash: ${commandName}: command not found`;
   };
 
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Ctrl+L to clear terminal (common terminal shortcut)
+    if (e.ctrlKey && e.key === 'l') {
+      e.preventDefault();
+      handleClear();
+      return;
+    }
+
     if (e.key === 'Enter') {
       executeCommand(currentInput);
       setCurrentInput('');
@@ -137,7 +193,11 @@ export function Terminal({ onCommand, expectedCommand }: TerminalProps) {
   };
 
   const handleClear = () => {
-    setLines([]);
+    setLines([
+      { type: 'output', content: 'Welcome to Interactive Terminal' },
+      { type: 'output', content: 'Type commands to practice. Use "clear" or Ctrl+L to clear screen.' },
+      { type: 'output', content: '' }
+    ]);
     setCurrentInput('');
   };
 

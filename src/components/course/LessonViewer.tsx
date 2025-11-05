@@ -35,6 +35,8 @@ export interface LessonViewerProps {
   progressiveMode?: boolean;
   moduleSlug?: string;
   onProgressiveItemsLoaded?: (items: LessonItem[]) => void;
+  onCommandCopy?: (command: string) => void;
+  onCommandComplete?: (commandId: string) => void;
 }
 
 export function LessonViewer({
@@ -44,7 +46,9 @@ export function LessonViewer({
   onGoToLab,
   progressiveMode = false,
   moduleSlug,
-  onProgressiveItemsLoaded
+  onProgressiveItemsLoaded,
+  onCommandCopy,
+  onCommandComplete
 }: LessonViewerProps) {
   const [progressiveItems, setProgressiveItems] = useState<LessonItem[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -115,6 +119,8 @@ export function LessonViewer({
     ...(lesson.commands || []).map(cmd => ({ type: 'command' as const, command: cmd }))
   ];
 
+  console.log('📋 LessonViewer items:', items.length, 'structure:', items.map(i => i.type));
+
   const commandItems = items.filter(item => item.type === 'command');
   const totalCommands = commandItems.length;
 
@@ -165,6 +171,9 @@ export function LessonViewer({
   const completedCount = commandItems.filter((_, i) =>
     completedCommands.has(`${lesson.id}-${i}`)
   ).length;
+
+  console.log('👁️ Visible items:', visibleItems.length, 'current command index:', currentCommandIndex);
+  console.log('   Lesson ID:', lesson.id, 'completed commands:', Array.from(completedCommands));
 
   // Auto-scroll to newly unlocked content
   useEffect(() => {
@@ -318,12 +327,26 @@ export function LessonViewer({
                     ? 'completed'
                     : 'locked';
 
+                  console.log(`🎯 CommandCard state for "${cmd.command}":`, {
+                    commandIndex,
+                    commandKey,
+                    state,
+                    isCurrentCommand,
+                    isCommandCompleted,
+                    currentCommandIndex
+                  });
+
                   return (
                     <div key={`command-${commandIndex}`} ref={isLastItem ? lastItemRef : null}>
                       <CommandCard
                         command={cmd}
                         state={state}
                         commandIndex={commandIndex}
+                        onCopy={(command) => {
+                          console.log('🖱️ onCopy triggered in LessonViewer for:', command);
+                          if (onCommandCopy) onCommandCopy(command);
+                          if (onCommandComplete) onCommandComplete(commandKey);
+                        }}
                       />
                     </div>
                   );
@@ -332,7 +355,7 @@ export function LessonViewer({
             </div>
           </AnimatePresence>
 
-          {currentCommandIndex !== -1 && (
+          {currentCommandIndex !== -1 && currentCommandIndex < totalCommands - 1 && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}

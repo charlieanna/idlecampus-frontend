@@ -148,11 +148,17 @@ function getModuleIcon(title: string, slug: string): string {
 
 // Transform API lesson to App lesson
 function transformLesson(apiLesson: APILesson): Lesson {
+  console.log('🔄 transformLesson called for:', apiLesson.title);
+  console.log('   key_commands:', apiLesson.key_commands);
+
   const { items, commands } = extractCommandsFromContent(
     apiLesson.content || '',
     apiLesson.key_commands
   );
-  
+
+  console.log('   extracted items:', items.length, 'commands:', commands.length);
+  console.log('   commands:', commands);
+
   return {
     id: `lesson-${apiLesson.id}`,
     title: apiLesson.title,
@@ -236,12 +242,48 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
   if (itemsArray.length > 0) {
     // Use the items array which has all content with type field
     itemsArray.forEach((item: any) => {
-      if (item.type === 'lab') {
-        // Transform lab item
+      // Normalize multiple backend formats to a common shape
+      const t = (item.type || '').toString();
+
+      if (t === 'lab') {
+        // Kubernetes-style lab item already in API shape
         labItems.push(transformLab(item));
-      } else if (item.type === 'lesson') {
-        // Transform lesson item
+      } else if (t === 'lesson') {
+        // Kubernetes-style lesson item already in API shape
         lessonItems.push(transformLesson(item));
+      } else if (t === 'HandsOnLab') {
+        // Generic API: lab is nested under content
+        const labLike = item.content || {};
+        labItems.push(transformLab(labLike));
+      } else if (t === 'CourseLesson') {
+        // Generic API: lesson is nested under content
+        const lessonLike = item.content || {};
+        lessonItems.push(
+          transformLesson({
+            id: lessonLike.id,
+            title: lessonLike.title,
+            content: lessonLike.content || lessonLike.description || '',
+            sequence_order: item.sequence_order || 0,
+            estimated_minutes: lessonLike.reading_time_minutes || 0,
+            learning_objectives: [],
+            key_commands: []
+          } as any)
+        );
+      } else if (t === 'Quiz') {
+        // Represent quizzes as simple content lessons for now
+        const quiz = item.content || {};
+        lessonItems.push({
+          id: `quiz-${quiz.id}`,
+          title: quiz.title || 'Quiz',
+          items: [
+            {
+              type: 'content' as const,
+              markdown: `# ${quiz.title || 'Quiz'}\n\n${quiz.description || 'Quiz'}`
+            }
+          ],
+          content: quiz.description || '',
+          commands: []
+        });
       }
     });
   } else if (apiModule.lessons && apiModule.lessons.length > 0) {
@@ -272,16 +314,33 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
           tasks
         });
       } else if (item.contentType === 'Quiz') {
-        // Handle Quiz items - for now, show as lesson with description
-        lessonItems.push({
-          id: `quiz-${item.id}`,
-          title: item.title,
-          items: [
-            { type: 'content' as const, markdown: `# ${item.title}\n\n${item.content || item.description || 'Quiz content'}` }
-          ],
-          content: item.content || item.description,
-          commands: []
-        });
+        // Handle Quiz items - check if questions exist
+        if (item.questions && item.questions.length > 0) {
+          // Has questions - add to quizzes (not implemented yet, so add as lesson for now)
+          lessonItems.push({
+            id: `quiz-${item.id}`,
+            title: item.title,
+            items: [
+              { type: 'content' as const, markdown: `# ${item.title}\n\n${item.description || 'Quiz with ' + item.questions.length + ' questions'}` }
+            ],
+            content: item.description,
+            commands: []
+          });
+        } else {
+          // No questions - just show description
+          lessonItems.push({
+            id: `quiz-${item.id}`,
+            title: item.title,
+            items: [
+              { type: 'content' as const, markdown: `# ${item.title}\n\n${item.content || item.description || 'Quiz content'}` }
+            ],
+            content: item.content || item.description,
+            commands: []
+          });
+        }
+      } else if (item.contentType === 'InteractiveLearningUnit') {
+        // Handle InteractiveLearningUnit - has interactive commands
+        lessonItems.push(transformLesson(item));
       } else {
         // Regular lesson (CourseLesson)
         lessonItems.push(transformLesson(item));
@@ -324,4 +383,3 @@ export function transformCourseData(_course: Course, modules: APIModule[], labs:
   // Backend API now organizes labs within modules, so no separate labs module needed
   return transformedModules;
 }
-
