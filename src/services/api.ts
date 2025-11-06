@@ -16,6 +16,47 @@ export interface Course {
   modules?: Module[];
 }
 
+export type ModuleItemType = 'CourseLesson' | 'Quiz' | 'HandsOnLab' | 'InteractiveLearningUnit';
+
+export interface ModuleItem {
+  id: number;
+  module_item_id?: number;
+  sequence_order: number;
+  item_type: ModuleItemType;
+  title: string;
+  description?: string;
+  content?: string;
+  estimated_minutes?: number;
+  difficulty?: string;
+  lesson_id?: number;
+  quiz?: {
+    question: string;
+    type?: string;
+    options?: any[];
+    correct_answer?: string;
+    explanation?: string;
+  };
+  command_to_learn?: string;
+  practice_hints?: string[];
+  concept_tags?: string[];
+  lab_id?: number;
+  lab_type?: string;
+  lab_format?: string;
+  programming_language?: string;
+  starter_code?: string;
+  solution_code?: string;
+  test_cases?: any[];
+  allowed_imports?: string[];
+  learning_objectives?: any;
+  prerequisites?: any;
+  steps?: any[];
+  hints?: any[];
+  points_reward?: number;
+  max_attempts?: number;
+  time_limit_seconds?: number;
+  memory_limit_mb?: number;
+}
+
 export interface Module {
   id: number;
   slug: string;
@@ -25,6 +66,7 @@ export interface Module {
   estimated_minutes: number;
   lesson_count?: number;
   lessons?: Lesson[];
+  items?: ModuleItem[];
 }
 
 export interface Lesson {

@@ -183,6 +183,20 @@ const baseCourses: Course[] = [
       'Time & space complexity analysis'
     ],
     color: 'from-pink-500 to-pink-700'
+  },
+  {
+    id: 'golang',
+    title: 'Go Programming Fundamentals',
+    description: 'Master Go programming from basics to advanced concurrency patterns',
+    icon: <Code className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'Go syntax & fundamentals',
+      'Goroutines & channels',
+      'Interfaces & composition',
+      'Hands-on coding exercises'
+    ],
+    color: 'from-cyan-400 to-blue-600'
   }
 ];
 
@@ -203,6 +217,7 @@ export default function CourseSelectionDashboard() {
     // Some math seeds may use a different slug; include known ones
     'iit-jee-mathematics': 'mathematics',
     'coding-interview-mastery': 'coding-interview',
+    'golang-fundamentals': 'golang',
   } as Record<string, string>), []);
 
   useEffect(() => {
