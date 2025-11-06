@@ -54,13 +54,59 @@ export function QuizViewer({ quiz, onComplete, isCompleted, onRegisterCommandHan
   const [showResults, setShowResults] = useState(false);
   const [answeredQuestions, setAnsweredQuestions] = useState<Set<number>>(new Set());
 
-  const currentQuestion = quiz.questions[currentQuestionIndex];
-  const totalQuestions = quiz.questions.length;
-  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
+  // Check if quiz has valid questions
+  const hasQuestions = quiz && Array.isArray(quiz.questions) && quiz.questions.length > 0;
 
+  const currentQuestion = hasQuestions ? quiz.questions[currentQuestionIndex] : null;
+  const totalQuestions = hasQuestions ? quiz.questions.length : 0;
+  const progress = hasQuestions ? ((currentQuestionIndex + 1) / totalQuestions) * 100 : 0;
+
+  // Handler for command-based questions
+  const handleCommandAnswer = (command: string) => {
+    if (showResults) return null;
+    if (!currentQuestion || currentQuestion.type !== 'command') return null;
+
+    const expectedCommand = currentQuestion.expectedCommand.trim();
+    const userCommand = command.trim();
+
+    if (userCommand === expectedCommand) {
+      const newAnswers = new Map(selectedAnswers);
+      newAnswers.set(currentQuestionIndex, command);
+      setSelectedAnswers(newAnswers);
+
+      const newAnswered = new Set(answeredQuestions);
+      newAnswered.add(currentQuestionIndex);
+      setAnsweredQuestions(newAnswered);
+
+      return { correct: true, message: '✓ Correct! Command matched.' };
+    } else {
+      return { correct: false, message: '✗ Incorrect. Try again or check the hint.' };
+    }
+  };
+
+  // Register command handler - must be called unconditionally
   useEffect(() => {
-    onRegisterCommandHandler(handleCommandAnswer);
-  }, [currentQuestionIndex, answeredQuestions, showResults]);
+    if (hasQuestions && onRegisterCommandHandler) {
+      onRegisterCommandHandler(handleCommandAnswer);
+    }
+  }, [currentQuestionIndex, answeredQuestions, showResults, hasQuestions]);
+
+  // Defensive: if there are no questions, show empty state
+  if (!hasQuestions) {
+    return (
+      <div className="h-full flex items-center justify-center bg-white">
+        <Card className="p-6 max-w-2xl">
+          <div className="mb-2">
+            <h2 className="text-slate-900">{quiz?.title || 'Quiz'}</h2>
+            <p className="text-slate-600 mt-2">{quiz?.description || 'This quiz has no questions yet.'}</p>
+          </div>
+          <div className="mt-4">
+            <p className="text-sm text-slate-500">Questions are not available right now. They may be loaded on demand when you select the quiz.</p>
+          </div>
+        </Card>
+      </div>
+    );
+  }
 
   const handleSelectMCQAnswer = (optionIndex: number) => {
     if (showResults) return;
@@ -72,34 +118,6 @@ export function QuizViewer({ quiz, onComplete, isCompleted, onRegisterCommandHan
     const newAnswered = new Set(answeredQuestions);
     newAnswered.add(currentQuestionIndex);
     setAnsweredQuestions(newAnswered);
-  };
-
-  const handleCommandAnswer = (command: string) => {
-    if (showResults) return null;
-    if (currentQuestion.type !== 'command') return null;
-
-    const expectedCommand = currentQuestion.expectedCommand.trim();
-    const isCorrect = command.trim() === expectedCommand;
-
-    if (isCorrect) {
-      const newAnswers = new Map(selectedAnswers);
-      newAnswers.set(currentQuestionIndex, command);
-      setSelectedAnswers(newAnswers);
-
-      const newAnswered = new Set(answeredQuestions);
-      newAnswered.add(currentQuestionIndex);
-      setAnsweredQuestions(newAnswered);
-
-      return {
-        correct: true,
-        message: `✓ Correct! This command is correct.\n\nYou can now proceed to the next question.`
-      };
-    } else {
-      return {
-        correct: false,
-        message: `✗ Not quite right.\nExpected: ${expectedCommand}\nYou typed: ${command}\n\nHint: ${currentQuestion.hint}`
-      };
-    }
   };
 
   const handleNext = () => {
@@ -250,6 +268,7 @@ export function QuizViewer({ quiz, onComplete, isCompleted, onRegisterCommandHan
                         question.options.map((option, optionIndex) => {
                           const isSelected = selectedAnswer === optionIndex;
                           const isCorrectOption = optionIndex === question.correctAnswer;
+                          const optionText = typeof option === 'string' ? option : option.text;
 
                           return (
                             <div
@@ -270,7 +289,7 @@ export function QuizViewer({ quiz, onComplete, isCompleted, onRegisterCommandHan
                                   isSelected ? 'text-red-900' :
                                   'text-slate-700'
                                 }>
-                                  {option}
+                                  {optionText}
                                 </span>
                               </div>
                             </div>
@@ -359,6 +378,7 @@ export function QuizViewer({ quiz, onComplete, isCompleted, onRegisterCommandHan
                   <div className="space-y-3">
                     {currentQuestion.options.map((option, optionIndex) => {
                       const isSelected = selectedAnswers.get(currentQuestionIndex) === optionIndex;
+                      const optionText = typeof option === 'string' ? option : option.text;
 
                       return (
                         <button
@@ -377,7 +397,7 @@ export function QuizViewer({ quiz, onComplete, isCompleted, onRegisterCommandHan
                               {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                             </div>
                             <span className={isSelected ? 'text-blue-900' : 'text-slate-700'}>
-                              {option}
+                              {optionText}
                             </span>
                           </div>
                         </button>

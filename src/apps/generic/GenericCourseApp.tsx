@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { GripVertical } from 'lucide-react';
 import * as ResizablePrimitive from 'react-resizable-panels';
 import { Terminal } from '../../components/course/Terminal';
@@ -6,6 +6,7 @@ import { CourseNavigation, Module } from '../../components/course/CourseNavigati
 import { LessonViewer } from '../../components/course/LessonViewer';
 import { LabExercise } from '../../components/course/LabExercise';
 import { QuizViewer } from '../../components/course/QuizViewer';
+import { apiService } from '../../services/api';
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -65,7 +66,14 @@ export default function GenericCourseApp({
   courseTitle,
   courseSubtitle
 }: GenericCourseAppProps) {
-  const modules = courseModules;
+  // Keep a local mutable copy of modules so we can inject quiz questions when
+  // they are loaded on demand. Initialize from props and keep in sync if
+  // props change.
+  const [modules, setModules] = useState(() => courseModules);
+
+  useEffect(() => {
+    setModules(courseModules);
+  }, [courseModules]);
 
   console.log(`📚 ${courseTitle} loaded:`, JSON.stringify({
     modulesCount: modules.length,
@@ -121,6 +129,71 @@ export default function GenericCourseApp({
   const currentLesson = currentModule?.lessons.find(l => l.id === selectedLesson);
   const currentLab = currentModule?.labs.find(l => `${selectedModule}-${l.id}` === selectedLesson);
   const currentQuiz = currentModule?.quizzes?.find(q => `${selectedModule}-${q.id}` === selectedLesson);
+
+  // When a quiz is selected, dynamically fetch its questions if they aren't
+  // already present. We strip any `quiz-` prefix from the quiz id to send the
+  // numeric id to the API.
+  useEffect(() => {
+    let mounted = true;
+
+    const fetchQuestionsForQuiz = async () => {
+      if (!currentQuiz) return;
+
+      // If questions already exist, nothing to do
+      if (Array.isArray(currentQuiz.questions) && currentQuiz.questions.length > 0) return;
+
+      try {
+        // currentQuiz.id format: 'quiz-<id>'
+        const rawId = (currentQuiz.id || '').toString().replace(/^quiz-/, '');
+        // Determine API track: default to courseTitle mapping
+        const track = (courseTitle && courseTitle.toLowerCase().includes('chemistry')) ? 'chemistry' : undefined;
+        const apiTrack = track || 'kubernetes';
+
+        const questions = await apiService.fetchQuizQuestions(rawId, apiTrack as any);
+
+        if (!mounted) return;
+
+        // Map backend questions into QuizQuestion shape expected by QuizViewer
+        const mapped = (questions || []).map((q: any) => {
+          if (q.question_type === 'mcq' || q.type === 'mcq') {
+            return {
+              id: `q-${q.id}`,
+              type: 'mcq' as const,
+              question: q.question_text || q.text || q.question || '',
+              options: q.options || q.choices || q.answers || [],
+              correctAnswer: q.correct_option_index ?? q.correct_answer_index ?? 0,
+              explanation: q.explanation || q.explain || ''
+            };
+          }
+
+          // Default to command-type mapping
+          return {
+            id: `q-${q.id}`,
+            type: 'command' as const,
+            question: q.question_text || q.text || q.question || '',
+            expectedCommand: q.expected_command || q.example || '',
+            hint: q.hint || '',
+            explanation: q.explanation || ''
+          };
+        });
+
+        // Inject questions into the modules state
+        setModules(prev => prev.map(mod => {
+          if (mod.id !== currentModule?.id) return mod;
+          return {
+            ...mod,
+            quizzes: mod.quizzes?.map(q => q.id === currentQuiz.id ? { ...q, questions: mapped } : q)
+          };
+        }));
+      } catch (err) {
+        console.error('Failed to load quiz questions:', err);
+      }
+    };
+
+    fetchQuestionsForQuiz();
+
+    return () => { mounted = false; };
+  }, [currentQuiz, courseTitle]);
 
   const isQuiz = !!currentQuiz;
   const [quizCommandHandler, setQuizCommandHandler] = useState<((cmd: string) => { correct: boolean; message: string } | null) | null>(null);

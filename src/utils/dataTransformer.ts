@@ -168,6 +168,16 @@ function transformLesson(apiLesson: APILesson): Lesson {
   };
 }
 
+// Transform API quiz to App quiz
+function transformQuiz(apiQuiz: any): Quiz {
+  return {
+    id: `quiz-${apiQuiz.id}`,
+    title: apiQuiz.title || 'Quiz',
+    description: apiQuiz.description || 'Interactive quiz module',
+    questions: [] // Questions will be loaded dynamically via API when quiz is selected
+  };
+}
+
 // Transform API lab to App lab
 function transformLab(apiLab: APILab): Lab {
   const tasks: Task[] = [];
@@ -235,6 +245,7 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
   // The `items` array (if present) has all content with a `type` field
   const lessonItems: Lesson[] = [];
   const labItems: Lab[] = [];
+  const quizItems: Quiz[] = [];
 
   // Check if API provides the combined `items` array (Kubernetes API format)
   const itemsArray = (apiModule as any).items || [];
@@ -270,23 +281,9 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
           } as any)
         );
       } else if (t === 'Quiz') {
-        // Represent quizzes as content lessons with enhanced description
+        // Add quizzes to separate array for proper navigation display
         const quiz = item.content || {};
-        const timeInfo = quiz.time_limit_minutes ? `\n\n**Time Limit:** ${quiz.time_limit_minutes} minutes` : '';
-        const quizContent = `# ${quiz.title || 'Quiz'}\n\n${quiz.description || 'Interactive quiz for spaced repetition learning.'}${timeInfo}\n\n> 📝 This is an interactive quiz module. Questions will be presented one at a time to help you master the concepts through spaced repetition.\n\n**To begin:** Click through the quiz items to test your knowledge and reinforce your learning.`;
-        
-        lessonItems.push({
-          id: `quiz-${quiz.id}`,
-          title: quiz.title || 'Quiz',
-          items: [
-            {
-              type: 'content' as const,
-              markdown: quizContent
-            }
-          ],
-          content: quizContent,
-          commands: []
-        });
+        quizItems.push(transformQuiz(quiz));
       }
     });
   } else if (apiModule.lessons && apiModule.lessons.length > 0) {
@@ -370,10 +367,10 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
     icon: getModuleIcon(apiModule.title, apiModule.slug),
     lessons: lessonItems,
     labs: labItems,
-    quizzes: [] // TODO: Add quiz support when available
+    quizzes: quizItems
   };
 
-  console.log(`📦 Module transformed: ${result.title}, lessons: ${lessonItems.length}, labs: ${labItems.length}`);
+  console.log(`📦 Module transformed: ${result.title}, lessons: ${lessonItems.length}, labs: ${labItems.length}, quizzes: ${quizItems.length}`);
 
   return result;
 }

@@ -25,18 +25,15 @@ describe('CourseSelectionDashboard', () => {
   it('should show correct count of available courses', () => {
     render(<CourseSelectionDashboard />);
 
-    // Should show 9 available courses (all except coding-interview which is coming-soon)
-    const availableCount = screen.getByText('9');
+    // Should show 10 available courses (coding-interview now available)
+    const availableCount = screen.getByText('10');
     expect(availableCount).toBeInTheDocument();
   });
 
-  it('should show coming soon courses with proper badge', () => {
+  // No coming soon courses currently; all are available
+  it('should not show any coming soon badges', () => {
     render(<CourseSelectionDashboard />);
-
-    expect(screen.getByText('Coding Interview Prep')).toBeInTheDocument();
-    // Should have "Coming Soon" text appearing at least once (badge and/or button)
-    const comingSoonElements = screen.getAllByText('Coming Soon');
-    expect(comingSoonElements.length).toBeGreaterThanOrEqual(1);
+    expect(screen.queryByText(/Coming Soon/i)).toBeNull();
   });
 
   it('should navigate to course when clicking available course', () => {
@@ -50,18 +47,7 @@ describe('CourseSelectionDashboard', () => {
     expect(window.location.href).toContain('/');
   });
 
-  it('should not navigate when clicking coming-soon course', () => {
-    render(<CourseSelectionDashboard />);
-
-    const currentHref = window.location.href;
-
-    // Find and click the Coming Soon button
-    const comingSoonButton = screen.getByRole('button', { name: /Coming Soon/i });
-    fireEvent.click(comingSoonButton);
-
-    // Verify no navigation occurred
-    expect(window.location.href).toBe(currentHref);
-  });
+  // No coming soon course to test disabled navigation anymore
 
   it('should display course features for each course', () => {
     render(<CourseSelectionDashboard />);
@@ -108,10 +94,6 @@ describe('CourseSelectionDashboard', () => {
 
     // All courses should have "Start Learning" buttons except coming-soon ones
     const startLearningButtons = screen.getAllByText('Start Learning');
-    expect(startLearningButtons).toHaveLength(9); // 9 available courses
-
-    // Only 1 course should be coming soon
-    const comingSoonBadges = screen.getAllByText(/Coming Soon/i);
-    expect(comingSoonBadges.length).toBeGreaterThanOrEqual(1);
+    expect(startLearningButtons).toHaveLength(10); // 10 available courses
   });
 });

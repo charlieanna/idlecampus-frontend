@@ -61,6 +61,15 @@ class ApiService {
     console.log('API_BASE_URL =', this.baseUrl);
   }
 
+  async fetchAllCourses(): Promise<Course[]> {
+    const response = await fetch(`${this.baseUrl}/courses`);
+    if (!response.ok) {
+      throw new Error('Failed to fetch courses');
+    }
+    const data = await response.json();
+    return data.courses;
+  }
+
   async fetchCourses(track: string = 'kubernetes'): Promise<Course[]> {
     const response = await fetch(`${this.baseUrl}/${track}/courses`);
     if (!response.ok) {
@@ -82,7 +91,9 @@ class ApiService {
   async fetchModules(courseSlug: string, track: string = 'kubernetes'): Promise<Module[]> {
     const response = await fetch(`${this.baseUrl}/${track}/courses/${courseSlug}/modules`);
     if (!response.ok) {
-      throw new Error(`Failed to fetch modules for course: ${courseSlug}`);
+      const error: any = new Error(`Failed to fetch modules for course: ${courseSlug}`);
+      error.status = response.status;
+      throw error;
     }
     const data = await response.json();
     return data.modules;
@@ -209,7 +220,19 @@ class ApiService {
 
     return response.json();
   }
+
+  // Fetch quiz questions for a given quiz id (track default is 'kubernetes')
+  async fetchQuizQuestions(quizId: number | string, track: string = 'kubernetes') {
+    const response = await fetch(`${this.baseUrl}/${track}/quizzes/${quizId}/questions`);
+
+    if (!response.ok) {
+      throw new Error(`Failed to fetch quiz questions for quiz: ${quizId}`);
+    }
+
+    const data = await response.json();
+    // Expecting { questions: [...] }
+    return data.questions || [];
+  }
 }
 
 export const apiService = new ApiService();
-

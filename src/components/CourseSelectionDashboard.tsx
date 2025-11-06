@@ -1,7 +1,9 @@
+import { useEffect, useMemo, useState } from 'react';
 import { Box, Code, Network, Server, Terminal, Shield, Cloud, Radio, Database, Globe, FlaskConical, Calculator } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
+import { apiService } from '../services/api';
 
 interface Course {
   id: string;
@@ -13,7 +15,7 @@ interface Course {
   color: string;
 }
 
-const courses: Course[] = [
+const baseCourses: Course[] = [
   {
     id: 'linux',
     title: 'Linux Fundamentals',
@@ -173,7 +175,7 @@ const courses: Course[] = [
     title: 'Coding Interview Prep',
     description: 'Master data structures, algorithms, and coding interview patterns',
     icon: <Code className="w-12 h-12" />,
-    status: 'coming-soon',
+    status: 'available',
     features: [
       'Monaco code editor',
       'Multiple languages',
@@ -185,6 +187,45 @@ const courses: Course[] = [
 ];
 
 export default function CourseSelectionDashboard() {
+  const [courses, setCourses] = useState<Course[]>(baseCourses);
+
+  // Map backend slugs to frontend course IDs
+  const slugToId = useMemo(() => ({
+    'linux-fundamentals': 'linux',
+    'docker-fundamentals': 'docker',
+    'kubernetes-complete-guide': 'kubernetes',
+    'security-fundamentals': 'security',
+    'aws-cloud-architecture': 'aws',
+    'postgresql-mastery': 'postgresql',
+    'networking-fundamentals': 'networking',
+    'envoy-proxy-mastery': 'envoy',
+    'iit-jee-inorganic-chemistry': 'chemistry',
+    // Some math seeds may use a different slug; include known ones
+    'iit-jee-mathematics': 'mathematics',
+    'coding-interview-mastery': 'coding-interview',
+  } as Record<string, string>), []);
+
+  useEffect(() => {
+    apiService.fetchAllCourses()
+      .then((published) => {
+        const publishedIds = new Set(
+          published
+            .map((c) => slugToId[c.slug])
+            .filter((id): id is string => !!id)
+        );
+
+        setCourses((prev) =>
+          prev.map((c) => ({
+            ...c,
+            status: publishedIds.has(c.id) ? 'available' : c.status,
+          }))
+        );
+      })
+      .catch(() => {
+        // Non-fatal: keep defaults on failure
+      });
+  }, [slugToId]);
+
   const handleCourseSelect = (courseId: string) => {
     // Navigate to course using route path
     window.location.href = `/${courseId}`;
