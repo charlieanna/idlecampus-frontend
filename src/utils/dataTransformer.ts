@@ -288,7 +288,9 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
     });
   } else if (apiModule.lessons && apiModule.lessons.length > 0) {
     // Fallback: check if lessons array contains mixed content with contentType field (Docker API format)
-    apiModule.lessons.forEach((item: any) => {
+    console.log(`🔍 Processing Docker-style module: ${apiModule.title}, lessons: ${apiModule.lessons.length}`);
+    apiModule.lessons.forEach((item: any, index: number) => {
+      console.log(`  [${index}] Processing item: ${item.title}, contentType: ${item.contentType}`);
       if (item.contentType === 'HandsOnLab' || item.contentType === 'lab') {
         // Convert lab structure from API to Lab type
         const tasks: Task[] = [];
@@ -314,35 +316,16 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
           tasks
         });
       } else if (item.contentType === 'Quiz') {
-        // Handle Quiz items - check if questions exist
-        if (item.questions && item.questions.length > 0) {
-          // Has questions - add to quizzes (not implemented yet, so add as lesson for now)
-          lessonItems.push({
-            id: `quiz-${item.id}`,
-            title: item.title,
-            items: [
-              { type: 'content' as const, markdown: `# ${item.title}\n\n${item.description || 'Quiz with ' + item.questions.length + ' questions'}` }
-            ],
-            content: item.description,
-            commands: []
-          });
-        } else {
-          // No questions - just show description
-          lessonItems.push({
-            id: `quiz-${item.id}`,
-            title: item.title,
-            items: [
-              { type: 'content' as const, markdown: `# ${item.title}\n\n${item.content || item.description || 'Quiz content'}` }
-            ],
-            content: item.content || item.description,
-            commands: []
-          });
-        }
+        // Handle Quiz items - add to quizzes array for proper rendering
+        console.log(`📝 Found quiz: ${item.title}, questions: ${item.questions?.length || 0}`);
+        quizItems.push(transformQuiz(item));
       } else if (item.contentType === 'InteractiveLearningUnit') {
         // Handle InteractiveLearningUnit - has interactive commands
+        console.log(`    → Transforming as InteractiveLearningUnit`);
         lessonItems.push(transformLesson(item));
       } else {
         // Regular lesson (CourseLesson)
+        console.log(`    → Transforming as CourseLesson`);
         lessonItems.push(transformLesson(item));
       }
     });

@@ -6,6 +6,7 @@ import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { ScrollArea } from '../ui/scroll-area';
 import { CommandCard, Command } from './CommandCard';
+import { StealthReviewPrompt, ReviewContent, ReviewResult } from './StealthReviewPrompt';
 
 // ============================================
 // TYPES
@@ -13,7 +14,14 @@ import { CommandCard, Command } from './CommandCard';
 
 type LessonItem =
   | { type: 'content'; markdown: string }
-  | { type: 'command'; command: Command };
+  | { type: 'command'; command: Command }
+  | {
+      type: 'review';
+      reviews: ReviewContent[];
+      strategy: string;
+      insertionPoint: { position: string; percentage: number };
+      priority: number;
+    };
 
 export interface Lesson {
   id: string;
@@ -52,6 +60,7 @@ export function LessonViewer({
 }: LessonViewerProps) {
   const [progressiveItems, setProgressiveItems] = useState<LessonItem[] | null>(null);
   const [loading, setLoading] = useState(false);
+  const [reviewData, setReviewData] = useState<any>(null);
 
   // Refs for auto-scroll functionality
   const lastItemRef = useRef<HTMLDivElement>(null);
@@ -113,11 +122,56 @@ export function LessonViewer({
     fetchProgressiveData();
   }, [progressiveMode, moduleSlug, onProgressiveItemsLoaded]);
 
+  // Fetch pending reviews for this lesson
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const response = await fetch(
+          `/api/mastery/lesson_reviews?lesson_id=${lesson.id}`
+        );
+
+        if (!response.ok) {
+          console.error('Failed to fetch reviews:', response.status);
+          return;
+        }
+
+        const data = await response.json();
+        if (data.success && data.has_reviews) {
+          setReviewData(data);
+        }
+      } catch (error) {
+        console.error('Error fetching reviews:', error);
+      }
+    };
+
+    fetchReviews();
+  }, [lesson.id]);
+
   // Use progressive items if available, otherwise use regular lesson items
-  const items: LessonItem[] = progressiveItems || lesson.items || [
+  let items: LessonItem[] = progressiveItems || lesson.items || [
     { type: 'content', markdown: lesson.content || '' },
     ...(lesson.commands || []).map(cmd => ({ type: 'command' as const, command: cmd }))
   ];
+
+  // Insert review items at appropriate position
+  if (reviewData && reviewData.has_reviews) {
+    const insertionPercentage = reviewData.insertion_point?.percentage || 50;
+    const insertionIndex = Math.floor((items.length * insertionPercentage) / 100);
+
+    const reviewItem: LessonItem = {
+      type: 'review',
+      reviews: reviewData.reviews,
+      strategy: reviewData.strategy,
+      insertionPoint: reviewData.insertion_point,
+      priority: reviewData.priority
+    };
+
+    items = [
+      ...items.slice(0, insertionIndex),
+      reviewItem,
+      ...items.slice(insertionIndex)
+    ];
+  }
 
   console.log('📋 LessonViewer items:', items.length, 'structure:', items.map(i => i.type));
 
@@ -304,6 +358,23 @@ export function LessonViewer({
                     >
                       {renderContent(item.markdown)}
                     </motion.div>
+                  );
+                } else if (item.type === 'review') {
+                  // Render stealth review prompt
+                  return (
+                    <div key={`review-${index}`} ref={isLastItem ? lastItemRef : null}>
+                      <StealthReviewPrompt
+                        reviews={item.reviews}
+                        strategy={item.strategy}
+                        insertionPoint={item.insertionPoint}
+                        priority={item.priority}
+                        onReviewComplete={(results: ReviewResult[]) => {
+                          console.log('✅ Reviews completed:', results);
+                          // Clear review data after completion
+                          setReviewData(null);
+                        }}
+                      />
+                    </div>
                   );
                 } else {
                   // Calculate actual command index for this command item

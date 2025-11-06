@@ -16,13 +16,22 @@ interface TerminalLine {
 export interface TerminalProps {
   onCommand?: (command: string) => string | null;
   expectedCommand?: string | null;
+  trackMastery?: boolean;
+  currentChapter?: string;
+  currentContext?: 'practice' | 'quiz' | 'lab';
 }
 
 // ============================================
 // TERMINAL COMPONENT
 // ============================================
 
-export function Terminal({ onCommand, expectedCommand }: TerminalProps) {
+export function Terminal({
+  onCommand,
+  expectedCommand,
+  trackMastery = false,
+  currentChapter,
+  currentContext = 'practice'
+}: TerminalProps) {
   const [lines, setLines] = useState<TerminalLine[]>([
     { type: 'output', content: 'Welcome to Interactive Terminal' },
     { type: 'output', content: 'Type commands to practice. Use "clear" or Ctrl+L to clear screen.' },
@@ -31,6 +40,9 @@ export function Terminal({ onCommand, expectedCommand }: TerminalProps) {
   const [currentInput, setCurrentInput] = useState('');
   const [history, setHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
+  const [attemptCount, setAttemptCount] = useState(0);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [commandAttempts, setCommandAttempts] = useState<Map<string, number>>(new Map());
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -40,9 +52,61 @@ export function Terminal({ onCommand, expectedCommand }: TerminalProps) {
     }
   }, [lines]);
 
+  // Track command attempt via API
+  const trackCommandAttempt = async (command: string, success: boolean, timeTaken: number) => {
+    if (!trackMastery) return;
+
+    const normalizedCommand = command.trim().toLowerCase();
+    const currentAttempts = commandAttempts.get(normalizedCommand) || 0;
+
+    try {
+      const response = await fetch('/api/mastery/track_attempt', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          command: command,
+          success: success,
+          context: currentContext,
+          time_taken: timeTaken,
+          attempt_number: currentAttempts + 1,
+          expected_command: expectedCommand,
+          chapter: currentChapter
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && data.mastery) {
+          // Update attempt count
+          setCommandAttempts(prev => new Map(prev).set(normalizedCommand, currentAttempts + 1));
+
+          // Show mastery feedback if achieved or needs practice
+          if (data.mastery.mastered) {
+            setLines(prev => [...prev, {
+              type: 'output',
+              content: `✨ Command mastered! (${data.mastery.proficiency_score}% proficiency)`
+            }]);
+          } else if (data.mastery.needs_review) {
+            setLines(prev => [...prev, {
+              type: 'output',
+              content: `💡 This command needs more practice (${data.mastery.current_score}%)`
+            }]);
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Failed to track command attempt:', error);
+    }
+  };
+
   const executeCommand = async (cmd: string) => {
     const trimmedCmd = cmd.trim();
     if (!trimmedCmd) return;
+
+    // Track start time
+    const commandStartTime = Date.now();
 
     // Handle clear command
     if (trimmedCmd === 'clear') {
@@ -74,6 +138,10 @@ export function Terminal({ onCommand, expectedCommand }: TerminalProps) {
               content: line
             }))
           ]);
+
+          // Track failed attempt
+          const timeTaken = Date.now() - commandStartTime;
+          await trackCommandAttempt(trimmedCmd, false, timeTaken);
           return;
         }
       }
@@ -81,6 +149,7 @@ export function Terminal({ onCommand, expectedCommand }: TerminalProps) {
 
     // Execute real Docker command via API
     const commandOutput = await executeDockerCommand(trimmedCmd);
+    const isError = commandOutput.startsWith('Error:') || commandOutput.includes('error') || commandOutput.includes('command not found');
 
     // Show command output only (no validation messages)
     const outputLines = commandOutput.split('\n');
@@ -91,6 +160,10 @@ export function Terminal({ onCommand, expectedCommand }: TerminalProps) {
         content: line
       }))
     ]);
+
+    // Track attempt (success if no error)
+    const timeTaken = Date.now() - commandStartTime;
+    await trackCommandAttempt(trimmedCmd, !isError, timeTaken);
   };
 
   const executeDockerCommand = async (cmd: string): Promise<string> => {

@@ -19,7 +19,7 @@ import { transformCourseData, type Module } from './utils/dataTransformer';
 // TYPES
 // ============================================
 
-type CourseType = 'kubernetes' | 'docker' | 'coding-interview' | 'system-design' | 'system_design' | 'aws' | 'envoy' | 'postgresql' | 'networking' | 'linux' | 'security' | 'chemistry' | 'mathematics';
+type CourseType = 'kubernetes' | 'docker' | 'docker-bootcamp' | 'coding-interview' | 'system-design' | 'system_design' | 'aws' | 'envoy' | 'postgresql' | 'networking' | 'linux' | 'security' | 'chemistry' | 'mathematics';
 
 interface CourseData {
   type: CourseType;
@@ -36,6 +36,7 @@ interface CourseData {
 function LoadingScreen({ courseType }: { courseType?: string }) {
   const courseNames: Record<string, string> = {
     'docker': 'Docker',
+    'docker-bootcamp': 'Docker Bootcamp',
     'kubernetes': 'Kubernetes',
     'coding-interview': 'Coding Interview',
     'system-design': 'System Design',
@@ -94,7 +95,7 @@ function ErrorScreen({ error, onRetry }: { error: string; onRetry: () => void })
 // COURSE PAGE WRAPPER - Loads API data for a specific course
 // ============================================
 
-type ApiCourseType = 'docker' | 'kubernetes' | 'system_design' | 'aws' | 'envoy' | 'postgresql' | 'networking' | 'linux' | 'security' | 'chemistry' | 'mathematics';
+type ApiCourseType = 'docker' | 'docker-bootcamp' | 'kubernetes' | 'system_design' | 'aws' | 'envoy' | 'postgresql' | 'networking' | 'linux' | 'security' | 'chemistry' | 'mathematics';
 
 function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
   const [loading, setLoading] = useState(true);
@@ -107,18 +108,21 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
 
     try {
       // Determine API track (for URL paths)
-      // API track matches courseType for new API structure
-      const apiTrack = courseType;
+      // Map docker-bootcamp to docker API track
+      const apiTrack = courseType === 'docker-bootcamp' ? 'docker' : courseType;
 
       console.log('📡 Loading course data for:', { courseType, apiTrack });
 
       // Fetch courses using API track
       const courses = await apiService.fetchCourses(apiTrack);
-      console.log('📚 Available courses:', JSON.stringify(courses.map(c => ({ title: c.title, track: c.certification_track })), null, 2));
+      console.log('📚 Available courses:', JSON.stringify(courses.map(c => ({ title: c.title, slug: c.slug, track: c.certification_track })), null, 2));
 
-      // Just use the first course returned since we're already filtering by API track
-      const targetCourse = courses[0];
-      console.log('🎯 Selected course:', JSON.stringify({ title: targetCourse?.title, track: targetCourse?.certification_track }, null, 2));
+      // For docker-bootcamp, filter for the bootcamp course by slug
+      const targetCourse = courseType === 'docker-bootcamp'
+        ? courses.find(c => c.slug === 'docker-containers-bootcamp')
+        : courses[0];
+      
+      console.log('🎯 Selected course:', JSON.stringify({ title: targetCourse?.title, slug: targetCourse?.slug, track: targetCourse?.certification_track }, null, 2));
 
       if (!targetCourse) {
         throw new Error('No courses found. Please run: rails db:seed');
@@ -188,6 +192,7 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
   // Course title mapping for subtitles
   const courseTitles: Record<string, { title: string; subtitle: string }> = {
     'docker': { title: 'Docker Course', subtitle: 'Docker Fundamentals' },
+    'docker-bootcamp': { title: 'Docker Containers Professional Bootcamp', subtitle: '7-Week Intensive Training' },
     'kubernetes': { title: 'Kubernetes Course', subtitle: 'CKAD Preparation' },
     'system_design': { title: 'System Design', subtitle: 'Back-of-Envelope Calculations' },
     'aws': { title: 'AWS Cloud Architecture', subtitle: 'Solutions Architect Path' },
@@ -208,7 +213,7 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
         <LinuxApp courseModules={courseData.modules} />
       ) : courseType === 'security' ? (
         <SecurityApp courseModules={courseData.modules} />
-      ) : courseType === 'docker' ? (
+      ) : courseType === 'docker' || courseType === 'docker-bootcamp' ? (
         <DockerApp courseModules={courseData.modules} />
       ) : courseType === 'kubernetes' ? (
         <KubernetesApp courseModules={courseData.modules} />
@@ -356,6 +361,7 @@ export default function AppRouter() {
       <Route path="/linux" element={<CoursePageWrapper courseType="linux" />} />
       <Route path="/security" element={<CoursePageWrapper courseType="security" />} />
       <Route path="/docker" element={<CoursePageWrapper courseType="docker" />} />
+      <Route path="/docker-bootcamp" element={<CoursePageWrapper courseType="docker-bootcamp" />} />
       <Route path="/docker/progressive/:moduleSlug" element={<ProgressiveModuleWrapper />} />
       <Route path="/kubernetes" element={<CoursePageWrapper courseType="kubernetes" />} />
       <Route path="/coding-interview" element={<CodingInterviewApp />} />
