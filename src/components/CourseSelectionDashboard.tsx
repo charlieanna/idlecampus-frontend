@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Code, Network, Server, Terminal, Shield, Cloud, Radio, Database, Globe, FlaskConical, Calculator } from 'lucide-react';
+import { Box, Code, Network, Server, Terminal, Shield, Cloud, Radio, Database, Globe, FlaskConical, Calculator, BookOpen } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -169,6 +169,20 @@ const baseCourses: Course[] = [
       'Formula mastery with SR'
     ],
     color: 'from-violet-500 to-violet-700'
+  },
+  {
+    id: 'upsc',
+    title: 'UPSC CSE Preparation',
+    description: 'Comprehensive platform for UPSC Civil Services Examination preparation',
+    icon: <BookOpen className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'Prelims & Mains preparation',
+      'Mock tests & answer writing',
+      'Current affairs daily',
+      'AI-powered evaluation'
+    ],
+    color: 'from-amber-500 to-amber-700'
   },
   {
     id: 'coding-interview',

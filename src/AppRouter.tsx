@@ -10,6 +10,7 @@ import PythonApp from './apps/python/PythonApp';
 import GolangApp from './apps/golang/GolangApp';
 import GenericCourseApp from './apps/generic/GenericCourseApp';
 import IITJEECourseSelection from './apps/iit-jee/IITJEECourseSelection';
+import UpscApp from './apps/upsc/UpscApp';
 import CourseSelectionDashboard from './components/CourseSelectionDashboard';
 import { ProgressiveModuleViewer } from './components/course/ProgressiveModuleViewer';
 import { apiService } from './services/api';
@@ -383,6 +384,9 @@ export default function AppRouter() {
       {/* IIT JEE Courses - Individual Course Pages */}
       <Route path="/chemistry/:slug" element={<IITJEECourseWrapper subject="chemistry" />} />
       <Route path="/mathematics/:slug" element={<IITJEECourseWrapper subject="mathematics" />} />
+
+      {/* UPSC CSE Preparation Platform */}
+      <Route path="/upsc/*" element={<UpscApp />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
