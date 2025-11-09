@@ -100,6 +100,7 @@ export interface CourseNavigationProps {
   courseTitle?: string;
   courseSubtitle?: string;
   canAccessLesson?: (lessonId: string, allLessonsInOrder: Array<{ id: string; sequenceOrder: number }>) => boolean;
+  canAccessModule?: (moduleId: string) => boolean;
 }
 
 export function CourseNavigation({
@@ -112,6 +113,7 @@ export function CourseNavigation({
   courseTitle = 'CKAD Course',
   courseSubtitle = 'Kubernetes Application Developer',
   canAccessLesson,
+  canAccessModule,
 }: CourseNavigationProps) {
   return (
     <div className="w-80 border-r bg-slate-50 flex flex-col">
@@ -128,12 +130,18 @@ export function CourseNavigation({
               completedLessons.has(lesson.id)
             );
 
+            // Check if module is accessible
+            const isModuleAccessible = canAccessModule ? canAccessModule(module.id) : true;
+
             return (
               <div key={module.id} className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Icon className="w-4 h-4 text-blue-600" />
-                  <h3 className="text-slate-900">{module.title}</h3>
-                  {moduleCompleted && (
+                  <Icon className={`w-4 h-4 ${isModuleAccessible ? 'text-blue-600' : 'text-slate-400'}`} />
+                  <h3 className={`${isModuleAccessible ? 'text-slate-900' : 'text-slate-400'}`}>{module.title}</h3>
+                  {!isModuleAccessible && (
+                    <Lock className="w-4 h-4 text-slate-400 ml-auto" />
+                  )}
+                  {moduleCompleted && isModuleAccessible && (
                     <CheckCircle className="w-4 h-4 text-green-600 ml-auto" />
                   )}
                 </div>
@@ -143,12 +151,13 @@ export function CourseNavigation({
                     const isCompleted = completedLessons.has(lesson.id);
                     const isSelected = selectedModule === module.id && selectedLesson === lesson.id;
 
-                    // Check if lesson is accessible
+                    // Check if lesson is accessible (considering both module and lesson level)
                     const allLessonsInModule = module.lessons.map((l, idx) => ({
                       id: l.id,
                       sequenceOrder: l.sequenceOrder ?? idx
                     }));
-                    const isAccessible = canAccessLesson ? canAccessLesson(lesson.id, allLessonsInModule) : true;
+                    const isLessonAccessible = canAccessLesson ? canAccessLesson(lesson.id, allLessonsInModule) : true;
+                    const isAccessible = isModuleAccessible && isLessonAccessible;
 
                     const items: LessonItem[] = lesson.items || [
                       { type: 'content', markdown: lesson.content || '' },

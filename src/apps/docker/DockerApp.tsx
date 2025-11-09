@@ -631,12 +631,17 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
   const expectedCommand = getCurrentExpectedCommand();
 
   // Use common gating hook
-  const { canAccessLesson, getLessonAccessInfo } = useLessonGating(completedLessons, modules);
+  const { canAccessLesson, canAccessModule, getLessonAccessInfo } = useLessonGating(completedLessons, modules);
 
   // Get accessibility info for current lesson
-  const { isAccessible: isCurrentLessonAccessible, previousLessonTitle } = currentLesson
+  const {
+    isAccessible: isCurrentLessonAccessible,
+    previousLessonTitle,
+    moduleAccessible,
+    previousModuleTitle
+  } = currentLesson
     ? getLessonAccessInfo(currentLesson.id)
-    : { isAccessible: true, previousLessonTitle: undefined };
+    : { isAccessible: true, previousLessonTitle: undefined, moduleAccessible: true, previousModuleTitle: undefined };
 
   const handleTerminalCommand = (command: string): string | null => {
     if (currentLesson) {
@@ -691,22 +696,32 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
 
               return (
                 <div key={module.id} className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <Box className="w-4 h-4 text-blue-600" />
-                    <h3 className="text-slate-900 text-sm font-semibold">{module.title}</h3>
-                  </div>
+                  {(() => {
+                    // Check if module is accessible
+                    const isModuleAccessible = canAccessModule(module.id);
+                    const moduleCompleted = module.lessons.every(l => completedLessons.has(l.id));
 
-                  <div className="space-y-1 ml-6">
-                    {module.lessons.map((lesson, index) => {
-                      const isCompleted = completedLessons.has(lesson.id);
-                      const isSelected = selectedModule === module.id && selectedLesson === lesson.id;
+                    return (
+                      <>
+                        <div className="flex items-center gap-2">
+                          <Box className={`w-4 h-4 ${isModuleAccessible ? 'text-blue-600' : 'text-slate-400'}`} />
+                          <h3 className={`text-sm font-semibold ${isModuleAccessible ? 'text-slate-900' : 'text-slate-400'}`}>{module.title}</h3>
+                          {!isModuleAccessible && <Lock className="w-3 h-3 text-slate-400 ml-auto" />}
+                          {moduleCompleted && isModuleAccessible && <Check className="w-3 h-3 text-green-600 ml-auto" />}
+                        </div>
 
-                      // Check if lesson is accessible
-                      const allLessonsInModule = module.lessons.map((l, idx) => ({
-                        id: l.id,
-                        sequenceOrder: l.sequenceOrder ?? idx
-                      }));
-                      const isAccessible = canAccessLesson(lesson.id, allLessonsInModule);
+                        <div className="space-y-1 ml-6">
+                          {module.lessons.map((lesson, index) => {
+                            const isCompleted = completedLessons.has(lesson.id);
+                            const isSelected = selectedModule === module.id && selectedLesson === lesson.id;
+
+                            // Check if lesson is accessible (considering both module and lesson level)
+                            const allLessonsInModule = module.lessons.map((l, idx) => ({
+                              id: l.id,
+                              sequenceOrder: l.sequenceOrder ?? idx
+                            }));
+                            const isLessonAccessible = canAccessLesson(lesson.id, allLessonsInModule);
+                            const isAccessible = isModuleAccessible && isLessonAccessible;
 
                       return (
                         <button
@@ -756,12 +771,15 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
                           </div>
                         </button>
                       );
-                    })}
+                            })}
+                          </div>
+                        </>
+                      );
+                    })()}
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
         </div>
       </div>
 
@@ -780,6 +798,8 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
                   onProgressiveItemsLoaded={setProgressiveItems}
                   isAccessible={isCurrentLessonAccessible}
                   previousLessonTitle={previousLessonTitle}
+                  moduleAccessible={moduleAccessible}
+                  previousModuleTitle={previousModuleTitle}
                 />
               )}
 
