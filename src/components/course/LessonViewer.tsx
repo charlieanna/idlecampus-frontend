@@ -47,6 +47,8 @@ export interface LessonViewerProps {
   onCommandComplete?: (commandId: string) => void;
   isAccessible?: boolean;
   previousLessonTitle?: string;
+  moduleAccessible?: boolean;
+  previousModuleTitle?: string;
 }
 
 export function LessonViewer({
@@ -60,7 +62,9 @@ export function LessonViewer({
   onCommandCopy,
   onCommandComplete,
   isAccessible = true,
-  previousLessonTitle
+  previousLessonTitle,
+  moduleAccessible = true,
+  previousModuleTitle
 }: LessonViewerProps) {
   const [progressiveItems, setProgressiveItems] = useState<LessonItem[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -324,8 +328,10 @@ export function LessonViewer({
     );
   }
 
-  // Show locked screen if lesson is not accessible
-  if (!isAccessible) {
+  // Show locked screen if lesson or module is not accessible
+  if (!isAccessible || !moduleAccessible) {
+    const isModuleLocked = !moduleAccessible;
+
     return (
       <div className="h-full flex items-center justify-center bg-white">
         <Card className="max-w-md p-8 text-center">
@@ -334,15 +340,23 @@ export function LessonViewer({
               <Lock className="w-8 h-8 text-slate-400" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-slate-900 mb-2">Lesson Locked</h2>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">
+            {isModuleLocked ? 'Module Locked' : 'Lesson Locked'}
+          </h2>
           <p className="text-slate-600 mb-4">
-            {previousLessonTitle
-              ? `Complete "${previousLessonTitle}" to unlock this lesson.`
-              : 'Complete the previous lesson to unlock this lesson.'}
+            {isModuleLocked ? (
+              previousModuleTitle
+                ? `Complete all lessons in "${previousModuleTitle}" to unlock this module.`
+                : 'Complete all lessons in the previous module to unlock this module.'
+            ) : (
+              previousLessonTitle
+                ? `Complete "${previousLessonTitle}" to unlock this lesson.`
+                : 'Complete the previous lesson to unlock this lesson.'
+            )}
           </p>
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
             <p className="text-sm text-blue-800">
-              <strong>💡 Progressive Learning:</strong> Lessons are unlocked sequentially to ensure you build a strong foundation before advancing to more complex topics.
+              <strong>💡 Progressive Learning:</strong> {isModuleLocked ? 'Modules' : 'Lessons'} are unlocked sequentially to ensure you build a strong foundation before advancing to more complex topics.
             </p>
           </div>
         </Card>

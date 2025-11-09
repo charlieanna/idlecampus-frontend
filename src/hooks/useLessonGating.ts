@@ -8,7 +8,9 @@ export interface LessonInfo {
 
 export interface ModuleWithLessons {
   id: string;
+  title?: string;
   lessons: LessonInfo[];
+  sequenceOrder?: number;
 }
 
 /**
@@ -71,6 +73,61 @@ export function useLessonGating(
   }, [modules]);
 
   /**
+   * Check if all lessons in a module are completed
+   */
+  const isModuleCompleted = useMemo(() => {
+    return (moduleId: string): boolean => {
+      const module = modules.find(m => m.id === moduleId);
+      if (!module || module.lessons.length === 0) return false;
+
+      return module.lessons.every(lesson => completedLessons.has(lesson.id));
+    };
+  }, [modules, completedLessons]);
+
+  /**
+   * Check if a module can be accessed based on previous module completion
+   */
+  const canAccessModule = useMemo(() => {
+    return (moduleId: string): boolean => {
+      // Sort modules by sequence order
+      const sortedModules = [...modules].sort((a, b) =>
+        (a.sequenceOrder ?? 0) - (b.sequenceOrder ?? 0)
+      );
+
+      // Find current module index
+      const currentIndex = sortedModules.findIndex(m => m.id === moduleId);
+
+      // First module is always accessible
+      if (currentIndex <= 0) {
+        return true;
+      }
+
+      // Check if all lessons in previous module are completed
+      const previousModule = sortedModules[currentIndex - 1];
+      return isModuleCompleted(previousModule.id);
+    };
+  }, [modules, isModuleCompleted]);
+
+  /**
+   * Get the title of the previous module (for lock message)
+   */
+  const getPreviousModuleTitle = useMemo(() => {
+    return (moduleId: string): string | undefined => {
+      const sortedModules = [...modules].sort((a, b) =>
+        (a.sequenceOrder ?? 0) - (b.sequenceOrder ?? 0)
+      );
+
+      const currentIndex = sortedModules.findIndex(m => m.id === moduleId);
+
+      if (currentIndex > 0) {
+        return sortedModules[currentIndex - 1].title;
+      }
+
+      return undefined;
+    };
+  }, [modules]);
+
+  /**
    * Get accessibility info for a specific lesson
    */
   const getLessonAccessInfo = useMemo(() => {
@@ -81,9 +138,23 @@ export function useLessonGating(
       );
 
       if (!currentModule) {
-        return { isAccessible: true, previousLessonTitle: undefined };
+        return { isAccessible: true, previousLessonTitle: undefined, moduleAccessible: true };
       }
 
+      // First check if the module itself is accessible
+      const moduleAccessible = canAccessModule(currentModule.id);
+
+      if (!moduleAccessible) {
+        const previousModuleTitle = getPreviousModuleTitle(currentModule.id);
+        return {
+          isAccessible: false,
+          previousLessonTitle: undefined,
+          moduleAccessible: false,
+          previousModuleTitle
+        };
+      }
+
+      // If module is accessible, check lesson accessibility
       const allLessonsInOrder = currentModule.lessons.map((l, idx) => ({
         id: l.id,
         sequenceOrder: l.sequenceOrder ?? idx
@@ -92,13 +163,34 @@ export function useLessonGating(
       const isAccessible = canAccessLesson(lessonId, allLessonsInOrder);
       const previousLessonTitle = isAccessible ? undefined : getPreviousLessonTitle(lessonId);
 
-      return { isAccessible, previousLessonTitle };
+      return {
+        isAccessible,
+        previousLessonTitle,
+        moduleAccessible: true
+      };
     };
-  }, [modules, canAccessLesson, getPreviousLessonTitle]);
+  }, [modules, canAccessLesson, getPreviousLessonTitle, canAccessModule, getPreviousModuleTitle]);
+
+  /**
+   * Get accessibility info for a specific module
+   */
+  const getModuleAccessInfo = useMemo(() => {
+    return (moduleId: string) => {
+      const isAccessible = canAccessModule(moduleId);
+      const previousModuleTitle = isAccessible ? undefined : getPreviousModuleTitle(moduleId);
+      const isCompleted = isModuleCompleted(moduleId);
+
+      return { isAccessible, previousModuleTitle, isCompleted };
+    };
+  }, [canAccessModule, getPreviousModuleTitle, isModuleCompleted]);
 
   return {
     canAccessLesson,
     getPreviousLessonTitle,
-    getLessonAccessInfo
+    getLessonAccessInfo,
+    canAccessModule,
+    isModuleCompleted,
+    getPreviousModuleTitle,
+    getModuleAccessInfo
   };
 }

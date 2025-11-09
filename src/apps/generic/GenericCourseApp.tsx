@@ -243,7 +243,7 @@ export default function GenericCourseApp({
   const expectedCommand = getCurrentExpectedCommand();
 
   // Use common gating hook
-  const { canAccessLesson, getLessonAccessInfo } = useLessonGating(completedLessons, modules);
+  const { canAccessLesson, canAccessModule, getLessonAccessInfo } = useLessonGating(completedLessons, modules);
 
   const handleTerminalCommand = (command: string): string | null => {
     if (currentLesson) {
@@ -277,9 +277,14 @@ export default function GenericCourseApp({
   };
 
   // Get accessibility info for current lesson
-  const { isAccessible: isCurrentLessonAccessible, previousLessonTitle } = currentLesson
+  const {
+    isAccessible: isCurrentLessonAccessible,
+    previousLessonTitle,
+    moduleAccessible,
+    previousModuleTitle
+  } = currentLesson
     ? getLessonAccessInfo(currentLesson.id)
-    : { isAccessible: true, previousLessonTitle: undefined };
+    : { isAccessible: true, previousLessonTitle: undefined, moduleAccessible: true, previousModuleTitle: undefined };
 
   // Render the app with unified layout
   return (
@@ -294,6 +299,7 @@ export default function GenericCourseApp({
         courseTitle={courseTitle}
         courseSubtitle={courseSubtitle}
         canAccessLesson={canAccessLesson}
+        canAccessModule={canAccessModule}
       />
 
       <ResizablePanelGroup direction="horizontal" className="flex-1">
@@ -307,6 +313,8 @@ export default function GenericCourseApp({
                 onGoToLab={currentModule?.labs && currentModule.labs.length > 0 ? handleGoToLab : undefined}
                 isAccessible={isCurrentLessonAccessible}
                 previousLessonTitle={previousLessonTitle}
+                moduleAccessible={moduleAccessible}
+                previousModuleTitle={previousModuleTitle}
               />
             )}
 
