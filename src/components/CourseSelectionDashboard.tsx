@@ -3,7 +3,8 @@ import { Box, Code, Network, Server, Terminal, Shield, Cloud, Radio, Database, G
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
-import { apiService } from '../services/api';
+import { courseApi } from '../services/courseApi';
+import { authService } from '../services/auth';
 
 interface Course {
   id: string;
@@ -235,7 +236,8 @@ export default function CourseSelectionDashboard() {
   } as Record<string, string>), []);
 
   useEffect(() => {
-    apiService.fetchAllCourses()
+    // Fetch courses from new API
+    courseApi.listCourses()
       .then((published) => {
         const publishedIds = new Set(
           published
@@ -250,7 +252,8 @@ export default function CourseSelectionDashboard() {
           }))
         );
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error('Failed to fetch courses:', error);
         // Non-fatal: keep defaults on failure
       });
   }, [slugToId]);
