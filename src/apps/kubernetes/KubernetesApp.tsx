@@ -6,6 +6,7 @@ import { CourseNavigation, Module } from '../../components/course/CourseNavigati
 import { LessonViewer } from '../../components/course/LessonViewer';
 import { LabExercise } from '../../components/course/LabExercise';
 import { QuizViewer } from '../../components/course/QuizViewer';
+import { useLessonGating } from '../../hooks/useLessonGating';
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -575,6 +576,14 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
 
   const expectedCommand = getCurrentExpectedCommand();
 
+  // Use common gating hook
+  const { canAccessLesson, getLessonAccessInfo } = useLessonGating(completedLessons, modules);
+
+  // Get accessibility info for current lesson
+  const { isAccessible: isCurrentLessonAccessible, previousLessonTitle } = currentLesson
+    ? getLessonAccessInfo(currentLesson.id)
+    : { isAccessible: true, previousLessonTitle: undefined };
+
   const handleTerminalCommand = (command: string): string | null => {
     if (currentLesson) {
       const items = currentLesson.items || [
@@ -617,6 +626,7 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
         completedCommands={completedCommands}
         courseTitle="Kubernetes Complete Guide"
         courseSubtitle="Master Kubernetes from Basics to Advanced Topics"
+        canAccessLesson={canAccessLesson}
       />
 
       <ResizablePanelGroup direction="horizontal" className="flex-1">
@@ -628,6 +638,8 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
                 isCompleted={completedLessons.has(selectedLesson)}
                 completedCommands={completedCommands}
                 onGoToLab={currentModule?.labs && currentModule.labs.length > 0 ? handleGoToLab : undefined}
+                isAccessible={isCurrentLessonAccessible}
+                previousLessonTitle={previousLessonTitle}
               />
             )}
 

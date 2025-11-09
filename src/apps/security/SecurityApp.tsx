@@ -6,6 +6,7 @@ import { CourseNavigation, Module } from '../../components/course/CourseNavigati
 import { LessonViewer } from '../../components/course/LessonViewer';
 import { LabExercise } from '../../components/course/LabExercise';
 import { QuizViewer } from '../../components/course/QuizViewer';
+import { useLessonGating } from '../../hooks/useLessonGating';
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -128,6 +129,14 @@ export default function SecurityApp({ courseModules = [] }: SecurityAppProps) {
     }
   }
 
+  // Use common gating hook
+  const { canAccessLesson, getLessonAccessInfo } = useLessonGating(completedLessons, courseModules);
+
+  // Get accessibility info for current lesson
+  const { isAccessible: isCurrentLessonAccessible, previousLessonTitle } = selectedContent
+    ? getLessonAccessInfo(selectedItemId)
+    : { isAccessible: true, previousLessonTitle: undefined };
+
   return (
     <div className="h-screen flex flex-col bg-slate-50">
       {/* Header */}
@@ -149,9 +158,13 @@ export default function SecurityApp({ courseModules = [] }: SecurityAppProps) {
             <CourseNavigation
               modules={courseModules}
               selectedModule={selectedModule}
-              selectedItemId={selectedItemId}
-              onModuleChange={handleModuleChange}
-              onItemSelect={handleItemSelect}
+              selectedLesson={selectedItemId}
+              onSelectLesson={handleItemSelect}
+              completedLessons={completedLessons}
+              completedCommands={new Set()}
+              courseTitle="Security Fundamentals"
+              courseSubtitle="Master TLS, SSH, secrets management & security best practices"
+              canAccessLesson={canAccessLesson}
             />
           </ResizablePanel>
 
@@ -173,6 +186,10 @@ export default function SecurityApp({ courseModules = [] }: SecurityAppProps) {
                 <LessonViewer
                   lesson={selectedContent}
                   onCommandCopy={handleCommandCopy}
+                  isCompleted={completedLessons.has(selectedItemId)}
+                  completedCommands={new Set()}
+                  isAccessible={isCurrentLessonAccessible}
+                  previousLessonTitle={previousLessonTitle}
                 />
               )}
 

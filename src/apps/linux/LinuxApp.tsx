@@ -6,6 +6,7 @@ import { CourseNavigation, Module } from '../../components/course/CourseNavigati
 import { LessonViewer } from '../../components/course/LessonViewer';
 import { LabExercise } from '../../components/course/LabExercise';
 import { QuizViewer } from '../../components/course/QuizViewer';
+import { useLessonGating } from '../../hooks/useLessonGating';
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -180,6 +181,14 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
     }
   }
 
+  // Use common gating hook
+  const { canAccessLesson, getLessonAccessInfo } = useLessonGating(completedLessons, courseModules);
+
+  // Get accessibility info for current lesson
+  const { isAccessible: isCurrentLessonAccessible, previousLessonTitle } = selectedContent
+    ? getLessonAccessInfo(selectedItemId)
+    : { isAccessible: true, previousLessonTitle: undefined };
+
   return (
     <div className="h-screen flex flex-col bg-slate-50">
       {/* Header */}
@@ -207,6 +216,7 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
               completedCommands={completedCommands}
               courseTitle="Linux Fundamentals"
               courseSubtitle="Master essential Linux skills"
+              canAccessLesson={canAccessLesson}
             />
           </ResizablePanel>
 
@@ -233,6 +243,8 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
                     completedCommands={completedCommands}
                     onCommandCopy={handleCommandCopy}
                     onCommandComplete={handleCommandComplete}
+                    isAccessible={isCurrentLessonAccessible}
+                    previousLessonTitle={previousLessonTitle}
                   />
                 </>
               )}
