@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Box, Layers, Network, FileKey, GripVertical, BookOpen, Check } from 'lucide-react';
+import { Box, Layers, Network, FileKey, GripVertical, BookOpen, Check, Lock } from 'lucide-react';
 import * as ResizablePrimitive from 'react-resizable-panels';
 import { Terminal } from '../../components/course/Terminal';
 import { CourseNavigation, Module } from '../../components/course/CourseNavigation';
@@ -629,6 +629,58 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
 
   const expectedCommand = getCurrentExpectedCommand();
 
+  // Lesson gating: Check if a lesson can be accessed
+  const canAccessLesson = (lessonId: string, allLessonsInOrder: Array<{ id: string; sequenceOrder: number }>): boolean => {
+    // Sort lessons by sequence order
+    const sortedLessons = [...allLessonsInOrder].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
+
+    // Find current lesson index
+    const currentIndex = sortedLessons.findIndex(l => l.id === lessonId);
+
+    // First lesson is always accessible
+    if (currentIndex <= 0) {
+      return true;
+    }
+
+    // Check if previous lesson is completed
+    const previousLesson = sortedLessons[currentIndex - 1];
+    return completedLessons.has(previousLesson.id);
+  };
+
+  // Get previous lesson title for lock message
+  const getPreviousLessonTitle = (lessonId: string): string | undefined => {
+    if (!currentModule) return undefined;
+
+    const allLessons = currentModule.lessons.map((l, idx) => ({
+      id: l.id,
+      title: l.title,
+      sequenceOrder: l.sequenceOrder ?? idx
+    }));
+
+    const sortedLessons = [...allLessons].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
+    const currentIndex = sortedLessons.findIndex(l => l.id === lessonId);
+
+    if (currentIndex > 0) {
+      return sortedLessons[currentIndex - 1].title;
+    }
+
+    return undefined;
+  };
+
+  // Check if current lesson is accessible
+  const isCurrentLessonAccessible = currentLesson && currentModule
+    ? canAccessLesson(
+        currentLesson.id,
+        currentModule.lessons.map((l, idx) => ({
+          id: l.id,
+          sequenceOrder: l.sequenceOrder ?? idx
+        }))
+      )
+    : true;
+
+  // Get previous lesson title for lock message
+  const previousLessonTitle = currentLesson ? getPreviousLessonTitle(currentLesson.id) : undefined;
+
   const handleTerminalCommand = (command: string): string | null => {
     if (currentLesson) {
       // Use progressive items if available (Module 1), otherwise use regular lesson items
@@ -692,21 +744,32 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
                       const isCompleted = completedLessons.has(lesson.id);
                       const isSelected = selectedModule === module.id && selectedLesson === lesson.id;
 
+                      // Check if lesson is accessible
+                      const allLessonsInModule = module.lessons.map((l, idx) => ({
+                        id: l.id,
+                        sequenceOrder: l.sequenceOrder ?? idx
+                      }));
+                      const isAccessible = canAccessLesson(lesson.id, allLessonsInModule);
+
                       return (
                         <button
                           key={lesson.id}
-                          onClick={() => onSelectLesson(module.id, lesson.id)}
+                          onClick={() => isAccessible && onSelectLesson(module.id, lesson.id)}
+                          disabled={!isAccessible}
                           className={cn(
                             'w-full text-left px-3 py-2 rounded text-sm transition-colors',
                             isSelected
                               ? 'bg-blue-100 text-blue-900'
-                              : 'text-slate-700 hover:bg-slate-100'
+                              : isAccessible
+                              ? 'text-slate-700 hover:bg-slate-100'
+                              : 'text-slate-400 cursor-not-allowed'
                           )}
                         >
                           <div className="flex items-center gap-2">
-                            <span className="text-slate-500">{index + 1}.</span>
+                            <span className={!isAccessible ? 'text-slate-400' : 'text-slate-500'}>{index + 1}.</span>
                             <span className="flex-1">{lesson.title}</span>
-                            {isCompleted && <Check className="w-3 h-3 text-green-600" />}
+                            {!isAccessible && <Lock className="w-3 h-3 text-slate-400" />}
+                            {isCompleted && isAccessible && <Check className="w-3 h-3 text-green-600" />}
                           </div>
                         </button>
                       );
@@ -758,6 +821,8 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
                   progressiveMode={isModule1}
                   moduleSlug="container-lifecycle"
                   onProgressiveItemsLoaded={setProgressiveItems}
+                  isAccessible={isCurrentLessonAccessible}
+                  previousLessonTitle={previousLessonTitle}
                 />
               )}
 
