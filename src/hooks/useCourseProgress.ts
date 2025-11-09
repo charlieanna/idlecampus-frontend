@@ -107,6 +107,30 @@ export function useCourseProgress(courseSlug: string | undefined) {
     return completedLessons.has(lessonSlug);
   }, [completedLessons]);
 
+  /**
+   * Check if a lesson can be accessed based on whether the previous lesson is completed
+   * First lesson is always accessible, subsequent lessons require the previous one to be completed
+   */
+  const canAccessLesson = useCallback((
+    lessonId: string,
+    allLessonsInOrder: Array<{ id: string; sequenceOrder: number }>
+  ): boolean => {
+    // Sort lessons by sequence order to ensure correct ordering
+    const sortedLessons = [...allLessonsInOrder].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
+
+    // Find the index of the current lesson
+    const currentIndex = sortedLessons.findIndex(l => l.id === lessonId);
+
+    // If lesson not found or is the first lesson, allow access
+    if (currentIndex <= 0) {
+      return true;
+    }
+
+    // Check if the previous lesson is completed
+    const previousLesson = sortedLessons[currentIndex - 1];
+    return completedLessons.has(previousLesson.id);
+  }, [completedLessons]);
+
   useEffect(() => {
     fetchProgress();
   }, [fetchProgress]);
@@ -118,6 +142,7 @@ export function useCourseProgress(courseSlug: string | undefined) {
     completedLessons,
     completeLesson,
     isLessonCompleted,
+    canAccessLesson,
     refetch: fetchProgress,
   };
 }

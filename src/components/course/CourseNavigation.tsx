@@ -23,6 +23,7 @@ export interface Lesson {
   items: LessonItem[];
   content?: string;
   commands?: Command[];
+  sequenceOrder?: number;
 }
 
 export interface Task {
@@ -98,6 +99,7 @@ export interface CourseNavigationProps {
   completedCommands: Set<string>;
   courseTitle?: string;
   courseSubtitle?: string;
+  canAccessLesson?: (lessonId: string, allLessonsInOrder: Array<{ id: string; sequenceOrder: number }>) => boolean;
 }
 
 export function CourseNavigation({
@@ -109,6 +111,7 @@ export function CourseNavigation({
   completedCommands,
   courseTitle = 'CKAD Course',
   courseSubtitle = 'Kubernetes Application Developer',
+  canAccessLesson,
 }: CourseNavigationProps) {
   return (
     <div className="w-80 border-r bg-slate-50 flex flex-col">
@@ -140,6 +143,13 @@ export function CourseNavigation({
                     const isCompleted = completedLessons.has(lesson.id);
                     const isSelected = selectedModule === module.id && selectedLesson === lesson.id;
 
+                    // Check if lesson is accessible
+                    const allLessonsInModule = module.lessons.map((l, idx) => ({
+                      id: l.id,
+                      sequenceOrder: l.sequenceOrder ?? idx
+                    }));
+                    const isAccessible = canAccessLesson ? canAccessLesson(lesson.id, allLessonsInModule) : true;
+
                     const items: LessonItem[] = lesson.items || [
                       { type: 'content', markdown: lesson.content || '' },
                       ...(lesson.commands || []).map(cmd => ({ type: 'command' as const, command: cmd }))
@@ -169,17 +179,21 @@ export function CourseNavigation({
                         <Button
                           variant={isSelected ? 'secondary' : 'ghost'}
                           className="w-full justify-start text-sm h-auto py-2"
-                          onClick={() => onSelectLesson(module.id, lesson.id)}
+                          onClick={() => isAccessible && onSelectLesson(module.id, lesson.id)}
+                          disabled={!isAccessible}
                         >
                           <span className="flex items-center gap-2 w-full">
-                            <span className="text-slate-500">
+                            <span className={`${!isAccessible ? 'text-slate-400' : 'text-slate-500'}`}>
                               {index + 1}.
                             </span>
-                            <span className="flex-1 text-left">{lesson.title}</span>
-                            {isCompleted && (
+                            <span className={`flex-1 text-left ${!isAccessible ? 'text-slate-400' : ''}`}>{lesson.title}</span>
+                            {!isAccessible && (
+                              <Lock className="w-3 h-3 text-slate-400" />
+                            )}
+                            {isCompleted && isAccessible && (
                               <CheckCircle className="w-3 h-3 text-green-600" />
                             )}
-                            {hasCommands && isSelected && (
+                            {hasCommands && isSelected && isAccessible && (
                               <Badge variant="outline" className="text-xs">
                                 {lessonCompletedCount}/{lessonTotalCommands}
                               </Badge>
@@ -187,7 +201,7 @@ export function CourseNavigation({
                           </span>
                         </Button>
 
-                        {isSelected && hasCommands && (
+                        {isSelected && hasCommands && isAccessible && (
                           <div className="ml-6 mt-2 space-y-1.5 pb-2">
                             {commands.map((cmd: Command, cmdIndex: number) => {
                               const commandKey = `${lesson.id}-${cmdIndex}`;
