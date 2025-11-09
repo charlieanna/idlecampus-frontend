@@ -45,6 +45,8 @@ export interface LessonViewerProps {
   onProgressiveItemsLoaded?: (items: LessonItem[]) => void;
   onCommandCopy?: (command: string) => void;
   onCommandComplete?: (commandId: string) => void;
+  isAccessible?: boolean;
+  previousLessonTitle?: string;
 }
 
 export function LessonViewer({
@@ -56,7 +58,9 @@ export function LessonViewer({
   moduleSlug,
   onProgressiveItemsLoaded,
   onCommandCopy,
-  onCommandComplete
+  onCommandComplete,
+  isAccessible = true,
+  previousLessonTitle
 }: LessonViewerProps) {
   const [progressiveItems, setProgressiveItems] = useState<LessonItem[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -316,6 +320,32 @@ export function LessonViewer({
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
           <p className="text-slate-600">Loading progressive lesson...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Show locked screen if lesson is not accessible
+  if (!isAccessible) {
+    return (
+      <div className="h-full flex items-center justify-center bg-white">
+        <Card className="max-w-md p-8 text-center">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center">
+              <Lock className="w-8 h-8 text-slate-400" />
+            </div>
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Lesson Locked</h2>
+          <p className="text-slate-600 mb-4">
+            {previousLessonTitle
+              ? `Complete "${previousLessonTitle}" to unlock this lesson.`
+              : 'Complete the previous lesson to unlock this lesson.'}
+          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-left">
+            <p className="text-sm text-blue-800">
+              <strong>💡 Progressive Learning:</strong> Lessons are unlocked sequentially to ensure you build a strong foundation before advancing to more complex topics.
+            </p>
+          </div>
+        </Card>
       </div>
     );
   }
