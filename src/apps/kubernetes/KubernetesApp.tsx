@@ -575,6 +575,58 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
 
   const expectedCommand = getCurrentExpectedCommand();
 
+  // Lesson gating: Check if a lesson can be accessed
+  const canAccessLesson = (lessonId: string, allLessonsInOrder: Array<{ id: string; sequenceOrder: number }>): boolean => {
+    // Sort lessons by sequence order
+    const sortedLessons = [...allLessonsInOrder].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
+
+    // Find current lesson index
+    const currentIndex = sortedLessons.findIndex(l => l.id === lessonId);
+
+    // First lesson is always accessible
+    if (currentIndex <= 0) {
+      return true;
+    }
+
+    // Check if previous lesson is completed
+    const previousLesson = sortedLessons[currentIndex - 1];
+    return completedLessons.has(previousLesson.id);
+  };
+
+  // Get previous lesson title for lock message
+  const getPreviousLessonTitle = (lessonId: string): string | undefined => {
+    if (!currentModule) return undefined;
+
+    const allLessons = currentModule.lessons.map((l, idx) => ({
+      id: l.id,
+      title: l.title,
+      sequenceOrder: l.sequenceOrder ?? idx
+    }));
+
+    const sortedLessons = [...allLessons].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
+    const currentIndex = sortedLessons.findIndex(l => l.id === lessonId);
+
+    if (currentIndex > 0) {
+      return sortedLessons[currentIndex - 1].title;
+    }
+
+    return undefined;
+  };
+
+  // Check if current lesson is accessible
+  const isCurrentLessonAccessible = currentLesson && currentModule
+    ? canAccessLesson(
+        currentLesson.id,
+        currentModule.lessons.map((l, idx) => ({
+          id: l.id,
+          sequenceOrder: l.sequenceOrder ?? idx
+        }))
+      )
+    : true;
+
+  // Get previous lesson title for lock message
+  const previousLessonTitle = currentLesson ? getPreviousLessonTitle(currentLesson.id) : undefined;
+
   const handleTerminalCommand = (command: string): string | null => {
     if (currentLesson) {
       const items = currentLesson.items || [
@@ -617,6 +669,7 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
         completedCommands={completedCommands}
         courseTitle="Kubernetes Complete Guide"
         courseSubtitle="Master Kubernetes from Basics to Advanced Topics"
+        canAccessLesson={canAccessLesson}
       />
 
       <ResizablePanelGroup direction="horizontal" className="flex-1">
@@ -628,6 +681,8 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
                 isCompleted={completedLessons.has(selectedLesson)}
                 completedCommands={completedCommands}
                 onGoToLab={currentModule?.labs && currentModule.labs.length > 0 ? handleGoToLab : undefined}
+                isAccessible={isCurrentLessonAccessible}
+                previousLessonTitle={previousLessonTitle}
               />
             )}
 

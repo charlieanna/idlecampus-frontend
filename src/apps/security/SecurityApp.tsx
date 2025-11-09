@@ -128,6 +128,64 @@ export default function SecurityApp({ courseModules = [] }: SecurityAppProps) {
     }
   }
 
+  // Lesson gating: Check if a lesson can be accessed
+  const canAccessLesson = (lessonId: string, allLessonsInOrder: Array<{ id: string; sequenceOrder: number }>): boolean => {
+    // Sort lessons by sequence order
+    const sortedLessons = [...allLessonsInOrder].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
+
+    // Find current lesson index
+    const currentIndex = sortedLessons.findIndex(l => l.id === lessonId);
+
+    // First lesson is always accessible
+    if (currentIndex <= 0) {
+      return true;
+    }
+
+    // Check if previous lesson is completed
+    const previousLesson = sortedLessons[currentIndex - 1];
+    return completedLessons.has(previousLesson.id);
+  };
+
+  // Get previous lesson title for lock message
+  const getPreviousLessonTitle = (lessonId: string): string | undefined => {
+    const currentModule = courseModules.find(m =>
+      m.lessons.some(l => l.id === lessonId)
+    );
+    if (!currentModule) return undefined;
+
+    const allLessons = currentModule.lessons.map((l, idx) => ({
+      id: l.id,
+      title: l.title,
+      sequenceOrder: l.sequenceOrder ?? idx
+    }));
+
+    const sortedLessons = [...allLessons].sort((a, b) => a.sequenceOrder - b.sequenceOrder);
+    const currentIndex = sortedLessons.findIndex(l => l.id === lessonId);
+
+    if (currentIndex > 0) {
+      return sortedLessons[currentIndex - 1].title;
+    }
+
+    return undefined;
+  };
+
+  // Check if current lesson is accessible
+  const currentModule = courseModules.find(m =>
+    m.lessons.some(l => l.id === selectedItemId)
+  );
+  const isCurrentLessonAccessible = currentModule && selectedContent
+    ? canAccessLesson(
+        selectedItemId,
+        currentModule.lessons.map((l, idx) => ({
+          id: l.id,
+          sequenceOrder: l.sequenceOrder ?? idx
+        }))
+      )
+    : true;
+
+  // Get previous lesson title for lock message
+  const previousLessonTitle = selectedContent ? getPreviousLessonTitle(selectedItemId) : undefined;
+
   return (
     <div className="h-screen flex flex-col bg-slate-50">
       {/* Header */}
@@ -149,9 +207,13 @@ export default function SecurityApp({ courseModules = [] }: SecurityAppProps) {
             <CourseNavigation
               modules={courseModules}
               selectedModule={selectedModule}
-              selectedItemId={selectedItemId}
-              onModuleChange={handleModuleChange}
-              onItemSelect={handleItemSelect}
+              selectedLesson={selectedItemId}
+              onSelectLesson={handleItemSelect}
+              completedLessons={completedLessons}
+              completedCommands={new Set()}
+              courseTitle="Security Fundamentals"
+              courseSubtitle="Master TLS, SSH, secrets management & security best practices"
+              canAccessLesson={canAccessLesson}
             />
           </ResizablePanel>
 
@@ -173,6 +235,10 @@ export default function SecurityApp({ courseModules = [] }: SecurityAppProps) {
                 <LessonViewer
                   lesson={selectedContent}
                   onCommandCopy={handleCommandCopy}
+                  isCompleted={completedLessons.has(selectedItemId)}
+                  completedCommands={new Set()}
+                  isAccessible={isCurrentLessonAccessible}
+                  previousLessonTitle={previousLessonTitle}
                 />
               )}
 
