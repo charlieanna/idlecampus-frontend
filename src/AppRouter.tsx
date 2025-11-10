@@ -13,8 +13,11 @@ import IITJEECourseSelection from './apps/iit-jee/IITJEECourseSelection';
 import UpscApp from './apps/upsc/UpscApp';
 import CourseSelectionDashboard from './components/CourseSelectionDashboard';
 import { ProgressiveModuleViewer } from './components/course/ProgressiveModuleViewer';
+import { ReviewSessionPrompt } from './components/course/ReviewSessionPrompt';
 import { apiService } from './services/api';
 import { transformCourseData, type Module } from './utils/dataTransformer';
+import { useProgressTracking } from './hooks/useProgressTracking';
+import { authService } from './services/auth';
 
 // ============================================
 // TYPES
@@ -102,6 +105,12 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [courseData, setCourseData] = useState<CourseData | null>(null);
+  const [courseSlug, setCourseSlug] = useState<string | undefined>(undefined);
+
+  // Progress tracking hooks - only active when user is authenticated
+  const progressTracking = useProgressTracking(
+    authService.isAuthenticated() ? courseSlug : undefined
+  );
 
   const loadCourseData = async () => {
     setLoading(true);
@@ -158,6 +167,9 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
         moduleCount: transformed.length,
         labCount: labs.length
       });
+
+      // Set course slug for progress tracking
+      setCourseSlug(targetCourse.slug);
     } catch (err) {
       console.error('❌ Error loading course data:', err);
       setError(err instanceof Error ? err.message : 'Unknown error occurred');
@@ -208,10 +220,35 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
 
   const courseInfo = courseTitles[courseType] || { title: courseData.title, subtitle: '' };
 
+  // Handle review session actions
+  const handleStartReview = async () => {
+    await progressTracking.createReviewSession();
+    // Review session will be managed by GenericCourseApp
+  };
+
+  const handleSkipReview = () => {
+    progressTracking.dismissReview();
+  };
+
   // Render the appropriate app
   return (
     <>
       <SuccessBanner />
+
+      {/* Show review prompt if needed */}
+      {authService.isAuthenticated() &&
+       progressTracking.needsReview &&
+       progressTracking.resumePoint &&
+       !progressTracking.reviewActive && (
+        <ReviewSessionPrompt
+          resumePoint={progressTracking.resumePoint.resume_point}
+          daysSinceLastAccess={progressTracking.resumePoint.days_since_last_access}
+          courseName={courseData.title}
+          onStartReview={handleStartReview}
+          onSkipReview={handleSkipReview}
+        />
+      )}
+
       {courseType === 'linux' ? (
         <LinuxApp courseModules={courseData.modules} />
       ) : courseType === 'security' ? (
@@ -225,6 +262,8 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
           courseModules={courseData.modules}
           courseTitle={courseInfo.title}
           courseSubtitle={courseInfo.subtitle}
+          resumePoint={progressTracking.resumePoint?.resume_point}
+          reviewSession={progressTracking.reviewSession}
         />
       )}
     </>

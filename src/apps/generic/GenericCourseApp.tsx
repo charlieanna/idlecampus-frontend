@@ -10,6 +10,7 @@ import { ExercisePanel } from '../../components/course/ExercisePanel';
 import { apiService } from '../../services/api';
 import { useLessonGating } from '../../hooks/useLessonGating';
 import type { Exercise } from '../../utils/dataTransformer';
+import type { ResumePoint, ReviewSessionResponse } from '../../services/courseApi';
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -62,12 +63,16 @@ interface GenericCourseAppProps {
   courseModules: Module[];
   courseTitle: string;
   courseSubtitle?: string;
+  resumePoint?: ResumePoint;
+  reviewSession?: ReviewSessionResponse | null;
 }
 
 export default function GenericCourseApp({
   courseModules,
   courseTitle,
-  courseSubtitle
+  courseSubtitle,
+  resumePoint,
+  reviewSession
 }: GenericCourseAppProps) {
   // Keep a local mutable copy of modules so we can inject quiz questions when
   // they are loaded on demand. Initialize from props and keep in sync if
@@ -89,6 +94,44 @@ export default function GenericCourseApp({
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [completedCommands, setCompletedCommands] = useState<Set<string>>(new Set());
+
+  // Handle resume point navigation
+  useEffect(() => {
+    if (!resumePoint || resumePoint.type === 'start' || !resumePoint.item) {
+      return; // No resume point or start from beginning
+    }
+
+    // If review session is active, don't auto-navigate
+    if (reviewSession && resumePoint.type === 'review_session') {
+      return;
+    }
+
+    // Navigate to resume point if it's a 'resume' type
+    if (resumePoint.type === 'resume' && resumePoint.item) {
+      const { type, slug } = resumePoint.item;
+
+      if (type === 'Lesson') {
+        // Find the lesson and its module
+        for (const module of modules) {
+          const lesson = module.lessons.find(l => l.slug === slug);
+          if (lesson) {
+            console.log('📍 Resuming at lesson:', lesson.title);
+            setSelectedModule(module.id);
+            setSelectedLesson(lesson.id);
+            break;
+          }
+        }
+      } else if (type === 'Module') {
+        // Navigate to the first lesson of the module
+        const module = modules.find(m => m.slug === slug);
+        if (module && module.lessons.length > 0) {
+          console.log('📍 Resuming at module:', module.title);
+          setSelectedModule(module.id);
+          setSelectedLesson(module.lessons[0].id);
+        }
+      }
+    }
+  }, [resumePoint, reviewSession, modules]);
 
   const onSelectLesson = (moduleId: string, lessonId: string) => {
     setSelectedModule(moduleId);
