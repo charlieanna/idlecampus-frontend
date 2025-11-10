@@ -95,43 +95,15 @@ export default function GenericCourseApp({
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [completedCommands, setCompletedCommands] = useState<Set<string>>(new Set());
 
-  // Handle resume point navigation
+  // Resume point tracking (for future use - currently not auto-navigating)
+  // Users always start lessons from the beginning
   useEffect(() => {
-    if (!resumePoint || resumePoint.type === 'start' || !resumePoint.item) {
-      return; // No resume point or start from beginning
+    if (resumePoint) {
+      console.log('📍 Resume point available:', resumePoint);
+      // Future enhancement: Could show a "Continue where you left off" button
+      // For now, always start from the first lesson
     }
-
-    // If review session is active, don't auto-navigate
-    if (reviewSession && resumePoint.type === 'review_session') {
-      return;
-    }
-
-    // Navigate to resume point if it's a 'resume' type
-    if (resumePoint.type === 'resume' && resumePoint.item) {
-      const { type, slug } = resumePoint.item;
-
-      if (type === 'Lesson') {
-        // Find the lesson and its module
-        for (const module of modules) {
-          const lesson = module.lessons.find(l => l.slug === slug);
-          if (lesson) {
-            console.log('📍 Resuming at lesson:', lesson.title);
-            setSelectedModule(module.id);
-            setSelectedLesson(lesson.id);
-            break;
-          }
-        }
-      } else if (type === 'Module') {
-        // Navigate to the first lesson of the module
-        const module = modules.find(m => m.slug === slug);
-        if (module && module.lessons.length > 0) {
-          console.log('📍 Resuming at module:', module.title);
-          setSelectedModule(module.id);
-          setSelectedLesson(module.lessons[0].id);
-        }
-      }
-    }
-  }, [resumePoint, reviewSession, modules]);
+  }, [resumePoint]);
 
   const onSelectLesson = (moduleId: string, lessonId: string) => {
     setSelectedModule(moduleId);

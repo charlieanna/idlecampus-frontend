@@ -128,34 +128,20 @@ const progressTracking = useProgressTracking(
 
 ### 5. Course App Integration (`frontend/src/apps/generic/GenericCourseApp.tsx`)
 
-Added resume point navigation:
+Added resume point tracking (currently logs only, no auto-navigation):
 ```typescript
-// Auto-navigate to resume point
+// Resume point tracking (for future use - currently not auto-navigating)
+// Users always start lessons from the beginning
 useEffect(() => {
-  if (resumePoint?.type === 'resume' && resumePoint.item) {
-    const { type, slug } = resumePoint.item;
-
-    if (type === 'Lesson') {
-      // Find and navigate to the lesson
-      for (const module of modules) {
-        const lesson = module.lessons.find(l => l.slug === slug);
-        if (lesson) {
-          setSelectedModule(module.id);
-          setSelectedLesson(lesson.id);
-          break;
-        }
-      }
-    } else if (type === 'Module') {
-      // Navigate to first lesson of module
-      const module = modules.find(m => m.slug === slug);
-      if (module && module.lessons.length > 0) {
-        setSelectedModule(module.id);
-        setSelectedLesson(module.lessons[0].id);
-      }
-    }
+  if (resumePoint) {
+    console.log('📍 Resume point available:', resumePoint);
+    // Future enhancement: Could show a "Continue where you left off" button
+    // For now, always start from the first lesson
   }
-}, [resumePoint, reviewSession, modules]);
+}, [resumePoint]);
 ```
+
+**Note**: Auto-navigation to resume points is currently disabled. Users always start from the beginning of lessons. The resume point data is still tracked and available for future enhancements (e.g., showing a "Continue where you left off" button).
 
 ## User Flow
 
@@ -220,8 +206,11 @@ useEffect(() => {
   "days_since_last_access": 1
 }
 ```
-5. Course auto-navigates to "Docker Volumes" lesson
-6. No modal shown - seamless continuation
+5. Resume point is logged to console for reference
+6. **User starts from the beginning of the first lesson** (no auto-navigation)
+7. No modal shown - seamless experience
+
+**Note**: Currently, users always start from the beginning. Resume point data is tracked but not used for auto-navigation. This can be enhanced in the future with a "Continue where you left off" button.
 
 ## Key Features
 
@@ -232,8 +221,9 @@ useEffect(() => {
 
 ### ✅ Smart Resume Points
 - Remembers exact lesson/module position
-- Auto-navigates to resume point
-- Works across all course types
+- Tracks progress in backend
+- Data available for future "Continue where you left off" feature
+- Currently: Users always start from the beginning (no auto-navigation)
 
 ### ✅ Spaced Repetition
 - Three review levels based on time away
@@ -270,7 +260,8 @@ useEffect(() => {
 - [ ] Complete a few lessons
 - [ ] Return within 2 days
 - [ ] Verify no review prompt
-- [ ] Verify course resumes at last position
+- [ ] Verify course starts from the beginning (first lesson)
+- [ ] Check console for resume point logging
 
 #### Test 3: Quick Refresh (3-7 Days)
 - [ ] Backend: Set `last_accessed_at` to 5 days ago
@@ -422,19 +413,25 @@ Total: +2 API calls, both non-blocking and don't delay course render.
 
 Potential improvements for future iterations:
 
-1. **Offline Support**
+1. **Resume Point Auto-Navigation** ⭐
+   - Add "Continue where you left off" button in course header
+   - Show last position in course navigation sidebar
+   - Option to jump to resume point vs start from beginning
+   - Visual indicator showing "You were here" on last accessed lesson
+
+2. **Offline Support**
    - Queue failed track_access calls
    - Retry when back online
 
-2. **Analytics Integration**
+3. **Analytics Integration**
    - Track review completion rates
    - Measure effectiveness of review prompts
 
-3. **Customization**
+4. **Customization**
    - Allow users to set review preferences
    - Skip review prompt option (user setting)
 
-4. **Enhanced Navigation**
+5. **Enhanced Navigation**
    - Add "Resume" button to course dashboard
    - Show progress bars with resume point indicator
 
