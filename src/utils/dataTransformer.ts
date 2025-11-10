@@ -11,7 +11,28 @@ export interface Command {
 
 export type LessonItem = 
   | { type: 'content'; markdown: string }
-  | { type: 'command'; command: Command };
+  | { type: 'command'; command: Command }
+  | { type: 'exercise'; exercise: Exercise };
+
+export interface Exercise {
+  id: string;
+  exercise_type: string;
+  sequence_order: number;
+  exercise_data: {
+    question?: string;
+    prompt?: string;
+    options?: string[];
+    correct_answer?: string;
+    correct_answer_index?: number;
+    explanation?: string;
+    description?: string;
+    hints?: string[];
+    require_pass?: boolean;
+    difficulty?: string;
+    slug?: string;
+    [key: string]: any;
+  };
+}
 
 export interface Lesson {
   id: string;
@@ -148,19 +169,19 @@ function getModuleIcon(title: string, slug: string): string {
 
 // Transform API lesson to App lesson
 function transformLesson(apiLesson: APILesson): Lesson {
-  console.log('🔄 transformLesson called for:', apiLesson.title);
-  console.log('   key_commands:', apiLesson.key_commands);
+  // Use the lesson ID as-is if it's already a string (like "yaml-network-commands")
+  // Otherwise prefix with "lesson-"
+  const lessonId = typeof apiLesson.id === 'string' && apiLesson.id.startsWith('yaml-')
+    ? apiLesson.id
+    : `lesson-${apiLesson.id}`;
 
   const { items, commands } = extractCommandsFromContent(
     apiLesson.content || '',
     apiLesson.key_commands
   );
 
-  console.log('   extracted items:', items.length, 'commands:', commands.length);
-  console.log('   commands:', commands);
-
   return {
-    id: `lesson-${apiLesson.id}`,
+    id: lessonId,
     title: apiLesson.title,
     items,
     content: apiLesson.content,
@@ -251,10 +272,23 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
   const itemsArray = (apiModule as any).items || [];
 
   if (itemsArray.length > 0) {
+    // Sort items by sequence_order to maintain proper order
+    const sortedItems = [...itemsArray].sort((a: any, b: any) => {
+      const aOrder = a.sequence_order || 0;
+      const bOrder = b.sequence_order || 0;
+      return aOrder - bOrder;
+    });
+
+    console.log(`📦 Processing ${sortedItems.length} items for module: ${apiModule.title}`);
+
     // Use the items array which has all content with type field
-    itemsArray.forEach((item: any) => {
+    sortedItems.forEach((item: any, index: number) => {
       // Normalize multiple backend formats to a common shape
       const t = (item.type || '').toString();
+      
+      if (index < 5 || t === 'MicroLesson') {
+        console.log(`  [${index}] Item type: ${t}, sequence_order: ${item.sequence_order}`);
+      }
 
       if (t === 'lab') {
         // Kubernetes-style lab item already in API shape
@@ -280,6 +314,56 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
             key_commands: []
           } as any)
         );
+      } else if (t === 'MicroLesson') {
+        // YAML microlesson - content is nested under content property
+        const microlesson = item.content || {};
+        const microlessonId = microlesson.id || item.id || `yaml-${microlesson.slug || 'unknown'}`;
+        const microlessonContent = microlesson.content || microlesson.content_md || '';
+        const exercises = microlesson.exercises || [];
+        
+        console.log(`📝 Transforming MicroLesson: ${microlesson.title || 'Unknown'} (${microlessonId}), exercises: ${exercises.length}`);
+        
+        // Create lesson items that include content and exercises
+        const lessonItemsForMicrolesson: LessonItem[] = [];
+        
+        // Add content first
+        if (microlessonContent) {
+          lessonItemsForMicrolesson.push({
+            type: 'content',
+            markdown: microlessonContent
+          });
+        }
+        
+        // Add exercises after content, sorted by sequence_order
+        const sortedExercises = [...exercises].sort((a: any, b: any) => {
+          const aOrder = a.sequence_order || 0;
+          const bOrder = b.sequence_order || 0;
+          return aOrder - bOrder;
+        });
+        
+        sortedExercises.forEach((exercise: any) => {
+          console.log(`  Adding exercise: ${exercise.exercise_type}, sequence: ${exercise.sequence_order}`);
+          lessonItemsForMicrolesson.push({
+            type: 'exercise',
+            exercise: {
+              id: exercise.id,
+              exercise_type: exercise.exercise_type,
+              sequence_order: exercise.sequence_order || 0,
+              exercise_data: exercise.exercise_data || {}
+            }
+          });
+        });
+        
+        console.log(`  ✅ Created ${lessonItemsForMicrolesson.length} items (${microlessonContent ? 1 : 0} content + ${sortedExercises.length} exercises)`);
+        
+        // Create lesson with items that include exercises
+        lessonItems.push({
+          id: microlessonId,
+          title: microlesson.title || 'MicroLesson',
+          items: lessonItemsForMicrolesson,
+          content: microlessonContent,
+          commands: [] // Microlessons don't have commands in the traditional sense
+        });
       } else if (t === 'Quiz') {
         // Add quizzes to separate array for proper navigation display
         const quiz = item.content || {};
@@ -344,6 +428,14 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
     });
   }
 
+  // Sort lessons by sequence_order to maintain proper order
+  lessonItems.sort((a, b) => {
+    // Extract sequence order from lesson ID or use index
+    const aOrder = (a as any).sequence_order || 0;
+    const bOrder = (b as any).sequence_order || 0;
+    return aOrder - bOrder;
+  });
+
   const result = {
     id: `module-${apiModule.id}`,
     title: apiModule.title,
@@ -354,6 +446,9 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
   };
 
   console.log(`📦 Module transformed: ${result.title}, lessons: ${lessonItems.length}, labs: ${labItems.length}, quizzes: ${quizItems.length}`);
+  if (lessonItems.length > 0) {
+    console.log(`   First 5 lessons:`, lessonItems.slice(0, 5).map(l => l.title));
+  }
 
   return result;
 }

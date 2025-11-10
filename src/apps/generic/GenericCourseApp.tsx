@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { GripVertical } from 'lucide-react';
 import * as ResizablePrimitive from 'react-resizable-panels';
 import { Terminal } from '../../components/course/Terminal';
@@ -6,8 +6,10 @@ import { CourseNavigation, Module } from '../../components/course/CourseNavigati
 import { LessonViewer } from '../../components/course/LessonViewer';
 import { LabExercise } from '../../components/course/LabExercise';
 import { QuizViewer } from '../../components/course/QuizViewer';
+import { ExercisePanel } from '../../components/course/ExercisePanel';
 import { apiService } from '../../services/api';
 import { useLessonGating } from '../../hooks/useLessonGating';
+import type { Exercise } from '../../utils/dataTransformer';
 
 // ============================================
 // UTILITY FUNCTIONS
@@ -286,6 +288,22 @@ export default function GenericCourseApp({
     ? getLessonAccessInfo(currentLesson.id)
     : { isAccessible: true, previousLessonTitle: undefined, moduleAccessible: true, previousModuleTitle: undefined };
 
+  // Extract exercises from current lesson
+  const lessonExercises = useMemo(() => {
+    if (!currentLesson) return [];
+    
+    const items = currentLesson.items || [
+      { type: 'content' as const, markdown: currentLesson.content || '' },
+      ...(currentLesson.commands || []).map(cmd => ({ type: 'command' as const, command: cmd }))
+    ];
+    
+    const exerciseItems = items.filter(item => item.type === 'exercise');
+    return exerciseItems.map(item => (item as { type: 'exercise'; exercise: Exercise }).exercise);
+  }, [currentLesson]);
+
+  const hasExercises = lessonExercises.length > 0;
+  const hasCommands = expectedCommand !== null;
+
   // Render the app with unified layout
   return (
     <div className="h-screen flex bg-white">
@@ -350,14 +368,18 @@ export default function GenericCourseApp({
         <ResizableHandle withHandle />
 
         <ResizablePanel defaultSize={40} minSize={25}>
-          <Terminal
-            expectedCommand={isQuiz ? null : expectedCommand}
-            onCommand={
-              isQuiz
-                ? handleQuizCommand
-                : handleTerminalCommand
-            }
-          />
+          {hasExercises ? (
+            <ExercisePanel exercises={lessonExercises} />
+          ) : (
+            <Terminal
+              expectedCommand={isQuiz ? null : expectedCommand}
+              onCommand={
+                isQuiz
+                  ? handleQuizCommand
+                  : handleTerminalCommand
+              }
+            />
+          )}
         </ResizablePanel>
       </ResizablePanelGroup>
     </div>
