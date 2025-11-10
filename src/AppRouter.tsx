@@ -118,9 +118,11 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
       const courses = await apiService.fetchCourses(apiTrack);
       console.log('📚 Available courses:', JSON.stringify(courses.map(c => ({ title: c.title, slug: c.slug, track: c.certification_track })), null, 2));
 
-      // For docker-bootcamp, filter for the bootcamp course by slug
+      // For docker and docker-bootcamp, filter for the appropriate course by slug
       const targetCourse = courseType === 'docker-bootcamp'
         ? courses.find(c => c.slug === 'docker-containers-bootcamp')
+        : courseType === 'docker'
+        ? courses.find(c => c.slug === 'docker-containers-bootcamp') || courses[0]
         : courses[0];
       
       console.log('🎯 Selected course:', JSON.stringify({ title: targetCourse?.title, slug: targetCourse?.slug, track: targetCourse?.certification_track }, null, 2));
