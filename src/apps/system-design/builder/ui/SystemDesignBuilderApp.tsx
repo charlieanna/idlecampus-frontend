@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Challenge } from '../types/testCase';
@@ -9,16 +9,31 @@ import { ChallengeSelector } from './components/ChallengeSelector';
 import { DesignCanvas } from './components/DesignCanvas';
 import { TestRunner } from '../simulation/testRunner';
 
+// Initial graph with Client component
+const getInitialGraph = (): SystemGraph => ({
+  components: [
+    {
+      id: 'client_1',
+      type: 'client',
+      config: {},
+    },
+  ],
+  connections: [],
+});
+
 export default function SystemDesignBuilderApp() {
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
     challenges[0] // Start with Tiny URL
   );
-  const [systemGraph, setSystemGraph] = useState<SystemGraph>({
-    components: [],
-    connections: [],
-  });
+  const [systemGraph, setSystemGraph] = useState<SystemGraph>(getInitialGraph());
   const [testResults, setTestResults] = useState<TestResult[] | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+
+  // Reset graph when challenge changes
+  useEffect(() => {
+    setSystemGraph(getInitialGraph());
+    setTestResults(null);
+  }, [selectedChallenge?.id]);
 
   const handleRunTests = async () => {
     if (!selectedChallenge) return;

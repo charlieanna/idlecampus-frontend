@@ -2,6 +2,12 @@ import { memo } from 'react';
 import { Handle, Position, NodeProps } from 'reactflow';
 
 const COMPONENT_STYLES: Record<string, { icon: string; color: string; bgColor: string; borderColor: string }> = {
+  client: {
+    icon: '👤',
+    color: 'text-gray-700',
+    bgColor: 'bg-gray-50',
+    borderColor: 'border-gray-300'
+  },
   load_balancer: {
     icon: '🌐',
     color: 'text-blue-700',

@@ -37,6 +37,7 @@ export interface SimulationContext {
  * Component types
  */
 export type ComponentType =
+  | 'client'
   | 'load_balancer'
   | 'app_server'
   | 'postgresql'

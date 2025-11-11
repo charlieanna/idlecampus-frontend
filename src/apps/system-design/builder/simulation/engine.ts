@@ -3,6 +3,7 @@ import { ComponentMetrics, SimulationContext } from '../types/component';
 import { TestCase, TestMetrics } from '../types/testCase';
 import {
   Component,
+  Client,
   LoadBalancer,
   AppServer,
   PostgreSQL,
@@ -28,6 +29,9 @@ export class SimulationEngine {
       let component: Component;
 
       switch (node.type) {
+        case 'client':
+          component = new Client(node.id, node.type, node.config);
+          break;
         case 'load_balancer':
           component = new LoadBalancer(node.id, node.config);
           break;

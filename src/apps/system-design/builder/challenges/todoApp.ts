@@ -28,6 +28,7 @@ Example:
   },
 
   availableComponents: [
+    'client',
     'load_balancer',
     'app_server',
     'postgresql',
