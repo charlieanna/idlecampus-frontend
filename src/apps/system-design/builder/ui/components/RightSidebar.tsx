@@ -1,7 +1,7 @@
 import { Node } from 'reactflow';
 import { SystemGraph } from '../../types/graph';
 import { ComponentPalette } from './ComponentPalette';
-import { Inspector } from './Inspector';
+import { EnhancedInspector } from './EnhancedInspector';
 
 interface RightSidebarProps {
   availableComponents: string[];
@@ -49,7 +49,7 @@ export function RightSidebar({
 
         {/* Inspector */}
         <div className="flex-1 overflow-hidden">
-          <Inspector
+          <EnhancedInspector
             selectedNode={selectedNode}
             systemGraph={systemGraph}
             onUpdateConfig={onUpdateConfig}
