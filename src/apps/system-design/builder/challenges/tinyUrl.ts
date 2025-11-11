@@ -1,4 +1,5 @@
 import { Challenge } from '../types/testCase';
+import { tinyUrlCodeChallenges } from './code/tinyUrlChallenges';
 
 export const tinyUrlChallenge: Challenge = {
   id: 'tiny_url',
@@ -211,4 +212,7 @@ Ways to reduce cost:
 Remember: Meet requirements at minimum cost!`,
     },
   ],
+
+  // Code challenges for hands-on implementation practice
+  codeChallenges: tinyUrlCodeChallenges,
 };

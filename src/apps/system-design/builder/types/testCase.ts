@@ -1,5 +1,6 @@
 import { Bottleneck } from './graph';
 import { FlowVisualization } from './request';
+import { CodeChallenge } from './codeChallenge';
 
 /**
  * Failure injection for test cases
@@ -100,4 +101,5 @@ export interface Challenge {
     trigger: string;
     message: string;
   }[];
+  codeChallenges?: CodeChallenge[]; // Optional code implementation challenges
 }
