@@ -101,6 +101,24 @@ export class SimulationEngine {
     let totalCost = 0;
     let availability = 1.0;
 
+    // Validate required components
+    const appServer = this.findComponentByType('app_server');
+    const db = this.findComponentByType('postgresql') as PostgreSQL | undefined;
+
+    // If critical components are missing, system cannot function
+    if (!appServer || !db) {
+      return {
+        metrics: {
+          p50Latency: 0,
+          p99Latency: 0,
+          errorRate: 1.0, // 100% error rate - system can't handle requests
+          monthlyCost: 0,
+          availability: 0, // System is down without backend
+        },
+        componentMetrics,
+      };
+    }
+
     // Step 1: Load Balancer
     const lb = this.findComponentByType('load_balancer');
     if (lb) {
@@ -115,7 +133,6 @@ export class SimulationEngine {
     }
 
     // Step 2: App Servers
-    const appServer = this.findComponentByType('app_server');
     if (appServer) {
       const appMetrics = appServer.simulate(totalRps, context);
       componentMetrics.set(appServer.id, appMetrics);
@@ -143,7 +160,6 @@ export class SimulationEngine {
     }
 
     // Step 4: Database
-    const db = this.findComponentByType('postgresql') as PostgreSQL | undefined;
     if (db) {
       const dbMetrics = db.simulateWithReadWrite(dbReadRps, dbWriteRps, context);
       componentMetrics.set(db.id, dbMetrics);
