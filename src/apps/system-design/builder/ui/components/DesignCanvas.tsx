@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -10,6 +10,8 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   MiniMap,
+  NodeTypes,
+  MarkerType,
 } from 'reactflow';
 import { Challenge } from '../../types/testCase';
 import { SystemGraph } from '../../types/graph';
@@ -17,6 +19,7 @@ import { TestResult } from '../../types/testCase';
 import { ComponentPalette } from './ComponentPalette';
 import { Inspector } from './Inspector';
 import { ResultsPanel } from './ResultsPanel';
+import CustomNode from './CustomNode';
 
 interface DesignCanvasProps {
   challenge: Challenge | null;
@@ -24,6 +27,21 @@ interface DesignCanvasProps {
   onSystemGraphChange: (graph: SystemGraph) => void;
   testResults: TestResult[] | null;
 }
+
+// Register custom node types
+const nodeTypes: NodeTypes = {
+  custom: CustomNode,
+};
+
+// Default edge style
+const defaultEdgeOptions = {
+  animated: true,
+  style: { stroke: '#3b82f6', strokeWidth: 2 },
+  markerEnd: {
+    type: MarkerType.ArrowClosed,
+    color: '#3b82f6',
+  },
+};
 
 export function DesignCanvas({
   challenge,
@@ -38,7 +56,7 @@ export function DesignCanvas({
   // Handle new connections
   const onConnect = useCallback(
     (connection: Connection) => {
-      setEdges((eds) => addEdge(connection, eds));
+      setEdges((eds) => addEdge({ ...connection, ...defaultEdgeOptions }, eds));
 
       // Update system graph
       const newConnection = {
@@ -73,16 +91,21 @@ export function DesignCanvas({
     (componentType: string) => {
       const id = `${componentType}_${Date.now()}`;
       const position = {
-        x: 250 + Math.random() * 200,
-        y: 100 + Math.random() * 200,
+        x: 250 + nodes.length * 50,
+        y: 150 + nodes.length * 30,
       };
+
+      const componentInfo = getComponentInfo(componentType);
 
       const newNode: Node = {
         id,
-        type: 'default',
+        type: 'custom',
         position,
         data: {
-          label: getComponentLabel(componentType),
+          label: componentInfo.label,
+          displayName: componentInfo.displayName,
+          subtitle: componentInfo.subtitle,
+          componentType,
         },
       };
 
@@ -100,7 +123,7 @@ export function DesignCanvas({
         components: [...systemGraph.components, newComponent],
       });
     },
-    [systemGraph, onSystemGraphChange, setNodes]
+    [systemGraph, onSystemGraphChange, setNodes, nodes.length]
   );
 
   // Update component config
@@ -127,7 +150,7 @@ export function DesignCanvas({
       />
 
       {/* Center - Canvas */}
-      <div className="flex-1 bg-gray-100 relative">
+      <div className="flex-1 bg-gradient-to-br from-slate-50 to-slate-100 relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -136,24 +159,96 @@ export function DesignCanvas({
           onConnect={onConnect}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
+          nodeTypes={nodeTypes}
+          defaultEdgeOptions={defaultEdgeOptions}
+          connectionLineStyle={{ stroke: '#3b82f6', strokeWidth: 2 }}
           fitView
+          minZoom={0.5}
+          maxZoom={1.5}
         >
-          <Background variant={BackgroundVariant.Dots} gap={16} size={1} />
-          <Controls />
-          <MiniMap />
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={20}
+            size={1.5}
+            color="#cbd5e1"
+          />
+          <Controls showInteractive={false} />
+          <MiniMap
+            nodeColor={(node) => {
+              const type = node.data.componentType || 'app_server';
+              const colors: Record<string, string> = {
+                load_balancer: '#3b82f6',
+                app_server: '#8b5cf6',
+                postgresql: '#6366f1',
+                redis: '#ef4444',
+                cdn: '#10b981',
+                s3: '#f97316',
+              };
+              return colors[type] || '#8b5cf6';
+            }}
+            maskColor="rgba(0, 0, 0, 0.1)"
+          />
         </ReactFlow>
 
-        {/* Challenge Info Overlay */}
+        {/* Instructions Overlay */}
         {challenge && nodes.length === 0 && (
-          <div className="absolute top-4 left-4 right-4 bg-blue-50 border border-blue-200 rounded-lg p-4 max-w-2xl">
-            <h3 className="font-semibold text-blue-900 mb-2">
-              {challenge.title}
-            </h3>
-            <p className="text-sm text-blue-700 mb-3">{challenge.description}</p>
-            <div className="text-xs text-blue-600">
-              <div><strong>Traffic:</strong> {challenge.requirements.traffic}</div>
-              <div><strong>Latency:</strong> {challenge.requirements.latency}</div>
-              <div><strong>Budget:</strong> {challenge.requirements.budget}</div>
+          <div className="absolute top-6 left-6 right-6 max-w-2xl">
+            <div className="bg-white border-2 border-blue-200 rounded-xl shadow-lg p-6">
+              <div className="flex items-start gap-4">
+                <div className="text-4xl">🎯</div>
+                <div className="flex-1">
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {challenge.title}
+                  </h3>
+                  <p className="text-sm text-gray-700 mb-4">{challenge.description}</p>
+
+                  <div className="bg-blue-50 rounded-lg p-4 mb-4">
+                    <div className="grid grid-cols-3 gap-3 text-xs">
+                      <div>
+                        <div className="text-gray-600 font-medium">Traffic</div>
+                        <div className="text-blue-700 font-semibold">{challenge.requirements.traffic}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-600 font-medium">Latency</div>
+                        <div className="text-blue-700 font-semibold">{challenge.requirements.latency}</div>
+                      </div>
+                      <div>
+                        <div className="text-gray-600 font-medium">Budget</div>
+                        <div className="text-blue-700 font-semibold">{challenge.requirements.budget}</div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-3">
+                    <div className="text-xs font-semibold text-green-800 mb-2">
+                      ✨ How to use:
+                    </div>
+                    <ol className="text-xs text-green-700 space-y-1 ml-4 list-decimal">
+                      <li>Click components on the left to add them to the canvas</li>
+                      <li>Drag from the <span className="text-green-600 font-semibold">green dot</span> on a component to the <span className="text-blue-600 font-semibold">blue dot</span> on another to connect them</li>
+                      <li>Click a component to configure it in the right panel</li>
+                      <li>Click "Run Simulation" to test your design!</li>
+                    </ol>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Connection Instructions (when components exist but no connections) */}
+        {nodes.length > 0 && edges.length === 0 && (
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-lg shadow-lg px-4 py-3 max-w-md">
+              <div className="flex items-center gap-3">
+                <div className="text-2xl">💡</div>
+                <div className="text-sm">
+                  <div className="font-semibold text-amber-900">Connect your components!</div>
+                  <div className="text-amber-700">
+                    Drag from a <span className="text-green-600 font-semibold">green</span> dot to a <span className="text-blue-600 font-semibold">blue</span> dot to create connections
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -180,16 +275,40 @@ export function DesignCanvas({
 }
 
 // Helper functions
-function getComponentLabel(type: string): string {
-  const labels: Record<string, string> = {
-    load_balancer: '🌐 Load Balancer',
-    app_server: '📦 App Server',
-    postgresql: '💾 PostgreSQL',
-    redis: '⚡ Redis Cache',
-    cdn: '🌍 CDN',
-    s3: '📦 S3',
+function getComponentInfo(type: string): { label: string; displayName: string; subtitle: string } {
+  const info: Record<string, { label: string; displayName: string; subtitle: string }> = {
+    load_balancer: {
+      label: '🌐 Load Balancer',
+      displayName: 'Load Balancer',
+      subtitle: 'Distributes traffic',
+    },
+    app_server: {
+      label: '📦 App Server',
+      displayName: 'App Server',
+      subtitle: 'Handles requests',
+    },
+    postgresql: {
+      label: '💾 PostgreSQL',
+      displayName: 'PostgreSQL',
+      subtitle: 'Relational DB',
+    },
+    redis: {
+      label: '⚡ Redis',
+      displayName: 'Redis Cache',
+      subtitle: 'In-memory cache',
+    },
+    cdn: {
+      label: '🌍 CDN',
+      displayName: 'CDN',
+      subtitle: 'Content delivery',
+    },
+    s3: {
+      label: '☁️ S3',
+      displayName: 'S3 Storage',
+      subtitle: 'Object storage',
+    },
   };
-  return labels[type] || type;
+  return info[type] || { label: type, displayName: type, subtitle: '' };
 }
 
 function getDefaultConfig(type: string): Record<string, any> {
