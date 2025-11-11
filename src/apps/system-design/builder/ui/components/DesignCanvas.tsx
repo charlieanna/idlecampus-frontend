@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -52,6 +52,27 @@ export function DesignCanvas({
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+
+  // Initialize nodes from systemGraph (for pre-populated Client)
+  useEffect(() => {
+    if (systemGraph.components.length > 0 && nodes.length === 0) {
+      const initialNodes: Node[] = systemGraph.components.map((comp, index) => {
+        const componentInfo = getComponentInfo(comp.type);
+        return {
+          id: comp.id,
+          type: 'custom',
+          position: { x: 300, y: 100 + index * 100 },
+          data: {
+            label: componentInfo.label,
+            displayName: componentInfo.displayName,
+            subtitle: componentInfo.subtitle,
+            componentType: comp.type,
+          },
+        };
+      });
+      setNodes(initialNodes);
+    }
+  }, [systemGraph.components.length]);
 
   // Handle new connections
   const onConnect = useCallback(
@@ -192,7 +213,7 @@ export function DesignCanvas({
         </ReactFlow>
 
         {/* Instructions Overlay */}
-        {challenge && nodes.length === 0 && (
+        {challenge && nodes.length <= 1 && (
           <div className="absolute top-6 left-6 right-6 max-w-2xl">
             <div className="bg-white border-2 border-blue-200 rounded-xl shadow-lg p-6">
               <div className="flex items-start gap-4">
@@ -225,10 +246,11 @@ export function DesignCanvas({
                       ✨ How to use:
                     </div>
                     <ol className="text-xs text-green-700 space-y-1 ml-4 list-decimal">
-                      <li>Click components on the left to add them to the canvas</li>
-                      <li>Drag from the <span className="text-green-600 font-semibold">green dot</span> on a component to the <span className="text-blue-600 font-semibold">blue dot</span> on another to connect them</li>
-                      <li>Click a component to configure it in the right panel</li>
-                      <li>Click "Run Simulation" to test your design!</li>
+                      <li>The 👤 Client represents your users - traffic starts here!</li>
+                      <li>Add components from the left sidebar (Load Balancer, App Server, etc.)</li>
+                      <li>Drag from <span className="text-green-600 font-semibold">green dots</span> to <span className="text-blue-600 font-semibold">blue dots</span> to connect components</li>
+                      <li>Click any component to configure it in the right panel</li>
+                      <li>Click "Run Simulation" when ready to test!</li>
                     </ol>
                   </div>
                 </div>
@@ -238,7 +260,7 @@ export function DesignCanvas({
         )}
 
         {/* Connection Instructions (when components exist but no connections) */}
-        {nodes.length > 0 && edges.length === 0 && (
+        {nodes.length > 1 && edges.length === 0 && (
           <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2">
             <div className="bg-amber-50 border-2 border-amber-300 rounded-lg shadow-lg px-4 py-3 max-w-md">
               <div className="flex items-center gap-3">
