@@ -69,11 +69,67 @@ Example:
       traffic: {
         type: 'read',
         rps: 3000, // Higher image traffic
+        avgResponseSizeMB: 2, // Large images
       },
       duration: 60,
       passCriteria: {
         maxP99Latency: 600,
         maxErrorRate: 0.02,
+      },
+    },
+    {
+      name: 'CDN Cost Validation (Without CDN = Expensive)',
+      traffic: {
+        type: 'read',
+        rps: 5000, // High image traffic
+        avgResponseSizeMB: 2, // 2MB per image
+      },
+      duration: 60,
+      passCriteria: {
+        maxP99Latency: 100, // CDN needed to hit this
+        maxMonthlyCost: 400, // S3 alone would cost ~$1,200/month!
+      },
+      solution: {
+        components: [
+          { type: 'client', config: {} },
+          { type: 'cdn', config: { enabled: true } },
+          { type: 's3', config: { storageSizeGB: 500 } },
+        ],
+        connections: [
+          { from: 'client', to: 'cdn' },
+          { from: 'cdn', to: 's3' },
+        ],
+        explanation: `This test demonstrates **why CDN is essential** for image-heavy content:
+
+**Without CDN (S3 Direct):**
+- Latency: 100ms (S3 base latency)
+- Cost: ~$1,200/month
+  - S3 storage: $11.50 (500GB × $0.023)
+  - S3 data transfer: $1,170 (13,000 GB × $0.09/GB)
+  - Total bandwidth: 5000 RPS × 2MB × 2.6M sec/month = 26TB/month
+- FAILS cost and latency requirements!
+
+**With CDN + S3:**
+- Latency: ~10ms average
+  - 95% hit CDN edge (5ms)
+  - 5% hit S3 (100ms)
+  - Average: 0.95 × 5ms + 0.05 × 100ms = 9.75ms ✅
+- Cost: ~$280/month
+  - S3 storage: $11.50
+  - S3 data transfer: $58.50 (only 5% of traffic = 1.3TB)
+  - CDN transfer: $260 (26TB × $0.01/GB)
+  - CDN is 9x cheaper than S3 transfer!
+- PASSES both requirements! ✅
+
+**Key Insight:**
+- CDN reduces latency by 10x (100ms → 10ms)
+- CDN reduces cost by 4x ($1,200 → $280)
+- The more traffic, the more valuable CDN becomes
+
+**When is CDN overkill?**
+- Low traffic (<100 RPS) - CDN costs more than it saves
+- Dynamic content - can't cache, so no benefit
+- Already using app servers to serve files - need CDN + S3 migration`,
       },
     },
   ],

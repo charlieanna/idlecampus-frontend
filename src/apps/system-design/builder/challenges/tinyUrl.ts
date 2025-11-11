@@ -222,6 +222,32 @@ Ways to reduce cost:
 
 Remember: Meet requirements at minimum cost!`,
     },
+    {
+      trigger: 'component_added:cdn',
+      message: `⚠️ CDN is likely **overkill** for TinyURL!
+
+**Why CDN doesn't help here:**
+- TinyURL responses are DYNAMIC (database lookups, not static files)
+- Each short code redirects to a different URL (can't cache the redirect response)
+- CDN is for static content (images, CSS, videos)
+
+**When CDN would help TinyURL:**
+- Serving the homepage HTML/CSS/JavaScript
+- Analytics dashboard with charts/images
+- But NOT for the redirect logic itself
+
+**Better approach:**
+- Use Redis to cache URL mappings (short code → long URL)
+- Keep app servers close to database (low latency)
+- CDN costs $20-50/month but provides no benefit
+
+**Test it yourself:**
+- Try WITHOUT CDN: Should meet all requirements
+- Add CDN: Cost increases, latency unchanged
+- This teaches when NOT to use CDN!
+
+**Exception:** If serving a landing page with analytics/ads before redirect, then CDN helps for the page assets.`,
+    },
   ],
 
   // Code challenges for hands-on implementation practice
