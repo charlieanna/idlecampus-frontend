@@ -1,6 +1,8 @@
 import { SystemGraph, Bottleneck, Connection } from '../types/graph';
 import { ComponentMetrics, SimulationContext } from '../types/component';
 import { TestCase, TestMetrics } from '../types/testCase';
+import { FlowVisualization } from '../types/request';
+import { TrafficFlowEngine } from './trafficFlowEngine';
 import {
   Component,
   Client,
@@ -19,6 +21,7 @@ import {
 export class SimulationEngine {
   private components: Map<string, Component> = new Map();
   private adjacency: Map<string, { to: string; type: Connection['type'] }[]> = new Map();
+  private trafficFlowEngine: TrafficFlowEngine = new TrafficFlowEngine();
 
   /**
    * Build component instances from graph
@@ -134,6 +137,38 @@ export class SimulationEngine {
   }
 
   /**
+   * Validate that the graph has valid traffic paths
+   * Note: Assumes buildComponents() has already been called
+   */
+  private validateGraphInternal(graph: SystemGraph): { valid: boolean; errors: string[] } {
+    this.trafficFlowEngine.buildGraph(graph, this.components);
+    return this.trafficFlowEngine.validateGraph();
+  }
+
+  /**
+   * Get traffic flow visualization data
+   * Note: Assumes buildComponents() and trafficFlowEngine.buildGraph() have been called
+   */
+  private getTrafficFlowInternal(
+    testCase: TestCase
+  ): {
+    flowViz: FlowVisualization;
+    pathsFound: boolean;
+  } {
+    const context: SimulationContext = {
+      testCase,
+      currentTime: testCase.duration / 2,
+    };
+
+    const { flowViz } = this.trafficFlowEngine.sendTraffic(testCase, context);
+
+    // Check if any successful paths were found
+    const pathsFound = flowViz.readPaths.length > 0 || flowViz.writePaths.length > 0;
+
+    return { flowViz, pathsFound };
+  }
+
+  /**
    * Simulate traffic through the system
    * Simplified for MVP - assumes typical web app topology:
    * Load Balancer → App Servers → Cache → Database
@@ -144,8 +179,13 @@ export class SimulationEngine {
   ): {
     metrics: TestMetrics;
     componentMetrics: Map<string, ComponentMetrics>;
+    flowViz?: FlowVisualization;
   } {
     this.buildComponents(graph);
+
+    // Build traffic flow engine with the same components
+    // (Validation is done internally but doesn't block simulation)
+    this.trafficFlowEngine.buildGraph(graph, this.components);
 
     // Extract traffic parameters
     const totalRps = testCase.traffic.rps;
@@ -309,6 +349,18 @@ export class SimulationEngine {
         : 0;
     const p99Latency = p50Latency * 1.5; // Approximate (p99 ≈ 1.5x p50)
 
+    // Get flow visualization (components and traffic flow engine already built)
+    // Note: Flow visualization is optional and runs on a sample of requests
+    let flowViz: FlowVisualization | undefined;
+    try {
+      const result = this.getTrafficFlowInternal(testCase);
+      flowViz = result.flowViz;
+    } catch (error) {
+      // Flow visualization failed, but don't block the main simulation
+      console.warn('Flow visualization failed:', error);
+      flowViz = undefined;
+    }
+
     return {
       metrics: {
         p50Latency,
@@ -318,6 +370,7 @@ export class SimulationEngine {
         availability,
       },
       componentMetrics,
+      flowViz,
     };
   }
 

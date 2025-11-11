@@ -1,4 +1,5 @@
 import { Bottleneck } from './graph';
+import { FlowVisualization } from './request';
 
 /**
  * Failure injection for test cases
@@ -74,6 +75,7 @@ export interface TestResult {
   bottlenecks: Bottleneck[];
   explanation: string;
   componentMetrics: Map<string, any>; // detailed metrics per component
+  flowViz?: FlowVisualization; // traffic flow visualization
 }
 
 /**
