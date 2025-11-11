@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { ReactFlowProvider, Node } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Challenge } from '../types/testCase';
+import { Challenge, Solution } from '../types/testCase';
 import { SystemGraph } from '../types/graph';
 import { TestResult } from '../types/testCase';
 import { challenges } from '../challenges';
@@ -93,6 +93,31 @@ export default function SystemDesignBuilderApp() {
     setSelectedNode(null);
   };
 
+  const handleLoadSolution = (solution: Solution, testCaseIndex: number) => {
+    // Convert solution to SystemGraph
+    const components = solution.components.map((comp, index) => ({
+      id: `${comp.type}_${Date.now()}_${index}`,
+      type: comp.type as any,
+      config: comp.config,
+    }));
+
+    // Build connections using component types
+    const typeToIdMap = new Map<string, string>();
+    components.forEach((comp) => {
+      const type = comp.type;
+      typeToIdMap.set(type, comp.id);
+    });
+
+    const connections = solution.connections.map((conn) => ({
+      from: typeToIdMap.get(conn.from)!,
+      to: typeToIdMap.get(conn.to)!,
+    }));
+
+    setSystemGraph({ components, connections });
+    setTestResults(null);
+    setSelectedNode(null);
+  };
+
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
       {/* Top Bar */}
@@ -118,6 +143,7 @@ export default function SystemDesignBuilderApp() {
             testResults={testResults}
             isRunning={isRunning}
             onRunTests={handleRunTests}
+            onLoadSolution={handleLoadSolution}
           />
         )}
 
