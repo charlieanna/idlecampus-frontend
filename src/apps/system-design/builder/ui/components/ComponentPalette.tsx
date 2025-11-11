@@ -7,10 +7,23 @@ const COMPONENT_INFO: Record<string, { icon: string; label: string; category: st
   client: { icon: '👤', label: 'Client', category: 'Traffic Source' },
   load_balancer: { icon: '🌐', label: 'Load Balancer', category: 'Network' },
   app_server: { icon: '📦', label: 'App Server', category: 'Compute' },
-  postgresql: { icon: '💾', label: 'PostgreSQL', category: 'Storage' },
+
+  // SQL Databases
+  postgresql: { icon: '💾', label: 'PostgreSQL', category: 'SQL Database' },
+
+  // NoSQL Databases
+  mongodb: { icon: '🍃', label: 'MongoDB', category: 'NoSQL Database' },
+  cassandra: { icon: '💿', label: 'Cassandra', category: 'NoSQL Database' },
+
+  // Cache
   redis: { icon: '⚡', label: 'Redis Cache', category: 'Cache' },
-  cdn: { icon: '🌍', label: 'CDN', category: 'Network' },
-  s3: { icon: '☁️', label: 'S3', category: 'Storage' },
+
+  // Message Queue
+  message_queue: { icon: '📮', label: 'Message Queue', category: 'Queue' },
+
+  // CDN & Storage
+  cdn: { icon: '🌍', label: 'CDN', category: 'Content Delivery' },
+  s3: { icon: '☁️', label: 'S3 Storage', category: 'Object Storage' },
 };
 
 export function ComponentPalette({
