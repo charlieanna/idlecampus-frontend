@@ -1,5 +1,6 @@
 import { TestResult } from '../../types/testCase';
 import { Challenge } from '../../types/testCase';
+import { FlowVisualization } from './FlowVisualization';
 
 interface ResultsPanelProps {
   results: TestResult[];
@@ -138,6 +139,20 @@ export function ResultsPanel({ results, challenge, onClose }: ResultsPanelProps)
                       </div>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* Traffic Flow Visualization */}
+              {result.flowViz && (
+                <div className="mt-3 pt-3 border-t border-gray-200">
+                  <details className="text-xs">
+                    <summary className="cursor-pointer font-medium text-gray-700 hover:text-gray-900 flex items-center gap-2">
+                      <span>📊 Traffic Flow Analysis</span>
+                    </summary>
+                    <div className="mt-2">
+                      <FlowVisualization flowViz={result.flowViz} />
+                    </div>
+                  </details>
                 </div>
               )}
 

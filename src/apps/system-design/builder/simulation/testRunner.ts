@@ -18,7 +18,7 @@ export class TestRunner {
    */
   runTestCase(graph: SystemGraph, testCase: TestCase): TestResult {
     // Run simulation
-    const { metrics, componentMetrics } = this.engine.simulateTraffic(
+    const { metrics, componentMetrics, flowViz } = this.engine.simulateTraffic(
       graph,
       testCase
     );
@@ -47,6 +47,7 @@ export class TestRunner {
       bottlenecks,
       explanation,
       componentMetrics,
+      flowViz,
     };
   }
 
