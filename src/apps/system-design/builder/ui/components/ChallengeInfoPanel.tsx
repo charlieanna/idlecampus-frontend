@@ -1,10 +1,12 @@
-import { Challenge, TestResult } from '../../types/testCase';
+import { Challenge, TestResult, Solution } from '../../types/testCase';
+import { useState } from 'react';
 
 interface ChallengeInfoPanelProps {
   challenge: Challenge | null;
   testResults: TestResult[] | null;
   isRunning: boolean;
   onRunTests: () => void;
+  onLoadSolution: (solution: Solution, testCaseIndex: number) => void;
 }
 
 export function ChallengeInfoPanel({
@@ -12,7 +14,10 @@ export function ChallengeInfoPanel({
   testResults,
   isRunning,
   onRunTests,
+  onLoadSolution,
 }: ChallengeInfoPanelProps) {
+  const [expandedSolution, setExpandedSolution] = useState<number | null>(null);
+
   if (!challenge) {
     return (
       <div className="w-80 bg-white border-r border-gray-200 p-6">
@@ -186,6 +191,38 @@ export function ChallengeInfoPanel({
                                 </div>
                               </div>
                             ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Show Solution Button */}
+                  {testCase.solution && (
+                    <div className="mt-2 pt-2 border-t border-gray-300">
+                      <button
+                        onClick={() => {
+                          if (expandedSolution === idx) {
+                            setExpandedSolution(null);
+                          } else {
+                            setExpandedSolution(idx);
+                          }
+                        }}
+                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                      >
+                        {expandedSolution === idx ? '▼ Hide Solution' : '▶ Show Solution'}
+                      </button>
+
+                      {expandedSolution === idx && (
+                        <div className="mt-2 space-y-2">
+                          <button
+                            onClick={() => onLoadSolution(testCase.solution!, idx)}
+                            className="w-full px-3 py-2 bg-green-600 text-white text-xs font-medium rounded hover:bg-green-700 transition-colors"
+                          >
+                            📋 Load This Solution to Canvas
+                          </button>
+                          <div className="text-xs text-gray-700 bg-blue-50 rounded p-2 whitespace-pre-line">
+                            {testCase.solution.explanation}
                           </div>
                         </div>
                       )}

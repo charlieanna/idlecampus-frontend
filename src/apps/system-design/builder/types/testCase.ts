@@ -21,6 +21,21 @@ export interface PassCriteria {
 }
 
 /**
+ * Solution for a test case
+ */
+export interface Solution {
+  components: {
+    type: string;
+    config: Record<string, any>;
+  }[];
+  connections: {
+    from: string; // component type
+    to: string; // component type
+  }[];
+  explanation: string;
+}
+
+/**
  * Test case definition
  */
 export interface TestCase {
@@ -36,6 +51,7 @@ export interface TestCase {
   duration: number; // seconds
   failureInjection?: FailureInjection;
   passCriteria: PassCriteria;
+  solution?: Solution; // Optional reference solution
 }
 
 /**
