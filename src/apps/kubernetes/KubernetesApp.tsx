@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { GripVertical } from 'lucide-react';
+import { GripVertical, Box, Check, Lock } from 'lucide-react';
 import * as ResizablePrimitive from 'react-resizable-panels';
 import { Terminal } from '../../components/course/Terminal';
 import { CourseNavigation, Module } from '../../components/course/CourseNavigation';
+import { CourseSidebar } from '../../components/course/CourseSidebar';
 import { LessonViewer } from '../../components/course/LessonViewer';
 import { LabExercise } from '../../components/course/LabExercise';
 import { QuizViewer } from '../../components/course/QuizViewer';
@@ -577,7 +578,13 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
   const expectedCommand = getCurrentExpectedCommand();
 
   // Use common gating hook
-  const { canAccessLesson, getLessonAccessInfo } = useLessonGating(completedLessons, modules);
+  const {
+    canAccessLesson,
+    getLessonAccessInfo,
+    getModuleCompletionPercentage,
+    getVisibleModules,
+    getProgressInfo
+  } = useLessonGating(completedLessons, modules);
 
   // Get accessibility info for current lesson
   const { isAccessible: isCurrentLessonAccessible, previousLessonTitle } = currentLesson
@@ -615,21 +622,78 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
     return null;
   };
 
-  return (
-    <div className="h-screen flex bg-white">
-      <CourseNavigation
-        modules={modules}
-        selectedModule={selectedModule}
-        selectedLesson={selectedLesson}
-        onSelectLesson={onSelectLesson}
-        completedLessons={completedLessons}
-        completedCommands={completedCommands}
-        courseTitle="Kubernetes Complete Guide"
-        courseSubtitle="Master Kubernetes from Basics to Advanced Topics"
-        canAccessLesson={canAccessLesson}
-      />
+  // Get visibility and progress info for header
+  const visibleModuleIds = getVisibleModules();
+  const progressInfo = getProgressInfo();
 
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
+  return (
+    <div className="h-screen flex flex-col bg-white">
+      {/* Compact Top Header */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-slate-200 bg-white flex-shrink-0">
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-bold text-blue-600">☸️ Kubernetes Course</h1>
+          <span className="text-slate-300">|</span>
+
+          {/* Module Dropdown */}
+          <select
+            value={selectedModule || ''}
+            onChange={(e) => {
+              const module = modules.find(m => m.id === e.target.value);
+              if (module && module.lessons.length > 0) {
+                onSelectLesson(module.id, module.lessons[0].id);
+              }
+            }}
+            className="text-sm font-medium text-slate-700 bg-transparent border-none focus:outline-none cursor-pointer hover:text-blue-600"
+          >
+            {modules.filter(m => visibleModuleIds.includes(m.id)).map((module) => {
+              const moduleCompleted = module.lessons.every(lesson =>
+                completedLessons.has(lesson.id)
+              );
+              const completionPercentage = getModuleCompletionPercentage(module.id);
+
+              return (
+                <option key={module.id} value={module.id}>
+                  {moduleCompleted && '✓ '}
+                  {module.title}
+                  {completionPercentage > 0 && !moduleCompleted && ` (${completionPercentage}%)`}
+                </option>
+              );
+            })}
+          </select>
+        </div>
+
+        {/* Progress Indicator */}
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-500">
+            {progressInfo.completedModules}/{progressInfo.totalModules} modules
+          </span>
+          <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-blue-600 transition-all duration-300"
+              style={{ width: `${progressInfo.overallProgress}%` }}
+            />
+          </div>
+          <span className="text-xs font-medium text-slate-700">
+            {progressInfo.overallProgress}%
+          </span>
+        </div>
+      </div>
+
+      {/* Main content area with sidebar */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Sidebar - Reusable Component */}
+        <CourseSidebar
+          currentModule={currentModule}
+          currentLesson={currentLesson}
+          selectedLesson={selectedLesson}
+          completedLessons={completedLessons}
+          getModuleCompletionPercentage={getModuleCompletionPercentage}
+          canAccessLesson={canAccessLesson}
+          onSelectLesson={onSelectLesson}
+        />
+
+        {/* Main content with terminal */}
+        <ResizablePanelGroup direction="horizontal" className="flex-1">
         <ResizablePanel defaultSize={60} minSize={30}>
           <div className="h-full overflow-hidden">
             {currentLesson && (
@@ -685,6 +749,7 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
           />
         </ResizablePanel>
       </ResizablePanelGroup>
+      </div>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { SystemGraph, Bottleneck } from '../types/graph';
+import { SystemGraph, Bottleneck, Connection } from '../types/graph';
 import { ComponentMetrics, SimulationContext } from '../types/component';
 import { TestCase, TestMetrics } from '../types/testCase';
 import {
@@ -18,12 +18,14 @@ import {
  */
 export class SimulationEngine {
   private components: Map<string, Component> = new Map();
+  private adjacency: Map<string, { to: string; type: Connection['type'] }[]> = new Map();
 
   /**
    * Build component instances from graph
    */
   private buildComponents(graph: SystemGraph): void {
     this.components.clear();
+    this.adjacency.clear();
 
     for (const node of graph.components) {
       let component: Component;
@@ -56,6 +58,13 @@ export class SimulationEngine {
 
       this.components.set(node.id, component);
     }
+
+    // Build adjacency from graph connections
+    for (const conn of graph.connections || []) {
+      const list = this.adjacency.get(conn.from) || [];
+      list.push({ to: conn.to, type: conn.type });
+      this.adjacency.set(conn.from, list);
+    }
   }
 
   /**
@@ -68,6 +77,60 @@ export class SimulationEngine {
       }
     }
     return undefined;
+  }
+
+  /**
+   * Find the first node ID with a given component type
+   */
+  private findNodeIdByType(type: string): string | undefined {
+    for (const comp of this.components.values()) {
+      if (comp.type === type) return comp.id;
+    }
+    return undefined;
+  }
+
+  /**
+   * BFS to find a path from start to a node matching predicate, following
+   * only edges allowed by the given flow type ('read' or 'write').
+   */
+  private findPath(
+    startId: string,
+    flow: 'read' | 'write' | 'read_write',
+    predicate: (nodeId: string) => boolean
+  ): string[] | null {
+    const allow = (edgeType: Connection['type']) => {
+      if (flow === 'read_write') return true;
+      if (flow === 'read') return edgeType === 'read' || edgeType === 'read_write';
+      if (flow === 'write') return edgeType === 'write' || edgeType === 'read_write';
+      return false;
+    };
+
+    const q: string[] = [startId];
+    const parent = new Map<string, string | null>();
+    parent.set(startId, null);
+
+    while (q.length) {
+      const cur = q.shift()!;
+      if (predicate(cur)) {
+        // Reconstruct path
+        const path: string[] = [];
+        let p: string | null = cur;
+        while (p) {
+          path.push(p);
+          p = parent.get(p) ?? null;
+        }
+        return path.reverse();
+      }
+      const edges = this.adjacency.get(cur) || [];
+      for (const e of edges) {
+        if (!allow(e.type)) continue;
+        if (!parent.has(e.to)) {
+          parent.set(e.to, cur);
+          q.push(e.to);
+        }
+      }
+    }
+    return null;
   }
 
   /**
@@ -101,94 +164,105 @@ export class SimulationEngine {
     let totalCost = 0;
     let availability = 1.0;
 
-    // Validate required components
-    const appServer = this.findComponentByType('app_server');
-    const db = this.findComponentByType('postgresql') as PostgreSQL | undefined;
+    // Determine entry point and key components via graph connections
+    const entryId =
+      this.findNodeIdByType('client') ||
+      this.findNodeIdByType('load_balancer') ||
+      this.findNodeIdByType('app_server');
 
-    // If critical components are missing, system cannot function
-    if (!appServer || !db) {
+    const appId = this.findNodeIdByType('app_server');
+    const dbId = this.findNodeIdByType('postgresql');
+
+    const appServer = appId ? (this.components.get(appId) as AppServer) : undefined;
+    const db = dbId ? (this.components.get(dbId) as PostgreSQL) : undefined;
+
+    // Find paths based on connections
+    let toAppPath: string[] | null = null;
+    if (entryId && appId) {
+      toAppPath = this.findPath(entryId, 'read_write', (n) => n === appId);
+    }
+
+    // Optional cache
+    const cacheId = this.findNodeIdByType('redis');
+    const toCachePath = appId && cacheId ? this.findPath(appId, 'read', (n) => n === cacheId) : null;
+
+    // Read DB path (from cache if present else from app)
+    const readDbFromId = toCachePath ? toCachePath[toCachePath.length - 1] : appId;
+    const toDbReadPath = dbId && readDbFromId ? this.findPath(readDbFromId, 'read', (n) => n === dbId) : null;
+
+    // Write DB path (from app to db)
+    const toDbWritePath = dbId && appId ? this.findPath(appId, 'write', (n) => n === dbId) : null;
+
+    // CDN/S3 path (optional, for static content)
+    const cdnId = this.findNodeIdByType('cdn');
+    const s3Id = this.findNodeIdByType('s3');
+    const toCdnPath = cdnId && entryId ? this.findPath(entryId, 'read', (n) => n === cdnId) : null;
+    const cdnToS3Path = cdnId && s3Id ? this.findPath(cdnId, 'read', (n) => n === s3Id) : null;
+
+    // If critical backend paths are missing, system cannot function for those flows
+    const readPathAvailable = !!(toAppPath && (toCachePath || true) && toDbReadPath);
+    const writePathAvailable = !!(toAppPath && toDbWritePath);
+
+    if (!appServer || !db || !toAppPath) {
       return {
         metrics: {
           p50Latency: 0,
           p99Latency: 0,
-          errorRate: 1.0, // 100% error rate - system can't handle requests
+          errorRate: 1.0,
           monthlyCost: 0,
-          availability: 0, // System is down without backend
+          availability: 0,
         },
         componentMetrics,
       };
     }
 
-    // Step 1: Load Balancer
-    const lb = this.findComponentByType('load_balancer');
-    if (lb) {
-      const lbMetrics = lb.simulate(totalRps, context);
-      componentMetrics.set(lb.id, lbMetrics);
-      totalLatency += lbMetrics.latency;
-      combinedErrorRate = this.combineErrorRates(
-        combinedErrorRate,
-        lbMetrics.errorRate
-      );
-      totalCost += lbMetrics.cost;
+    // Traverse path to app (accumulate latency/cost/errors)
+    const pathToAppComponents: Component[] = [];
+    for (const nodeId of toAppPath) {
+      const comp = this.components.get(nodeId)!;
+      // Skip duplicating DB/Cache here; handled later
+      if (comp.type === 'redis' || comp.type === 'postgresql' || comp.type === 'cdn' || comp.type === 's3') continue;
+      pathToAppComponents.push(comp);
     }
 
-    // Step 2: App Servers
-    if (appServer) {
-      const appMetrics = appServer.simulate(totalRps, context);
-      componentMetrics.set(appServer.id, appMetrics);
-      totalLatency += appMetrics.latency;
-      combinedErrorRate = this.combineErrorRates(
-        combinedErrorRate,
-        appMetrics.errorRate
-      );
-      totalCost += appMetrics.cost;
+    for (const comp of pathToAppComponents) {
+      const metrics = comp.simulate(totalRps, context);
+      componentMetrics.set(comp.id, metrics);
+      totalLatency += metrics.latency;
+      combinedErrorRate = this.combineErrorRates(combinedErrorRate, metrics.errorRate);
+      totalCost += metrics.cost;
     }
 
-    // Step 3: Cache (if present)
-    const cache = this.findComponentByType('redis');
+    // App server already included above as part of pathToAppComponents
+
+    // Cache (if present and reachable)
+    const cache = cacheId ? (this.components.get(cacheId) as RedisCache) : undefined;
     let dbReadRps = readRps;
     let dbWriteRps = writeRps;
 
-    if (cache) {
+    let cacheLatency = 0;
+    let missRatio = 1;
+    if (cache && toCachePath) {
       const cacheMetrics = cache.simulate(readRps, context);
       componentMetrics.set(cache.id, cacheMetrics);
-      totalLatency += cacheMetrics.latency;
+      cacheLatency = cacheMetrics.latency;
       totalCost += cacheMetrics.cost;
-
-      // Cache reduces DB read load
       dbReadRps = cacheMetrics.cacheMisses || readRps;
+      missRatio = readRps > 0 ? (dbReadRps / readRps) : 0;
     }
 
-    // Step 4: Database
-    if (db) {
-      const dbMetrics = db.simulateWithReadWrite(dbReadRps, dbWriteRps, context);
-      componentMetrics.set(db.id, dbMetrics);
-
-      // For cache hits, we already added cache latency
-      // For cache misses, add DB latency
-      const cacheMissRatio = cache
-        ? (dbReadRps / readRps)
-        : 1.0;
-      totalLatency += dbMetrics.latency * cacheMissRatio;
-
-      combinedErrorRate = this.combineErrorRates(
-        combinedErrorRate,
-        dbMetrics.errorRate
-      );
-      totalCost += dbMetrics.cost;
-
-      // Handle database failure
-      if (dbMetrics.downtime) {
-        availability = Math.max(
-          0,
-          1 - dbMetrics.downtime / testCase.duration
-        );
-      }
+    // Database
+    const dbMetrics = db.simulateWithReadWrite(dbReadRps, dbWriteRps, context);
+    componentMetrics.set(db.id, dbMetrics);
+    combinedErrorRate = this.combineErrorRates(combinedErrorRate, dbMetrics.errorRate);
+    totalCost += dbMetrics.cost;
+    if (dbMetrics.downtime) {
+      availability = Math.max(0, 1 - dbMetrics.downtime / testCase.duration);
     }
 
-    // Step 5: CDN (if present, for static content)
-    const cdn = this.findComponentByType('cdn');
-    if (cdn) {
+    // CDN (if present and reachable)
+    const cdn = cdnId ? (this.components.get(cdnId) as CDN) : undefined;
+    if (cdn && toCdnPath) {
       const avgResponseSize = testCase.traffic.avgResponseSizeMB || 2;
       const cdnMetrics = cdn.simulate(totalRps, context, avgResponseSize);
       componentMetrics.set(cdn.id, cdnMetrics);
@@ -196,8 +270,8 @@ export class SimulationEngine {
     }
 
     // Step 6: S3 (if present, for object storage)
-    const s3 = this.findComponentByType('s3');
-    if (s3) {
+    const s3 = s3Id ? (this.components.get(s3Id) as S3) : undefined;
+    if (s3 && cdnToS3Path) {
       const avgObjectSize = testCase.traffic.avgResponseSizeMB || 2;
       const s3Metrics = s3.simulate(totalRps, context, avgObjectSize);
       componentMetrics.set(s3.id, s3Metrics);
@@ -205,8 +279,35 @@ export class SimulationEngine {
     }
 
     // Calculate final metrics
-    const p50Latency = totalLatency;
-    const p99Latency = totalLatency * 1.5; // Approximate (p99 ≈ 1.5x p50 for MVP)
+    // Compute end-to-end latency from traffic flow
+    // Latency up to app (lb/app/etc.)
+    const pathToAppLatency = totalLatency; // accumulated earlier
+
+    // Read request average latency
+    const readLatency = readPathAvailable
+      ? pathToAppLatency + cacheLatency + (missRatio * (dbMetrics.readLatency ?? 0))
+      : 0;
+
+    // Write request average latency
+    const writeLatency = writePathAvailable
+      ? pathToAppLatency + (dbMetrics.writeLatency ?? 0)
+      : 0;
+
+    // If any path is unavailable, treat that fraction as failed (1.0 error)
+    const readFrac = totalRps > 0 ? readRps / totalRps : 0;
+    const writeFrac = totalRps > 0 ? writeRps / totalRps : 0;
+    if (!readPathAvailable || !writePathAvailable) {
+      const unreachableFrac = (readPathAvailable ? 0 : readFrac) + (writePathAvailable ? 0 : writeFrac);
+      combinedErrorRate = this.combineErrorRates(combinedErrorRate, Math.min(1, unreachableFrac));
+      // If everything is unreachable, knock availability to 0
+      if (unreachableFrac >= 0.999) availability = 0;
+    }
+
+    const p50Latency =
+      totalRps > 0
+        ? (readRps * readLatency + writeRps * writeLatency) / totalRps
+        : 0;
+    const p99Latency = p50Latency * 1.5; // Approximate (p99 ≈ 1.5x p50)
 
     return {
       metrics: {

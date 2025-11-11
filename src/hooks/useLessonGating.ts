@@ -212,7 +212,6 @@ export function useLessonGating(
     return () => {
       // If no modules, return empty array
       if (!modules || modules.length === 0) {
-        console.log('Progressive Reveal: No modules available');
         return [];
       }
 
@@ -252,16 +251,8 @@ export function useLessonGating(
 
       // If no modules are visible (shouldn't happen), at least show the first one
       if (visibleModules.length === 0 && sortedModules.length > 0) {
-        console.log('Progressive Reveal: No visible modules found, showing first module');
         visibleModules.push(sortedModules[0].id);
       }
-
-      console.log('Progressive Reveal: Visible modules calculation', {
-        totalModules: modules.length,
-        visibleCount: visibleModules.length,
-        visibleModuleIds: visibleModules,
-        completedLessons: completedLessons.size
-      });
 
       return visibleModules;
     };

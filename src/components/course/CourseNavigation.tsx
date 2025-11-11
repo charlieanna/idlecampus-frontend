@@ -138,17 +138,8 @@ export function CourseNavigation({
   const [showDiscoveryAnimation, setShowDiscoveryAnimation] = useState(false);
 
   // Get visibility and progress info
-  // IMPORTANT: Default to empty array to hide modules if getVisibleModules is not available
   const visibleModuleIds = getVisibleModules ? getVisibleModules() : [];
   const progressInfo = getProgressInfo ? getProgressInfo() : null;
-
-  // Debug logging
-  console.log('Progressive Reveal Debug:', {
-    getVisibleModules: !!getVisibleModules,
-    totalModules: modules.length,
-    visibleModuleIds,
-    visibleCount: visibleModuleIds.length
-  });
 
   // Filter modules to only show visible ones
   const visibleModules = modules.filter(m => visibleModuleIds.includes(m.id));
@@ -217,12 +208,22 @@ export function CourseNavigation({
                   {/* Module Header */}
                   <div className="relative">
                     {isTeaser && showDiscoveryAnimation && newlyUnlockedModule === module.id && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.8 }}
-                        animate={{ opacity: [0, 1, 0], scale: [0.8, 1.2, 1] }}
-                        transition={{ duration: 1.5 }}
-                        className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg opacity-20 blur-xl"
-                      />
+                      <>
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.8 }}
+                          animate={{ opacity: [0, 1, 0], scale: [0.8, 1.2, 1] }}
+                          transition={{ duration: 1.5 }}
+                          className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-lg opacity-20 blur-xl"
+                        />
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: [0, 1, 0] }}
+                          transition={{ duration: 2, delay: 0.3 }}
+                          className="absolute -top-2 -right-2 text-2xl"
+                        >
+                          ✨
+                        </motion.div>
+                      </>
                     )}
 
                     <div className={`flex items-center gap-2 ${isTeaser ? 'opacity-60' : ''}`}>
@@ -246,10 +247,20 @@ export function CourseNavigation({
                             <Lock className="w-4 h-4 text-slate-400" />
                           )}
                           {moduleCompleted && isModuleAccessible && (
-                            <CheckCircle className="w-4 h-4 text-green-600" />
+                            <motion.div
+                              initial={{ scale: 1 }}
+                              animate={{ scale: [1, 1.2, 1] }}
+                              transition={{ duration: 0.3 }}
+                            >
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                            </motion.div>
                           )}
                           {!moduleCompleted && isModuleAccessible && moduleCompletion > 0 && (
-                            <Badge variant="outline" className="text-xs">
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${moduleCompletion >= 80 ? 'bg-gradient-to-r from-blue-50 to-purple-50 border-purple-300 text-purple-700' : ''}`}
+                            >
+                              {moduleCompletion >= 80 && <TrendingUp className="w-3 h-3 inline mr-1" />}
                               {moduleCompletion}%
                             </Badge>
                           )}

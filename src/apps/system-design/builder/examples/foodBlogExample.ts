@@ -59,6 +59,8 @@ export const foodBlogGoodDesign: SystemGraph = {
     { from: 'lb', to: 'app', type: 'read_write' },
     { from: 'app', to: 'cache', type: 'read' },
     { from: 'cache', to: 'db', type: 'read' },
+    // Route read traffic for images via CDN to S3
+    { from: 'lb', to: 'cdn', type: 'read' },
     { from: 'cdn', to: 's3', type: 'read' },
   ],
 };

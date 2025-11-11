@@ -117,33 +117,46 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
     setError(null);
 
     try {
-      // Determine API track (for URL paths)
-      // Map docker-bootcamp to docker API track
-      const apiTrack = courseType === 'docker-bootcamp' ? 'docker' : courseType;
+      // Map course types to their API tracks and course slugs
+      const courseConfig: Record<string, { track: string; slug: string }> = {
+        'docker': { track: 'docker', slug: 'docker-fundamentals' },
+        'docker-bootcamp': { track: 'docker', slug: 'docker-containers-bootcamp' },
+        'kubernetes': { track: 'kubernetes', slug: 'kubernetes-complete-guide' },
+        'linux': { track: 'linux', slug: 'linux-shell-fundamentals' },
+        'security': { track: 'linux', slug: 'linux-shell-fundamentals' }, // Use Linux track for security
+        'aws': { track: 'aws', slug: 'aws-cloud-fundamentals' },
+        'system_design': { track: 'system_design', slug: 'system-design' },
+        'envoy': { track: 'envoy', slug: 'envoy' },
+        'postgresql': { track: 'postgresql', slug: 'postgresql' },
+        'networking': { track: 'networking', slug: 'networking' }
+      };
 
-      console.log('📡 Loading course data for:', { courseType, apiTrack });
+      const config = courseConfig[courseType];
 
-      // Fetch courses using API track
-      const courses = await apiService.fetchCourses(apiTrack);
-      console.log('📚 Available courses:', JSON.stringify(courses.map(c => ({ title: c.title, slug: c.slug, track: c.certification_track })), null, 2));
+      console.log('📡 Loading course data for:', { courseType, config });
 
-      // For docker and docker-bootcamp, filter for the appropriate course by slug
-      const targetCourse = courseType === 'docker-bootcamp'
-        ? courses.find(c => c.slug === 'docker-containers-bootcamp')
-        : courseType === 'docker'
-        ? courses.find(c => c.slug === 'docker-containers-bootcamp') || courses[0]
-        : courses[0];
-      
-      console.log('🎯 Selected course:', JSON.stringify({ title: targetCourse?.title, slug: targetCourse?.slug, track: targetCourse?.certification_track }, null, 2));
-
-      if (!targetCourse) {
-        throw new Error('No courses found. Please run: rails db:seed');
+      if (!config) {
+        throw new Error(`No course mapping found for: ${courseType}`);
       }
 
-      // Fetch detailed course data
-      const fullCourse = await apiService.fetchCourse(targetCourse.slug, apiTrack);
-      const modules = await apiService.fetchModules(targetCourse.slug, apiTrack);
-      const labs = await apiService.fetchLabs(apiTrack);
+      const { track, slug: targetSlug } = config;
+
+      // Fetch courses using the track-based API
+      const courses = await apiService.fetchCourses(track);
+      console.log('📚 Available courses:', courses.map(c => ({ title: c.title, slug: c.slug })));
+
+      const targetCourse = courses.find(c => c.slug === targetSlug) || courses[0];
+
+      console.log('🎯 Selected course:', JSON.stringify({ title: targetCourse?.title, slug: targetCourse?.slug }, null, 2));
+
+      if (!targetCourse) {
+        throw new Error(`Course not found: ${targetSlug}. Please run: rails db:seed`);
+      }
+
+      // Fetch detailed course data using track-based API
+      const fullCourse = await apiService.fetchCourse(targetCourse.slug, track);
+      const modules = await apiService.fetchModules(targetCourse.slug, track);
+      const labs = await apiService.fetchLabs(track);
 
       if (!modules || modules.length === 0) {
         throw new Error('No modules found in course. Please check database seeds.');

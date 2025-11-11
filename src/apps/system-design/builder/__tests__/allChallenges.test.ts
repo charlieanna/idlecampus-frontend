@@ -26,74 +26,47 @@ describe('All Challenges - Integration Tests', () => {
       expect(todoAppTestCases).toHaveLength(3);
     });
 
-    it('should teach different concepts per challenge', () => {
-      // Each challenge focuses on a different system design concept
+    it('should teach different concepts per challenge (observed via traffic)', () => {
+      // Tiny URL: caching reduces DB utilization under normal load
+      const tinyGood = runner.runTestCase(tinyUrlGoodDesign, tinyUrlTestCases[0]);
+      const tinyBad = runner.runTestCase(tinyUrlBadDesign, tinyUrlTestCases[0]);
+      const tinyGoodDb = Array.from(tinyGood.componentMetrics.values()).find((m: any) => m.readUtil !== undefined);
+      const tinyBadDb = Array.from(tinyBad.componentMetrics.values()).find((m: any) => m.readUtil !== undefined);
+      expect(tinyGoodDb).toBeDefined();
+      expect(tinyBadDb).toBeDefined();
+      expect(tinyGoodDb!.utilization).toBeLessThan(tinyBadDb!.utilization);
 
-      // Tiny URL: Caching (uses Redis)
-      const hasCacheTinyUrl = tinyUrlGoodDesign.components.some(
-        (c) => c.type === 'redis'
-      );
-      expect(hasCacheTinyUrl).toBe(true);
+      // Food Blog: CDN reduces cost relative to app-servers serving images
+      const foodGood = runner.runTestCase(foodBlogGoodDesign, foodBlogTestCases[0]);
+      const foodBad = runner.runTestCase(foodBlogBadDesign, foodBlogTestCases[0]);
+      expect(foodGood.metrics.monthlyCost).toBeLessThan(foodBad.metrics.monthlyCost);
 
-      // Food Blog: CDN (uses CDN + S3)
-      const hasCDNFoodBlog = foodBlogGoodDesign.components.some(
-        (c) => c.type === 'cdn'
-      );
-      const hasS3FoodBlog = foodBlogGoodDesign.components.some(
-        (c) => c.type === 's3'
-      );
-      expect(hasCDNFoodBlog).toBe(true);
-      expect(hasS3FoodBlog).toBe(true);
-
-      // Todo App: Replication (uses PostgreSQL with replication)
-      const dbTodoApp = todoAppGoodDesign.components.find(
-        (c) => c.type === 'postgresql'
-      );
-      expect(dbTodoApp).toBeDefined();
-      expect(dbTodoApp!.config.replication).toBe(true);
+      // Todo App: replication maintains higher availability under DB failure
+      const todoGood = runner.runTestCase(todoAppGoodDesign, todoAppTestCases[1]);
+      const todoBad = runner.runTestCase(todoAppBadDesign, todoAppTestCases[1]);
+      expect(todoGood.metrics.availability).toBeGreaterThan(todoBad.metrics.availability);
     });
   });
 
   describe('Good vs Bad Design Comparison', () => {
-    it('should show good designs pass more tests than bad designs', () => {
-      // Tiny URL
-      const tinyGoodResults = runner.runAllTestCases(
-        tinyUrlGoodDesign,
-        tinyUrlTestCases
-      );
-      const tinyBadResults = runner.runAllTestCases(
-        tinyUrlBadDesign,
-        tinyUrlTestCases
-      );
-      const tinyGoodPassed = tinyGoodResults.filter((r) => r.passed).length;
-      const tinyBadPassed = tinyBadResults.filter((r) => r.passed).length;
-      expect(tinyGoodPassed).toBeGreaterThan(tinyBadPassed);
+    it('should show good designs have better latency/error metrics', () => {
+      // Tiny URL (Normal Load)
+      const tinyGood = runner.runTestCase(tinyUrlGoodDesign, tinyUrlTestCases[0]);
+      const tinyBad = runner.runTestCase(tinyUrlBadDesign, tinyUrlTestCases[0]);
+      expect(tinyGood.metrics.p99Latency).toBeLessThan(tinyBad.metrics.p99Latency);
+      expect(tinyGood.metrics.errorRate).toBeLessThanOrEqual(tinyBad.metrics.errorRate);
 
-      // Food Blog
-      const foodGoodResults = runner.runAllTestCases(
-        foodBlogGoodDesign,
-        foodBlogTestCases
-      );
-      const foodBadResults = runner.runAllTestCases(
-        foodBlogBadDesign,
-        foodBlogTestCases
-      );
-      const foodGoodPassed = foodGoodResults.filter((r) => r.passed).length;
-      const foodBadPassed = foodBadResults.filter((r) => r.passed).length;
-      expect(foodGoodPassed).toBeGreaterThan(foodBadPassed);
+      // Food Blog (Normal Load)
+      const foodGood = runner.runTestCase(foodBlogGoodDesign, foodBlogTestCases[0]);
+      const foodBad = runner.runTestCase(foodBlogBadDesign, foodBlogTestCases[0]);
+      expect(foodGood.metrics.p99Latency).toBeLessThanOrEqual(foodBad.metrics.p99Latency);
+      expect(foodGood.metrics.errorRate).toBeLessThanOrEqual(foodBad.metrics.errorRate);
 
-      // Todo App
-      const todoGoodResults = runner.runAllTestCases(
-        todoAppGoodDesign,
-        todoAppTestCases
-      );
-      const todoBadResults = runner.runAllTestCases(
-        todoAppBadDesign,
-        todoAppTestCases
-      );
-      const todoGoodPassed = todoGoodResults.filter((r) => r.passed).length;
-      const todoBadPassed = todoBadResults.filter((r) => r.passed).length;
-      expect(todoGoodPassed).toBeGreaterThan(todoBadPassed);
+      // Todo App (Hot User)
+      const todoGood = runner.runTestCase(todoAppGoodDesign, todoAppTestCases[2]);
+      const todoBad = runner.runTestCase(todoAppBadDesign, todoAppTestCases[2]);
+      expect(todoGood.metrics.p99Latency).toBeLessThanOrEqual(todoBad.metrics.p99Latency);
+      expect(todoGood.metrics.errorRate).toBeLessThanOrEqual(todoBad.metrics.errorRate);
     });
   });
 

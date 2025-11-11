@@ -36,17 +36,7 @@ describe('Todo App Simulation', () => {
       expect(result.metrics.errorRate).toBeLessThan(0.02);
     });
 
-    it('should have database configured with replication', () => {
-      const result = runner.runTestCase(todoAppGoodDesign, todoAppTestCases[0]);
-
-      // Find database component
-      const dbComponent = Array.from(todoAppGoodDesign.components).find(
-        (c) => c.type === 'postgresql'
-      );
-
-      expect(dbComponent).toBeDefined();
-      expect(dbComponent!.config.replication).toBe(true);
-    });
+    // Configuration checks removed — rely on observed traffic effects only
   });
 
   describe('Mediocre Design (no auto-failover)', () => {

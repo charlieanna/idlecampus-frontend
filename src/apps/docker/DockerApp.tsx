@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { Box, Layers, Network, FileKey, GripVertical, BookOpen, Check, Lock } from 'lucide-react';
+import { Box, Layers, Network, FileKey, GripVertical, BookOpen, Check, Lock, ChevronRight } from 'lucide-react';
 import * as ResizablePrimitive from 'react-resizable-panels';
 import { Terminal } from '../../components/course/Terminal';
 import { CourseNavigation, Module } from '../../components/course/CourseNavigation';
+import { CourseSidebar } from '../../components/course/CourseSidebar';
 import { LessonViewer } from '../../components/course/LessonViewer';
 import { LabExercise } from '../../components/course/LabExercise';
 import { QuizViewer } from '../../components/course/QuizViewer';
@@ -60,6 +61,7 @@ const courseModules: Module[] = [
     id: 'pods',
     title: 'Pods',
     icon: 'box',
+    sequenceOrder: 1,
     lessons: [
       {
         id: 'pods-intro',
@@ -234,6 +236,7 @@ When you're done with a pod, you should delete it to free up resources. Kubernet
     id: 'deployments',
     title: 'Deployments',
     icon: 'layers',
+    sequenceOrder: 2,
     lessons: [
       {
         id: 'deployments-intro',
@@ -311,6 +314,7 @@ Deployments provide declarative updates for Pods and ReplicaSets. They are the r
     id: 'services',
     title: 'Services',
     icon: 'network',
+    sequenceOrder: 3,
     lessons: [
       {
         id: 'services-intro',
@@ -384,6 +388,7 @@ Services use labels to select pods they route traffic to.`,
     id: 'configmaps',
     title: 'ConfigMaps & Secrets',
     icon: 'file-key',
+    sequenceOrder: 4,
     lessons: [
       {
         id: 'configmaps-intro',
@@ -630,8 +635,16 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
 
   const expectedCommand = getCurrentExpectedCommand();
 
-  // Use common gating hook
-  const { canAccessLesson, canAccessModule, getLessonAccessInfo } = useLessonGating(completedLessons, modules);
+  // Use common gating hook with progressive reveal
+  const {
+    canAccessLesson,
+    canAccessModule,
+    getLessonAccessInfo,
+    getVisibleModules,
+    isModuleTeaser,
+    getProgressInfo,
+    getModuleCompletionPercentage
+  } = useLessonGating(completedLessons, modules);
 
   // Get accessibility info for current lesson
   const {
@@ -675,116 +688,81 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
     return null;
   };
 
-  // Render the app with unified layout
-  return (
-    <div className="h-screen flex bg-white">
-      {/* Sidebar with Navigation and Commands Button */}
-      <div className="w-80 flex flex-col border-r border-slate-200 bg-slate-50">
-        {/* Course Header */}
-        <div className="p-4 border-b flex-shrink-0">
-          <h1 className="text-blue-600">Docker Course</h1>
-          <p className="text-slate-600 text-sm mt-1">Docker Fundamentals</p>
-        </div>
+  // Get visibility and progress info for header
+  const visibleModuleIds = getVisibleModules();
+  const progressInfo = getProgressInfo();
 
-        {/* Navigation - Scrollable */}
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-4 space-y-4">
-            {modules.map((module) => {
+  // Render the app with full-width layout
+  return (
+    <div className="h-screen flex flex-col bg-white">
+      {/* Compact Top Header */}
+      <div className="flex items-center justify-between px-6 py-3 border-b border-slate-200 bg-white flex-shrink-0">
+        <div className="flex items-center gap-4">
+          <h1 className="text-lg font-bold text-blue-600">🐳 Docker Course</h1>
+          <span className="text-slate-300">|</span>
+
+          {/* Module Dropdown */}
+          <select
+            value={selectedModule || ''}
+            onChange={(e) => {
+              const module = modules.find(m => m.id === e.target.value);
+              if (module && module.lessons.length > 0) {
+                onSelectLesson(module.id, module.lessons[0].id);
+              }
+            }}
+            className="text-sm font-medium text-slate-700 bg-transparent border-none focus:outline-none cursor-pointer hover:text-blue-600"
+          >
+            {modules.filter(m => visibleModuleIds.includes(m.id)).map((module) => {
               const moduleCompleted = module.lessons.every(lesson =>
                 completedLessons.has(lesson.id)
               );
+              const isModuleAccessible = canAccessModule(module.id);
+              const completionPercentage = getModuleCompletionPercentage(module.id);
 
               return (
-                <div key={module.id} className="space-y-2">
-                  {(() => {
-                    // Check if module is accessible
-                    const isModuleAccessible = canAccessModule(module.id);
-                    const moduleCompleted = module.lessons.every(l => completedLessons.has(l.id));
+                <option key={module.id} value={module.id} disabled={!isModuleAccessible}>
+                  {moduleCompleted && '✓ '}
+                  {module.title}
+                  {completionPercentage > 0 && !moduleCompleted && ` (${completionPercentage}%)`}
+                  {!isModuleAccessible && ' 🔒'}
+                </option>
+              );
+            })}
+          </select>
+        </div>
 
-                    return (
-                      <>
-                        <div className="flex items-center gap-2">
-                          <Box className={`w-4 h-4 ${isModuleAccessible ? 'text-blue-600' : 'text-slate-400'}`} />
-                          <h3 className={`text-sm font-semibold ${isModuleAccessible ? 'text-slate-900' : 'text-slate-400'}`}>{module.title}</h3>
-                          {!isModuleAccessible && <Lock className="w-3 h-3 text-slate-400 ml-auto" />}
-                          {moduleCompleted && isModuleAccessible && <Check className="w-3 h-3 text-green-600 ml-auto" />}
-                        </div>
-
-                        <div className="space-y-1 ml-6">
-                          {module.lessons.map((lesson, index) => {
-                            const isCompleted = completedLessons.has(lesson.id);
-                            const isSelected = selectedModule === module.id && selectedLesson === lesson.id;
-
-                            // Check if lesson is accessible (considering both module and lesson level)
-                            const allLessonsInModule = module.lessons.map((l, idx) => ({
-                              id: l.id,
-                              sequenceOrder: l.sequenceOrder ?? idx
-                            }));
-                            const isLessonAccessible = canAccessLesson(lesson.id, allLessonsInModule);
-                            const isAccessible = isModuleAccessible && isLessonAccessible;
-
-                      return (
-                        <button
-                          key={lesson.id}
-                          onClick={() => isAccessible && onSelectLesson(module.id, lesson.id)}
-                          disabled={!isAccessible}
-                          className={cn(
-                            'w-full text-left px-3 py-2 rounded text-sm transition-colors',
-                            isSelected
-                              ? 'bg-blue-100 text-blue-900'
-                              : isAccessible
-                              ? 'text-slate-700 hover:bg-slate-100'
-                              : 'text-slate-400 cursor-not-allowed'
-                          )}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className={!isAccessible ? 'text-slate-400' : 'text-slate-500'}>{index + 1}.</span>
-                            <span className="flex-1">{lesson.title}</span>
-                            {!isAccessible && <Lock className="w-3 h-3 text-slate-400" />}
-                            {isCompleted && isAccessible && <Check className="w-3 h-3 text-green-600" />}
-                          </div>
-                        </button>
-                      );
-                    })}
-
-                    {/* Show labs if they exist */}
-                    {module.labs && module.labs.length > 0 && module.labs.map((lab) => {
-                      const labId = `${module.id}-${lab.id}`;
-                      const isCompleted = completedLessons.has(labId);
-                      const isSelected = selectedModule === module.id && selectedLesson === labId;
-
-                      return (
-                        <button
-                          key={lab.id}
-                          onClick={() => onSelectLesson(module.id, labId)}
-                          className={cn(
-                            'w-full text-left px-3 py-2 rounded text-sm transition-colors',
-                            isSelected
-                              ? 'bg-blue-100 text-blue-900'
-                              : 'text-slate-700 hover:bg-slate-100'
-                          )}
-                        >
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs px-1.5 py-0.5 bg-purple-100 text-purple-700 rounded font-medium">LAB</span>
-                            <span className="flex-1">{lab.title}</span>
-                            {isCompleted && <Check className="w-3 h-3 text-green-600" />}
-                          </div>
-                        </button>
-                      );
-                            })}
-                          </div>
-                        </>
-                      );
-                    })()}
-                  </div>
-                );
-              })}
-            </div>
+        {/* Progress Indicator */}
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-slate-500">
+            {progressInfo.completedModules}/{progressInfo.totalModules} modules
+          </span>
+          <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-blue-600 transition-all duration-300"
+              style={{ width: `${progressInfo.overallProgress}%` }}
+            />
+          </div>
+          <span className="text-xs font-medium text-slate-700">
+            {progressInfo.overallProgress}%
+          </span>
         </div>
       </div>
 
-      {/* Course content with terminal */}
-      <ResizablePanelGroup direction="horizontal" className="flex-1">
+      {/* Main content area with sidebar */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left Sidebar - Reusable Component */}
+        <CourseSidebar
+          currentModule={currentModule}
+          currentLesson={currentLesson}
+          selectedLesson={selectedLesson}
+          completedLessons={completedLessons}
+          getModuleCompletionPercentage={getModuleCompletionPercentage}
+          canAccessLesson={canAccessLesson}
+          onSelectLesson={onSelectLesson}
+        />
+
+        {/* Main content with terminal */}
+        <ResizablePanelGroup direction="horizontal" className="flex-1">
           <ResizablePanel defaultSize={60} minSize={30}>
             <div className="h-full overflow-hidden">
               {currentLesson && (
@@ -845,6 +823,7 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
             />
           </ResizablePanel>
         </ResizablePanelGroup>
+      </div>
     </div>
   );
 }
