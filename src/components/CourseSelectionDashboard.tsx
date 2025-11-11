@@ -75,15 +75,15 @@ const baseCourses: Course[] = [
   },
   {
     id: 'system_design',
-    title: 'System Design & Back-of-Envelope',
-    description: 'Master capacity planning, QPS estimation, and system design fundamentals',
+    title: 'System Design Builder (Beta)',
+    description: 'Design distributed systems visually, run simulations, and get instant feedback - like LeetCode for System Design',
     icon: <Network className="w-12 h-12" />,
     status: 'available',
     features: [
-      'Capacity planning exercises',
-      'Back-of-envelope calculations',
-      'Storage & bandwidth estimation',
-      'Interview-style problems'
+      'Visual drag-and-drop canvas',
+      'Simulation engine with real metrics',
+      '3 challenges: Tiny URL, Food Blog, Todo App',
+      'Pass/fail with bottleneck detection'
     ],
     color: 'from-indigo-500 to-indigo-700'
   },
