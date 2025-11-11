@@ -53,28 +53,28 @@ function CustomNode({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`px-4 py-3 rounded-lg border-2 shadow-md transition-all min-w-[140px] ${
+      className={`px-2 py-1.5 rounded border-2 shadow-sm transition-all min-w-[90px] ${
         style.bgColor
       } ${style.borderColor} ${
-        selected ? 'ring-2 ring-blue-500 ring-offset-2 shadow-lg' : 'hover:shadow-lg'
+        selected ? 'ring-2 ring-blue-500 ring-offset-1 shadow-md' : 'hover:shadow-md'
       }`}
     >
       {/* Input Handle (Top) */}
       <Handle
         type="target"
         position={Position.Top}
-        className="w-3 h-3 !bg-blue-500 !border-2 !border-white"
+        className="w-2 h-2 !bg-blue-500 !border-2 !border-white"
       />
 
       {/* Node Content */}
-      <div className="flex items-center gap-2">
-        <span className="text-2xl">{style.icon}</span>
+      <div className="flex items-center gap-1.5">
+        <span className="text-lg">{style.icon}</span>
         <div className="flex-1 min-w-0">
-          <div className={`font-semibold text-sm ${style.color} truncate`}>
+          <div className={`font-semibold text-xs ${style.color} truncate`}>
             {displayName}
           </div>
           {data.subtitle && (
-            <div className="text-xs text-gray-500 truncate">{data.subtitle}</div>
+            <div className="text-[10px] text-gray-500 truncate">{data.subtitle}</div>
           )}
         </div>
       </div>
@@ -83,7 +83,7 @@ function CustomNode({ data, selected }: NodeProps) {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 !bg-green-500 !border-2 !border-white"
+        className="w-2 h-2 !bg-green-500 !border-2 !border-white"
       />
 
       {/* Left Handle */}
@@ -91,7 +91,7 @@ function CustomNode({ data, selected }: NodeProps) {
         type="target"
         position={Position.Left}
         id="left"
-        className="w-3 h-3 !bg-blue-500 !border-2 !border-white"
+        className="w-2 h-2 !bg-blue-500 !border-2 !border-white"
       />
 
       {/* Right Handle */}
@@ -99,7 +99,7 @@ function CustomNode({ data, selected }: NodeProps) {
         type="source"
         position={Position.Right}
         id="right"
-        className="w-3 h-3 !bg-green-500 !border-2 !border-white"
+        className="w-2 h-2 !bg-green-500 !border-2 !border-white"
       />
     </div>
   );

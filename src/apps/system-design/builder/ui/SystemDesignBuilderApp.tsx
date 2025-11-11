@@ -1,14 +1,16 @@
 import { useState, useEffect } from 'react';
 import { ReactFlowProvider, Node } from 'reactflow';
 import 'reactflow/dist/style.css';
-import { Challenge, Solution } from '../types/testCase';
+import { Challenge, Solution, TestResult } from '../types/testCase';
 import { SystemGraph } from '../types/graph';
-import { TestResult } from '../types/testCase';
 import { challenges } from '../challenges';
 import { ChallengeSelector } from './components/ChallengeSelector';
 import { DesignCanvas, getComponentInfo, getDefaultConfig } from './components/DesignCanvas';
-import { ChallengeInfoPanel } from './components/ChallengeInfoPanel';
-import { RightSidebar } from './components/RightSidebar';
+import { ProgressiveTestSidebar } from './components/ProgressiveTestSidebar';
+import { ProgressiveGuidancePanel } from './components/ProgressiveGuidancePanel';
+import { ComponentPalette } from './components/ComponentPalette';
+import { EnhancedInspector } from './components/EnhancedInspector';
+import { ReferenceSolutionPanel } from './components/ReferenceSolutionPanel';
 import { TestRunner } from '../simulation/testRunner';
 
 // Initial graph with Client component
@@ -28,33 +30,38 @@ export default function SystemDesignBuilderApp() {
     challenges[0] // Start with Tiny URL
   );
   const [systemGraph, setSystemGraph] = useState<SystemGraph>(getInitialGraph());
-  const [testResults, setTestResults] = useState<TestResult[] | null>(null);
+  const [activeTestIndex, setActiveTestIndex] = useState(0); // Current level
+  const [testResults, setTestResults] = useState<Map<number, TestResult>>(new Map()); // Per-level results
   const [isRunning, setIsRunning] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
+  const [showSolutionPanel, setShowSolutionPanel] = useState(false);
 
   // Reset graph when challenge changes
   useEffect(() => {
     setSystemGraph(getInitialGraph());
-    setTestResults(null);
+    setTestResults(new Map());
+    setActiveTestIndex(0);
     setSelectedNode(null);
+    setShowSolutionPanel(false);
   }, [selectedChallenge?.id]);
 
-  const handleRunTests = async () => {
+  const handleRunTest = async (testIndex: number) => {
     if (!selectedChallenge) return;
 
     setIsRunning(true);
-    setTestResults(null);
 
     // Simulate async operation
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     try {
       const runner = new TestRunner();
-      const results = runner.runAllTestCases(
-        systemGraph,
-        selectedChallenge.testCases
-      );
-      setTestResults(results);
+      const testCase = selectedChallenge.testCases[testIndex];
+      const result = runner.runTestCase(systemGraph, testCase);
+
+      // Update results map
+      const newResults = new Map(testResults);
+      newResults.set(testIndex, result);
+      setTestResults(newResults);
     } catch (error) {
       console.error('Simulation error:', error);
       alert('Error running simulation. Check console for details.');
@@ -93,7 +100,7 @@ export default function SystemDesignBuilderApp() {
     setSelectedNode(null);
   };
 
-  const handleLoadSolution = (solution: Solution, testCaseIndex: number) => {
+  const handleLoadSolution = (solution: Solution) => {
     // Convert solution to SystemGraph
     const components = solution.components.map((comp, index) => ({
       id: `${comp.type}_${Date.now()}_${index}`,
@@ -114,9 +121,12 @@ export default function SystemDesignBuilderApp() {
     }));
 
     setSystemGraph({ components, connections });
-    setTestResults(null);
     setSelectedNode(null);
+    setShowSolutionPanel(false);
   };
+
+  const currentTestCase = selectedChallenge?.testCases[activeTestIndex];
+  const currentTestResult = currentTestCase ? testResults.get(activeTestIndex) : undefined;
 
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
@@ -136,14 +146,14 @@ export default function SystemDesignBuilderApp() {
 
       {/* Main Content - Three Panel Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Challenge Info */}
+        {/* Left Panel - Progressive Test Sidebar */}
         {selectedChallenge && (
-          <ChallengeInfoPanel
-            challenge={selectedChallenge}
+          <ProgressiveTestSidebar
+            testCases={selectedChallenge.testCases}
+            activeTestIndex={activeTestIndex}
             testResults={testResults}
-            isRunning={isRunning}
-            onRunTests={handleRunTests}
-            onLoadSolution={handleLoadSolution}
+            onSelectTest={setActiveTestIndex}
+            onRunTest={handleRunTest}
           />
         )}
 
@@ -159,16 +169,47 @@ export default function SystemDesignBuilderApp() {
           />
         </ReactFlowProvider>
 
-        {/* Right Panel - Component Palette / Inspector */}
-        <RightSidebar
-          availableComponents={selectedChallenge?.availableComponents || []}
-          onAddComponent={handleAddComponent}
-          selectedNode={selectedNode}
-          systemGraph={systemGraph}
-          onUpdateConfig={handleUpdateConfig}
-          onBackToPalette={handleBackToPalette}
-        />
+        {/* Right Panel - Progressive Guidance + Palette/Inspector */}
+        <div className="flex flex-col w-96 bg-white border-l border-gray-200">
+          {/* Top: Progressive Guidance Panel */}
+          {currentTestCase && (
+            <div className="flex-shrink-0">
+              <ProgressiveGuidancePanel
+                testCase={currentTestCase}
+                testResult={currentTestResult}
+                currentComponentCount={systemGraph.components.length}
+                onShowSolution={() => setShowSolutionPanel(true)}
+              />
+            </div>
+          )}
+
+          {/* Bottom: Component Palette or Inspector */}
+          <div className="flex-1 overflow-y-auto border-t border-gray-200">
+            {selectedNode ? (
+              <EnhancedInspector
+                node={selectedNode}
+                systemGraph={systemGraph}
+                onUpdateConfig={handleUpdateConfig}
+                onBack={handleBackToPalette}
+              />
+            ) : (
+              <ComponentPalette
+                availableComponents={selectedChallenge?.availableComponents || []}
+                onAddComponent={handleAddComponent}
+              />
+            )}
+          </div>
+        </div>
       </div>
+
+      {/* Reference Solution Modal */}
+      {showSolutionPanel && currentTestCase?.solution && (
+        <ReferenceSolutionPanel
+          testCase={currentTestCase}
+          onClose={() => setShowSolutionPanel(false)}
+          onApplySolution={handleLoadSolution}
+        />
+      )}
     </div>
   );
 }

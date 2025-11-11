@@ -62,9 +62,9 @@ export function ProgressiveGuidancePanel({
   const guidance = levelGuidance[level] || levelGuidance[1];
 
   return (
-    <div className="w-96 bg-white border-l border-gray-200 overflow-y-auto">
+    <div className="bg-white overflow-y-auto">
       {/* Header */}
-      <div className="p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+      <div className="p-3 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
         <div className="flex items-center gap-2 mb-2">
           <span className="px-3 py-1 bg-blue-600 text-white text-xs font-bold rounded">
             LEVEL {level}
@@ -81,19 +81,19 @@ export function ProgressiveGuidancePanel({
       </div>
 
       {/* Learning Objective */}
-      <div className="p-6 border-b border-gray-200">
-        <h3 className="text-sm font-semibold text-gray-700 mb-2">🎯 Learning Objective</h3>
-        <p className="text-sm text-gray-900 font-medium">{guidance.objective}</p>
+      <div className="p-3 border-b border-gray-200">
+        <h3 className="text-xs font-semibold text-gray-700 mb-1">🎯 Learning Objective</h3>
+        <p className="text-xs text-gray-900 font-medium">{guidance.objective}</p>
       </div>
 
       {/* What's New */}
-      <div className="p-6 border-b border-gray-200 bg-yellow-50">
-        <h3 className="text-sm font-semibold text-yellow-900 mb-2">✨ New Concept</h3>
-        <p className="text-sm text-yellow-800">{guidance.newConcept}</p>
+      <div className="p-3 border-b border-gray-200 bg-yellow-50">
+        <h3 className="text-xs font-semibold text-yellow-900 mb-1">✨ New Concept</h3>
+        <p className="text-xs text-yellow-800">{guidance.newConcept}</p>
       </div>
 
       {/* Requirements Card */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-3 border-b border-gray-200">
         <h3 className="text-sm font-semibold text-gray-700 mb-3">📋 Requirements</h3>
         <div className="space-y-2">
           <div className="flex justify-between items-center text-sm">
@@ -160,13 +160,13 @@ export function ProgressiveGuidancePanel({
       </div>
 
       {/* Quick Tip */}
-      <div className="p-6 border-b border-gray-200 bg-blue-50">
-        <h3 className="text-sm font-semibold text-blue-900 mb-2">💡 Quick Tip</h3>
-        <p className="text-sm text-blue-800">{guidance.quickTip}</p>
+      <div className="p-3 border-b border-gray-200 bg-blue-50">
+        <h3 className="text-xs font-semibold text-blue-900 mb-1">💡 Quick Tip</h3>
+        <p className="text-xs text-blue-800">{guidance.quickTip}</p>
       </div>
 
       {/* Progress Indicator */}
-      <div className="p-6 border-b border-gray-200">
+      <div className="p-3 border-b border-gray-200">
         <h3 className="text-sm font-semibold text-gray-700 mb-3">🔧 Your Progress</h3>
         <div className="space-y-2">
           <div className="flex justify-between items-center text-sm">
@@ -196,10 +196,10 @@ export function ProgressiveGuidancePanel({
 
       {/* Test Result Summary */}
       {testResult && (
-        <div className={`p-6 border-b border-gray-200 ${
+        <div className={`p-3 border-b border-gray-200 ${
           testResult.passed ? 'bg-green-50' : 'bg-red-50'
         }`}>
-          <h3 className={`text-sm font-semibold mb-3 ${
+          <h3 className={`text-xs font-semibold mb-2 ${
             testResult.passed ? 'text-green-900' : 'text-red-900'
           }`}>
             {testResult.passed ? '✅ Test Passed!' : '❌ Test Failed'}
@@ -240,9 +240,9 @@ export function ProgressiveGuidancePanel({
 
       {/* Hint (if test failed) */}
       {showHint && testResult && !testResult.passed && (
-        <div className="p-6 border-b border-gray-200 bg-purple-50">
-          <h3 className="text-sm font-semibold text-purple-900 mb-2">💡 Hint</h3>
-          <div className="text-sm text-purple-800 space-y-2">
+        <div className="p-3 border-b border-gray-200 bg-purple-50">
+          <h3 className="text-xs font-semibold text-purple-900 mb-2">💡 Hint</h3>
+          <div className="text-xs text-purple-800 space-y-2">
             {level === 1 && (
               <>
                 <p>Every system needs 3 basic parts:</p>
@@ -305,7 +305,7 @@ export function ProgressiveGuidancePanel({
       )}
 
       {/* Action Buttons */}
-      <div className="p-6 space-y-3">
+      <div className="p-3 space-y-2">
         {testResult?.passed && testCase.solution && (
           <button
             onClick={onShowSolution}
@@ -326,8 +326,8 @@ export function ProgressiveGuidancePanel({
       </div>
 
       {/* Level-Specific Tips */}
-      <div className="p-6 bg-gray-50 border-t border-gray-200">
-        <h3 className="text-xs font-semibold text-gray-700 mb-2">📚 What You'll Learn</h3>
+      <div className="p-3 bg-gray-50 border-t border-gray-200">
+        <h3 className="text-[10px] font-semibold text-gray-700 mb-1">📚 What You'll Learn</h3>
         <div className="text-xs text-gray-600 space-y-1">
           {level === 1 && (
             <>
