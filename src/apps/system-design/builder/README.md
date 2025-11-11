@@ -25,7 +25,10 @@ types/
 └── testCase.ts          # Test case types
 
 examples/
-└── tinyUrlExample.ts    # Complete Tiny URL example
+├── tinyUrlExample.ts    # Challenge 1: Tiny URL (caching)
+├── foodBlogExample.ts   # Challenge 2: Food Blog (CDN)
+├── todoAppExample.ts    # Challenge 3: Todo App (replication)
+└── runAllExamples.ts    # Run all 3 challenges
 ```
 
 ## Components
@@ -65,18 +68,41 @@ examples/
 
 ## Usage
 
-### Run Tiny URL Example
+### Run All Examples
 
 ```typescript
-import { runTinyUrlExample } from './examples/tinyUrlExample';
+import { runAllExamples } from './examples/runAllExamples';
 
+// Runs all 3 challenges and shows results
+runAllExamples();
+```
+
+### Run Individual Examples
+
+```typescript
+// Challenge 1: Tiny URL (Caching)
+import { runTinyUrlExample } from './examples/tinyUrlExample';
 runTinyUrlExample();
+
+// Challenge 2: Food Blog (CDN)
+import { runFoodBlogExample } from './examples/foodBlogExample';
+runFoodBlogExample();
+
+// Challenge 3: Todo App (Replication)
+import { runTodoAppExample } from './examples/todoAppExample';
+runTodoAppExample();
 ```
 
 ### Run Tests
 
 ```bash
+# Run all tests
+npm test -- src/apps/system-design/builder/__tests__/
+
+# Run individual challenge tests
 npm test -- src/apps/system-design/builder/__tests__/tinyUrl.test.ts
+npm test -- src/apps/system-design/builder/__tests__/foodBlog.test.ts
+npm test -- src/apps/system-design/builder/__tests__/todoApp.test.ts
 ```
 
 ### Create a Custom Design
@@ -149,9 +175,11 @@ else:
 
 Monthly cost = component-specific formula (see individual components)
 
-## Example: Tiny URL Simulation
+## Examples: All 3 MVP Challenges
 
-### Good Design
+### Challenge 1: Tiny URL (Beginner - Caching)
+
+**Good Design:**
 ```
 Load Balancer → App Servers (2) → Redis (90% hit) → PostgreSQL
 ```
@@ -162,15 +190,67 @@ Load Balancer → App Servers (2) → Redis (90% hit) → PostgreSQL
 - ✅ Cost: ~$736/month
 - ✅ DB Utilization: 10% (cache absorbs 90%)
 
-### Bad Design
+**Bad Design:**
 ```
-Load Balancer → App Server (1) → PostgreSQL
+Load Balancer → App Server (1) → PostgreSQL (no cache)
 ```
 
-**Results** (Read Spike):
+**Results** (Read Spike - 5x traffic):
 - ❌ p99 Latency: ~500ms
 - ❌ Error Rate: 45%
 - ❌ DB Utilization: 1000% (completely overloaded)
+
+**💡 Key Learning:** Caching is critical for read-heavy workloads!
+
+---
+
+### Challenge 2: Food Blog (Beginner+ - CDN)
+
+**Good Design:**
+```
+App + Redis + PostgreSQL (for HTML)
+CDN → S3 (for images)
+```
+
+**Results** (Normal Load):
+- ✅ p99 Latency: ~25ms (CDN serves images at 5ms)
+- ✅ Cost: ~$180/month (CDN caching reduces bandwidth)
+
+**Bad Design:**
+```
+App Servers (5 instances) serving images directly
+```
+
+**Results**:
+- ⚠️ Works but extremely expensive
+- ❌ Cost: $500+/month (bandwidth from app servers)
+- ⚠️ High app server utilization
+
+**💡 Key Learning:** CDN dramatically reduces cost and latency for static content!
+
+---
+
+### Challenge 3: Todo App (Intermediate - Replication)
+
+**Good Design:**
+```
+App Servers (2) → Redis (sessions) → PostgreSQL (with replication)
+```
+
+**Results** (DB Failure Test):
+- ✅ Availability: 95%+ (minimal downtime during failover)
+- ✅ Passes all tests
+
+**Bad Design:**
+```
+App Server (1) → PostgreSQL (no replication)
+```
+
+**Results** (DB Failure Test):
+- ❌ Availability: 50% (60s downtime out of 120s)
+- ❌ Complete outage during DB crash
+
+**💡 Key Learning:** Replication is essential for high availability (99.9%+)!
 
 ## Validation
 
@@ -194,11 +274,12 @@ These are acceptable for MVP teaching tool!
 
 ## Next Steps
 
-- [ ] Add unit tests for all components
-- [ ] Add Food Blog and Todo App examples
-- [ ] Build UI for visual design
-- [ ] Add more test cases
-- [ ] Refine cost models
+- [x] Add Food Blog and Todo App examples ✅
+- [x] Add unit tests for all 3 challenges ✅
+- [ ] Build UI for visual design (reactflow canvas)
+- [ ] Connect UI to simulation engine
+- [ ] User testing with 5 people
+- [ ] Add more challenges (TicketMaster, Chat, etc.)
 
 ## References
 
