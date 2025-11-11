@@ -25,7 +25,18 @@ Example:
     budget: '$500/month',
   },
 
-  availableComponents: ['client', 'load_balancer', 'app_server', 'redis', 'postgresql'],
+  availableComponents: [
+    'client',
+    'load_balancer',
+    'app_server',
+    'redis',
+    'postgresql',
+    'mongodb',
+    'cassandra',
+    'message_queue',
+    'cdn',
+    's3',
+  ],
 
   testCases: [
     {

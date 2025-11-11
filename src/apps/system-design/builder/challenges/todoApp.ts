@@ -32,7 +32,12 @@ Example:
     'load_balancer',
     'app_server',
     'postgresql',
+    'mongodb',
+    'cassandra',
     'redis',
+    'message_queue',
+    'cdn',
+    's3',
   ],
 
   testCases: [
