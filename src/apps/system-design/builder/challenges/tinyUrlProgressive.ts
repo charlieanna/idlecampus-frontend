@@ -5,10 +5,10 @@ import { tinyUrlCodeChallenges } from './code/tinyUrlChallenges';
  * TinyURL - Progressive Learning Challenge
  *
  * Students build complexity step-by-step:
- * Level 1: Handle 1 request (learn basic flow)
- * Level 2: Handle 100 RPS (learn capacity)
- * Level 3: Handle 1000 RPS (learn caching)
- * Level 4: Handle failures (learn availability)
+ * Level 1: Build a working system (learn basic connectivity)
+ * Level 2: Handle 100 RPS (learn capacity planning)
+ * Level 3: Handle 1000 RPS (learn caching strategy)
+ * Level 4: Handle failures (learn high availability)
  * Level 5: Optimize cost (learn tradeoffs)
  */
 export const tinyUrlChallenge: Challenge = {
@@ -17,8 +17,8 @@ export const tinyUrlChallenge: Challenge = {
   difficulty: 'beginner',
   description: `Design a URL shortening service (like bit.ly) that accepts long URLs and returns short codes.
 
-**Learning Path:**
-Start simple, add complexity as you progress through levels!
+**🎮 Progressive Learning Path:**
+Start by building a basic working system, then level up as you learn new concepts!
 
 Example:
 - POST /shorten with https://example.com/very/long/url → returns abc123
@@ -30,8 +30,8 @@ Example:
       'Redirect short codes to original URLs',
       'Short codes should be unique',
     ],
-    traffic: 'Progressive: 1 RPS → 100 RPS → 1,000 RPS',
-    latency: 'p99 < 100ms for redirects',
+    traffic: 'Progressive: Basic → 100 RPS → 1,000 RPS',
+    latency: 'p99 < 100ms for redirects (later levels)',
     availability: '99.9% uptime (final level)',
     budget: '$500/month (final level)',
   },
@@ -51,19 +51,19 @@ Example:
 
   testCases: [
     // ═══════════════════════════════════════════════════════════════
-    // LEVEL 1: First Request - Minimal System
+    // LEVEL 1: Build Your First Working System
     // ═══════════════════════════════════════════════════════════════
     {
-      name: '🎯 Level 1: Handle Your First Request',
+      name: '🎯 Level 1: Build Your First Working System',
       traffic: {
         type: 'mixed',
-        rps: 1, // Just 1 request per second!
-        readRatio: 0.5, // 0.5 reads, 0.5 writes
+        rps: 1, // Minimal traffic - focus is on connectivity, not performance
+        readRatio: 0.5,
       },
       duration: 10,
       passCriteria: {
-        maxP99Latency: 1000, // Very generous - 1 second OK
-        maxErrorRate: 0.5, // Allow some errors at this stage
+        maxP99Latency: 5000, // VERY generous - just needs to work
+        maxErrorRate: 0.9, // Almost always allows some errors - focus is connectivity
       },
       solution: {
         components: [
@@ -78,27 +78,27 @@ Example:
         explanation: `🎓 Welcome to System Design!
 
 **What you just built:**
-Your first working system! It's the SIMPLEST possible architecture:
+Your first working system! Just 3 components connected correctly:
 
-  Client → App Server → Database
+  👤 Client → 📦 App Server → 💾 Database
 
-**How it works:**
-1. User sends request to app server
-2. App server processes business logic
-3. Database stores/retrieves URLs
-4. Response flows back to user
+**How data flows:**
+1. Client sends a request
+2. App Server processes it
+3. Database stores or retrieves the URL
+4. Response flows back
 
-**Why this is enough for 1 RPS:**
-- 1 request per second is TINY (like a personal blog)
-- Single app server handles 1000+ RPS easily
-- No need for fancy stuff yet!
+**Why you need all 3:**
+- Client = Users making requests
+- App Server = Where your code runs (business logic)
+- Database = Where data is stored permanently
 
 **What you learned:**
-✅ Every system needs: compute (app) + storage (database)
-✅ Client doesn't talk to database directly (security!)
-✅ App server = business logic layer
+✅ Every system needs compute (app server) + storage (database)
+✅ Client doesn't talk directly to database (for security!)
+✅ Components connect in a logical flow
 
-**Next Level:** What happens when traffic increases? 🚀`,
+**Next Level:** What happens when more people use your app? 🚀`,
       },
     },
 

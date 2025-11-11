@@ -28,10 +28,10 @@ export function ProgressiveGuidancePanel({
     quickTip: string;
   }> = {
     1: {
-      objective: 'Build your first working system',
-      newConcept: 'Basic 3-tier architecture',
+      objective: 'Connect 3 components to make a working system',
+      newConcept: 'Basic client-server-database flow',
       componentsNeeded: 3,
-      quickTip: 'Keep it simple: Client → App → Database',
+      quickTip: 'Just connect them: Client → App Server → PostgreSQL',
     },
     2: {
       objective: 'Handle 100x more traffic',
@@ -245,13 +245,15 @@ export function ProgressiveGuidancePanel({
           <div className="text-sm text-purple-800 space-y-2">
             {level === 1 && (
               <>
-                <p>You need just 3 components:</p>
+                <p>Every system needs 3 basic parts:</p>
                 <ol className="list-decimal ml-4 space-y-1">
-                  <li>Client (already there)</li>
-                  <li>App Server (drag from left)</li>
-                  <li>PostgreSQL (drag from left)</li>
+                  <li>Client (already on canvas)</li>
+                  <li>App Server (drag from left palette)</li>
+                  <li>PostgreSQL (drag from left palette)</li>
                 </ol>
-                <p className="mt-2">Connect: Client → App Server → PostgreSQL</p>
+                <p className="mt-2">Then connect them in order:</p>
+                <p className="ml-4">Client → App Server → PostgreSQL</p>
+                <p className="mt-2 text-xs">No configuration needed - just connect them!</p>
               </>
             )}
             {level === 2 && (
@@ -329,9 +331,9 @@ export function ProgressiveGuidancePanel({
         <div className="text-xs text-gray-600 space-y-1">
           {level === 1 && (
             <>
-              <p>• Basic system components</p>
-              <p>• Client-server architecture</p>
-              <p>• Database for persistence</p>
+              <p>• How to connect components</p>
+              <p>• Client-server-database pattern</p>
+              <p>• Building your first working system</p>
             </>
           )}
           {level === 2 && (
