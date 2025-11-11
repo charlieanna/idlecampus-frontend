@@ -51,15 +51,27 @@ export function DesignCanvas({
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
 
-  // Initialize nodes from systemGraph (for pre-populated Client)
+  // Sync nodes with systemGraph components
   useEffect(() => {
-    if (systemGraph.components.length > 0 && nodes.length === 0) {
-      const initialNodes: Node[] = systemGraph.components.map((comp, index) => {
+    setNodes((currentNodes) => {
+      const existingNodeIds = new Set(currentNodes.map((n) => n.id));
+      const componentIds = new Set(systemGraph.components.map((c) => c.id));
+
+      // Find new components that need nodes
+      const newComponents = systemGraph.components.filter(
+        (comp) => !existingNodeIds.has(comp.id)
+      );
+
+      // Create nodes for new components
+      const newNodes: Node[] = newComponents.map((comp, index) => {
         const componentInfo = getComponentInfo(comp.type);
         return {
           id: comp.id,
           type: 'custom',
-          position: { x: 300, y: 100 + index * 100 },
+          position: {
+            x: 250 + (currentNodes.length + index) * 50,
+            y: 150 + (currentNodes.length + index) * 30,
+          },
           data: {
             label: componentInfo.label,
             displayName: componentInfo.displayName,
@@ -68,9 +80,20 @@ export function DesignCanvas({
           },
         };
       });
-      setNodes(initialNodes);
-    }
-  }, [systemGraph.components.length]);
+
+      // Remove nodes for deleted components
+      const remainingNodes = currentNodes.filter((node) =>
+        componentIds.has(node.id)
+      );
+
+      // Return updated nodes if there are changes
+      if (newNodes.length > 0 || remainingNodes.length !== currentNodes.length) {
+        return [...remainingNodes, ...newNodes];
+      }
+
+      return currentNodes;
+    });
+  }, [systemGraph.components, setNodes]);
 
   // Handle new connections
   const onConnect = useCallback(
