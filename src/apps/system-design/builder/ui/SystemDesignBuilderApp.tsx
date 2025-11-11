@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react';
-import { ReactFlowProvider } from 'reactflow';
+import { ReactFlowProvider, Node } from 'reactflow';
 import 'reactflow/dist/style.css';
 import { Challenge } from '../types/testCase';
 import { SystemGraph } from '../types/graph';
 import { TestResult } from '../types/testCase';
 import { challenges } from '../challenges';
 import { ChallengeSelector } from './components/ChallengeSelector';
-import { DesignCanvas } from './components/DesignCanvas';
+import { DesignCanvas, getComponentInfo, getDefaultConfig } from './components/DesignCanvas';
+import { ChallengeInfoPanel } from './components/ChallengeInfoPanel';
+import { RightSidebar } from './components/RightSidebar';
+import { ResultsPanel } from './components/ResultsPanel';
 import { TestRunner } from '../simulation/testRunner';
 
 // Initial graph with Client component
@@ -28,11 +31,13 @@ export default function SystemDesignBuilderApp() {
   const [systemGraph, setSystemGraph] = useState<SystemGraph>(getInitialGraph());
   const [testResults, setTestResults] = useState<TestResult[] | null>(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [selectedNode, setSelectedNode] = useState<Node | null>(null);
 
   // Reset graph when challenge changes
   useEffect(() => {
     setSystemGraph(getInitialGraph());
     setTestResults(null);
+    setSelectedNode(null);
   }, [selectedChallenge?.id]);
 
   const handleRunTests = async () => {
@@ -63,6 +68,36 @@ export default function SystemDesignBuilderApp() {
     setTestResults(null);
   };
 
+  const handleAddComponent = (componentType: string) => {
+    const id = `${componentType}_${Date.now()}`;
+
+    const newComponent = {
+      id,
+      type: componentType as any,
+      config: getDefaultConfig(componentType),
+    };
+
+    setSystemGraph({
+      ...systemGraph,
+      components: [...systemGraph.components, newComponent],
+    });
+  };
+
+  const handleUpdateConfig = (nodeId: string, config: Record<string, any>) => {
+    const updatedComponents = systemGraph.components.map((comp) =>
+      comp.id === nodeId ? { ...comp, config: { ...comp.config, ...config } } : comp
+    );
+
+    setSystemGraph({
+      ...systemGraph,
+      components: updatedComponents,
+    });
+  };
+
+  const handleBackToPalette = () => {
+    setSelectedNode(null);
+  };
+
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
       {/* Top Bar */}
@@ -77,30 +112,51 @@ export default function SystemDesignBuilderApp() {
             onSelectChallenge={setSelectedChallenge}
           />
         </div>
-        <button
-          onClick={handleRunTests}
-          disabled={isRunning || systemGraph.components.length === 0}
-          className={`px-6 py-2 rounded-lg font-medium transition-colors ${
-            isRunning || systemGraph.components.length === 0
-              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-              : 'bg-blue-600 text-white hover:bg-blue-700'
-          }`}
-        >
-          {isRunning ? '⏳ Running...' : '▶️ Run Simulation'}
-        </button>
       </div>
 
-      {/* Main Content */}
+      {/* Main Content - Three Panel Layout */}
       <div className="flex-1 flex overflow-hidden">
+        {/* Left Panel - Challenge Info */}
+        {selectedChallenge && (
+          <ChallengeInfoPanel
+            challenge={selectedChallenge}
+            testResults={testResults}
+            isRunning={isRunning}
+            onRunTests={handleRunTests}
+          />
+        )}
+
+        {/* Center Panel - Design Canvas */}
         <ReactFlowProvider>
           <DesignCanvas
-            challenge={selectedChallenge}
             systemGraph={systemGraph}
             onSystemGraphChange={setSystemGraph}
-            testResults={testResults}
-            onClearResults={handleClearResults}
+            selectedNode={selectedNode}
+            onNodeSelect={setSelectedNode}
+            onAddComponent={handleAddComponent}
+            onUpdateConfig={handleUpdateConfig}
           />
         </ReactFlowProvider>
+
+        {/* Right Panel - Component Palette / Inspector */}
+        {testResults ? (
+          <div className="w-80 bg-white border-l border-gray-200">
+            <ResultsPanel
+              results={testResults}
+              challenge={selectedChallenge}
+              onClose={handleClearResults}
+            />
+          </div>
+        ) : (
+          <RightSidebar
+            availableComponents={selectedChallenge?.availableComponents || []}
+            onAddComponent={handleAddComponent}
+            selectedNode={selectedNode}
+            systemGraph={systemGraph}
+            onUpdateConfig={handleUpdateConfig}
+            onBackToPalette={handleBackToPalette}
+          />
+        )}
       </div>
     </div>
   );
