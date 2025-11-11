@@ -2,6 +2,7 @@
  * Export all component classes
  */
 export { Component } from './Component';
+export { Client } from './Client';
 export { LoadBalancer } from './LoadBalancer';
 export { AppServer } from './AppServer';
 export { PostgreSQL } from './PostgreSQL';

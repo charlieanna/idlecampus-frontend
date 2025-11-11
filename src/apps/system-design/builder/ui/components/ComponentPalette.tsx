@@ -4,12 +4,13 @@ interface ComponentPaletteProps {
 }
 
 const COMPONENT_INFO: Record<string, { icon: string; label: string; category: string }> = {
+  client: { icon: '👤', label: 'Client', category: 'Traffic Source' },
   load_balancer: { icon: '🌐', label: 'Load Balancer', category: 'Network' },
   app_server: { icon: '📦', label: 'App Server', category: 'Compute' },
   postgresql: { icon: '💾', label: 'PostgreSQL', category: 'Storage' },
   redis: { icon: '⚡', label: 'Redis Cache', category: 'Cache' },
   cdn: { icon: '🌍', label: 'CDN', category: 'Network' },
-  s3: { icon: '📦', label: 'S3', category: 'Storage' },
+  s3: { icon: '☁️', label: 'S3', category: 'Storage' },
 };
 
 export function ComponentPalette({

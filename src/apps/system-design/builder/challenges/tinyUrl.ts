@@ -24,7 +24,7 @@ Example:
     budget: '$500/month',
   },
 
-  availableComponents: ['load_balancer', 'app_server', 'redis', 'postgresql'],
+  availableComponents: ['client', 'load_balancer', 'app_server', 'redis', 'postgresql'],
 
   testCases: [
     {

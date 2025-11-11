@@ -177,6 +177,7 @@ export function DesignCanvas({
             nodeColor={(node) => {
               const type = node.data.componentType || 'app_server';
               const colors: Record<string, string> = {
+                client: '#6b7280',
                 load_balancer: '#3b82f6',
                 app_server: '#8b5cf6',
                 postgresql: '#6366f1',
@@ -277,6 +278,11 @@ export function DesignCanvas({
 // Helper functions
 function getComponentInfo(type: string): { label: string; displayName: string; subtitle: string } {
   const info: Record<string, { label: string; displayName: string; subtitle: string }> = {
+    client: {
+      label: '👤 Client',
+      displayName: 'Client',
+      subtitle: 'Traffic source',
+    },
     load_balancer: {
       label: '🌐 Load Balancer',
       displayName: 'Load Balancer',
@@ -313,6 +319,7 @@ function getComponentInfo(type: string): { label: string; displayName: string; s
 
 function getDefaultConfig(type: string): Record<string, any> {
   const defaults: Record<string, Record<string, any>> = {
+    client: {},
     load_balancer: {},
     app_server: { instances: 1 },
     postgresql: { readCapacity: 1000, writeCapacity: 1000, replication: false },
