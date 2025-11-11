@@ -59,6 +59,10 @@ export default function SystemDesignBuilderApp() {
     }
   };
 
+  const handleClearResults = () => {
+    setTestResults(null);
+  };
+
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
       {/* Top Bar */}
@@ -94,6 +98,7 @@ export default function SystemDesignBuilderApp() {
             systemGraph={systemGraph}
             onSystemGraphChange={setSystemGraph}
             testResults={testResults}
+            onClearResults={handleClearResults}
           />
         </ReactFlowProvider>
       </div>

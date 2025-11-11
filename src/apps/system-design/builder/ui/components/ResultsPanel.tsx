@@ -7,7 +7,7 @@ interface ResultsPanelProps {
   onClose: () => void;
 }
 
-export function ResultsPanel({ results, challenge }: ResultsPanelProps) {
+export function ResultsPanel({ results, challenge, onClose }: ResultsPanelProps) {
   const passedCount = results.filter((r) => r.passed).length;
   const totalCount = results.length;
   const allPassed = passedCount === totalCount;
@@ -16,9 +16,20 @@ export function ResultsPanel({ results, challenge }: ResultsPanelProps) {
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
-        <h2 className="text-lg font-semibold text-gray-900 mb-1">
-          Simulation Results
-        </h2>
+        <div className="flex items-center justify-between mb-2">
+          <h2 className="text-lg font-semibold text-gray-900">
+            Simulation Results
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-gray-400 hover:text-gray-600 transition-colors"
+            title="Close results and edit components"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
         <div className="flex items-center gap-2">
           <span
             className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${

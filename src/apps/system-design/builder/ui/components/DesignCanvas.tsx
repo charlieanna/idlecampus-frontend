@@ -26,6 +26,7 @@ interface DesignCanvasProps {
   systemGraph: SystemGraph;
   onSystemGraphChange: (graph: SystemGraph) => void;
   testResults: TestResult[] | null;
+  onClearResults: () => void;
 }
 
 // Register custom node types
@@ -48,6 +49,7 @@ export function DesignCanvas({
   systemGraph,
   onSystemGraphChange,
   testResults,
+  onClearResults,
 }: DesignCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
@@ -283,7 +285,7 @@ export function DesignCanvas({
           <ResultsPanel
             results={testResults}
             challenge={challenge}
-            onClose={() => {}}
+            onClose={onClearResults}
           />
         ) : (
           <Inspector
