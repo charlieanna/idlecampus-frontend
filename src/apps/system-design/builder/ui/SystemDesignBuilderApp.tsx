@@ -149,6 +149,7 @@ export default function SystemDesignBuilderApp() {
         {/* Left Panel - Progressive Test Sidebar */}
         {selectedChallenge && (
           <ProgressiveTestSidebar
+            challenge={selectedChallenge}
             testCases={selectedChallenge.testCases}
             activeTestIndex={activeTestIndex}
             testResults={testResults}
