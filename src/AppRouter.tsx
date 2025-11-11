@@ -412,7 +412,7 @@ export default function AppRouter() {
       <Route path="/golang" element={<GolangApp />} />
 
       {/* New courses */}
-      <Route path="/system_design" element={<CoursePageWrapper courseType="system_design" />} />
+      <Route path="/system_design" element={<SystemDesignApp />} />
       <Route path="/aws" element={<CoursePageWrapper courseType="aws" />} />
       <Route path="/envoy" element={<CoursePageWrapper courseType="envoy" />} />
       <Route path="/postgresql" element={<CoursePageWrapper courseType="postgresql" />} />
