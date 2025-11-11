@@ -89,9 +89,9 @@ export function ChallengeInfoPanel({
         {/* Test Cases */}
         <div>
           <h3 className="text-sm font-semibold text-gray-900 mb-2">
-            🧪 Test Cases ({passedCount}/{totalCount} passed)
+            🧪 Test Cases {testResults && `(${passedCount}/${totalCount} passed)`}
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-3">
             {challenge.testCases.map((testCase, idx) => {
               const result = testResults?.[idx];
               const isPassed = result?.passed;
@@ -100,7 +100,7 @@ export function ChallengeInfoPanel({
               return (
                 <div
                   key={idx}
-                  className={`rounded border p-2 ${
+                  className={`rounded border p-3 ${
                     !hasRun
                       ? 'border-gray-200 bg-gray-50'
                       : isPassed
@@ -108,7 +108,8 @@ export function ChallengeInfoPanel({
                       : 'border-red-200 bg-red-50'
                   }`}
                 >
-                  <div className="flex items-center gap-2 mb-1">
+                  {/* Test Name */}
+                  <div className="flex items-center gap-2 mb-2">
                     {!hasRun ? (
                       <span className="text-gray-400">○</span>
                     ) : isPassed ? (
@@ -116,14 +117,80 @@ export function ChallengeInfoPanel({
                     ) : (
                       <span className="text-red-600">✗</span>
                     )}
-                    <span className="text-xs font-medium text-gray-900">
+                    <span className="text-xs font-semibold text-gray-900">
                       {testCase.name}
                     </span>
                   </div>
-                  <div className="text-xs text-gray-600 ml-5">
-                    {testCase.traffic.rps} RPS
-                    {testCase.duration && ` · ${testCase.duration}s`}
-                  </div>
+
+                  {/* Basic Info */}
+                  {!hasRun && (
+                    <div className="text-xs text-gray-600 ml-5">
+                      {testCase.traffic.rps} RPS
+                      {testCase.duration && ` · ${testCase.duration}s`}
+                    </div>
+                  )}
+
+                  {/* Detailed Metrics (when test has run) */}
+                  {hasRun && result && (
+                    <div className="ml-5 space-y-1.5">
+                      {/* Metrics */}
+                      <div className="text-xs space-y-1">
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">p99 Latency:</span>
+                          <span className={`font-medium ${isPassed ? 'text-green-700' : 'text-red-700'}`}>
+                            {result.metrics.p99Latency.toFixed(1)}ms
+                            {testCase.passCriteria.maxP99Latency &&
+                              ` (target: ${testCase.passCriteria.maxP99Latency}ms)`}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Error Rate:</span>
+                          <span className={`font-medium ${isPassed ? 'text-green-700' : 'text-red-700'}`}>
+                            {(result.metrics.errorRate * 100).toFixed(2)}%
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-gray-600">Monthly Cost:</span>
+                          <span
+                            className={`font-medium ${
+                              testCase.passCriteria.maxMonthlyCost &&
+                              result.metrics.monthlyCost > testCase.passCriteria.maxMonthlyCost
+                                ? 'text-red-700'
+                                : 'text-green-700'
+                            }`}
+                          >
+                            ${result.metrics.monthlyCost.toFixed(0)}
+                            {testCase.passCriteria.maxMonthlyCost &&
+                              ` (budget: $${testCase.passCriteria.maxMonthlyCost})`}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Bottlenecks */}
+                      {result.bottlenecks.length > 0 && (
+                        <div className="mt-2 pt-2 border-t border-gray-300">
+                          <p className="text-xs font-medium text-gray-700 mb-1">
+                            🔍 Bottlenecks:
+                          </p>
+                          <div className="space-y-1">
+                            {result.bottlenecks.map((bottleneck, i) => (
+                              <div
+                                key={i}
+                                className="text-xs bg-white rounded p-1.5 border border-gray-200"
+                              >
+                                <div className="font-medium text-gray-900">
+                                  {bottleneck.componentId} ({(bottleneck.utilization * 100).toFixed(0)}% utilized)
+                                </div>
+                                <div className="text-gray-600 mt-0.5">
+                                  💡 {bottleneck.recommendation}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
