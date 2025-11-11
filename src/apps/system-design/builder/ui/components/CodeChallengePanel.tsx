@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import Editor from '@monaco-editor/react';
 import { CodeChallenge, CodeSubmission, TestResult } from '../../types/codeChallenge';
 import { runCodeTests } from '../../services/testRunner';
 
@@ -109,14 +110,23 @@ export function CodeChallengePanel({ challenge, onClose }: CodeChallengePanelPro
         <div className="flex-1 overflow-hidden p-6">
           {activeTab === 'editor' && (
             <div className="h-full flex flex-col">
-              {/* Simple textarea editor (replace with Monaco in production) */}
+              {/* Monaco Editor (VS Code experience) */}
               <div className="flex-1 border border-gray-300 rounded-lg overflow-hidden">
-                <textarea
+                <Editor
+                  height="100%"
+                  defaultLanguage="typescript"
                   value={code}
-                  onChange={(e) => setCode(e.target.value)}
-                  className="w-full h-full p-4 font-mono text-sm resize-none focus:outline-none"
-                  spellCheck={false}
-                  placeholder="Write your code here..."
+                  onChange={(value) => setCode(value || '')}
+                  theme="vs-light"
+                  options={{
+                    minimap: { enabled: false },
+                    fontSize: 14,
+                    lineNumbers: 'on',
+                    scrollBeyondLastLine: false,
+                    automaticLayout: true,
+                    tabSize: 2,
+                    wordWrap: 'on',
+                  }}
                 />
               </div>
             </div>

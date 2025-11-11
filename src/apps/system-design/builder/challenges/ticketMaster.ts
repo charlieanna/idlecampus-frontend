@@ -1,4 +1,5 @@
 import { Challenge } from '../types/testCase';
+import { ticketMasterCodeChallenges } from './code/ticketMasterChallenges';
 
 /**
  * TicketMaster System Design - Advanced Interview Challenge
@@ -249,6 +250,9 @@ Your p99 latency exceeded 500ms during peak load.
 **Industry Standard:** Most sites use virtual waiting rooms + optimistic concurrency.`,
     },
   ],
+
+  // Code challenges for hands-on implementation practice
+  codeChallenges: ticketMasterCodeChallenges,
 };
 
 /**
