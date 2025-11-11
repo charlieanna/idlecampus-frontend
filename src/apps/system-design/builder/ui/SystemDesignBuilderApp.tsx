@@ -9,7 +9,6 @@ import { ChallengeSelector } from './components/ChallengeSelector';
 import { DesignCanvas, getComponentInfo, getDefaultConfig } from './components/DesignCanvas';
 import { ChallengeInfoPanel } from './components/ChallengeInfoPanel';
 import { RightSidebar } from './components/RightSidebar';
-import { ResultsPanel } from './components/ResultsPanel';
 import { TestRunner } from '../simulation/testRunner';
 
 // Initial graph with Client component
@@ -62,10 +61,6 @@ export default function SystemDesignBuilderApp() {
     } finally {
       setIsRunning(false);
     }
-  };
-
-  const handleClearResults = () => {
-    setTestResults(null);
   };
 
   const handleAddComponent = (componentType: string) => {
@@ -139,24 +134,14 @@ export default function SystemDesignBuilderApp() {
         </ReactFlowProvider>
 
         {/* Right Panel - Component Palette / Inspector */}
-        {testResults ? (
-          <div className="w-80 bg-white border-l border-gray-200">
-            <ResultsPanel
-              results={testResults}
-              challenge={selectedChallenge}
-              onClose={handleClearResults}
-            />
-          </div>
-        ) : (
-          <RightSidebar
-            availableComponents={selectedChallenge?.availableComponents || []}
-            onAddComponent={handleAddComponent}
-            selectedNode={selectedNode}
-            systemGraph={systemGraph}
-            onUpdateConfig={handleUpdateConfig}
-            onBackToPalette={handleBackToPalette}
-          />
-        )}
+        <RightSidebar
+          availableComponents={selectedChallenge?.availableComponents || []}
+          onAddComponent={handleAddComponent}
+          selectedNode={selectedNode}
+          systemGraph={systemGraph}
+          onUpdateConfig={handleUpdateConfig}
+          onBackToPalette={handleBackToPalette}
+        />
       </div>
     </div>
   );
