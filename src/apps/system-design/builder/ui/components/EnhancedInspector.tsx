@@ -61,6 +61,14 @@ export function EnhancedInspector({
         let baseCost = 100;
         if (component.config.replication) baseCost += 100;
         return baseCost;
+      case 'mongodb':
+        const mongoNodes = component.config.numShards || 3;
+        return mongoNodes * 100;
+      case 'cassandra':
+        const cassandraNodes = component.config.numNodes || 3;
+        return 200 + (cassandraNodes - 1) * 150;
+      case 'message_queue':
+        return (component.config.numBrokers || 3) * 100;
       case 'load_balancer':
         return 50;
       case 'cdn':
@@ -119,6 +127,33 @@ export function EnhancedInspector({
         {/* Redis Config */}
         {component.type === 'redis' && (
           <RedisConfig
+            config={component.config}
+            onChange={handleChange}
+            onApplyPreset={applyPreset}
+          />
+        )}
+
+        {/* MongoDB Config */}
+        {component.type === 'mongodb' && (
+          <MongoDBConfig
+            config={component.config}
+            onChange={handleChange}
+            onApplyPreset={applyPreset}
+          />
+        )}
+
+        {/* Cassandra Config */}
+        {component.type === 'cassandra' && (
+          <CassandraConfig
+            config={component.config}
+            onChange={handleChange}
+            onApplyPreset={applyPreset}
+          />
+        )}
+
+        {/* Message Queue Config */}
+        {component.type === 'message_queue' && (
+          <MessageQueueConfig
             config={component.config}
             onChange={handleChange}
             onApplyPreset={applyPreset}
@@ -800,6 +835,617 @@ function S3Config({ config, onChange }: Omit<ConfigProps, 'onApplyPreset'>) {
 }
 
 // ============================================================================
+// MongoDB Configuration
+// ============================================================================
+
+function MongoDBConfig({ config, onChange, onApplyPreset }: ConfigProps) {
+  const numShards = config.numShards || 3;
+  const replicationFactor = config.replicationFactor || 3;
+  const consistencyLevel = config.consistencyLevel || 'eventual';
+  const cost = numShards * 100;
+
+  const presets: ConfigPreset[] = [
+    {
+      name: 'Single Node',
+      description: 'Dev/test only',
+      config: { numShards: 1, replicationFactor: 1, consistencyLevel: 'eventual' },
+      icon: '💰',
+    },
+    {
+      name: 'Standard',
+      description: 'Replica set',
+      config: { numShards: 3, replicationFactor: 3, consistencyLevel: 'eventual' },
+      icon: '⚖️',
+    },
+    {
+      name: 'Sharded',
+      description: 'High scale',
+      config: { numShards: 5, replicationFactor: 3, consistencyLevel: 'eventual' },
+      icon: '🚀',
+    },
+  ];
+
+  const consistencyOptions = [
+    { value: 'strong', label: 'Strong (majority read/write)', icon: '🔒' },
+    { value: 'eventual', label: 'Eventual (fast, default)', icon: '⚡' },
+    { value: 'causal', label: 'Causal (ordered)', icon: '📊' },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <h3 className="font-semibold text-sm text-gray-900">MongoDB Configuration</h3>
+
+      {/* Presets */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-2">
+          Quick Presets
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          {presets.map((preset) => (
+            <button
+              key={preset.name}
+              onClick={() => onApplyPreset?.(preset.config)}
+              className="p-2 text-left border border-gray-200 rounded hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            >
+              <div className="text-lg">{preset.icon}</div>
+              <div className="text-xs font-medium text-gray-900 mt-1">
+                {preset.name}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Shards */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Number of Shards
+        </label>
+        <input
+          type="range"
+          min="1"
+          max="10"
+          value={numShards}
+          onChange={(e) => onChange('numShards', parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-2xl font-bold text-blue-600">{numShards}</span>
+          <div className="text-right">
+            <div className="text-xs text-gray-500">Monthly Cost</div>
+            <div className="text-sm font-semibold text-green-600">${cost}/mo</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Replication Factor */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Replication Factor
+        </label>
+        <input
+          type="range"
+          min="1"
+          max="5"
+          value={replicationFactor}
+          onChange={(e) => onChange('replicationFactor', parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-2xl font-bold text-purple-600">{replicationFactor}</span>
+          <span className="text-xs text-gray-500">
+            Can tolerate {replicationFactor - 1} node failure{replicationFactor > 2 ? 's' : ''}
+          </span>
+        </div>
+      </div>
+
+      {/* Consistency Level */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Consistency Level
+        </label>
+        <div className="space-y-2">
+          {consistencyOptions.map((option) => (
+            <label
+              key={option.value}
+              className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                consistencyLevel === option.value
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <input
+                type="radio"
+                name="consistencyLevel"
+                value={option.value}
+                checked={consistencyLevel === option.value}
+                onChange={(e) => onChange('consistencyLevel', e.target.value)}
+                className="mr-3"
+              />
+              <span className="text-lg mr-2">{option.icon}</span>
+              <span className="text-sm text-gray-900">{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Info Card */}
+      <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+        <div className="text-xs font-medium text-green-900 mb-1">
+          📚 MongoDB Use Cases
+        </div>
+        <p className="text-xs text-green-800">
+          Perfect for: User profiles, product catalogs, content management.
+          Flexible schema allows rapid iteration. Not ideal for complex joins or transactions.
+        </p>
+      </div>
+
+      {/* Consistency Explanation */}
+      {consistencyLevel === 'strong' && (
+        <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+          <div className="text-xs font-medium text-yellow-900 mb-1">
+            ⚠️ Strong Consistency
+          </div>
+          <p className="text-xs text-yellow-800">
+            Reads/writes wait for majority quorum. Slower but guarantees latest data.
+            Use for: Financial data, inventory counts.
+          </p>
+        </div>
+      )}
+
+      {consistencyLevel === 'eventual' && (
+        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="text-xs font-medium text-blue-900 mb-1">
+            ⚡ Eventual Consistency
+          </div>
+          <p className="text-xs text-blue-800">
+            Fast reads/writes, may return slightly stale data.
+            Use for: Social feeds, dashboards, analytics.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Cassandra Configuration
+// ============================================================================
+
+function CassandraConfig({ config, onChange, onApplyPreset }: ConfigProps) {
+  const numNodes = config.numNodes || 3;
+  const replicationFactor = config.replicationFactor || 3;
+  const readQuorum = config.readQuorum || 2;
+  const writeQuorum = config.writeQuorum || 2;
+  const cost = 200 + (numNodes - 1) * 150;
+
+  // Check consistency
+  const isStronglyConsistent = readQuorum + writeQuorum > replicationFactor;
+
+  const presets: ConfigPreset[] = [
+    {
+      name: 'ONE (Fast)',
+      description: 'Eventual consistency',
+      config: { numNodes: 3, replicationFactor: 3, readQuorum: 1, writeQuorum: 1 },
+      icon: '⚡',
+    },
+    {
+      name: 'QUORUM',
+      description: 'Balanced (common)',
+      config: { numNodes: 3, replicationFactor: 3, readQuorum: 2, writeQuorum: 2 },
+      icon: '⚖️',
+    },
+    {
+      name: 'ALL (Safe)',
+      description: 'Strong consistency',
+      config: { numNodes: 3, replicationFactor: 3, readQuorum: 3, writeQuorum: 3 },
+      icon: '🔒',
+    },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <h3 className="font-semibold text-sm text-gray-900">Cassandra Configuration</h3>
+
+      {/* Presets */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-2">
+          Quick Presets
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          {presets.map((preset) => (
+            <button
+              key={preset.name}
+              onClick={() => onApplyPreset?.(preset.config)}
+              className="p-2 text-left border border-gray-200 rounded hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            >
+              <div className="text-lg">{preset.icon}</div>
+              <div className="text-xs font-medium text-gray-900 mt-1">
+                {preset.name}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {preset.description}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Consistency Formula Explanation */}
+      <div className={`p-4 rounded-lg border-2 ${
+        isStronglyConsistent
+          ? 'bg-green-50 border-green-500'
+          : 'bg-yellow-50 border-yellow-500'
+      }`}>
+        <div className="text-sm font-semibold mb-2">
+          {isStronglyConsistent ? '✅ Strong Consistency' : '⚠️ Eventual Consistency'}
+        </div>
+        <div className="text-xs space-y-1">
+          <div className="font-mono">
+            R={readQuorum} + W={writeQuorum} {isStronglyConsistent ? '>' : '≤'} N={replicationFactor}
+          </div>
+          <div className="text-gray-700">
+            {isStronglyConsistent
+              ? 'All reads see latest write (slower, consistent)'
+              : 'Reads may be stale (faster, eventually consistent)'
+            }
+          </div>
+        </div>
+      </div>
+
+      {/* Number of Nodes */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Number of Nodes
+        </label>
+        <input
+          type="range"
+          min="3"
+          max="10"
+          value={numNodes}
+          onChange={(e) => onChange('numNodes', parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-2xl font-bold text-blue-600">{numNodes}</span>
+          <div className="text-right">
+            <div className="text-xs text-gray-500">Monthly Cost</div>
+            <div className="text-sm font-semibold text-green-600">${cost}/mo</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Replication Factor (N) */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Replication Factor (N)
+        </label>
+        <input
+          type="range"
+          min="1"
+          max="5"
+          value={replicationFactor}
+          onChange={(e) => onChange('replicationFactor', parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-2xl font-bold text-purple-600">{replicationFactor}</span>
+          <span className="text-xs text-gray-500">Total copies of each row</span>
+        </div>
+      </div>
+
+      {/* Read Quorum (R) */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Read Quorum (R)
+        </label>
+        <input
+          type="range"
+          min="1"
+          max={replicationFactor}
+          value={Math.min(readQuorum, replicationFactor)}
+          onChange={(e) => onChange('readQuorum', parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-2xl font-bold text-indigo-600">{readQuorum}</span>
+          <span className="text-xs text-gray-500">Replicas must respond for read</span>
+        </div>
+      </div>
+
+      {/* Write Quorum (W) */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Write Quorum (W)
+        </label>
+        <input
+          type="range"
+          min="1"
+          max={replicationFactor}
+          value={Math.min(writeQuorum, replicationFactor)}
+          onChange={(e) => onChange('writeQuorum', parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-2xl font-bold text-pink-600">{writeQuorum}</span>
+          <span className="text-xs text-gray-500">Replicas must ack write</span>
+        </div>
+      </div>
+
+      {/* Info Card */}
+      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="text-xs font-medium text-blue-900 mb-1">
+          💡 Interview Tip
+        </div>
+        <p className="text-xs text-blue-800">
+          <strong>R + W &gt; N = Strong Consistency</strong><br />
+          For N=3, use R=2, W=2 (QUORUM) for balanced consistency and availability.
+          Can tolerate {replicationFactor - Math.max(readQuorum, writeQuorum)} node failure(s).
+        </p>
+      </div>
+
+      {/* Use Cases */}
+      <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+        <div className="text-xs font-medium text-green-900 mb-1">
+          📚 Cassandra Use Cases
+        </div>
+        <p className="text-xs text-green-800">
+          Perfect for: IoT time-series, logging, high write throughput.
+          Leaderless architecture = high availability. Not ideal for complex queries or transactions.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Message Queue Configuration
+// ============================================================================
+
+function MessageQueueConfig({ config, onChange, onApplyPreset }: ConfigProps) {
+  const numBrokers = config.numBrokers || 3;
+  const numPartitions = config.numPartitions || 10;
+  const replicationFactor = config.replicationFactor || 3;
+  const semantics = config.semantics || 'at_least_once';
+  const orderingGuarantee = config.orderingGuarantee || 'partition';
+  const cost = numBrokers * 100;
+
+  const presets: ConfigPreset[] = [
+    {
+      name: 'Minimal',
+      description: 'Single broker',
+      config: { numBrokers: 1, numPartitions: 3, replicationFactor: 1 },
+      icon: '💰',
+    },
+    {
+      name: 'Standard',
+      description: 'HA cluster',
+      config: { numBrokers: 3, numPartitions: 10, replicationFactor: 3 },
+      icon: '⚖️',
+    },
+    {
+      name: 'High Throughput',
+      description: 'Scaled for load',
+      config: { numBrokers: 5, numPartitions: 20, replicationFactor: 3 },
+      icon: '🚀',
+    },
+  ];
+
+  const semanticsOptions = [
+    { value: 'at_most_once', label: 'At-Most-Once (may lose)', icon: '⚡' },
+    { value: 'at_least_once', label: 'At-Least-Once (may dup)', icon: '⚖️' },
+    { value: 'exactly_once', label: 'Exactly-Once (slow)', icon: '🔒' },
+  ];
+
+  const orderingOptions = [
+    { value: 'none', label: 'No Ordering (fastest)', icon: '⚡' },
+    { value: 'partition', label: 'Per-Partition (common)', icon: '⚖️' },
+    { value: 'global', label: 'Global Order (slow)', icon: '🔒' },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <h3 className="font-semibold text-sm text-gray-900">Message Queue Configuration</h3>
+
+      {/* Presets */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-2">
+          Quick Presets
+        </label>
+        <div className="grid grid-cols-3 gap-2">
+          {presets.map((preset) => (
+            <button
+              key={preset.name}
+              onClick={() => onApplyPreset?.(preset.config)}
+              className="p-2 text-left border border-gray-200 rounded hover:border-blue-500 hover:bg-blue-50 transition-colors"
+            >
+              <div className="text-lg">{preset.icon}</div>
+              <div className="text-xs font-medium text-gray-900 mt-1">
+                {preset.name}
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                {preset.description}
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Number of Brokers */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Number of Brokers
+        </label>
+        <input
+          type="range"
+          min="1"
+          max="7"
+          value={numBrokers}
+          onChange={(e) => onChange('numBrokers', parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-2xl font-bold text-blue-600">{numBrokers}</span>
+          <div className="text-right">
+            <div className="text-xs text-gray-500">Monthly Cost</div>
+            <div className="text-sm font-semibold text-green-600">${cost}/mo</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Number of Partitions */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Number of Partitions
+        </label>
+        <input
+          type="range"
+          min="1"
+          max="50"
+          value={numPartitions}
+          onChange={(e) => onChange('numPartitions', parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-2xl font-bold text-purple-600">{numPartitions}</span>
+          <span className="text-xs text-gray-500">
+            Throughput: ~{(numPartitions * 10000).toLocaleString()} msg/sec
+          </span>
+        </div>
+      </div>
+
+      {/* Replication Factor */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Replication Factor
+        </label>
+        <input
+          type="range"
+          min="1"
+          max="5"
+          value={replicationFactor}
+          onChange={(e) => onChange('replicationFactor', parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-2xl font-bold text-indigo-600">{replicationFactor}</span>
+          <span className="text-xs text-gray-500">
+            Can tolerate {replicationFactor - 1} broker failure{replicationFactor > 2 ? 's' : ''}
+          </span>
+        </div>
+      </div>
+
+      {/* Delivery Semantics */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Delivery Semantics
+        </label>
+        <div className="space-y-2">
+          {semanticsOptions.map((option) => (
+            <label
+              key={option.value}
+              className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                semantics === option.value
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <input
+                type="radio"
+                name="semantics"
+                value={option.value}
+                checked={semantics === option.value}
+                onChange={(e) => onChange('semantics', e.target.value)}
+                className="mr-3"
+              />
+              <span className="text-lg mr-2">{option.icon}</span>
+              <span className="text-sm text-gray-900">{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Ordering Guarantee */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Ordering Guarantee
+        </label>
+        <div className="space-y-2">
+          {orderingOptions.map((option) => (
+            <label
+              key={option.value}
+              className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                orderingGuarantee === option.value
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <input
+                type="radio"
+                name="orderingGuarantee"
+                value={option.value}
+                checked={orderingGuarantee === option.value}
+                onChange={(e) => onChange('orderingGuarantee', e.target.value)}
+                className="mr-3"
+              />
+              <span className="text-lg mr-2">{option.icon}</span>
+              <span className="text-sm text-gray-900">{option.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Semantics Explanation */}
+      {semantics === 'exactly_once' && (
+        <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+          <div className="text-xs font-medium text-yellow-900 mb-1">
+            ⚠️ Exactly-Once Semantics
+          </div>
+          <p className="text-xs text-yellow-800">
+            Slowest but guarantees no duplicates. Use for: payments, inventory updates.
+            Requires idempotent consumers.
+          </p>
+        </div>
+      )}
+
+      {semantics === 'at_least_once' && (
+        <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="text-xs font-medium text-blue-900 mb-1">
+            ℹ️ At-Least-Once Semantics
+          </div>
+          <p className="text-xs text-blue-800">
+            Most common. May deliver duplicates on retry.
+            Use for: emails, notifications (duplicates annoying but not critical).
+          </p>
+        </div>
+      )}
+
+      {/* Use Cases */}
+      <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+        <div className="text-xs font-medium text-green-900 mb-1">
+          📚 Message Queue Use Cases
+        </div>
+        <p className="text-xs text-green-800">
+          Perfect for: Async processing, decoupling services, buffering spikes, event streaming.
+          Kafka = high throughput. RabbitMQ = complex routing.
+        </p>
+      </div>
+
+      {/* Interview Tip */}
+      <div className="p-3 bg-purple-50 rounded-lg border border-purple-200">
+        <div className="text-xs font-medium text-purple-900 mb-1">
+          💡 Interview Tip
+        </div>
+        <p className="text-xs text-purple-800">
+          "I'd use Kafka with at-least-once semantics and partition-level ordering.
+          For payments, I'd upgrade to exactly-once to prevent double-charging."
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
 // Load Balancer Configuration (Read-only)
 // ============================================================================
 
@@ -858,8 +1504,11 @@ function getComponentTypeLabel(type: string): string {
     client: 'Traffic Source',
     load_balancer: 'Load Balancer / Traffic Distribution',
     app_server: 'Application Server / Compute',
-    postgresql: 'Relational Database',
+    postgresql: 'Relational Database (ACID)',
+    mongodb: 'Document Database (NoSQL)',
+    cassandra: 'Wide-Column Store (AP System)',
     redis: 'In-Memory Cache',
+    message_queue: 'Message Queue (Kafka/RabbitMQ)',
     cdn: 'Content Delivery Network',
     s3: 'Object Storage',
   };

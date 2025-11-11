@@ -13,6 +13,9 @@ import {
   CDN,
   S3,
 } from './components';
+import { MongoDB } from './components/MongoDB';
+import { Cassandra } from './components/Cassandra';
+import { MessageQueue } from './components/MessageQueue';
 
 /**
  * Simulation Engine
@@ -46,8 +49,17 @@ export class SimulationEngine {
         case 'postgresql':
           component = new PostgreSQL(node.id, node.config);
           break;
+        case 'mongodb':
+          component = new MongoDB(node.id, node.config);
+          break;
+        case 'cassandra':
+          component = new Cassandra(node.id, node.config);
+          break;
         case 'redis':
           component = new RedisCache(node.id, node.config);
+          break;
+        case 'message_queue':
+          component = new MessageQueue(node.id, node.config);
           break;
         case 'cdn':
           component = new CDN(node.id, node.config);
