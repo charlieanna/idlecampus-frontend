@@ -67,10 +67,9 @@ export function ProgressiveTestSidebar({
           const result = testResults.get(index);
 
           return (
-            <button
+            <div
               key={index}
               onClick={() => status !== 'locked' && onSelectTest(index)}
-              disabled={status === 'locked'}
               className={`w-full text-left transition-all duration-200 ${
                 status === 'locked'
                   ? 'opacity-50 cursor-not-allowed'
@@ -194,7 +193,7 @@ export function ProgressiveTestSidebar({
                   </div>
                 )}
               </div>
-            </button>
+            </div>
           );
         })}
       </div>
