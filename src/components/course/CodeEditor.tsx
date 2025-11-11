@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
-import Editor from '@monaco-editor/react';
-import { Play, Send, Lightbulb, CheckCircle, XCircle, Code, RotateCcw } from 'lucide-react';
+import Editor, { Monaco } from '@monaco-editor/react';
+import { Play, Send, Lightbulb, CheckCircle, XCircle, Code, RotateCcw, Settings } from 'lucide-react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
@@ -8,6 +8,7 @@ import { ScrollArea } from '../ui/scroll-area';
 import type { CodeLab, TestCase, ValidationResult, ExecutionResult } from '../../types/codeLab';
 import { LANGUAGE_MODES, DIFFICULTY_COLORS, LANGUAGE_COLORS } from '../../types/codeLab';
 import { apiService } from '../../services/api';
+import type * as monacoEditor from 'monaco-editor';
 
 interface CodeEditorProps {
   lab: CodeLab;
@@ -25,6 +26,19 @@ export function CodeEditor({ lab, onComplete }: CodeEditorProps) {
   const [hint, setHint] = useState('');
   const [attemptCount, setAttemptCount] = useState(0);
   const [activeTab, setActiveTab] = useState<'tests' | 'output'>('output');
+
+  // Editor settings state
+  const [showSettings, setShowSettings] = useState(false);
+  const [editorTheme, setEditorTheme] = useState<'vs-dark' | 'vs-light' | 'hc-black'>('vs-dark');
+  const [fontSize, setFontSize] = useState(14);
+  const [tabSize, setTabSize] = useState(4);
+  const [enableVimMode, setEnableVimMode] = useState(false);
+  const [enableMinimap, setEnableMinimap] = useState(false);
+  const [wordWrap, setWordWrap] = useState<'on' | 'off'>('on');
+
+  // Monaco editor instance
+  const editorRef = useRef<monacoEditor.editor.IStandaloneCodeEditor | null>(null);
+  const monacoRef = useRef<Monaco | null>(null);
 
   const handleRunCode = async () => {
     setIsRunning(true);
@@ -110,6 +124,83 @@ export function CodeEditor({ lab, onComplete }: CodeEditorProps) {
     setAttemptCount(0);
   };
 
+  // Monaco editor mount handler
+  const handleEditorMount = (editor: monacoEditor.editor.IStandaloneCodeEditor, monaco: Monaco) => {
+    editorRef.current = editor;
+    monacoRef.current = monaco;
+
+    // Configure editor features
+    editor.updateOptions({
+      formatOnPaste: true,
+      formatOnType: true,
+      suggestOnTriggerCharacters: true,
+      quickSuggestions: {
+        other: true,
+        comments: false,
+        strings: false,
+      },
+      parameterHints: {
+        enabled: true,
+      },
+      snippetSuggestions: 'top',
+      bracketPairColorization: {
+        enabled: true,
+      },
+    });
+
+    // Add keyboard shortcuts
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+      handleRunCode();
+    });
+
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => {
+      handleValidateCode();
+    });
+
+    // Format code command
+    editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyMod.Shift | monaco.KeyCode.KeyF, () => {
+      editor.getAction('editor.action.formatDocument')?.run();
+    });
+  };
+
+  // Format code helper
+  const handleFormatCode = () => {
+    if (editorRef.current) {
+      editorRef.current.getAction('editor.action.formatDocument')?.run();
+    }
+  };
+
+  // Save editor settings to localStorage
+  useEffect(() => {
+    const settings = {
+      theme: editorTheme,
+      fontSize,
+      tabSize,
+      enableVimMode,
+      enableMinimap,
+      wordWrap,
+    };
+    localStorage.setItem('codeEditorSettings', JSON.stringify(settings));
+  }, [editorTheme, fontSize, tabSize, enableVimMode, enableMinimap, wordWrap]);
+
+  // Load editor settings from localStorage on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('codeEditorSettings');
+    if (savedSettings) {
+      try {
+        const settings = JSON.parse(savedSettings);
+        if (settings.theme) setEditorTheme(settings.theme);
+        if (settings.fontSize) setFontSize(settings.fontSize);
+        if (settings.tabSize) setTabSize(settings.tabSize);
+        if (settings.enableVimMode !== undefined) setEnableVimMode(settings.enableVimMode);
+        if (settings.enableMinimap !== undefined) setEnableMinimap(settings.enableMinimap);
+        if (settings.wordWrap) setWordWrap(settings.wordWrap);
+      } catch (e) {
+        console.error('Failed to load editor settings:', e);
+      }
+    }
+  }, []);
+
   return (
     <div className="flex flex-col h-full bg-gray-900 text-white">
       {/* Header */}
@@ -146,13 +237,25 @@ export function CodeEditor({ lab, onComplete }: CodeEditorProps) {
         {/* Left: Editor */}
         <div className="flex-1 flex flex-col border-r border-gray-700">
           <div className="flex justify-between items-center p-2 bg-gray-800 border-b border-gray-700">
-            <span className="text-sm">Code Editor</span>
+            <div className="flex items-center gap-2">
+              <span className="text-sm">Code Editor</span>
+              <Button
+                onClick={() => setShowSettings(!showSettings)}
+                size="sm"
+                variant="outline"
+                className="border-gray-600 h-7 px-2"
+                title="Editor Settings"
+              >
+                <Settings size={14} />
+              </Button>
+            </div>
             <div className="flex gap-2">
               <Button
                 onClick={handleRunCode}
                 disabled={isRunning}
                 size="sm"
                 className="bg-green-600 hover:bg-green-700"
+                title="Run Code (Cmd/Ctrl+Enter)"
               >
                 <Play size={14} className="mr-1" />
                 Run
@@ -177,20 +280,115 @@ export function CodeEditor({ lab, onComplete }: CodeEditorProps) {
             </div>
           </div>
 
+          {/* Settings Panel */}
+          {showSettings && (
+            <div className="p-4 bg-gray-800 border-b border-gray-700 space-y-3">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Theme</label>
+                  <select
+                    value={editorTheme}
+                    onChange={(e) => setEditorTheme(e.target.value as any)}
+                    className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm"
+                  >
+                    <option value="vs-dark">Dark</option>
+                    <option value="vs-light">Light</option>
+                    <option value="hc-black">High Contrast</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Font Size</label>
+                  <select
+                    value={fontSize}
+                    onChange={(e) => setFontSize(Number(e.target.value))}
+                    className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm"
+                  >
+                    <option value="12">12px</option>
+                    <option value="14">14px</option>
+                    <option value="16">16px</option>
+                    <option value="18">18px</option>
+                    <option value="20">20px</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Tab Size</label>
+                  <select
+                    value={tabSize}
+                    onChange={(e) => setTabSize(Number(e.target.value))}
+                    className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm"
+                  >
+                    <option value="2">2 spaces</option>
+                    <option value="4">4 spaces</option>
+                    <option value="8">8 spaces</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-400 mb-1">Word Wrap</label>
+                  <select
+                    value={wordWrap}
+                    onChange={(e) => setWordWrap(e.target.value as any)}
+                    className="w-full px-2 py-1 bg-gray-700 border border-gray-600 rounded text-sm"
+                  >
+                    <option value="on">On</option>
+                    <option value="off">Off</option>
+                  </select>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={enableMinimap}
+                    onChange={(e) => setEnableMinimap(e.target.checked)}
+                    className="rounded"
+                  />
+                  <span>Show Minimap</span>
+                </label>
+                <label className="flex items-center gap-2 text-sm cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={enableVimMode}
+                    onChange={(e) => setEnableVimMode(e.target.checked)}
+                    className="rounded"
+                  />
+                  <span>Vim Mode (experimental)</span>
+                </label>
+              </div>
+              <div className="text-xs text-gray-400 pt-2 border-t border-gray-700">
+                <div className="font-semibold mb-1">Keyboard Shortcuts:</div>
+                <div className="space-y-0.5">
+                  <div>• Cmd/Ctrl + Enter: Run code</div>
+                  <div>• Cmd/Ctrl + Shift + Enter: Run tests</div>
+                  <div>• Cmd/Ctrl + Shift + F: Format code</div>
+                </div>
+              </div>
+            </div>
+          )}
+
           <Editor
             height="100%"
             language={LANGUAGE_MODES[lab.programming_language]}
             value={code}
             onChange={(value) => setCode(value || '')}
-            theme="vs-dark"
+            onMount={handleEditorMount}
+            theme={editorTheme}
             options={{
-              minimap: { enabled: false },
-              fontSize: 14,
+              minimap: { enabled: enableMinimap },
+              fontSize: fontSize,
               lineNumbers: 'on',
               scrollBeyondLastLine: false,
               automaticLayout: true,
-              tabSize: 4,
-              wordWrap: 'on',
+              tabSize: tabSize,
+              wordWrap: wordWrap,
+              cursorBlinking: 'smooth',
+              cursorSmoothCaretAnimation: 'on',
+              smoothScrolling: true,
+              renderWhitespace: 'selection',
+              renderLineHighlight: 'all',
+              guides: {
+                bracketPairs: true,
+                indentation: true,
+              },
             }}
           />
         </div>

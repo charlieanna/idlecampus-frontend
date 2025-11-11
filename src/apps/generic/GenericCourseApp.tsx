@@ -259,8 +259,16 @@ export default function GenericCourseApp({
 
   const expectedCommand = getCurrentExpectedCommand();
 
-  // Use common gating hook
-  const { canAccessLesson, canAccessModule, getLessonAccessInfo } = useLessonGating(completedLessons, modules);
+  // Use common gating hook with enhanced visibility features
+  const {
+    canAccessLesson,
+    canAccessModule,
+    getLessonAccessInfo,
+    getVisibleModules,
+    isModuleTeaser,
+    getProgressInfo,
+    getModuleCompletionPercentage
+  } = useLessonGating(completedLessons, modules);
 
   const handleTerminalCommand = (command: string): string | null => {
     if (currentLesson) {
@@ -333,6 +341,10 @@ export default function GenericCourseApp({
         courseSubtitle={courseSubtitle}
         canAccessLesson={canAccessLesson}
         canAccessModule={canAccessModule}
+        getVisibleModules={getVisibleModules}
+        isModuleTeaser={isModuleTeaser}
+        getProgressInfo={getProgressInfo}
+        getModuleCompletionPercentage={getModuleCompletionPercentage}
       />
 
       <ResizablePanelGroup direction="horizontal" className="flex-1">

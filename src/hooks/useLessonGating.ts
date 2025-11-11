@@ -184,6 +184,132 @@ export function useLessonGating(
     };
   }, [canAccessModule, getPreviousModuleTitle, isModuleCompleted]);
 
+  /**
+   * Calculate module completion percentage
+   */
+  const getModuleCompletionPercentage = useMemo(() => {
+    return (moduleId: string): number => {
+      const module = modules.find(m => m.id === moduleId);
+      if (!module || module.lessons.length === 0) return 0;
+
+      const completedCount = module.lessons.filter(lesson =>
+        completedLessons.has(lesson.id)
+      ).length;
+
+      return Math.round((completedCount / module.lessons.length) * 100);
+    };
+  }, [modules, completedLessons]);
+
+  /**
+   * Get visible modules based on progressive reveal logic
+   * Rules:
+   * 1. Always show completed modules
+   * 2. Always show current module (first incomplete)
+   * 3. Show teaser for next module when current is 80% complete
+   * 4. Hide all other future modules
+   */
+  const getVisibleModules = useMemo(() => {
+    return () => {
+      // If no modules, return empty array
+      if (!modules || modules.length === 0) {
+        console.log('Progressive Reveal: No modules available');
+        return [];
+      }
+
+      const sortedModules = [...modules].sort((a, b) =>
+        (a.sequenceOrder ?? 0) - (b.sequenceOrder ?? 0)
+      );
+
+      const visibleModules: string[] = [];
+      let foundIncompleteModule = false;
+      let currentModuleId: string | null = null;
+
+      for (const module of sortedModules) {
+        const isCompleted = isModuleCompleted(module.id);
+
+        if (isCompleted) {
+          // Always show completed modules
+          visibleModules.push(module.id);
+        } else if (!foundIncompleteModule) {
+          // This is the current module (first incomplete)
+          visibleModules.push(module.id);
+          currentModuleId = module.id;
+          foundIncompleteModule = true;
+        } else {
+          // This is a future module - check if we should show teaser
+          if (currentModuleId) {
+            const currentModuleCompletion = getModuleCompletionPercentage(currentModuleId);
+            if (currentModuleCompletion >= 80 && visibleModules.indexOf(module.id) === -1) {
+              // Show teaser for next module only
+              visibleModules.push(module.id);
+              break; // Don't show any modules beyond the next one
+            }
+          }
+          // Otherwise, hide this future module
+          break;
+        }
+      }
+
+      // If no modules are visible (shouldn't happen), at least show the first one
+      if (visibleModules.length === 0 && sortedModules.length > 0) {
+        console.log('Progressive Reveal: No visible modules found, showing first module');
+        visibleModules.push(sortedModules[0].id);
+      }
+
+      console.log('Progressive Reveal: Visible modules calculation', {
+        totalModules: modules.length,
+        visibleCount: visibleModules.length,
+        visibleModuleIds: visibleModules,
+        completedLessons: completedLessons.size
+      });
+
+      return visibleModules;
+    };
+  }, [modules, isModuleCompleted, getModuleCompletionPercentage]);
+
+  /**
+   * Check if a module should show a teaser (visible but locked)
+   */
+  const isModuleTeaser = useMemo(() => {
+    return (moduleId: string): boolean => {
+      const visibleModules = getVisibleModules();
+      const isVisible = visibleModules.includes(moduleId);
+      const isAccessible = canAccessModule(moduleId);
+
+      return isVisible && !isAccessible;
+    };
+  }, [getVisibleModules, canAccessModule]);
+
+  /**
+   * Get progress info for display
+   */
+  const getProgressInfo = useMemo(() => {
+    return () => {
+      const totalModules = modules.length;
+      const completedModulesCount = modules.filter(m => isModuleCompleted(m.id)).length;
+      const visibleModulesCount = getVisibleModules().length;
+
+      // Find current module (first incomplete)
+      const sortedModules = [...modules].sort((a, b) =>
+        (a.sequenceOrder ?? 0) - (b.sequenceOrder ?? 0)
+      );
+      const currentModule = sortedModules.find(m => !isModuleCompleted(m.id));
+      const currentModuleCompletion = currentModule
+        ? getModuleCompletionPercentage(currentModule.id)
+        : 100;
+
+      return {
+        totalModules,
+        completedModules: completedModulesCount,
+        visibleModules: visibleModulesCount,
+        hiddenModules: totalModules - visibleModulesCount,
+        currentModuleId: currentModule?.id,
+        currentModuleCompletion,
+        overallProgress: Math.round((completedModulesCount / totalModules) * 100)
+      };
+    };
+  }, [modules, isModuleCompleted, getVisibleModules, getModuleCompletionPercentage]);
+
   return {
     canAccessLesson,
     getPreviousLessonTitle,
@@ -191,6 +317,10 @@ export function useLessonGating(
     canAccessModule,
     isModuleCompleted,
     getPreviousModuleTitle,
-    getModuleAccessInfo
+    getModuleAccessInfo,
+    getModuleCompletionPercentage,
+    getVisibleModules,
+    isModuleTeaser,
+    getProgressInfo
   };
 }

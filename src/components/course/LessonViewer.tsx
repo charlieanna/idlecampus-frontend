@@ -168,6 +168,13 @@ export function LessonViewer({
           return;
         }
 
+        // Check if response is JSON before parsing
+        const contentType = response.headers.get("content-type");
+        if (!contentType || !contentType.includes("application/json")) {
+          // Response is not JSON (likely HTML error page), skip silently
+          return;
+        }
+
         const data = await response.json();
         // Only set review data if reviews are available
         if (data.success && data.has_reviews) {
