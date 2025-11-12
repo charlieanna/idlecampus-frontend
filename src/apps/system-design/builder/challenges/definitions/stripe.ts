@@ -5,7 +5,7 @@ import { problemConfigs } from '../problemConfigs';
 
 /**
  * Stripe - Payment Processing Platform
- * Level 1 ONLY: Brute force connectivity test
+ * Comprehensive FR and NFR scenarios
  */
 export const stripeProblemDefinition: ProblemDefinition = {
   id: 'stripe',
@@ -55,20 +55,7 @@ export const stripeProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: [
-    {
-      name: 'Level 1: The Brute Force Test - Does It Even Work?',
-      description: 'Like algorithm brute force: ignore performance, just verify connectivity. Client → App → Database path exists. No optimization needed.',
-      traffic: {
-        rps: 0.1,
-        readWriteRatio: 0.5,
-      },
-      passCriteria: {
-        maxLatency: 30000,
-        maxErrorRate: 0.99,
-      },
-    },
-  ],
+  scenarios: generateScenarios('stripe', problemConfigs.stripe),
 
   validators: [
     {

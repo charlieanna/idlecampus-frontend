@@ -5,7 +5,7 @@ import { problemConfigs } from '../problemConfigs';
 
 /**
  * Pinterest - Visual Bookmarking Platform
- * Level 1 ONLY: Brute force connectivity test
+ * Comprehensive FR and NFR scenarios
  */
 export const pinterestProblemDefinition: ProblemDefinition = {
   id: 'pinterest',
@@ -64,21 +64,7 @@ export const pinterestProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: [
-    {
-      name: 'Level 1: The Brute Force Test - Does It Even Work?',
-      description: 'Like algorithm brute force: ignore performance, just verify connectivity. Client → App → Database → S3 path exists. No optimization needed.',
-      traffic: {
-        rps: 0.1,
-        readWriteRatio: 0.5,
-        avgFileSize: 1, // 1MB images
-      },
-      passCriteria: {
-        maxLatency: 30000,
-        maxErrorRate: 0.99,
-      },
-    },
-  ],
+  scenarios: generateScenarios('pinterest', problemConfigs.pinterest),
 
   validators: [
     {
