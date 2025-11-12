@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Play, CheckCircle, XCircle, AlertCircle, Database, X } from 'lucide-react';
+import { Play, CheckCircle, XCircle, AlertCircle, Database, X, Download, Code } from 'lucide-react';
 import { SchemaEditor } from '../ui/components/SchemaEditor';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
@@ -29,6 +29,7 @@ export function TinyUrlChallenge() {
   const [currentConfig, setCurrentConfig] = useState<Record<string, any>>({});
   const [testResults, setTestResults] = useState<any>(null);
   const [currentLevel, setCurrentLevel] = useState(0);
+  const [activeTab, setActiveTab] = useState<'canvas' | 'python'>('canvas');
 
   const handleAddComponent = (type: ComponentType) => {
     setCurrentComponentType(type);
@@ -105,6 +106,16 @@ export function TinyUrlChallenge() {
     setTestResults(result);
   };
 
+  const handleDownloadPython = () => {
+    // Download the Python file
+    const link = document.createElement('a');
+    link.href = '/tinyurl_challenge.py';
+    link.download = 'tinyurl_challenge.py';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -117,14 +128,48 @@ export function TinyUrlChallenge() {
             Design a URL shortening service using real EC2 commodity machines
           </p>
         </div>
+
+        {/* Tabs */}
+        <div className="max-w-7xl mx-auto px-6">
+          <div className="flex border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('canvas')}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'canvas'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Database className="w-4 h-4" />
+                System Design Canvas
+              </div>
+            </button>
+            <button
+              onClick={() => setActiveTab('python')}
+              className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'python'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Code className="w-4 h-4" />
+                Python Coding Challenge
+              </div>
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Left Column: Problem & Configuration */}
-          <div className="space-y-6">
-            {/* Problem Description */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        {/* Canvas Tab */}
+        {activeTab === 'canvas' && (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {/* Left Column: Problem & Configuration */}
+            <div className="space-y-6">
+              {/* Problem Description */}
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
               <h2 className="text-xl font-semibold text-gray-900 mb-4">
                 Problem Requirements
               </h2>
@@ -497,6 +542,235 @@ export function TinyUrlChallenge() {
             )}
           </div>
         </div>
+        )}
+
+        {/* Python Tab */}
+        {activeTab === 'python' && (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+              <div className="mb-6">
+                <h2 className="text-2xl font-bold text-gray-900 mb-3">
+                  URL Shortening Algorithm Challenge
+                </h2>
+                <p className="text-gray-600">
+                  Practice implementing the URL shortening algorithm in Python.
+                  Download the template, optimize the <code className="px-2 py-0.5 bg-gray-100 rounded text-sm font-mono">shorten(url)</code> function,
+                  and test your solution against automated benchmarks.
+                </p>
+              </div>
+
+              {/* Download Section */}
+              <div className="mb-8 p-6 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg border border-green-200">
+                <div className="flex items-start gap-4">
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      Download Python Template
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-4">
+                      Complete template with starter code, test suite, and multiple optimization examples.
+                      Includes automated testing for correctness, collision detection, and performance.
+                    </p>
+                    <div className="flex gap-3">
+                      <button
+                        onClick={handleDownloadPython}
+                        className="flex items-center gap-2 px-5 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                      >
+                        <Download className="w-4 h-4" />
+                        Download tinyurl_challenge.py
+                      </button>
+                      <a
+                        href="/tinyurl_challenge.py"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 px-5 py-2.5 border-2 border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+                      >
+                        <Code className="w-4 h-4" />
+                        View in Browser
+                      </a>
+                    </div>
+                  </div>
+                  <div className="text-6xl">🐍</div>
+                </div>
+              </div>
+
+              {/* Requirements */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-green-600" />
+                    Requirements
+                  </h3>
+                  <ul className="space-y-2 text-sm text-gray-700">
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✓</span>
+                      <span>Generate 6-10 character short codes</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✓</span>
+                      <span>Must be collision-resistant (&lt;1% collision rate)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✓</span>
+                      <span>Handle 1000+ URLs per second</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✓</span>
+                      <span>Use only URL-safe characters (a-z, A-Z, 0-9)</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-green-600 mt-0.5">✓</span>
+                      <span>Can be deterministic or handle collisions</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="bg-blue-50 rounded-lg p-6 border border-blue-200">
+                  <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center gap-2">
+                    <Code className="w-5 h-5" />
+                    Available Libraries
+                  </h3>
+                  <div className="space-y-3">
+                    <div>
+                      <code className="px-3 py-1.5 bg-white rounded text-sm font-mono border border-blue-300 inline-block">
+                        random
+                      </code>
+                      <p className="text-xs text-gray-600 mt-1 ml-1">Random string generation</p>
+                    </div>
+                    <div>
+                      <code className="px-3 py-1.5 bg-white rounded text-sm font-mono border border-blue-300 inline-block">
+                        string
+                      </code>
+                      <p className="text-xs text-gray-600 mt-1 ml-1">Character sets (ascii_letters, digits)</p>
+                    </div>
+                    <div>
+                      <code className="px-3 py-1.5 bg-white rounded text-sm font-mono border border-blue-300 inline-block">
+                        hashlib
+                      </code>
+                      <p className="text-xs text-gray-600 mt-1 ml-1">MD5, SHA256 hashing</p>
+                    </div>
+                    <div>
+                      <code className="px-3 py-1.5 bg-white rounded text-sm font-mono border border-blue-300 inline-block">
+                        base64
+                      </code>
+                      <p className="text-xs text-gray-600 mt-1 ml-1">Base64 encoding</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Optimization Strategies */}
+              <div className="bg-yellow-50 rounded-lg p-6 border border-yellow-200 mb-8">
+                <h3 className="text-lg font-semibold text-yellow-900 mb-4">
+                  💡 Optimization Strategies
+                </h3>
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-start gap-3">
+                    <span className="font-mono text-yellow-900 font-bold">1.</span>
+                    <div>
+                      <p className="font-semibold text-yellow-900">MD5/SHA256 + Base64</p>
+                      <p className="text-gray-700">Deterministic hashing approach. Fast and collision-resistant.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="font-mono text-yellow-900 font-bold">2.</span>
+                    <div>
+                      <p className="font-semibold text-yellow-900">Base62 Encoding</p>
+                      <p className="text-gray-700">Production-grade approach used by bit.ly. Zero collisions with counter-based IDs.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="font-mono text-yellow-900 font-bold">3.</span>
+                    <div>
+                      <p className="font-semibold text-yellow-900">Random + Collision Detection</p>
+                      <p className="text-gray-700">Simple but requires retry logic and database lookups.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <span className="font-mono text-yellow-900 font-bold">4.</span>
+                    <div>
+                      <p className="font-semibold text-yellow-900">Hybrid Approach</p>
+                      <p className="text-gray-700">Combine hashing with collision handling for best of both worlds.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* What's Included */}
+              <div className="bg-gray-50 rounded-lg p-6 border border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                  📦 What's Included in the Template
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="font-medium text-gray-900 mb-2">Code & Examples:</p>
+                    <ul className="space-y-1 text-gray-700">
+                      <li>• Starter implementation</li>
+                      <li>• 4 optimization approaches</li>
+                      <li>• Production-ready examples</li>
+                      <li>• Detailed code comments</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 mb-2">Testing & Validation:</p>
+                    <ul className="space-y-1 text-gray-700">
+                      <li>• 6 automated test cases</li>
+                      <li>• Performance benchmarks</li>
+                      <li>• Collision rate monitoring</li>
+                      <li>• URL-safety validation</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 mb-2">Interview Prep:</p>
+                    <ul className="space-y-1 text-gray-700">
+                      <li>• Trade-off discussions</li>
+                      <li>• Complexity analysis</li>
+                      <li>• Best practices</li>
+                      <li>• Interview talking points</li>
+                    </ul>
+                  </div>
+                  <div>
+                    <p className="font-medium text-gray-900 mb-2">Advanced Topics:</p>
+                    <ul className="space-y-1 text-gray-700">
+                      <li>• Distributed ID generation</li>
+                      <li>• Redis implementation</li>
+                      <li>• Lua scripting examples</li>
+                      <li>• Snowflake algorithm</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* How to Use */}
+              <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
+                <h3 className="text-lg font-semibold text-blue-900 mb-3">
+                  🚀 How to Use
+                </h3>
+                <ol className="space-y-2 text-sm text-gray-700">
+                  <li className="flex items-start gap-3">
+                    <span className="font-bold text-blue-600">1.</span>
+                    <span>Download the Python template using the button above</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="font-bold text-blue-600">2.</span>
+                    <span>Run <code className="px-2 py-0.5 bg-white rounded text-xs font-mono border border-blue-300">python tinyurl_challenge.py</code> to see the starter implementation</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="font-bold text-blue-600">3.</span>
+                    <span>Optimize the <code className="px-2 py-0.5 bg-white rounded text-xs font-mono border border-blue-300">shorten()</code> function using the provided examples</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="font-bold text-blue-600">4.</span>
+                    <span>Test your solution against automated benchmarks and improve based on results</span>
+                  </li>
+                  <li className="flex items-start gap-3">
+                    <span className="font-bold text-blue-600">5.</span>
+                    <span>Review the interview tips and be ready to discuss trade-offs in your approach</span>
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Configuration Modal */}
