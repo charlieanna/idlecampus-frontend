@@ -156,9 +156,10 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
         const whyValid = validateText(justification.why);
         const benefitsValid = validateText(justification.benefits);
         const alternativesValid = validateText(justification.alternatives);
-        const tradeoffsValid = Array.isArray(justification.tradeoffIds) && justification.tradeoffIds.length >= 2;
+        const tradeoffsSelected = Array.isArray(justification.tradeoffIds) && justification.tradeoffIds.length >= 2;
+        const tradeoffExplanationValid = validateText(justification.tradeoffExplanation);
 
-        return !whyValid || !benefitsValid || !alternativesValid || !tradeoffsValid;
+        return !whyValid || !benefitsValid || !alternativesValid || !tradeoffsSelected || !tradeoffExplanationValid;
       } catch {
         // Invalid JSON
         return true;
@@ -170,7 +171,7 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
         .map(comp => comp.config?.displayName || comp.type)
         .join(', ');
       alert(
-        `⚠️ Incomplete Justifications\n\nPlease complete all justification fields for the following components before submitting:\n\n${componentNames}\n\nClick on each component to provide:\n• Why you chose it (15+ words)\n• Key benefits (15+ words)\n• Alternatives considered (15+ words)\n• Trade-offs (select at least 2)\n\nProvide meaningful, non-repetitive explanations.`
+        `⚠️ Incomplete Justifications\n\nPlease complete all justification fields for the following components before submitting:\n\n${componentNames}\n\nClick on each component to provide:\n• Why you chose it (15+ words)\n• Key benefits (15+ words)\n• Alternatives considered (15+ words)\n• Trade-offs (select at least 2 + explain in 15+ words)\n\nProvide meaningful, non-repetitive explanations.`
       );
       return;
     }

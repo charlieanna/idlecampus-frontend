@@ -14,7 +14,8 @@ interface JustificationData {
   why: string;
   benefits: string;
   alternatives: string;
-  tradeoffIds: string[]; // Changed from freetext to IDs
+  tradeoffIds: string[]; // Selected trade-off checkboxes
+  tradeoffExplanation: string; // How/why these trade-offs matter
 }
 
 // Validation helper functions
@@ -61,7 +62,7 @@ export function ComponentJustificationModal({
   // Parse initial justification if it exists
   const parseInitialJustification = (initial: string): JustificationData => {
     if (!initial) {
-      return { why: '', benefits: '', alternatives: '', tradeoffIds: [] };
+      return { why: '', benefits: '', alternatives: '', tradeoffIds: [], tradeoffExplanation: '' };
     }
 
     try {
@@ -72,14 +73,15 @@ export function ComponentJustificationModal({
           benefits: parsed.benefits || '',
           alternatives: parsed.alternatives || '',
           tradeoffIds: parsed.tradeoffIds || parsed.tradeoffs || [], // Handle both formats
+          tradeoffExplanation: parsed.tradeoffExplanation || '',
         };
       }
     } catch {
       // Legacy format - single string
-      return { why: initial, benefits: '', alternatives: '', tradeoffIds: [] };
+      return { why: initial, benefits: '', alternatives: '', tradeoffIds: [], tradeoffExplanation: '' };
     }
 
-    return { why: '', benefits: '', alternatives: '', tradeoffIds: [] };
+    return { why: '', benefits: '', alternatives: '', tradeoffIds: [], tradeoffExplanation: '' };
   };
 
   const [justification, setJustification] = useState<JustificationData>(
@@ -121,9 +123,10 @@ export function ComponentJustificationModal({
     const whyValid = validateText(justification.why, 15).valid;
     const benefitsValid = validateText(justification.benefits, 15).valid;
     const alternativesValid = validateText(justification.alternatives, 15).valid;
-    const tradeoffsValid = justification.tradeoffIds.length >= 2; // At least 2 trade-offs
+    const tradeoffsSelected = justification.tradeoffIds.length >= 2; // At least 2 trade-offs
+    const tradeoffExplanationValid = validateText(justification.tradeoffExplanation, 15).valid;
 
-    return whyValid && benefitsValid && alternativesValid && tradeoffsValid;
+    return whyValid && benefitsValid && alternativesValid && tradeoffsSelected && tradeoffExplanationValid;
   };
 
   // Group trade-offs by category
@@ -147,6 +150,7 @@ export function ComponentJustificationModal({
   const whyValidation = validateText(justification.why, 15);
   const benefitsValidation = validateText(justification.benefits, 15);
   const alternativesValidation = validateText(justification.alternatives, 15);
+  const tradeoffExplanationValidation = validateText(justification.tradeoffExplanation, 15);
 
   return (
     <AnimatePresence>
@@ -194,7 +198,7 @@ export function ComponentJustificationModal({
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-900">
                 <strong>📝 Note:</strong> All fields are required. Provide meaningful explanations (min 15 words each).
-                For trade-offs, select at least 2 that apply to your use case.
+                For trade-offs, select at least 2 that apply, then explain how/why they impact your design.
               </p>
             </div>
 
@@ -268,13 +272,13 @@ export function ComponentJustificationModal({
               </div>
             </div>
 
-            {/* Trade-offs Section - Checkboxes */}
+            {/* Trade-offs Section - Checkboxes + Explanation */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
                 4. What are the trade-offs? <span className="text-red-500">*</span>
               </label>
               <p className="text-xs text-gray-500 mb-3">
-                Select at least 2 trade-offs that apply to your use case. Be honest about the downsides.
+                First, select at least 2 trade-offs that apply to your use case:
               </p>
 
               {availableTradeoffs.length === 0 ? (
@@ -315,6 +319,26 @@ export function ComponentJustificationModal({
                     ? `✓ ${justification.tradeoffIds.length} selected`
                     : `${justification.tradeoffIds.length}/2 minimum`}
                 </span>
+              </div>
+
+              {/* Trade-off Explanation Text Area */}
+              <div className="mt-4">
+                <p className="text-xs text-gray-500 mb-2">
+                  Now explain how/why these trade-offs impact your specific design:
+                </p>
+                <textarea
+                  value={justification.tradeoffExplanation}
+                  onChange={(e) => updateField('tradeoffExplanation', e.target.value)}
+                  placeholder="E.g., 'The $200/month Redis cost is justified because it prevents thousands in database scaling costs. Cache stampede risk is mitigated by using probabilistic early expiration. Stale data for 1-2 seconds is acceptable for our read-heavy URL redirection use case...'"
+                  className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
+                    justification.tradeoffExplanation && !tradeoffExplanationValidation.valid ? 'border-red-300' : 'border-gray-300'
+                  }`}
+                />
+                <div className="flex justify-between items-center mt-1">
+                  <span className={`text-xs ${tradeoffExplanationValidation.valid ? 'text-green-600' : 'text-gray-400'}`}>
+                    {tradeoffExplanationValidation.valid ? '✓ Valid' : tradeoffExplanationValidation.error || `${justification.tradeoffExplanation.split(/\s+/).filter(w => w).length}/15 words`}
+                  </span>
+                </div>
               </div>
             </div>
 
