@@ -1,0 +1,78 @@
+import { ProblemDefinition } from '../../types/problemDefinition';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+
+/**
+ * Medium - Blogging Platform
+ * Level 1 ONLY: Brute force connectivity test
+ */
+export const mediumProblemDefinition: ProblemDefinition = {
+  id: 'medium',
+  title: 'Medium - Blogging Platform',
+  description: `Design a blogging platform like Medium that:
+- Users can write and publish articles
+- Users can follow authors and topics
+- Users can clap (like) and comment on articles
+- Articles are ranked by popularity and engagement`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need to process article creation and reading',
+      },
+      {
+        type: 'storage',
+        reason: 'Need to store articles, users, claps, comments',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'compute',
+        reason: 'Client sends requests to app server',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'App server needs to read/write article data',
+      },
+    ],
+    dataModel: {
+      entities: ['user', 'article', 'clap', 'comment', 'follow'],
+      fields: {
+        user: ['id', 'username', 'email', 'bio', 'avatar_url', 'created_at'],
+        article: ['id', 'author_id', 'title', 'content', 'tags', 'published_at', 'read_time'],
+        clap: ['article_id', 'user_id', 'count', 'created_at'],
+        comment: ['id', 'article_id', 'user_id', 'text', 'created_at'],
+        follow: ['follower_id', 'following_id', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'write', frequency: 'low' },        // Publishing articles
+        { type: 'read_by_key', frequency: 'very_high' }, // Reading articles
+        { type: 'read_by_query', frequency: 'high' }, // Browsing feed
+      ],
+    },
+  },
+
+  scenarios: [
+    {
+      name: 'Level 1: The Brute Force Test - Does It Even Work?',
+      description: 'Like algorithm brute force: ignore performance, just verify connectivity. Client → App → Database path exists. No optimization needed.',
+      traffic: {
+        rps: 0.1,
+        readWriteRatio: 0.5,
+      },
+      passCriteria: {
+        maxLatency: 30000,
+        maxErrorRate: 0.99,
+      },
+    },
+  ],
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};

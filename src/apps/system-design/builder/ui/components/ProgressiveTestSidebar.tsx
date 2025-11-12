@@ -1,7 +1,8 @@
-import React from 'react';
-import { TestCase, TestResult } from '../../types/testCase';
+import React, { useState } from 'react';
+import { TestCase, TestResult, Challenge } from '../../types/testCase';
 
 interface ProgressiveTestSidebarProps {
+  challenge: Challenge;
   testCases: TestCase[];
   activeTestIndex: number;
   testResults: Map<number, TestResult>;
@@ -10,12 +11,14 @@ interface ProgressiveTestSidebarProps {
 }
 
 export function ProgressiveTestSidebar({
+  challenge,
   testCases,
   activeTestIndex,
   testResults,
   onSelectTest,
   onRunTest,
 }: ProgressiveTestSidebarProps) {
+  const [showChallengeInfo, setShowChallengeInfo] = useState(true);
   // Determine which tests are unlocked
   const getTestStatus = (index: number): 'locked' | 'unlocked' | 'passed' | 'failed' => {
     if (index === 0) return 'unlocked'; // First test always unlocked
@@ -39,6 +42,71 @@ export function ProgressiveTestSidebar({
         <p className="text-sm text-gray-600">
           Complete each level to unlock the next!
         </p>
+      </div>
+
+      {/* Challenge Overview (Collapsible) */}
+      <div className="bg-white border-b border-gray-200">
+        <button
+          onClick={() => setShowChallengeInfo(!showChallengeInfo)}
+          className="w-full p-4 text-left flex items-center justify-between hover:bg-gray-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-lg">📋</span>
+            <h3 className="font-semibold text-gray-900">Challenge Overview</h3>
+          </div>
+          <span className="text-gray-500">{showChallengeInfo ? '▼' : '▶'}</span>
+        </button>
+
+        {showChallengeInfo && (
+          <div className="px-4 pb-4 space-y-3">
+            {/* Description */}
+            <div>
+              <p className="text-xs text-gray-600 whitespace-pre-line leading-relaxed">
+                {challenge.description}
+              </p>
+            </div>
+
+            {/* Functional Requirements */}
+            <div>
+              <h4 className="text-xs font-semibold text-gray-900 mb-2">
+                ✅ Functional Requirements
+              </h4>
+              <ul className="space-y-1">
+                {challenge.requirements.functional.map((req, idx) => (
+                  <li key={idx} className="text-xs text-gray-600 flex items-start gap-2">
+                    <span className="text-green-600 mt-0.5">•</span>
+                    <span>{req}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Non-Functional Requirements */}
+            <div>
+              <h4 className="text-xs font-semibold text-gray-900 mb-2">
+                ⚡ Non-Functional Requirements
+              </h4>
+              <div className="space-y-1.5">
+                <div className="bg-blue-50 rounded px-2 py-1.5">
+                  <div className="text-[10px] font-medium text-blue-900">Traffic</div>
+                  <div className="text-xs text-blue-700">{challenge.requirements.traffic}</div>
+                </div>
+                <div className="bg-blue-50 rounded px-2 py-1.5">
+                  <div className="text-[10px] font-medium text-blue-900">Latency</div>
+                  <div className="text-xs text-blue-700">{challenge.requirements.latency}</div>
+                </div>
+                <div className="bg-blue-50 rounded px-2 py-1.5">
+                  <div className="text-[10px] font-medium text-blue-900">Availability</div>
+                  <div className="text-xs text-blue-700">{challenge.requirements.availability}</div>
+                </div>
+                <div className="bg-blue-50 rounded px-2 py-1.5">
+                  <div className="text-[10px] font-medium text-blue-900">Budget</div>
+                  <div className="text-xs text-blue-700">{challenge.requirements.budget}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Progress Bar */}
@@ -67,10 +135,9 @@ export function ProgressiveTestSidebar({
           const result = testResults.get(index);
 
           return (
-            <button
+            <div
               key={index}
               onClick={() => status !== 'locked' && onSelectTest(index)}
-              disabled={status === 'locked'}
               className={`w-full text-left transition-all duration-200 ${
                 status === 'locked'
                   ? 'opacity-50 cursor-not-allowed'
@@ -194,7 +261,7 @@ export function ProgressiveTestSidebar({
                   </div>
                 )}
               </div>
-            </button>
+            </div>
           );
         })}
       </div>

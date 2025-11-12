@@ -1,0 +1,88 @@
+import { ProblemDefinition } from '../../types/problemDefinition';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+
+/**
+ * GitHub - Code Hosting Platform
+ * Level 1 ONLY: Brute force connectivity test
+ */
+export const githubProblemDefinition: ProblemDefinition = {
+  id: 'github',
+  title: 'GitHub - Code Hosting',
+  description: `Design a code hosting platform like GitHub that:
+- Users can host Git repositories
+- Users can create pull requests and issues
+- Platform supports code review and collaboration
+- Users can fork and star repositories`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need to process git operations and web requests',
+      },
+      {
+        type: 'storage',
+        reason: 'Need to store repository metadata, issues, PRs',
+      },
+      {
+        type: 'object_storage',
+        reason: 'Need to store git repository data',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'compute',
+        reason: 'Client sends git and API requests',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'App server needs to store metadata',
+      },
+      {
+        from: 'compute',
+        to: 'object_storage',
+        reason: 'App server needs to store git objects',
+      },
+    ],
+    dataModel: {
+      entities: ['user', 'repository', 'commit', 'pull_request', 'issue'],
+      fields: {
+        user: ['id', 'username', 'email', 'avatar_url', 'created_at'],
+        repository: ['id', 'owner_id', 'name', 'description', 'is_private', 'stars', 'created_at'],
+        commit: ['id', 'repo_id', 'author_id', 'message', 'sha', 'created_at'],
+        pull_request: ['id', 'repo_id', 'author_id', 'title', 'status', 'created_at'],
+        issue: ['id', 'repo_id', 'author_id', 'title', 'status', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'write', frequency: 'very_high' },  // Git pushes
+        { type: 'read_by_key', frequency: 'very_high' }, // Viewing repos
+        { type: 'read_by_query', frequency: 'high' }, // Searching code
+      ],
+    },
+  },
+
+  scenarios: [
+    {
+      name: 'Level 1: The Brute Force Test - Does It Even Work?',
+      description: 'Like algorithm brute force: ignore performance, just verify connectivity. Client → App → Database → S3 path exists. No optimization needed.',
+      traffic: {
+        rps: 0.1,
+        readWriteRatio: 0.5,
+        avgFileSize: 10, // 10MB repository data
+      },
+      passCriteria: {
+        maxLatency: 30000,
+        maxErrorRate: 0.99,
+      },
+    },
+  ],
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};

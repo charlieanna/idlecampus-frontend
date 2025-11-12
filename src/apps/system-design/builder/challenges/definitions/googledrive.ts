@@ -1,0 +1,88 @@
+import { ProblemDefinition } from '../../types/problemDefinition';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+
+/**
+ * Google Drive - Cloud Storage Platform
+ * Level 1 ONLY: Brute force connectivity test
+ */
+export const googledriveProblemDefinition: ProblemDefinition = {
+  id: 'googledrive',
+  title: 'Google Drive - Cloud Storage',
+  description: `Design a cloud storage platform like Google Drive that:
+- Users can upload, store, and organize files
+- Users can collaborate on documents in real-time
+- Files can be shared with specific permissions
+- Platform supports searching across all files`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need to process file operations and collaboration',
+      },
+      {
+        type: 'storage',
+        reason: 'Need to store file metadata and permissions',
+      },
+      {
+        type: 'object_storage',
+        reason: 'Need to store files',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'compute',
+        reason: 'Client sends requests',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'App server needs to store metadata',
+      },
+      {
+        from: 'compute',
+        to: 'object_storage',
+        reason: 'App server needs to store files',
+      },
+    ],
+    dataModel: {
+      entities: ['user', 'file', 'folder', 'permission', 'activity'],
+      fields: {
+        user: ['id', 'email', 'name', 'storage_quota', 'created_at'],
+        file: ['id', 'owner_id', 'folder_id', 'name', 'type', 'size', 'url', 'created_at'],
+        folder: ['id', 'owner_id', 'parent_id', 'name', 'created_at'],
+        permission: ['id', 'file_id', 'user_id', 'role', 'created_at'],
+        activity: ['id', 'file_id', 'user_id', 'action', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'write_large_file', frequency: 'high' }, // Uploading files
+        { type: 'read_by_key', frequency: 'very_high' }, // Accessing files
+        { type: 'read_by_query', frequency: 'high' }, // Searching files
+      ],
+    },
+  },
+
+  scenarios: [
+    {
+      name: 'Level 1: The Brute Force Test - Does It Even Work?',
+      description: 'Like algorithm brute force: ignore performance, just verify connectivity. Client → App → Database → S3 path exists. No optimization needed.',
+      traffic: {
+        rps: 0.1,
+        readWriteRatio: 0.5,
+        avgFileSize: 25, // 25MB files
+      },
+      passCriteria: {
+        maxLatency: 30000,
+        maxErrorRate: 0.99,
+      },
+    },
+  ],
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};

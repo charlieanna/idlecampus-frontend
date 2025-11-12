@@ -11,7 +11,10 @@ import { ProgressiveGuidancePanel } from './components/ProgressiveGuidancePanel'
 import { ComponentPalette } from './components/ComponentPalette';
 import { EnhancedInspector } from './components/EnhancedInspector';
 import { ReferenceSolutionPanel } from './components/ReferenceSolutionPanel';
-import { TestRunner } from '../simulation/testRunner';
+import { SystemDesignValidator } from '../validation/SystemDesignValidator';
+import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
+import { DetailedAnalysisPanel } from './components/DetailedAnalysisPanel';
+import { DesignAnalysisResult } from '../validation/DesignAnalyzer';
 
 // Initial graph with Client component
 const getInitialGraph = (): SystemGraph => ({
@@ -35,6 +38,8 @@ export default function SystemDesignBuilderApp() {
   const [isRunning, setIsRunning] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [showSolutionPanel, setShowSolutionPanel] = useState(false);
+  const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
+  const [canvasCollapsed, setCanvasCollapsed] = useState(false);
 
   // Reset graph when challenge changes
   useEffect(() => {
@@ -54,9 +59,14 @@ export default function SystemDesignBuilderApp() {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     try {
-      const runner = new TestRunner();
-      const testCase = selectedChallenge.testCases[testIndex];
-      const result = runner.runTestCase(systemGraph, testCase);
+      // Use new validation engine
+      const validator = new SystemDesignValidator();
+      const result = validator.validate(systemGraph, tinyUrlProblemDefinition, testIndex);
+
+      // Show architecture feedback if any
+      if (result.architectureFeedback && result.architectureFeedback.length > 0) {
+        console.log('Architecture feedback:', result.architectureFeedback);
+      }
 
       // Update results map
       const newResults = new Map(testResults);
@@ -149,6 +159,7 @@ export default function SystemDesignBuilderApp() {
         {/* Left Panel - Progressive Test Sidebar */}
         {selectedChallenge && (
           <ProgressiveTestSidebar
+            challenge={selectedChallenge}
             testCases={selectedChallenge.testCases}
             activeTestIndex={activeTestIndex}
             testResults={testResults}
@@ -157,20 +168,53 @@ export default function SystemDesignBuilderApp() {
           />
         )}
 
-        {/* Center Panel - Design Canvas */}
-        <ReactFlowProvider>
-          <DesignCanvas
-            systemGraph={systemGraph}
-            onSystemGraphChange={setSystemGraph}
-            selectedNode={selectedNode}
-            onNodeSelect={setSelectedNode}
-            onAddComponent={handleAddComponent}
-            onUpdateConfig={handleUpdateConfig}
-          />
-        </ReactFlowProvider>
+        {/* Center Panel - Collapsible Design Canvas */}
+        {canvasCollapsed ? (
+          // Collapsed: Thin strip with expand button
+          <div className="w-12 bg-gray-100 border-r border-gray-300 flex flex-col items-center justify-center">
+            <button
+              onClick={() => setCanvasCollapsed(false)}
+              className="writing-mode-vertical px-2 py-4 text-sm font-medium text-gray-700 hover:bg-gray-200 hover:text-blue-600 transition-colors rounded"
+              title="Expand Canvas"
+            >
+              <div className="flex flex-col items-center gap-2">
+                <span className="text-lg">◀</span>
+                <span className="transform rotate-90 whitespace-nowrap text-xs">Design Canvas</span>
+              </div>
+            </button>
+          </div>
+        ) : (
+          // Expanded: Full canvas with collapse button
+          <div className="flex-1 relative">
+            <ReactFlowProvider>
+              <DesignCanvas
+                systemGraph={systemGraph}
+                onSystemGraphChange={setSystemGraph}
+                selectedNode={selectedNode}
+                onNodeSelect={setSelectedNode}
+                onAddComponent={handleAddComponent}
+                onUpdateConfig={handleUpdateConfig}
+              />
+            </ReactFlowProvider>
+
+            {/* Collapse Button (overlay on canvas) */}
+            <button
+              onClick={() => setCanvasCollapsed(true)}
+              className="absolute top-2 right-2 px-3 py-2 bg-white border border-gray-300 rounded shadow-md hover:bg-gray-50 hover:shadow-lg transition-all z-10"
+              title="Collapse Canvas (focus on configuration)"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-gray-700">Hide Canvas</span>
+                <span className="text-sm">▶</span>
+              </div>
+            </button>
+          </div>
+        )}
 
         {/* Right Panel - Progressive Guidance + Palette/Inspector */}
-        <div className="flex flex-col w-96 bg-white border-l border-gray-200">
+        <div className={`flex flex-col bg-white border-l border-gray-200 transition-all ${
+          canvasCollapsed ? 'flex-1' : 'w-96'
+        }`}>
           {/* Top: Progressive Guidance Panel */}
           {currentTestCase && (
             <div className="flex-shrink-0">
@@ -179,6 +223,7 @@ export default function SystemDesignBuilderApp() {
                 testResult={currentTestResult}
                 currentComponentCount={systemGraph.components.length}
                 onShowSolution={() => setShowSolutionPanel(true)}
+                onShowDetailedAnalysis={() => setShowAnalysisPanel(true)}
               />
             </div>
           )}
@@ -208,6 +253,14 @@ export default function SystemDesignBuilderApp() {
           testCase={currentTestCase}
           onClose={() => setShowSolutionPanel(false)}
           onApplySolution={handleLoadSolution}
+        />
+      )}
+
+      {/* Detailed Analysis Modal */}
+      {showAnalysisPanel && currentTestResult?.detailedAnalysis && (
+        <DetailedAnalysisPanel
+          analysis={currentTestResult.detailedAnalysis}
+          onClose={() => setShowAnalysisPanel(false)}
         />
       )}
     </div>
