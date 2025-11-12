@@ -4,6 +4,11 @@ import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
+ * Caching Problems (Auto-generated)
+ * Generated from extracted-problems/system-design/caching.md
+ */
+
+/**
  * Multi-tenant SaaS Cache Isolation
  * From extracted-problems/system-design/caching.md
  */
