@@ -66,9 +66,20 @@ export function EnhancedInspector({
       case 'redis':
         return (component.config.memorySizeGB || 4) * 50;
       case 'postgresql':
-        let baseCost = 100;
-        if (component.config.replication) baseCost += 100;
-        return baseCost;
+        const instanceCosts: Record<string, number> = {
+          'db.t3.micro': 13,
+          'db.t3.small': 26,
+          'db.t3.medium': 53,
+          'db.m5.large': 133,
+          'db.m5.xlarge': 266,
+          'db.m5.2xlarge': 532,
+        };
+        const instanceType = component.config.instanceType || 'db.t3.medium';
+        const baseCost = instanceCosts[instanceType] || 100;
+        const replication = component.config.replication || { enabled: false, replicas: 0 };
+        const replicationCost = replication.enabled ? baseCost * replication.replicas : 0;
+        const storageCost = (component.config.storageSizeGB || 100) * 0.115;
+        return baseCost + replicationCost + storageCost;
       case 'mongodb':
         const mongoNodes = component.config.numShards || 3;
         return mongoNodes * 100;
@@ -348,35 +359,73 @@ function AppServerConfig({ config, onChange, onApplyPreset }: ConfigProps) {
 // ============================================================================
 
 function PostgreSQLConfig({ config, onChange, onApplyPreset }: ConfigProps) {
-  const readCapacity = config.readCapacity || 1000;
-  const writeCapacity = config.writeCapacity || 1000;
-  const replication = config.replication || false;
-  const baseCost = replication ? 200 : 100;
+  const instanceType = config.instanceType || 'db.t3.medium';
+  const isolationLevel = config.isolationLevel || 'read-committed';
+  const replication = config.replication || { enabled: false, replicas: 1, mode: 'async' };
+  const sharding = config.sharding || { enabled: false, shards: 1, shardKey: '' };
+  const storageType = config.storageType || 'gp3';
+  const storageSizeGB = config.storageSizeGB || 100;
+  const primaryKey = config.primaryKey || '';
+  const indexes = config.indexes || '';
+
+  // Calculate cost based on instance type
+  const instanceCosts: Record<string, number> = {
+    'db.t3.micro': 13,
+    'db.t3.small': 26,
+    'db.t3.medium': 53,
+    'db.m5.large': 133,
+    'db.m5.xlarge': 266,
+    'db.m5.2xlarge': 532,
+  };
+  const baseCost = instanceCosts[instanceType] || 100;
+  const replicationCost = replication.enabled ? baseCost * replication.replicas : 0;
+  const totalCost = baseCost + replicationCost;
 
   const presets: ConfigPreset[] = [
     {
-      name: 'Basic',
-      description: 'Low capacity, no replication',
-      config: { readCapacity: 500, writeCapacity: 500, replication: false },
+      name: 'Dev/Test',
+      description: 'Low cost, minimal setup',
+      config: {
+        instanceType: 'db.t3.micro',
+        isolationLevel: 'read-committed',
+        replication: { enabled: false, replicas: 0, mode: 'async' },
+        sharding: { enabled: false, shards: 1, shardKey: '' },
+        storageType: 'gp3',
+        storageSizeGB: 20,
+      },
       icon: '💰',
     },
     {
-      name: 'Standard',
-      description: 'Moderate capacity',
-      config: { readCapacity: 1000, writeCapacity: 1000, replication: false },
-      icon: '⚖️',
+      name: 'Production',
+      description: 'HA + replication',
+      config: {
+        instanceType: 'db.m5.large',
+        isolationLevel: 'read-committed',
+        replication: { enabled: true, replicas: 2, mode: 'async' },
+        sharding: { enabled: false, shards: 1, shardKey: '' },
+        storageType: 'gp3',
+        storageSizeGB: 100,
+      },
+      icon: '🔒',
     },
     {
-      name: 'Production',
-      description: 'High capacity + replication',
-      config: { readCapacity: 2000, writeCapacity: 1000, replication: true },
-      icon: '🔒',
+      name: 'High Scale',
+      description: 'Sharded + replicated',
+      config: {
+        instanceType: 'db.m5.xlarge',
+        isolationLevel: 'read-committed',
+        replication: { enabled: true, replicas: 2, mode: 'async' },
+        sharding: { enabled: true, shards: 4, shardKey: 'user_id' },
+        storageType: 'gp3',
+        storageSizeGB: 500,
+      },
+      icon: '🚀',
     },
   ];
 
   return (
     <div className="space-y-4">
-      <h3 className="font-semibold text-sm text-gray-900">Database Configuration</h3>
+      <h3 className="font-semibold text-sm text-gray-900">PostgreSQL Configuration</h3>
 
       {/* Presets */}
       <div>
@@ -402,59 +451,101 @@ function PostgreSQLConfig({ config, onChange, onApplyPreset }: ConfigProps) {
         </div>
       </div>
 
-      {/* Read Capacity */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Read Capacity (ops/sec)
-        </label>
-        <input
-          type="range"
-          min="100"
-          max="5000"
-          step="100"
-          value={readCapacity}
-          onChange={(e) => onChange('readCapacity', parseInt(e.target.value))}
-          className="w-full"
-        />
-        <div className="flex justify-between mt-1">
-          <span className="text-xs text-gray-500">100</span>
-          <span className="text-sm font-semibold text-blue-600">
-            {readCapacity.toLocaleString()} ops/s
-          </span>
-          <span className="text-xs text-gray-500">5,000</span>
+      {/* Data Model Section */}
+      <div className="p-3 border-2 border-purple-200 rounded-lg bg-purple-50">
+        <h4 className="text-xs font-semibold text-purple-900 mb-2">📊 Data Model</h4>
+
+        <div className="space-y-2">
+          <div>
+            <label className="block text-xs font-medium text-purple-800 mb-1">
+              Primary Key / Partition Key
+            </label>
+            <input
+              type="text"
+              value={primaryKey}
+              onChange={(e) => onChange('primaryKey', e.target.value)}
+              placeholder="e.g., short_code, user_id"
+              className="w-full px-2 py-1 text-xs border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+            <p className="text-xs text-purple-700 mt-1">
+              How will you lookup data? This determines query performance.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-xs font-medium text-purple-800 mb-1">
+              Indexes (comma-separated)
+            </label>
+            <input
+              type="text"
+              value={indexes}
+              onChange={(e) => onChange('indexes', e.target.value)}
+              placeholder="e.g., created_at, user_id"
+              className="w-full px-2 py-1 text-xs border border-purple-300 rounded focus:outline-none focus:ring-2 focus:ring-purple-500"
+            />
+            <p className="text-xs text-purple-700 mt-1">
+              Indexes speed up queries but slow down writes.
+            </p>
+          </div>
         </div>
       </div>
 
-      {/* Write Capacity */}
+      {/* Instance Type */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Write Capacity (ops/sec)
+          Instance Type
         </label>
-        <input
-          type="range"
-          min="100"
-          max="5000"
-          step="100"
-          value={writeCapacity}
-          onChange={(e) => onChange('writeCapacity', parseInt(e.target.value))}
-          className="w-full"
-        />
-        <div className="flex justify-between mt-1">
-          <span className="text-xs text-gray-500">100</span>
-          <span className="text-sm font-semibold text-blue-600">
-            {writeCapacity.toLocaleString()} ops/s
-          </span>
-          <span className="text-xs text-gray-500">5,000</span>
-        </div>
+        <select
+          value={instanceType}
+          onChange={(e) => onChange('instanceType', e.target.value)}
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <optgroup label="T3 - Dev/Testing (Burstable)">
+            <option value="db.t3.micro">db.t3.micro - ~50 RPS, $13/mo</option>
+            <option value="db.t3.small">db.t3.small - ~100 RPS, $26/mo</option>
+            <option value="db.t3.medium">db.t3.medium - ~200 RPS, $53/mo</option>
+          </optgroup>
+          <optgroup label="M5 - Production (Recommended)">
+            <option value="db.m5.large">db.m5.large - ~500 RPS, $133/mo</option>
+            <option value="db.m5.xlarge">db.m5.xlarge - ~1000 RPS, $266/mo</option>
+            <option value="db.m5.2xlarge">db.m5.2xlarge - ~2000 RPS, $532/mo</option>
+          </optgroup>
+        </select>
+        <p className="text-xs text-gray-500 mt-1">
+          Real AWS RDS instance types. Pick based on expected traffic.
+        </p>
+      </div>
+
+      {/* Isolation Level */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Transaction Isolation Level
+        </label>
+        <select
+          value={isolationLevel}
+          onChange={(e) => onChange('isolationLevel', e.target.value)}
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="read-uncommitted">Read Uncommitted - Fastest, dirty reads</option>
+          <option value="read-committed">Read Committed - Default, good balance</option>
+          <option value="repeatable-read">Repeatable Read - Slower, no phantom reads</option>
+          <option value="serializable">Serializable - Slowest, strongest consistency</option>
+        </select>
+        <p className="text-xs text-gray-500 mt-1">
+          Trade-off: Consistency vs Performance
+        </p>
       </div>
 
       {/* Replication */}
       <div className="p-3 border border-gray-200 rounded-lg">
-        <label className="flex items-start gap-3">
+        <label className="flex items-start gap-3 mb-3">
           <input
             type="checkbox"
-            checked={replication}
-            onChange={(e) => onChange('replication', e.target.checked)}
+            checked={replication.enabled}
+            onChange={(e) => onChange('replication', {
+              ...replication,
+              enabled: e.target.checked,
+            })}
             className="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
           />
           <div className="flex-1">
@@ -465,55 +556,201 @@ function PostgreSQLConfig({ config, onChange, onApplyPreset }: ConfigProps) {
               Adds read replicas for high availability. Survives database failures
               with automatic failover (&lt; 10s downtime).
             </p>
-            <div className="mt-2 text-xs">
-              <span className="text-gray-700">Additional cost:</span>{' '}
-              <span className="font-semibold text-green-600">+$100/month</span>
-            </div>
           </div>
         </label>
+
+        {replication.enabled && (
+          <div className="ml-6 space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Number of Replicas
+              </label>
+              <input
+                type="number"
+                min="1"
+                max="5"
+                value={replication.replicas}
+                onChange={(e) => onChange('replication', {
+                  ...replication,
+                  replicas: parseInt(e.target.value),
+                })}
+                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Cost multiplier: {1 + replication.replicas}x
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Replication Mode
+              </label>
+              <div className="space-y-2">
+                <label className="flex items-start gap-2 text-xs">
+                  <input
+                    type="radio"
+                    name="replicationMode"
+                    value="async"
+                    checked={replication.mode === 'async'}
+                    onChange={(e) => onChange('replication', {
+                      ...replication,
+                      mode: e.target.value,
+                    })}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <span className="font-medium text-gray-900">Async</span> - Fast writes,
+                    eventual consistency. May lose recent data on failover.
+                  </div>
+                </label>
+                <label className="flex items-start gap-2 text-xs">
+                  <input
+                    type="radio"
+                    name="replicationMode"
+                    value="sync"
+                    checked={replication.mode === 'sync'}
+                    onChange={(e) => onChange('replication', {
+                      ...replication,
+                      mode: e.target.value,
+                    })}
+                    className="mt-0.5"
+                  />
+                  <div>
+                    <span className="font-medium text-gray-900">Sync</span> - 10x slower writes!
+                    Strong consistency, no data loss.
+                  </div>
+                </label>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Impact Card */}
-      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-        <div className="text-xs font-medium text-blue-900 mb-2">📊 Capacity</div>
-        <div className="space-y-2">
-          <div>
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-blue-800">Read Capacity</span>
-              <span className="font-semibold text-blue-900">
-                {readCapacity.toLocaleString()} ops/s
-              </span>
-            </div>
-            <div className="h-2 bg-blue-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-blue-600"
-                style={{ width: `${(readCapacity / 5000) * 100}%` }}
+      {/* Sharding */}
+      <div className="p-3 border border-gray-200 rounded-lg">
+        <label className="flex items-start gap-3 mb-3">
+          <input
+            type="checkbox"
+            checked={sharding.enabled}
+            onChange={(e) => onChange('sharding', {
+              ...sharding,
+              enabled: e.target.checked,
+            })}
+            className="mt-0.5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          />
+          <div className="flex-1">
+            <span className="text-sm font-medium text-gray-900">
+              Enable Sharding
+            </span>
+            <p className="text-xs text-gray-500 mt-1">
+              Horizontal partitioning for massive scale. Split data across multiple databases.
+            </p>
+          </div>
+        </label>
+
+        {sharding.enabled && (
+          <div className="ml-6 space-y-2">
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Number of Shards
+              </label>
+              <input
+                type="number"
+                min="2"
+                max="100"
+                value={sharding.shards}
+                onChange={(e) => onChange('sharding', {
+                  ...sharding,
+                  shards: parseInt(e.target.value),
+                })}
+                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
             </div>
-          </div>
-          <div>
-            <div className="flex justify-between text-xs mb-1">
-              <span className="text-blue-800">Write Capacity</span>
-              <span className="font-semibold text-blue-900">
-                {writeCapacity.toLocaleString()} ops/s
-              </span>
-            </div>
-            <div className="h-2 bg-green-200 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-green-600"
-                style={{ width: `${(writeCapacity / 5000) * 100}%` }}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">
+                Shard Key
+              </label>
+              <input
+                type="text"
+                value={sharding.shardKey}
+                onChange={(e) => onChange('sharding', {
+                  ...sharding,
+                  shardKey: e.target.value,
+                })}
+                placeholder="e.g., user_id, region"
+                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
               />
+              <p className="text-xs text-gray-500 mt-1">
+                How to distribute data across shards (e.g., hash(user_id))
+              </p>
             </div>
           </div>
-          <div className="pt-2 border-t border-blue-200 flex justify-between text-xs">
-            <span className="text-blue-800">Monthly Cost:</span>
-            <span className="font-semibold text-blue-900">${baseCost}/month</span>
+        )}
+      </div>
+
+      {/* Storage Configuration */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Storage Type
+        </label>
+        <select
+          value={storageType}
+          onChange={(e) => onChange('storageType', e.target.value)}
+          className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="gp3">gp3 - General Purpose SSD (Recommended)</option>
+          <option value="gp2">gp2 - General Purpose SSD (Legacy)</option>
+          <option value="io1">io1 - Provisioned IOPS SSD (High performance)</option>
+          <option value="io2">io2 - Provisioned IOPS SSD (Highest durability)</option>
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Storage Size: {storageSizeGB} GB
+        </label>
+        <input
+          type="range"
+          min="20"
+          max="1000"
+          step="10"
+          value={storageSizeGB}
+          onChange={(e) => onChange('storageSizeGB', parseInt(e.target.value))}
+          className="w-full"
+        />
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>20 GB</span>
+          <span>1000 GB</span>
+        </div>
+      </div>
+
+      {/* Cost Summary */}
+      <div className="p-3 bg-green-50 rounded-lg border border-green-200">
+        <div className="text-xs font-medium text-green-900 mb-2">💰 Cost Breakdown</div>
+        <div className="space-y-1 text-xs text-green-800">
+          <div className="flex justify-between">
+            <span>Instance ({instanceType}):</span>
+            <span className="font-semibold">${baseCost}/mo</span>
+          </div>
+          {replication.enabled && (
+            <div className="flex justify-between">
+              <span>Replication ({replication.replicas} replicas):</span>
+              <span className="font-semibold">+${replicationCost}/mo</span>
+            </div>
+          )}
+          <div className="flex justify-between">
+            <span>Storage ({storageSizeGB} GB {storageType}):</span>
+            <span className="font-semibold">${(storageSizeGB * 0.115).toFixed(0)}/mo</span>
+          </div>
+          <div className="pt-2 border-t border-green-300 flex justify-between font-semibold">
+            <span>Total:</span>
+            <span className="text-green-900">${(totalCost + storageSizeGB * 0.115).toFixed(0)}/mo</span>
           </div>
         </div>
       </div>
 
-      {/* Warning if no replication */}
-      {!replication && (
+      {/* Warnings */}
+      {!replication.enabled && (
         <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
           <div className="text-xs font-medium text-yellow-900 mb-1">
             ⚠️ No Replication
@@ -521,6 +758,17 @@ function PostgreSQLConfig({ config, onChange, onApplyPreset }: ConfigProps) {
           <p className="text-xs text-yellow-800">
             Database failures will cause 60s+ downtime. Enable replication for
             99.9%+ availability.
+          </p>
+        </div>
+      )}
+
+      {!primaryKey && (
+        <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+          <div className="text-xs font-medium text-orange-900 mb-1">
+            ⚠️ No Primary Key Defined
+          </div>
+          <p className="text-xs text-orange-800">
+            Define your primary key to optimize query performance and data access patterns.
           </p>
         </div>
       )}
