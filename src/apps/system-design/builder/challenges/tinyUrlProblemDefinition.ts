@@ -59,24 +59,24 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
 
   // Test scenarios for each level
   scenarios: [
-    // Level 1: Basic connectivity
+    // Level 1: Brute Force - Does it work at all?
     {
-      name: 'Level 1: Build Your First Working System',
-      description: 'Just get components connected correctly',
+      name: 'Level 1: The Brute Force Test - Does It Even Work?',
+      description: 'Like algorithm brute force: ignore performance, just verify connectivity. Client → App → Database path exists. No optimization needed.',
       traffic: {
-        rps: 1,
+        rps: 0.1,  // Nearly zero traffic - just checking connectivity
         readWriteRatio: 0.5,
       },
       passCriteria: {
-        maxLatency: 5000,  // Very generous
-        maxErrorRate: 0.9, // Almost always passes
+        maxLatency: 30000,  // 30 seconds - we don't care about speed
+        maxErrorRate: 0.99, // 99% errors allowed - just need ONE request to work
       },
     },
 
-    // Level 2: Capacity planning
+    // Level 2: First optimization - capacity planning
     {
-      name: 'Level 2: Scale to 100 RPS',
-      description: 'Learn about component capacity',
+      name: 'Level 2: Basic Optimization - Scale to 100 RPS',
+      description: 'Like algorithm O(n): it works, but now make it handle real load. Size your components for capacity.',
       traffic: {
         rps: 100,
         readWriteRatio: 0.9,
@@ -87,10 +87,10 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
       },
     },
 
-    // Level 3: Caching
+    // Level 3: Better optimization - caching
     {
-      name: 'Level 3: Scale to 1,000 RPS with Caching',
-      description: 'Add caching to handle high read traffic',
+      name: 'Level 3: Better Optimization - Add Caching for 1,000 RPS',
+      description: 'Like algorithm O(log n): use caching to handle 10x more traffic efficiently.',
       traffic: {
         rps: 1000,
         readWriteRatio: 0.9,
@@ -102,10 +102,10 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
       },
     },
 
-    // Level 4: High availability
+    // Level 4: Handle edge cases - failures
     {
-      name: 'Level 4: Survive Server Failures',
-      description: 'Add redundancy to handle failures',
+      name: 'Level 4: Edge Cases - Survive Server Failures',
+      description: 'Like handling null pointers: what if your database crashes? Add redundancy.',
       traffic: {
         rps: 1000,
         readWriteRatio: 0.9,
@@ -122,10 +122,10 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
       },
     },
 
-    // Level 5: Cost optimization
+    // Level 5: Optimal solution - cost/performance balance
     {
-      name: 'Level 5: Optimize Cost While Meeting Requirements',
-      description: 'Make tradeoffs to reduce cost',
+      name: 'Level 5: Optimal Solution - Balance Cost vs Performance',
+      description: 'Like finding optimal time/space tradeoff: meet requirements at lowest cost.',
       traffic: {
         rps: 1000,
         readWriteRatio: 0.9,
