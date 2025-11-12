@@ -40,8 +40,71 @@ Example:
   ],
 
   testCases: [
+    // ========== FUNCTIONAL REQUIREMENTS (FR) ==========
+    {
+      name: 'Basic CRUD Operations',
+      type: 'functional',
+      requirement: 'FR-1',
+      description: 'Users can create, read, update, and delete todos. System must handle basic todo operations.',
+      traffic: {
+        type: 'mixed',
+        rps: 10,
+        readRatio: 0.5,
+      },
+      duration: 10,
+      passCriteria: {
+        maxErrorRate: 0,
+      },
+      solution: {
+        components: [
+          { type: 'client', config: {} },
+          { type: 'app_server', config: { instances: 1 } },
+          { type: 'postgresql', config: { readCapacity: 100, writeCapacity: 100 } },
+        ],
+        connections: [
+          { from: 'client', to: 'app_server' },
+          { from: 'app_server', to: 'postgresql' },
+        ],
+        explanation: `Minimal viable system - app server handles CRUD operations, PostgreSQL stores todos.`,
+      },
+    },
+    {
+      name: 'Concurrent Users',
+      type: 'functional',
+      requirement: 'FR-2',
+      description: 'Multiple users can work on their todos simultaneously without conflicts.',
+      traffic: {
+        type: 'mixed',
+        rps: 50,
+        readRatio: 0.6,
+      },
+      duration: 10,
+      passCriteria: {
+        maxErrorRate: 0,
+      },
+    },
+    {
+      name: 'Data Consistency',
+      type: 'functional',
+      requirement: 'FR-3',
+      description: 'System maintains data consistency across concurrent writes (no lost updates).',
+      traffic: {
+        type: 'mixed',
+        rps: 100,
+        readRatio: 0.4, // Heavy writes to test consistency
+      },
+      duration: 10,
+      passCriteria: {
+        maxErrorRate: 0,
+      },
+    },
+
+    // ========== PERFORMANCE REQUIREMENTS (NFR-P) ==========
     {
       name: 'Normal Load',
+      type: 'performance',
+      requirement: 'NFR-P1',
+      description: 'System handles typical daily traffic (500 RPS with 60% reads) with low latency and stays within budget.',
       traffic: {
         type: 'mixed',
         rps: 500,
@@ -53,9 +116,133 @@ Example:
         maxErrorRate: 0.01,
         maxMonthlyCost: 800,
       },
+      solution: {
+        components: [
+          { type: 'client', config: {} },
+          { type: 'load_balancer', config: {} },
+          { type: 'app_server', config: { instances: 2 } },
+          { type: 'postgresql', config: { readCapacity: 500, writeCapacity: 400, replication: true } },
+          { type: 'redis', config: { maxMemoryMB: 512 } },
+        ],
+        connections: [
+          { from: 'client', to: 'load_balancer' },
+          { from: 'load_balancer', to: 'app_server' },
+          { from: 'app_server', to: 'redis' },
+          { from: 'app_server', to: 'postgresql' },
+        ],
+        explanation: `This solution handles 500 RPS efficiently with mixed read/write workload:
+
+**Architecture:**
+- Load balancer distributes traffic across 2 app servers
+- Redis caches frequently accessed todos (60% reads benefit)
+- PostgreSQL with replication for high availability
+- Write capacity: 400 ops/sec for 200 WPS
+
+**Why it works:**
+- Redis cache reduces DB read load (~80% hit ratio)
+- 2 app servers handle ~250 RPS each
+- DB write capacity handles 200 WPS with headroom
+- Replication provides failover capability
+- Cost ~$750/month (within $800 budget)
+
+**Key settings:**
+- App Servers: 2 instances for redundancy
+- PostgreSQL: writeCapacity=400, readCapacity=500, replication=true
+- Redis: 512MB cache for active todos`,
+      },
     },
     {
+      name: 'Peak Hour Load',
+      type: 'performance',
+      requirement: 'NFR-P2',
+      description: 'During peak work hours (morning standup), traffic increases to 800 RPS. System must maintain acceptable latency.',
+      traffic: {
+        type: 'mixed',
+        rps: 800,
+        readRatio: 0.6,
+      },
+      duration: 60,
+      passCriteria: {
+        maxP99Latency: 250,
+        maxErrorRate: 0.02,
+        maxMonthlyCost: 1000,
+      },
+    },
+
+    // ========== SCALABILITY REQUIREMENTS (NFR-S) ==========
+    {
+      name: 'Hot User (power user creating lots of todos)',
+      type: 'scalability',
+      requirement: 'NFR-S1',
+      description: 'A power user creates many todos (project planning), increasing write load by 20%. System must handle the spike.',
+      traffic: {
+        type: 'mixed',
+        rps: 600, // 500 normal + 100 from power user
+        readRatio: 0.6,
+      },
+      duration: 60,
+      passCriteria: {
+        maxP99Latency: 250, // Slight degradation OK
+        maxErrorRate: 0.02,
+      },
+      solution: {
+        components: [
+          { type: 'client', config: {} },
+          { type: 'load_balancer', config: {} },
+          { type: 'app_server', config: { instances: 2 } },
+          { type: 'postgresql', config: { readCapacity: 600, writeCapacity: 500, replication: true } },
+          { type: 'redis', config: { maxMemoryMB: 512 } },
+        ],
+        connections: [
+          { from: 'client', to: 'load_balancer' },
+          { from: 'load_balancer', to: 'app_server' },
+          { from: 'app_server', to: 'redis' },
+          { from: 'app_server', to: 'postgresql' },
+        ],
+        explanation: `This solution handles power user spikes:
+
+**Challenge:**
+- 20% increase in write load (200 → 240 WPS)
+- Database write capacity is the bottleneck
+- Can't cache writes effectively
+
+**Solution:**
+- Provision writeCapacity=500 (25% buffer above normal 200 WPS)
+- This handles 240 WPS spike + headroom for more spikes
+- Redis still helps with reads (reduces DB pressure)
+
+**Why it works:**
+- 500 write capacity handles 240 WPS comfortably
+- 2 app servers distribute load
+- Cache reduces read pressure, freeing DB for writes
+
+**Key Insight:**
+Write-heavy workloads need database capacity planning with buffer!`,
+      },
+    },
+    {
+      name: 'Team Collaboration Spike',
+      type: 'scalability',
+      requirement: 'NFR-S2',
+      description: 'Multiple teams start using the app simultaneously (new company adoption). Traffic increases to 1000 RPS.',
+      traffic: {
+        type: 'mixed',
+        rps: 1000,
+        readRatio: 0.6,
+      },
+      duration: 60,
+      passCriteria: {
+        maxP99Latency: 300,
+        maxErrorRate: 0.03,
+      },
+    },
+
+    // ========== RELIABILITY REQUIREMENTS (NFR-R) ==========
+    {
       name: 'Database Failure',
+      type: 'reliability',
+      requirement: 'NFR-R1',
+      description: 'Primary database crashes at second 30. System must failover to replica and maintain high availability.',
       traffic: {
         type: 'mixed',
         rps: 500,
@@ -71,18 +258,81 @@ Example:
         minAvailability: 0.95, // 95% availability = max 6s downtime in 120s
         maxErrorRate: 0.1, // Some errors during failover OK
       },
+      solution: {
+        components: [
+          { type: 'client', config: {} },
+          { type: 'load_balancer', config: {} },
+          { type: 'app_server', config: { instances: 2 } },
+          { type: 'postgresql', config: { readCapacity: 500, writeCapacity: 400, replication: true } },
+          { type: 'redis', config: { maxMemoryMB: 512 } },
+        ],
+        connections: [
+          { from: 'client', to: 'load_balancer' },
+          { from: 'load_balancer', to: 'app_server' },
+          { from: 'app_server', to: 'redis' },
+          { from: 'app_server', to: 'postgresql' },
+        ],
+        explanation: `This solution achieves 99.9% availability during database failure:
+
+**Without replication:**
+- Database crash = complete outage
+- 60 seconds downtime = 50% availability ❌
+- All user requests fail
+
+**With replication:**
+- Automatic failover to standby replica
+- <10 seconds downtime = 95%+ availability ✅
+- System stays up during primary failure
+
+**For a collaborative app used by teams:**
+- 99.9% availability is CRITICAL!
+- Database is single point of failure
+- Replication is non-negotiable
+
+**Key setting:**
+PostgreSQL: replication=true enables automatic failover`,
+      },
     },
     {
-      name: 'Hot User (power user creating lots of todos)',
+      name: 'App Server Failure',
+      type: 'reliability',
+      requirement: 'NFR-R2',
+      description: 'One app server crashes at second 20. Load balancer must route traffic to healthy servers.',
       traffic: {
         type: 'mixed',
-        rps: 600, // 500 normal + 100 from power user
+        rps: 500,
         readRatio: 0.6,
       },
       duration: 60,
+      failureInjection: {
+        type: 'server_crash',
+        atSecond: 20,
+      },
       passCriteria: {
-        maxP99Latency: 250, // Slight degradation OK
-        maxErrorRate: 0.02,
+        maxP99Latency: 300,
+        maxErrorRate: 0.05,
+        minAvailability: 0.98,
+      },
+    },
+    {
+      name: 'Cache Failure',
+      type: 'reliability',
+      requirement: 'NFR-R3',
+      description: 'Redis cache fails at second 15. System must continue operating with degraded performance.',
+      traffic: {
+        type: 'mixed',
+        rps: 500,
+        readRatio: 0.6,
+      },
+      duration: 60,
+      failureInjection: {
+        type: 'cache_flush',
+        atSecond: 15,
+      },
+      passCriteria: {
+        maxP99Latency: 400, // Higher latency acceptable
+        maxErrorRate: 0.05,
+        minAvailability: 0.95,
       },
     },
   ],

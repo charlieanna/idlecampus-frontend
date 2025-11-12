@@ -38,7 +38,8 @@ export class TestRunner {
       metrics,
       passed,
       failures,
-      bottlenecks
+      bottlenecks,
+      graph
     );
 
     return {
@@ -117,7 +118,8 @@ export class TestRunner {
     metrics: TestMetrics,
     passed: boolean,
     failures: string[],
-    bottlenecks: any[]
+    bottlenecks: any[],
+    graph: SystemGraph
   ): string {
     let explanation = '';
 
@@ -138,28 +140,128 @@ export class TestRunner {
       }
     } else {
       explanation = `❌ Test FAILED: ${testCase.name}\n\n`;
-      explanation += `Failures:\n`;
-      failures.forEach((failure) => {
-        explanation += `- ${failure}\n`;
-      });
 
-      if (bottlenecks.length > 0) {
-        explanation += `\n🔍 Bottlenecks Detected:\n`;
-        bottlenecks.forEach((b) => {
-          explanation += `\n${b.componentId} (${b.componentType}):\n`;
-          explanation += `  Issue: ${b.issue}\n`;
-          explanation += `  Utilization: ${(b.utilization * 100).toFixed(0)}%\n`;
-          explanation += `  💡 Recommendation: ${b.recommendation}\n`;
+      // Detect empty/incomplete design and provide educational guidance
+      const isEmptyDesign = this.detectEmptyDesign(graph, metrics);
+
+      if (isEmptyDesign) {
+        explanation += this.generateEmptyDesignGuidance(testCase, graph);
+      } else {
+        explanation += `Failures:\n`;
+        failures.forEach((failure) => {
+          explanation += `- ${failure}\n`;
         });
-      }
 
-      explanation += `\nActual Metrics:\n`;
-      explanation += `- p99 Latency: ${metrics.p99Latency.toFixed(1)}ms\n`;
-      explanation += `- Error Rate: ${(metrics.errorRate * 100).toFixed(2)}%\n`;
-      explanation += `- Monthly Cost: $${metrics.monthlyCost.toFixed(0)}\n`;
-      explanation += `- Availability: ${(metrics.availability * 100).toFixed(1)}%\n`;
+        if (bottlenecks.length > 0) {
+          explanation += `\n🔍 Bottlenecks Detected:\n`;
+          bottlenecks.forEach((b) => {
+            explanation += `\n${b.componentId} (${b.componentType}):\n`;
+            explanation += `  Issue: ${b.issue}\n`;
+            explanation += `  Utilization: ${(b.utilization * 100).toFixed(0)}%\n`;
+            explanation += `  💡 Recommendation: ${b.recommendation}\n`;
+          });
+        }
+
+        explanation += `\nActual Metrics:\n`;
+        explanation += `- p99 Latency: ${metrics.p99Latency.toFixed(1)}ms\n`;
+        explanation += `- Error Rate: ${(metrics.errorRate * 100).toFixed(2)}%\n`;
+        explanation += `- Monthly Cost: $${metrics.monthlyCost.toFixed(0)}\n`;
+        explanation += `- Availability: ${(metrics.availability * 100).toFixed(1)}%\n`;
+      }
     }
 
     return explanation;
+  }
+
+  /**
+   * Detect if the design is empty or incomplete
+   */
+  private detectEmptyDesign(graph: SystemGraph, metrics: TestMetrics): boolean {
+    // Empty design: 100% error rate and 0% availability
+    if (metrics.errorRate >= 0.99 && metrics.availability < 0.01) {
+      return true;
+    }
+
+    // Check if there are any connections
+    if (graph.connections.length === 0) {
+      return true;
+    }
+
+    // Check if client is connected to anything
+    const clients = graph.components.filter(c => c.type === 'client');
+    const hasClientConnection = clients.some(client =>
+      graph.connections.some(conn => conn.from === client.id)
+    );
+
+    if (!hasClientConnection) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Generate educational guidance for empty/incomplete designs
+   */
+  private generateEmptyDesignGuidance(testCase: TestCase, graph: SystemGraph): string {
+    let guidance = '';
+
+    // Check what's missing
+    const clients = graph.components.filter(c => c.type === 'client');
+    const appServers = graph.components.filter(c => c.type === 'app_server');
+    const databases = graph.components.filter(c =>
+      c.type === 'postgresql' || c.type === 'mongodb' || c.type === 'cassandra'
+    );
+    const hasConnections = graph.connections.length > 0;
+
+    guidance += `🔴 No valid request path found!\n\n`;
+
+    if (testCase.type === 'functional') {
+      guidance += `This is a **Functional Requirement** test - it checks if your system can handle basic requests.\n\n`;
+    }
+
+    guidance += `📋 What's missing:\n`;
+
+    if (appServers.length === 0) {
+      guidance += `• ❌ No App Server component found\n`;
+    } else {
+      guidance += `• ✅ App Server present\n`;
+    }
+
+    if (databases.length === 0) {
+      guidance += `• ❌ No Database component found\n`;
+    } else {
+      guidance += `• ✅ Database present\n`;
+    }
+
+    if (!hasConnections) {
+      guidance += `• ❌ No connections between components\n`;
+    } else {
+      const clientConnected = clients.some(client =>
+        graph.connections.some(conn => conn.from === client.id)
+      );
+      if (!clientConnected) {
+        guidance += `• ❌ Client not connected to any component\n`;
+      } else {
+        guidance += `• ✅ Client connected\n`;
+      }
+    }
+
+    guidance += `\n💡 To fix this:\n`;
+    guidance += `1. Drag an **App Server** from the right panel onto the canvas\n`;
+    guidance += `2. Drag a **Database** (PostgreSQL, MongoDB, or Cassandra) onto the canvas\n`;
+    guidance += `3. Connect them: **Client → App Server → Database**\n`;
+    guidance += `   (Click and drag from one component's edge to another)\n\n`;
+
+    guidance += `🎯 Goal: Create a complete request path so the system can:\n`;
+    if (testCase.traffic.type === 'write' || testCase.traffic.type === 'mixed') {
+      guidance += `• Accept write requests (create short URLs)\n`;
+    }
+    if (testCase.traffic.type === 'read' || testCase.traffic.type === 'mixed') {
+      guidance += `• Handle read requests (redirect to original URLs)\n`;
+    }
+    guidance += `• Store and retrieve data reliably\n`;
+
+    return guidance;
   }
 }

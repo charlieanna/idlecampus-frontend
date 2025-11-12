@@ -420,12 +420,12 @@ export default function AppRouter() {
       <Route path="/docker/progressive/:moduleSlug" element={<ProgressiveModuleWrapper />} />
       <Route path="/kubernetes" element={<CoursePageWrapper courseType="kubernetes" />} />
       <Route path="/coding-interview" element={<CodingInterviewApp />} />
-      <Route path="/system-design" element={<SystemDesignApp />} />
+      <Route path="/system-design/*" element={<SystemDesignApp />} />
       <Route path="/python" element={<PythonApp />} />
       <Route path="/golang" element={<GolangApp />} />
 
       {/* New courses */}
-      <Route path="/system_design" element={<SystemDesignApp />} />
+      <Route path="/system_design/*" element={<SystemDesignApp />} />
       <Route path="/aws" element={<CoursePageWrapper courseType="aws" />} />
       <Route path="/envoy" element={<CoursePageWrapper courseType="envoy" />} />
       <Route path="/postgresql" element={<CoursePageWrapper courseType="postgresql" />} />

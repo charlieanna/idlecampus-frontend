@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { ReactFlowProvider, Node } from 'reactflow';
+import { useNavigate } from 'react-router-dom';
 import 'reactflow/dist/style.css';
 import { Challenge, Solution, TestResult } from '../types/testCase';
 import { SystemGraph } from '../types/graph';
@@ -39,9 +40,20 @@ const getInitialGraph = (): SystemGraph => ({
   connections: [],
 });
 
-export default function SystemDesignBuilderApp() {
+interface SystemDesignBuilderAppProps {
+  challengeId?: string;
+}
+
+export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuilderAppProps) {
+  const navigate = useNavigate();
+
+  // Find challenge by ID or default to first challenge
+  const initialChallenge = challengeId
+    ? challenges.find(c => c.id === challengeId) || challenges[0]
+    : challenges[0];
+
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
-    challenges[0] // Start with Tiny URL
+    initialChallenge
   );
   const [systemGraph, setSystemGraph] = useState<SystemGraph>(getInitialGraph());
   const [currentTestIndex, setCurrentTestIndex] = useState(0); // Current test being run
@@ -52,6 +64,20 @@ export default function SystemDesignBuilderApp() {
   const [showSolutionPanel, setShowSolutionPanel] = useState(false);
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
+
+  // Map challenge IDs to URL paths
+  const challengeIdToPath: Record<string, string> = {
+    'tiny_url': 'tiny-url',
+    'food_blog': 'food-blog',
+    'todo_app': 'todo-app',
+  };
+
+  // Handle challenge selection - update URL and state
+  const handleChallengeSelect = (challenge: Challenge) => {
+    const path = challengeIdToPath[challenge.id] || challenge.id;
+    navigate(`/system-design/${path}`);
+    setSelectedChallenge(challenge);
+  };
 
   // Reset graph when challenge changes
   useEffect(() => {
@@ -230,7 +256,7 @@ export default function SystemDesignBuilderApp() {
           <ChallengeSelector
             challenges={challenges}
             selectedChallenge={selectedChallenge}
-            onSelectChallenge={setSelectedChallenge}
+            onSelectChallenge={handleChallengeSelect}
           />
         </div>
       </div>
