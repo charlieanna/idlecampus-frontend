@@ -12,6 +12,7 @@ import { SubmissionResultsPanel } from './components/SubmissionResultsPanel';
 import { ComponentPalette } from './components/ComponentPalette';
 import { InspectorModal } from './components/InspectorModal';
 import { ReferenceSolutionPanel } from './components/ReferenceSolutionPanel';
+import { EnhancedInspector } from './components/EnhancedInspector';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 import { allProblemDefinitions } from '../challenges/definitions';
@@ -66,6 +67,7 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const [showSolutionPanel, setShowSolutionPanel] = useState(false);
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>('canvas'); // 'canvas', 'code', or component ID
 
   // Convert challenge ID to URL-friendly path (replace underscores with hyphens)
   const challengeIdToPath = (id: string): string => {
@@ -107,6 +109,7 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
     setHasSubmitted(false);
     setSelectedNode(null);
     setShowSolutionPanel(false);
+    setActiveTab('canvas');
   }, [selectedChallenge?.id]);
 
   // Keyboard handler for Delete key
@@ -239,6 +242,11 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
     if (selectedNode?.id === nodeId) {
       setSelectedNode(null);
     }
+
+    // Switch to canvas tab if the deleted component's tab was active
+    if (activeTab === nodeId) {
+      setActiveTab('canvas');
+    }
   };
 
   const handleLoadSolution = (solution: Solution) => {
@@ -272,6 +280,27 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
     setShowSolutionPanel(false);
   };
 
+  // Get database components for tabs (postgresql, mongodb, cassandra, redis, etc.)
+  const getDatabaseComponents = () => {
+    return systemGraph.components.filter(comp =>
+      ['postgresql', 'mongodb', 'cassandra', 'redis', 'dynamodb'].includes(comp.type)
+    );
+  };
+
+  // Get component display name for tab
+  const getComponentTabLabel = (component: any) => {
+    const typeLabels: Record<string, string> = {
+      postgresql: '🐘 PostgreSQL',
+      mongodb: '🍃 MongoDB',
+      cassandra: '📊 Cassandra',
+      redis: '🔴 Redis',
+      dynamodb: '⚡ DynamoDB',
+    };
+    return typeLabels[component.type] || component.type;
+  };
+
+  const databaseComponents = getDatabaseComponents();
+
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
       {/* Top Bar */}
@@ -288,27 +317,74 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
         </div>
       </div>
 
+      {/* Tab Bar */}
+      <div className="bg-white border-b border-gray-200 px-6">
+        <div className="flex gap-1">
+          {/* Canvas Tab */}
+          <button
+            onClick={() => setActiveTab('canvas')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'canvas'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+            }`}
+          >
+            🎨 Canvas
+          </button>
+
+          {/* Code Tab */}
+          <button
+            onClick={() => setActiveTab('code')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'code'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+            }`}
+          >
+            💻 Python Code
+          </button>
+
+          {/* Dynamic Database Component Tabs */}
+          {databaseComponents.map((component) => (
+            <button
+              key={component.id}
+              onClick={() => setActiveTab(component.id)}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === component.id
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              {getComponentTabLabel(component)}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Main Content - Three Panel Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Problem Description OR Submission Results */}
-        {selectedChallenge && (
-          hasSubmitted ? (
-            <SubmissionResultsPanel
-              testCases={selectedChallenge.testCases}
-              testResults={testResults}
-              isRunning={isRunning}
-              currentTestIndex={currentTestIndex}
-              onEditDesign={handleEditDesign}
-              onShowSolution={() => setShowSolutionPanel(true)}
-              onTryAgain={handleTryAgain}
-            />
-          ) : (
-            <ProblemDescriptionPanel challenge={selectedChallenge} />
-          )
-        )}
+        {/* Canvas Tab Content */}
+        {activeTab === 'canvas' && (
+          <>
+            {/* Left Panel - Problem Description OR Submission Results */}
+            {selectedChallenge && (
+              hasSubmitted ? (
+                <SubmissionResultsPanel
+                  testCases={selectedChallenge.testCases}
+                  testResults={testResults}
+                  isRunning={isRunning}
+                  currentTestIndex={currentTestIndex}
+                  onEditDesign={handleEditDesign}
+                  onShowSolution={() => setShowSolutionPanel(true)}
+                  onTryAgain={handleTryAgain}
+                />
+              ) : (
+                <ProblemDescriptionPanel challenge={selectedChallenge} />
+              )
+            )}
 
-        {/* Center Panel - Collapsible Design Canvas */}
-        {canvasCollapsed ? (
+            {/* Center Panel - Collapsible Design Canvas */}
+            {canvasCollapsed ? (
           // Collapsed: Thin strip with expand button
           <div className="w-12 bg-gray-100 border-r border-gray-300 flex flex-col items-center justify-center">
             <button
@@ -350,31 +426,91 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
           </div>
         )}
 
-        {/* Right Panel - Component Palette with Submit Button */}
-        {!hasSubmitted && (
-          <div className={`flex flex-col bg-white border-l border-gray-200 transition-all ${
-            canvasCollapsed ? 'flex-1' : 'w-80'
-          }`}>
-            {/* Component Palette */}
-            <div className="flex-1 overflow-y-auto">
-              <ComponentPalette
-                availableComponents={selectedChallenge?.availableComponents || []}
-                onAddComponent={handleAddComponent}
-              />
-            </div>
+            {/* Right Panel - Component Palette with Submit Button */}
+            {!hasSubmitted && (
+              <div className={`flex flex-col bg-white border-l border-gray-200 transition-all ${
+                canvasCollapsed ? 'flex-1' : 'w-80'
+              }`}>
+                {/* Component Palette */}
+                <div className="flex-1 overflow-y-auto">
+                  <ComponentPalette
+                    availableComponents={selectedChallenge?.availableComponents || []}
+                    onAddComponent={handleAddComponent}
+                  />
+                </div>
 
-            {/* Submit Button */}
-            <div className="p-4 border-t border-gray-200 bg-gray-50">
-              <button
-                onClick={handleSubmit}
-                disabled={isRunning}
-                className="w-full px-6 py-3 text-base font-semibold text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors shadow-md hover:shadow-lg"
-              >
-                {isRunning ? '⏳ Running Tests...' : '▶️ Submit Solution'}
-              </button>
+                {/* Submit Button */}
+                <div className="p-4 border-t border-gray-200 bg-gray-50">
+                  <button
+                    onClick={handleSubmit}
+                    disabled={isRunning}
+                    className="w-full px-6 py-3 text-base font-semibold text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors shadow-md hover:shadow-lg"
+                  >
+                    {isRunning ? '⏳ Running Tests...' : '▶️ Submit Solution'}
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
+        {/* Code Tab Content */}
+        {activeTab === 'code' && (
+          <div className="flex-1 flex items-center justify-center bg-white">
+            <div className="text-center p-8">
+              <h2 className="text-2xl font-bold text-gray-900 mb-4">💻 Python Coding Challenge</h2>
+              <p className="text-gray-600 mb-4">Write code to implement your system design</p>
+              <p className="text-sm text-gray-500">(Coming soon)</p>
             </div>
           </div>
         )}
+
+        {/* Database Component Tab Content */}
+        {databaseComponents.map((component) => {
+          if (activeTab !== component.id) return null;
+
+          return (
+            <div key={component.id} className="flex-1 flex flex-col bg-white">
+              {/* Database Configuration Header */}
+              <div className="border-b border-gray-200 px-6 py-4 bg-gray-50">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      {getComponentTabLabel(component)}
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Configure data model and infrastructure
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteComponent(component.id)}
+                    className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 border border-red-300 rounded transition-colors"
+                  >
+                    🗑️ Delete Component
+                  </button>
+                </div>
+              </div>
+
+              {/* Database Configuration Content using EnhancedInspector */}
+              <div className="flex-1 overflow-y-auto">
+                <EnhancedInspector
+                  node={{
+                    id: component.id,
+                    type: component.type,
+                    position: { x: 0, y: 0 },
+                    data: {
+                      label: getComponentTabLabel(component),
+                      componentType: component.type,
+                    },
+                  }}
+                  systemGraph={systemGraph}
+                  onUpdateConfig={handleUpdateConfig}
+                  isModal={false}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       {/* Inspector Modal */}
