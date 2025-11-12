@@ -1,5 +1,5 @@
 /**
- * All 40 System Design Challenge Definitions
+ * All 81 System Design Challenge Definitions (40 original + 41 extracted)
  *
  * Each challenge has ONLY Level 1: "The Brute Force Test - Does It Even Work?"
  * Focus: Verify connectivity (Client → App → Database path exists)
@@ -67,10 +67,11 @@ export { tutorialSimpleBlogProblemDefinition } from './tutorialSimpleBlog';
 export { tutorialImageHostingProblemDefinition } from './tutorialImageHosting';
 export { tutorialRealtimeChatProblemDefinition } from './tutorialRealtimeChat';
 
-// Extracted Problems - Caching (6)
+// Extracted Problems - Caching (16)
 export { redditCommentSystemProblemDefinition } from './redditCommentSystem';
 export { staticContentCdnProblemDefinition } from './staticContentCdn';
 export { sessionStoreBasicProblemDefinition, databaseQueryCacheProblemDefinition, apiRateLimitCacheProblemDefinition, productCatalogCacheProblemDefinition } from './cachingProblems';
+export { gamingLeaderboardCacheProblemDefinition, geoLocationCacheProblemDefinition, configCacheBasicProblemDefinition, socialFeedCacheProblemDefinition, videoStreamingCacheProblemDefinition, searchSuggestionCacheProblemDefinition, newsAggregatorCacheProblemDefinition, graphqlCacheProblemDefinition, shoppingCartCacheProblemDefinition, analyticsDashboardCacheProblemDefinition } from './cachingProblemsExtended';
 
 // Extracted Problems - Streaming (5)
 export { basicMessageQueueProblemDefinition } from './basicMessageQueue';
@@ -139,6 +140,7 @@ import { staticContentCdnProblemDefinition } from './staticContentCdn';
 import { basicMessageQueueProblemDefinition } from './basicMessageQueue';
 import { basicDatabaseDesignProblemDefinition } from './basicDatabaseDesign';
 import { sessionStoreBasicProblemDefinition, databaseQueryCacheProblemDefinition, apiRateLimitCacheProblemDefinition, productCatalogCacheProblemDefinition } from './cachingProblems';
+import { gamingLeaderboardCacheProblemDefinition, geoLocationCacheProblemDefinition, configCacheBasicProblemDefinition, socialFeedCacheProblemDefinition, videoStreamingCacheProblemDefinition, searchSuggestionCacheProblemDefinition, newsAggregatorCacheProblemDefinition, graphqlCacheProblemDefinition, shoppingCartCacheProblemDefinition, analyticsDashboardCacheProblemDefinition } from './cachingProblemsExtended';
 import { realtimeNotificationsProblemDefinition, basicEventLogProblemDefinition, simplePubsubProblemDefinition, realtimeChatMessagesProblemDefinition } from './streamingProblems';
 import { nosqlBasicsProblemDefinition, keyValueStoreProblemDefinition, productCatalogProblemDefinition, objectStorageSystemProblemDefinition } from './storageProblems';
 import { basicApiGatewayProblemDefinition, simpleRateLimiterProblemDefinition, authenticationGatewayProblemDefinition, graphqlGatewayProblemDefinition } from './gatewayProblems';
@@ -202,18 +204,28 @@ export const allProblemDefinitions: ProblemDefinition[] = [
   bookingcomProblemDefinition,
   weatherapiProblemDefinition,
 
-  // Extracted Problems (31 total)
+  // Extracted Problems (41 total)
   // Tutorials (3)
   tutorialSimpleBlogProblemDefinition,
   tutorialImageHostingProblemDefinition,
   tutorialRealtimeChatProblemDefinition,
-  // Caching (6)
+  // Caching (16)
   redditCommentSystemProblemDefinition,
   staticContentCdnProblemDefinition,
   sessionStoreBasicProblemDefinition,
   databaseQueryCacheProblemDefinition,
   apiRateLimitCacheProblemDefinition,
   productCatalogCacheProblemDefinition,
+  gamingLeaderboardCacheProblemDefinition,
+  geoLocationCacheProblemDefinition,
+  configCacheBasicProblemDefinition,
+  socialFeedCacheProblemDefinition,
+  videoStreamingCacheProblemDefinition,
+  searchSuggestionCacheProblemDefinition,
+  newsAggregatorCacheProblemDefinition,
+  graphqlCacheProblemDefinition,
+  shoppingCartCacheProblemDefinition,
+  analyticsDashboardCacheProblemDefinition,
   // Streaming (5)
   basicMessageQueueProblemDefinition,
   realtimeNotificationsProblemDefinition,

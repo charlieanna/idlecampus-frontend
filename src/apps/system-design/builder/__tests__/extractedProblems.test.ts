@@ -65,8 +65,8 @@ describe('Extracted Problems - Integration Tests', () => {
       expect(cdnProblem?.title).toBe('Static Content CDN');
     });
 
-    it('should have expected total count of problems (40 original + 31 extracted)', () => {
-      expect(allProblemDefinitions.length).toBe(71);
+    it('should have expected total count of problems (40 original + 41 extracted)', () => {
+      expect(allProblemDefinitions.length).toBe(81);
     });
   });
 
@@ -92,7 +92,7 @@ describe('Extracted Problems - Integration Tests', () => {
 
   describe('Generated Challenges', () => {
     it('should generate challenges for all problem definitions', () => {
-      expect(generatedChallenges.length).toBe(71);
+      expect(generatedChallenges.length).toBe(81);
     });
 
     it('should generate challenge for Reddit Comment System', () => {

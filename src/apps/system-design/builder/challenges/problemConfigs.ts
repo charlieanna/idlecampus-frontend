@@ -758,4 +758,105 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasCache: false,
     hasObjectStorage: true,
   },
+
+  // Caching Problems (Extended - Automated)
+  'gaming-leaderboard-cache': {
+    baseRps: 70000, // 20k updates + 50k queries
+    readRatio: 0.7, // 70% reads (queries), 30% writes (updates)
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'geo-location-cache': {
+    baseRps: 100000, // 100k lookups/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 10,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'config-cache-basic': {
+    baseRps: 50000, // 50k config reads/sec
+    readRatio: 0.99, // 99% reads
+    maxLatency: 5,
+    availability: 0.9999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'social-feed-cache': {
+    baseRps: 100000, // 100k feed requests/sec
+    readRatio: 0.9, // 90% reads
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'video-streaming-cache': {
+    baseRps: 50000, // 50k chunk requests/sec
+    readRatio: 0.99, // 99% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: true,
+  },
+
+  'search-suggestion-cache': {
+    baseRps: 100000, // 100k queries/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 20,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'news-aggregator-cache': {
+    baseRps: 50000, // 50k requests/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'graphql-cache': {
+    baseRps: 20000, // 20k queries/sec
+    readRatio: 0.9, // 90% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'shopping-cart-cache': {
+    baseRps: 30000, // 30k cart operations/sec
+    readRatio: 0.7, // 70% reads, 30% writes
+    maxLatency: 20,
+    availability: 0.9999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'analytics-dashboard-cache': {
+    baseRps: 10000, // 10k dashboard requests/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 200,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
 };
