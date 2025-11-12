@@ -472,7 +472,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: true,
   },
 
-  // CACHING (2)
+  // CACHING (6)
   'reddit-comment-system': {
     baseRps: 5000000, // 5M reads/sec normal
     readRatio: 0.99, // 99% reads (viewing comments)
@@ -493,7 +493,47 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: true,
   },
 
-  // STREAMING (1)
+  'session-store-basic': {
+    baseRps: 10000, // 9k reads + 1k writes
+    readRatio: 0.9, // 90% reads
+    maxLatency: 10,
+    availability: 0.9999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'database-query-cache': {
+    baseRps: 10000, // 10k queries/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'api-rate-limit-cache': {
+    baseRps: 50000, // 50k validations/sec
+    readRatio: 0.5, // Read/write balanced
+    maxLatency: 5,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'product-catalog-cache': {
+    baseRps: 100000, // 100k req/sec (Black Friday)
+    readRatio: 0.98, // 98% reads
+    maxLatency: 100,
+    availability: 0.9995,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  // STREAMING (5)
   'basic-message-queue': {
     baseRps: 5000, // 5k messages/sec
     readRatio: 0.5, // Balanced read/write (pub/sub)
@@ -504,11 +544,133 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  // STORAGE (1)
+  'realtime-notifications': {
+    baseRps: 100000, // 100k notifications/sec
+    readRatio: 0.8, // 80% reads (connection tracking)
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'basic-event-log': {
+    baseRps: 50000, // 50k events/sec
+    readRatio: 0.3, // 30% reads (mostly writes)
+    maxLatency: 200,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'simple-pubsub': {
+    baseRps: 10000, // 10k messages/sec
+    readRatio: 0.5, // Balanced pub/sub
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'realtime-chat-messages': {
+    baseRps: 20000, // 20k messages/sec
+    readRatio: 0.6, // 60% reads (viewing history)
+    maxLatency: 100,
+    availability: 0.9995,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  // STORAGE (5)
   'basic-database-design': {
     baseRps: 11000, // 10k reads + 1k writes
     readRatio: 0.91, // 91% reads
     maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'nosql-basics': {
+    baseRps: 20000, // 20k ops/sec
+    readRatio: 0.8, // 80% reads
+    maxLatency: 30,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'key-value-store': {
+    baseRps: 100000, // 100k ops/sec
+    readRatio: 0.7, // 70% reads
+    maxLatency: 1,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'product-catalog': {
+    baseRps: 5500, // 5k reads + 500 writes
+    readRatio: 0.91, // 91% reads
+    maxLatency: 100,
+    availability: 0.9995,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'object-storage-system': {
+    baseRps: 10000, // 10k file ops/sec
+    readRatio: 0.7, // 70% reads
+    maxLatency: 200,
+    availability: 0.9999,
+    avgFileSize: 10, // 10MB average
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: true,
+  },
+
+  // GATEWAY (4)
+  'basic-api-gateway': {
+    baseRps: 10000, // 10k requests/sec
+    readRatio: 0.9, // 90% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'simple-rate-limiter': {
+    baseRps: 20000, // 20k validations/sec
+    readRatio: 0.5, // Balanced
+    maxLatency: 10,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'authentication-gateway': {
+    baseRps: 30000, // 30k auth requests/sec
+    readRatio: 1.0, // 100% reads (validation)
+    maxLatency: 20,
+    availability: 0.9999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'graphql-gateway': {
+    baseRps: 5000, // 5k complex queries/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 200,
     availability: 0.999,
     hasCdn: false,
     hasCache: true,

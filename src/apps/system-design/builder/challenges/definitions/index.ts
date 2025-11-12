@@ -67,15 +67,21 @@ export { tutorialSimpleBlogProblemDefinition } from './tutorialSimpleBlog';
 export { tutorialImageHostingProblemDefinition } from './tutorialImageHosting';
 export { tutorialRealtimeChatProblemDefinition } from './tutorialRealtimeChat';
 
-// Extracted Problems - Caching (2)
+// Extracted Problems - Caching (6)
 export { redditCommentSystemProblemDefinition } from './redditCommentSystem';
 export { staticContentCdnProblemDefinition } from './staticContentCdn';
+export { sessionStoreBasicProblemDefinition, databaseQueryCacheProblemDefinition, apiRateLimitCacheProblemDefinition, productCatalogCacheProblemDefinition } from './cachingProblems';
 
-// Extracted Problems - Streaming (1)
+// Extracted Problems - Streaming (5)
 export { basicMessageQueueProblemDefinition } from './basicMessageQueue';
+export { realtimeNotificationsProblemDefinition, basicEventLogProblemDefinition, simplePubsubProblemDefinition, realtimeChatMessagesProblemDefinition } from './streamingProblems';
 
-// Extracted Problems - Storage (1)
+// Extracted Problems - Storage (5)
 export { basicDatabaseDesignProblemDefinition } from './basicDatabaseDesign';
+export { nosqlBasicsProblemDefinition, keyValueStoreProblemDefinition, productCatalogProblemDefinition, objectStorageSystemProblemDefinition } from './storageProblems';
+
+// Extracted Problems - Gateway (4)
+export { basicApiGatewayProblemDefinition, simpleRateLimiterProblemDefinition, authenticationGatewayProblemDefinition, graphqlGatewayProblemDefinition } from './gatewayProblems';
 
 // Array of all problem definitions
 import { ProblemDefinition } from '../../types/problemDefinition';
@@ -126,6 +132,10 @@ import { redditCommentSystemProblemDefinition } from './redditCommentSystem';
 import { staticContentCdnProblemDefinition } from './staticContentCdn';
 import { basicMessageQueueProblemDefinition } from './basicMessageQueue';
 import { basicDatabaseDesignProblemDefinition } from './basicDatabaseDesign';
+import { sessionStoreBasicProblemDefinition, databaseQueryCacheProblemDefinition, apiRateLimitCacheProblemDefinition, productCatalogCacheProblemDefinition } from './cachingProblems';
+import { realtimeNotificationsProblemDefinition, basicEventLogProblemDefinition, simplePubsubProblemDefinition, realtimeChatMessagesProblemDefinition } from './streamingProblems';
+import { nosqlBasicsProblemDefinition, keyValueStoreProblemDefinition, productCatalogProblemDefinition, objectStorageSystemProblemDefinition } from './storageProblems';
+import { basicApiGatewayProblemDefinition, simpleRateLimiterProblemDefinition, authenticationGatewayProblemDefinition, graphqlGatewayProblemDefinition } from './gatewayProblems';
 
 export const allProblemDefinitions: ProblemDefinition[] = [
   // Social Media (10)
@@ -184,12 +194,33 @@ export const allProblemDefinitions: ProblemDefinition[] = [
   bookingcomProblemDefinition,
   weatherapiProblemDefinition,
 
-  // Extracted Problems (7)
+  // Extracted Problems (23 total)
+  // Tutorials (3)
   tutorialSimpleBlogProblemDefinition,
   tutorialImageHostingProblemDefinition,
   tutorialRealtimeChatProblemDefinition,
+  // Caching (6)
   redditCommentSystemProblemDefinition,
   staticContentCdnProblemDefinition,
+  sessionStoreBasicProblemDefinition,
+  databaseQueryCacheProblemDefinition,
+  apiRateLimitCacheProblemDefinition,
+  productCatalogCacheProblemDefinition,
+  // Streaming (5)
   basicMessageQueueProblemDefinition,
+  realtimeNotificationsProblemDefinition,
+  basicEventLogProblemDefinition,
+  simplePubsubProblemDefinition,
+  realtimeChatMessagesProblemDefinition,
+  // Storage (5)
   basicDatabaseDesignProblemDefinition,
+  nosqlBasicsProblemDefinition,
+  keyValueStoreProblemDefinition,
+  productCatalogProblemDefinition,
+  objectStorageSystemProblemDefinition,
+  // Gateway (4)
+  basicApiGatewayProblemDefinition,
+  simpleRateLimiterProblemDefinition,
+  authenticationGatewayProblemDefinition,
+  graphqlGatewayProblemDefinition,
 ];
