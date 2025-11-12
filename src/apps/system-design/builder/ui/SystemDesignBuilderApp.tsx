@@ -10,9 +10,9 @@ import { DesignCanvas, getComponentInfo, getDefaultConfig } from './components/D
 import { ProblemDescriptionPanel } from './components/ProblemDescriptionPanel';
 import { SubmissionResultsPanel } from './components/SubmissionResultsPanel';
 import { ComponentPalette } from './components/ComponentPalette';
-import { InspectorModal } from './components/InspectorModal';
 import { ReferenceSolutionPanel } from './components/ReferenceSolutionPanel';
 import { EnhancedInspector } from './components/EnhancedInspector';
+import { ComponentJustificationModal } from './components/ComponentJustificationModal';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 import { allProblemDefinitions } from '../challenges/definitions';
@@ -165,6 +165,9 @@ def expand(code: str, store: dict) -> str:
   const handleSubmit = async () => {
     if (!selectedChallenge) return;
 
+    // Justifications are optional for now (testing purposes)
+    // No validation required before submission
+
     // Get the problem definition for this challenge
     const problemDefinition = getProblemDefinition(selectedChallenge.id);
     if (!problemDefinition) {
@@ -239,6 +242,17 @@ def expand(code: str, store: dict) -> str:
   const handleUpdateConfig = (nodeId: string, config: Record<string, any>) => {
     const updatedComponents = systemGraph.components.map((comp) =>
       comp.id === nodeId ? { ...comp, config: { ...comp.config, ...config } } : comp
+    );
+
+    setSystemGraph({
+      ...systemGraph,
+      components: updatedComponents,
+    });
+  };
+
+  const handleSaveJustification = (nodeId: string, justification: string) => {
+    const updatedComponents = systemGraph.components.map((comp) =>
+      comp.id === nodeId ? { ...comp, config: { ...comp.config, justification } } : comp
     );
 
     setSystemGraph({
@@ -679,14 +693,15 @@ def expand(code: str, store: dict) -> str:
         })}
       </div>
 
-      {/* Inspector Modal */}
-      {selectedNode && (
-        <InspectorModal
+      {/* Component Justification Modal */}
+      {selectedNode && selectedNode.data.componentType !== 'client' && (
+        <ComponentJustificationModal
           node={selectedNode}
-          systemGraph={systemGraph}
-          onUpdateConfig={handleUpdateConfig}
+          initialJustification={
+            systemGraph.components.find(c => c.id === selectedNode.id)?.config?.justification || ''
+          }
+          onSave={handleSaveJustification}
           onClose={() => setSelectedNode(null)}
-          onDelete={handleDeleteComponent}
         />
       )}
 
