@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Gateway Problems - Complete Set
@@ -79,9 +87,14 @@ export const rateLimiterProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('rate-limiter', problemConfigs['rate-limiter']),
+  scenarios: generateScenarios('rate-limiter', problemConfigs['rate-limiter'], [
+    
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -166,9 +179,18 @@ export const basicApiGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('basic-api-gateway', problemConfigs['basic-api-gateway']),
+  scenarios: generateScenarios('basic-api-gateway', problemConfigs['basic-api-gateway'], [
+    'Route requests based on URL path',
+    'Add authentication headers',
+    'Transform request/response formats',
+    'Handle service discovery',
+    'Implement basic health checks'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -253,9 +275,18 @@ export const simpleRateLimiterProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('simple-rate-limiter', problemConfigs['simple-rate-limiter']),
+  scenarios: generateScenarios('simple-rate-limiter', problemConfigs['simple-rate-limiter'], [
+    'Limit requests per user per minute',
+    'Support burst allowance',
+    'Return 429 with retry-after header',
+    'Track usage per API key',
+    'Allow different tiers with different limits'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -348,9 +379,18 @@ export const authenticationGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('authentication-gateway', problemConfigs['authentication-gateway']),
+  scenarios: generateScenarios('authentication-gateway', problemConfigs['authentication-gateway'], [
+    'Validate JWT tokens on every request',
+    'Cache public keys for verification',
+    'Extract user context from tokens',
+    'Support token refresh flow',
+    'Forward user context to services'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -434,9 +474,18 @@ export const loadBalancingGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('load-balancing-gateway', problemConfigs['load-balancing-gateway']),
+  scenarios: generateScenarios('load-balancing-gateway', problemConfigs['load-balancing-gateway'], [
+    'Implement round-robin load balancing',
+    'Support weighted distribution',
+    'Health check backend services',
+    'Remove unhealthy instances',
+    'Support sticky sessions'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -525,9 +574,18 @@ export const requestTransformGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('request-transform-gateway', problemConfigs['request-transform-gateway']),
+  scenarios: generateScenarios('request-transform-gateway', problemConfigs['request-transform-gateway'], [
+    'Convert REST requests to GraphQL',
+    'Transform JSON to Protocol Buffers',
+    'Map between different schemas',
+    'Support API versioning',
+    'Handle format validation'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -611,9 +669,18 @@ export const corsGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('cors-gateway', problemConfigs['cors-gateway']),
+  scenarios: generateScenarios('cors-gateway', problemConfigs['cors-gateway'], [
+    'Handle OPTIONS preflight requests',
+    'Configure allowed origins',
+    'Set proper CORS headers',
+    'Support credentials in requests',
+    'Cache preflight responses'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -702,9 +769,18 @@ export const retryGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('retry-gateway', problemConfigs['retry-gateway']),
+  scenarios: generateScenarios('retry-gateway', problemConfigs['retry-gateway'], [
+    'Retry failed requests with exponential backoff',
+    'Implement circuit breaker pattern',
+    'Add jitter to prevent thundering herd',
+    'Track failure rates per service',
+    'Return cached responses when circuit open'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -801,9 +877,18 @@ export const compressionGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('compression-gateway', problemConfigs['compression-gateway']),
+  scenarios: generateScenarios('compression-gateway', problemConfigs['compression-gateway'], [
+    'Compress responses with gzip/brotli',
+    'Support Accept-Encoding negotiation',
+    'Skip compression for small payloads',
+    'Cache compressed responses',
+    'Monitor compression ratios'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -893,9 +978,18 @@ export const loggingGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('logging-gateway', problemConfigs['logging-gateway']),
+  scenarios: generateScenarios('logging-gateway', problemConfigs['logging-gateway'], [
+    'Log request/response metadata',
+    'Implement correlation IDs',
+    'Support sampling for high volume',
+    'Send logs to centralized system',
+    'Extract metrics from logs'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -989,9 +1083,18 @@ export const healthCheckGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('health-check-gateway', problemConfigs['health-check-gateway']),
+  scenarios: generateScenarios('health-check-gateway', problemConfigs['health-check-gateway'], [
+    'Aggregate health checks from all services',
+    'Report overall system health',
+    'Track dependency health',
+    'Support different health levels (healthy, degraded, down)',
+    'Cache health results with TTL'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1080,9 +1183,18 @@ export const apiRoutingGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('api-routing-gateway', problemConfigs['api-routing-gateway']),
+  scenarios: generateScenarios('api-routing-gateway', problemConfigs['api-routing-gateway'], [
+    'Route based on headers and query params',
+    'Support canary releases with percentage',
+    'Enable A/B testing by user segment',
+    'Implement feature flags via routing',
+    'Track routing decisions for analytics'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1176,9 +1288,18 @@ export const responseTransformGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('response-transform-gateway', problemConfigs['response-transform-gateway']),
+  scenarios: generateScenarios('response-transform-gateway', problemConfigs['response-transform-gateway'], [
+    'Filter response fields by client type',
+    'Merge responses from multiple services',
+    'Convert between data formats (JSON/XML)',
+    'Add computed fields to responses',
+    'Support response templates'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1292,9 +1413,19 @@ export const apiAggregationGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('api-aggregation-gateway', problemConfigs['api-aggregation-gateway']),
+  scenarios: generateScenarios('api-aggregation-gateway', problemConfigs['api-aggregation-gateway'], [
+    'Aggregate multiple service calls',
+    'Shape responses for different clients',
+    'Execute parallel API calls',
+    'Handle partial failures gracefully',
+    'Cache aggregated responses',
+    'Support GraphQL-like field selection'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1398,9 +1529,19 @@ export const graphqlGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('graphql-gateway', problemConfigs['graphql-gateway']),
+  scenarios: generateScenarios('graphql-gateway', problemConfigs['graphql-gateway'], [
+    'Federate schemas from multiple services',
+    'Resolve cross-service references',
+    'Implement DataLoader for batching',
+    'Handle GraphQL subscriptions',
+    'Cache query results',
+    'Support schema introspection'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1506,9 +1647,21 @@ export const oauth2GatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('oauth2-gateway', problemConfigs['oauth2-gateway']),
+  scenarios: generateScenarios('oauth2-gateway', problemConfigs['oauth2-gateway'], [
+    'Handle 10M token operations/sec (100M during spikes)',
+    'Support 2 billion active users globally',
+    'Implement authorization code flow with PKCE at scale',
+    'Rotate all tokens within 1 hour during security breach',
+    'Support multi-region token validation with <50ms latency',
+    'Detect and block credential stuffing attacks in real-time',
+    'Provide audit logs for compliance (7-year retention)',
+    'Handle graceful degradation during 50% infrastructure failure'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1607,9 +1760,19 @@ export const websocketGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('websocket-gateway', problemConfigs['websocket-gateway']),
+  scenarios: generateScenarios('websocket-gateway', problemConfigs['websocket-gateway'], [
+    'Accept WebSocket connections at scale',
+    'Route messages to backend services',
+    'Implement pub/sub for broadcasting',
+    'Handle connection lifecycle events',
+    'Support message acknowledgments',
+    'Provide connection state tracking'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1708,9 +1871,19 @@ export const grpcGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('grpc-gateway', problemConfigs['grpc-gateway']),
+  scenarios: generateScenarios('grpc-gateway', problemConfigs['grpc-gateway'], [
+    'Convert REST requests to gRPC calls',
+    'Support unary and streaming RPCs',
+    'Handle bidirectional streaming',
+    'Implement connection pooling',
+    'Support gRPC metadata and deadlines',
+    'Provide error mapping to HTTP status'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1822,9 +1995,19 @@ export const mobileGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('mobile-gateway', problemConfigs['mobile-gateway']),
+  scenarios: generateScenarios('mobile-gateway', problemConfigs['mobile-gateway'], [
+    'Batch multiple API calls into one request',
+    'Compress responses aggressively',
+    'Support offline-first patterns',
+    'Implement delta updates',
+    'Handle push notifications',
+    'Adapt to network quality'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1938,9 +2121,19 @@ export const partnerGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('partner-gateway', problemConfigs['partner-gateway']),
+  scenarios: generateScenarios('partner-gateway', problemConfigs['partner-gateway'], [
+    'Enforce rate limits per partner tier',
+    'Track API usage for billing',
+    'Implement priority queues by SLA',
+    'Support burst allowances',
+    'Provide usage analytics',
+    'Handle quota resets'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2040,9 +2233,19 @@ export const webhookGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('webhook-gateway', problemConfigs['webhook-gateway']),
+  scenarios: generateScenarios('webhook-gateway', problemConfigs['webhook-gateway'], [
+    'Deliver webhooks with retry logic',
+    'Implement exponential backoff',
+    'Track delivery status',
+    'Support webhook signing',
+    'Handle dead letter queue',
+    'Provide delivery analytics'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2144,9 +2347,21 @@ export const serverlessGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('serverless-gateway', problemConfigs['serverless-gateway']),
+  scenarios: generateScenarios('serverless-gateway', problemConfigs['serverless-gateway'], [
+    'Route 5M requests/sec to serverless functions (50M during spikes)',
+    'Support 1M concurrent function executions',
+    'ML-based predictive warming to keep cold starts <0.1%',
+    'Request coalescing and buffering during cold starts',
+    'Support 100k+ unique functions across 10k customers',
+    'Handle function cascading failures gracefully',
+    'Implement priority-based execution during resource constraints',
+    'Support WebAssembly and container-based functions'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2246,9 +2461,19 @@ export const multiProtocolGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multi-protocol-gateway', problemConfigs['multi-protocol-gateway']),
+  scenarios: generateScenarios('multi-protocol-gateway', problemConfigs['multi-protocol-gateway'], [
+    'Support REST, SOAP, and GraphQL',
+    'Auto-detect protocol from request',
+    'Convert between protocols',
+    'Maintain unified schema',
+    'Handle protocol-specific errors',
+    'Provide protocol metrics'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2362,9 +2587,19 @@ export const versioningGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('versioning-gateway', problemConfigs['versioning-gateway']),
+  scenarios: generateScenarios('versioning-gateway', problemConfigs['versioning-gateway'], [
+    'Support multiple API versions',
+    'Route by version header or path',
+    'Transform between versions',
+    'Track version usage',
+    'Deprecate old versions gracefully',
+    'Provide migration guides'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2477,9 +2712,19 @@ export const quotaGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('quota-gateway', problemConfigs['quota-gateway']),
+  scenarios: generateScenarios('quota-gateway', problemConfigs['quota-gateway'], [
+    'Enforce per-second, per-day, per-month quotas',
+    'Support tiered plans (free, pro, enterprise)',
+    'Handle quota overages gracefully',
+    'Provide quota usage API',
+    'Implement quota resets',
+    'Support quota pooling for teams'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2593,9 +2838,19 @@ export const monetizationGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('monetization-gateway', problemConfigs['monetization-gateway']),
+  scenarios: generateScenarios('monetization-gateway', problemConfigs['monetization-gateway'], [
+    'Meter API usage by endpoint and method',
+    'Track bandwidth consumption',
+    'Calculate costs in real-time',
+    'Support tiered pricing',
+    'Provide usage reports',
+    'Integrate with billing systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2706,9 +2961,21 @@ export const zeroTrustGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('zero-trust-gateway', problemConfigs['zero-trust-gateway']),
+  scenarios: generateScenarios('zero-trust-gateway', problemConfigs['zero-trust-gateway'], [
+    'Handle 20M requests/sec with mTLS (2B during attacks)',
+    'Support 500k+ unique service identities globally',
+    'Hardware-accelerated crypto for <10ms validation',
+    'Continuous risk scoring and adaptive authentication',
+    'Auto-rotate 1M certificates daily without downtime',
+    'Micro-segment 10k+ different service meshes',
+    'Real-time threat detection with ML anomaly detection',
+    'Support FIDO2, WebAuthn, and biometric authentication'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2824,9 +3091,21 @@ export const mlModelGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('ml-model-gateway', problemConfigs['ml-model-gateway']),
+  scenarios: generateScenarios('ml-model-gateway', problemConfigs['ml-model-gateway'], [
+    'Serve 100M predictions/sec (2B during viral ChatGPT moments)',
+    'Support 10k+ different models with 1000+ versions',
+    'GPU orchestration across 100k+ GPUs globally',
+    'Real-time A/B testing with statistical significance',
+    'Automatic rollback when model quality degrades >5%',
+    'Batch inference with dynamic batch sizing',
+    'Multi-modal support (text, image, video, audio)',
+    'Federated learning and edge inference capabilities'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2936,9 +3215,21 @@ export const fraudDetectionGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('fraud-detection-gateway', problemConfigs['fraud-detection-gateway']),
+  scenarios: generateScenarios('fraud-detection-gateway', problemConfigs['fraud-detection-gateway'], [
+    'Score all transactions in real-time',
+    'Extract features from transaction data',
+    'Apply multiple fraud models',
+    'Risk-based routing (block, challenge, allow)',
+    'Real-time model updates',
+    'Track fraud patterns',
+    'Generate fraud alerts',
+    'Support manual review queue'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -3034,9 +3325,21 @@ export const hftGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('hft-gateway', problemConfigs['hft-gateway']),
+  scenarios: generateScenarios('hft-gateway', problemConfigs['hft-gateway'], [
+    'Route orders to exchanges with <100μs latency',
+    'Implement FIX protocol support',
+    'Kernel bypass networking (DPDK)',
+    'Lock-free data structures',
+    'Deterministic garbage collection',
+    'Hardware timestamping',
+    'Market data fanout',
+    'Order validation and risk checks'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -3146,9 +3449,21 @@ export const iotGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('iot-gateway', problemConfigs['iot-gateway']),
+  scenarios: generateScenarios('iot-gateway', problemConfigs['iot-gateway'], [
+    'Support MQTT and CoAP protocols',
+    'Handle 10M+ concurrent connections',
+    'Implement QoS levels (0, 1, 2)',
+    'Topic-based message routing',
+    'Device authentication and authorization',
+    'Offline message buffering',
+    'Device shadow synchronization',
+    'Firmware update distribution'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -3263,9 +3578,21 @@ export const blockchainGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('blockchain-gateway', problemConfigs['blockchain-gateway']),
+  scenarios: generateScenarios('blockchain-gateway', problemConfigs['blockchain-gateway'], [
+    'Load balance across blockchain nodes',
+    'Implement node health checking',
+    'Cache immutable blockchain data',
+    'Handle node sync lag',
+    'Support WebSocket subscriptions',
+    'Track mempool for pending txs',
+    'Batch RPC calls',
+    'Provide historical data archive'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -3404,9 +3731,21 @@ export const globalTrafficGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-traffic-gateway', problemConfigs['global-traffic-gateway']),
+  scenarios: generateScenarios('global-traffic-gateway', problemConfigs['global-traffic-gateway'], [
+    'Handle 100M requests/sec globally (10B during attacks)',
+    'Deploy across 300+ edge locations in 100+ countries',
+    'Mitigate 10Tbps volumetric DDoS attacks',
+    'Support 50M+ customer domains with custom rules',
+    'ML-based zero-day attack detection <100ms',
+    'Real-time threat intelligence across all PoPs',
+    'Anycast routing with <50ms convergence on failure',
+    'Support HTTP/3, QUIC, and experimental protocols'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -3530,9 +3869,19 @@ export const edgeComputeGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('edge-compute-gateway', problemConfigs['edge-compute-gateway']),
+  scenarios: generateScenarios('edge-compute-gateway', problemConfigs['edge-compute-gateway'], [
+    'Deploy functions to 100+ edge locations',
+    'Isolate tenant execution',
+    'Enforce CPU/memory quotas',
+    'Handle cold start optimization',
+    'Support multiple runtimes',
+    'Provide edge KV storage'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -3619,9 +3968,19 @@ export const apiCachingGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('api-caching-gateway', problemConfigs['api-caching-gateway']),
+  scenarios: generateScenarios('api-caching-gateway', problemConfigs['api-caching-gateway'], [
+    'Cache GET requests by URL+headers',
+    'Support cache control headers',
+    'Implement conditional requests (ETag, Last-Modified)',
+    'Vary cache by query params',
+    'Tag-based cache invalidation',
+    'Bypass cache for authenticated requests'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -3717,9 +4076,19 @@ export const serviceDiscoveryGatewayProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('service-discovery-gateway', problemConfigs['service-discovery-gateway']),
+  scenarios: generateScenarios('service-discovery-gateway', problemConfigs['service-discovery-gateway'], [
+    'Auto-discover service instances',
+    'Perform active health checks',
+    'Route to healthy endpoints only',
+    'Support multiple service versions',
+    'Load balance across instances',
+    'Handle service failures gracefully'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

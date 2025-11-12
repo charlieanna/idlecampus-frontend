@@ -15,9 +15,72 @@ interface ScenarioConfig {
   hasObjectStorage?: boolean; // If S3/blob storage needed
 }
 
+/**
+ * Analyze a user-facing FR and determine what architecture it needs
+ */
+function analyzeFeatureRequirements(fr: string): {
+  requiresObjectStorage: boolean;
+  requiresCache: boolean;
+  requiresQueue: boolean;
+  requiresSearch: boolean;
+  isReadHeavy: boolean;
+  isWriteHeavy: boolean;
+} {
+  const lowerFR = fr.toLowerCase();
+
+  return {
+    requiresObjectStorage: lowerFR.includes('photo') || lowerFR.includes('video') ||
+                          lowerFR.includes('image') || lowerFR.includes('file') ||
+                          lowerFR.includes('upload') || lowerFR.includes('media'),
+    requiresCache: lowerFR.includes('view') || lowerFR.includes('read') ||
+                  lowerFR.includes('get') || lowerFR.includes('feed') ||
+                  lowerFR.includes('timeline') || lowerFR.includes('redirect'),
+    requiresQueue: lowerFR.includes('notification') || lowerFR.includes('analytics') ||
+                  lowerFR.includes('track') || lowerFR.includes('async') ||
+                  lowerFR.includes('event'),
+    requiresSearch: lowerFR.includes('search') || lowerFR.includes('find') ||
+                   lowerFR.includes('query'),
+    isReadHeavy: lowerFR.includes('view') || lowerFR.includes('read') ||
+                lowerFR.includes('get') || lowerFR.includes('feed') ||
+                lowerFR.includes('redirect'),
+    isWriteHeavy: lowerFR.includes('create') || lowerFR.includes('post') ||
+                 lowerFR.includes('upload') || lowerFR.includes('write') ||
+                 lowerFR.includes('shorten'),
+  };
+}
+
+/**
+ * Generate test description for a feature
+ */
+function generateFeatureTestDescription(fr: string, analysis: ReturnType<typeof analyzeFeatureRequirements>): string {
+  const parts: string[] = [`Verify "${fr}" works correctly.`];
+
+  if (analysis.requiresObjectStorage) {
+    parts.push('Must use object storage (S3) for files, not database.');
+  }
+  if (analysis.requiresCache && analysis.isReadHeavy) {
+    parts.push('Should cache reads to reduce database load.');
+  }
+  if (analysis.requiresQueue) {
+    parts.push('Should process asynchronously using message queue.');
+  }
+  if (analysis.requiresSearch) {
+    parts.push('Must have search index for efficient queries.');
+  }
+
+  if (analysis.isReadHeavy) {
+    parts.push('Test flow: Client → [Cache] → App → Database.');
+  } else if (analysis.isWriteHeavy) {
+    parts.push('Test flow: Client → App → Database.');
+  }
+
+  return parts.join(' ');
+}
+
 export function generateScenarios(
   problemId: string,
-  config: ScenarioConfig | undefined
+  config: ScenarioConfig,
+  userFacingFRs?: string[]
 ): Scenario[] {
   const scenarios: Scenario[] = [];
   
@@ -36,50 +99,85 @@ export function generateScenarios(
   const effectiveConfig = config || defaultConfig;
 
   // ========== FUNCTIONAL REQUIREMENTS (FR) ==========
-  scenarios.push({
-    name: 'FR-1: Basic Connectivity',
-    description: `Verify basic connectivity path exists. Like algorithm brute force: ignore performance,
+  // If userFacingFRs provided, generate feature-specific tests
+  if (userFacingFRs && userFacingFRs.length > 0) {
+    userFacingFRs.forEach((fr, index) => {
+      const frNumber = index + 1;
+      const analysis = analyzeFeatureRequirements(fr);
+
+      // Determine traffic for this specific feature
+      let rps = 10; // Default low traffic for FR tests
+      let readWriteRatio = 0.5;
+
+      if (analysis.isReadHeavy) {
+        rps = 100;
+        readWriteRatio = 0.9;
+      } else if (analysis.isWriteHeavy) {
+        rps = 50;
+        readWriteRatio = 0.3;
+      }
+
+      scenarios.push({
+        name: `FR-${frNumber}: ${fr.substring(0, 50)}${fr.length > 50 ? '...' : ''}`,
+        description: generateFeatureTestDescription(fr, analysis),
+        traffic: {
+          rps,
+          readWriteRatio,
+          avgFileSize: analysis.requiresObjectStorage ? (config.avgFileSize || 2) : undefined,
+        },
+        passCriteria: {
+          maxLatency: 5000, // 5 seconds - lenient for FR tests
+          maxErrorRate: 0, // Must work perfectly
+        },
+      });
+    });
+  } else {
+    // Fallback to generic FR tests (backward compatible)
+    scenarios.push({
+      name: 'FR-1: Basic Connectivity',
+      description: `Verify basic connectivity path exists. Like algorithm brute force: ignore performance,
 just verify Client → App → Database flow works. Very low traffic to test if system can handle basic operations.`,
-    traffic: {
-      rps: 1, // Very low traffic
-      readWriteRatio: effectiveConfig.readRatio,
-      avgFileSize: effectiveConfig.avgFileSize,
-    },
-    passCriteria: {
-      maxLatency: 10000, // 10 seconds - very lenient
-      maxErrorRate: 0, // Must work perfectly
-    },
-  });
+      traffic: {
+        rps: 1,
+        readWriteRatio: config.readRatio,
+        avgFileSize: config.avgFileSize,
+      },
+      passCriteria: {
+        maxLatency: 10000,
+        maxErrorRate: 0,
+      },
+    });
 
-  scenarios.push({
-    name: 'FR-2: Concurrent Users',
-    description: `Multiple users accessing simultaneously. Test if system handles concurrent requests
+    scenarios.push({
+      name: 'FR-2: Concurrent Users',
+      description: `Multiple users accessing simultaneously. Test if system handles concurrent requests
 without conflicts or errors. Moderate traffic to verify scalability basics.`,
-    traffic: {
-      rps: Math.max(50, effectiveConfig.baseRps * 0.1), // 10% of base or 50 minimum
-      readWriteRatio: effectiveConfig.readRatio,
-      avgFileSize: effectiveConfig.avgFileSize,
-    },
-    passCriteria: {
-      maxLatency: effectiveConfig.maxLatency * 2, // 2x normal latency OK for functional test
-      maxErrorRate: 0.01, // 1% errors allowed
-    },
-  });
+      traffic: {
+        rps: Math.max(50, config.baseRps * 0.1),
+        readWriteRatio: config.readRatio,
+        avgFileSize: config.avgFileSize,
+      },
+      passCriteria: {
+        maxLatency: config.maxLatency * 2,
+        maxErrorRate: 0.01,
+      },
+    });
 
-  scenarios.push({
-    name: 'FR-3: Data Persistence',
-    description: `Verify data is correctly stored and retrieved. Write operations must persist data
+    scenarios.push({
+      name: 'FR-3: Data Persistence',
+      description: `Verify data is correctly stored and retrieved. Write operations must persist data
 to database. Read operations must return correct data. Tests data integrity.`,
-    traffic: {
-      rps: Math.max(100, effectiveConfig.baseRps * 0.2), // 20% of base or 100 minimum
-      readWriteRatio: 0.3, // Heavy writes to test persistence
-      avgFileSize: effectiveConfig.avgFileSize,
-    },
-    passCriteria: {
-      maxLatency: effectiveConfig.maxLatency * 2,
-      maxErrorRate: 0, // No data loss allowed
-    },
-  });
+      traffic: {
+        rps: Math.max(100, config.baseRps * 0.2),
+        readWriteRatio: 0.3,
+        avgFileSize: config.avgFileSize,
+      },
+      passCriteria: {
+        maxLatency: config.maxLatency * 2,
+        maxErrorRate: 0,
+      },
+    });
+  }
 
   // ========== PERFORMANCE REQUIREMENTS (NFR-P) ==========
   scenarios.push({

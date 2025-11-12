@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * New-computing Problems - Complete Set
@@ -54,9 +62,18 @@ export const l6ComputeQuantumCloudProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-compute-quantum-cloud', problemConfigs['l6-compute-quantum-cloud']),
+  scenarios: generateScenarios('l6-compute-quantum-cloud', problemConfigs['l6-compute-quantum-cloud'], [
+    'Support 1000-qubit processors',
+    'Enable quantum-classical hybrid',
+    'Provide quantum circuit compilation',
+    'Handle quantum error correction',
+    'Support multiple quantum algorithms'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -108,9 +125,18 @@ export const l6ComputeBiologicalProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-compute-biological', problemConfigs['l6-compute-biological']),
+  scenarios: generateScenarios('l6-compute-biological', problemConfigs['l6-compute-biological'], [
+    'Perform 10^20 parallel operations',
+    'Solve NP-complete problems',
+    'Support molecular programming',
+    'Enable error correction',
+    'Interface with silicon computers'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -163,9 +189,18 @@ export const l6NewComputing1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-1', problemConfigs['l6-new-computing-1']),
+  scenarios: generateScenarios('l6-new-computing-1', problemConfigs['l6-new-computing-1'], [
+    'Implement quantum supremacy at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -218,9 +253,18 @@ export const l6NewComputing2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-2', problemConfigs['l6-new-computing-2']),
+  scenarios: generateScenarios('l6-new-computing-2', problemConfigs['l6-new-computing-2'], [
+    'Implement neuromorphic chips at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -273,9 +317,18 @@ export const l6NewComputing3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-3', problemConfigs['l6-new-computing-3']),
+  scenarios: generateScenarios('l6-new-computing-3', problemConfigs['l6-new-computing-3'], [
+    'Implement DNA computing at planetary scale',
+    'Achieve zero-energy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -328,9 +381,18 @@ export const l6NewComputing4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-4', problemConfigs['l6-new-computing-4']),
+  scenarios: generateScenarios('l6-new-computing-4', problemConfigs['l6-new-computing-4'], [
+    'Implement photonic processors at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -383,9 +445,18 @@ export const l6NewComputing5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-5', problemConfigs['l6-new-computing-5']),
+  scenarios: generateScenarios('l6-new-computing-5', problemConfigs['l6-new-computing-5'], [
+    'Implement reversible computing at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -438,9 +509,18 @@ export const l6NewComputing6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-6', problemConfigs['l6-new-computing-6']),
+  scenarios: generateScenarios('l6-new-computing-6', problemConfigs['l6-new-computing-6'], [
+    'Implement quantum supremacy at planetary scale',
+    'Achieve zero-energy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -493,9 +573,18 @@ export const l6NewComputing7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-7', problemConfigs['l6-new-computing-7']),
+  scenarios: generateScenarios('l6-new-computing-7', problemConfigs['l6-new-computing-7'], [
+    'Implement neuromorphic chips at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -548,9 +637,18 @@ export const l6NewComputing8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-8', problemConfigs['l6-new-computing-8']),
+  scenarios: generateScenarios('l6-new-computing-8', problemConfigs['l6-new-computing-8'], [
+    'Implement DNA computing at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -603,9 +701,18 @@ export const l6NewComputing9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-9', problemConfigs['l6-new-computing-9']),
+  scenarios: generateScenarios('l6-new-computing-9', problemConfigs['l6-new-computing-9'], [
+    'Implement photonic processors at planetary scale',
+    'Achieve zero-energy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -658,9 +765,18 @@ export const l6NewComputing10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-10', problemConfigs['l6-new-computing-10']),
+  scenarios: generateScenarios('l6-new-computing-10', problemConfigs['l6-new-computing-10'], [
+    'Implement reversible computing at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -713,9 +829,18 @@ export const l6NewComputing11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-11', problemConfigs['l6-new-computing-11']),
+  scenarios: generateScenarios('l6-new-computing-11', problemConfigs['l6-new-computing-11'], [
+    'Implement quantum supremacy at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -768,9 +893,18 @@ export const l6NewComputing12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-12', problemConfigs['l6-new-computing-12']),
+  scenarios: generateScenarios('l6-new-computing-12', problemConfigs['l6-new-computing-12'], [
+    'Implement neuromorphic chips at planetary scale',
+    'Achieve zero-energy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -823,9 +957,18 @@ export const l6NewComputing13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-13', problemConfigs['l6-new-computing-13']),
+  scenarios: generateScenarios('l6-new-computing-13', problemConfigs['l6-new-computing-13'], [
+    'Implement DNA computing at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -878,9 +1021,18 @@ export const l6NewComputing14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-14', problemConfigs['l6-new-computing-14']),
+  scenarios: generateScenarios('l6-new-computing-14', problemConfigs['l6-new-computing-14'], [
+    'Implement photonic processors at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -933,9 +1085,18 @@ export const l6NewComputing15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-15', problemConfigs['l6-new-computing-15']),
+  scenarios: generateScenarios('l6-new-computing-15', problemConfigs['l6-new-computing-15'], [
+    'Implement reversible computing at planetary scale',
+    'Achieve zero-energy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -988,9 +1149,18 @@ export const l6NewComputing16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-16', problemConfigs['l6-new-computing-16']),
+  scenarios: generateScenarios('l6-new-computing-16', problemConfigs['l6-new-computing-16'], [
+    'Implement quantum supremacy at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1043,9 +1213,18 @@ export const l6NewComputing17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-new-computing-17', problemConfigs['l6-new-computing-17']),
+  scenarios: generateScenarios('l6-new-computing-17', problemConfigs['l6-new-computing-17'], [
+    'Implement neuromorphic chips at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

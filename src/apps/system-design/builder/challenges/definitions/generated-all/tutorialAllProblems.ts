@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Tutorial Problems - Complete Set
@@ -100,9 +108,17 @@ In this tutorial, you'll learn:
     },
   },
 
-  scenarios: generateScenarios('tutorial-simple-blog', problemConfigs['tutorial-simple-blog']),
+  scenarios: generateScenarios('tutorial-simple-blog', problemConfigs['tutorial-simple-blog'], [
+    'Users can read blog posts',
+    'Users can view comments',
+    'Authors can publish new posts',
+    'System handles both reads (90%) and writes (10%)'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -232,9 +248,18 @@ In this tutorial, you'll learn:
     },
   },
 
-  scenarios: generateScenarios('tutorial-intermediate-images', problemConfigs['tutorial-intermediate-images']),
+  scenarios: generateScenarios('tutorial-intermediate-images', problemConfigs['tutorial-intermediate-images'], [
+    'Users can upload images (write)',
+    'Users can view images via URLs (read)',
+    'Images are served globally with low latency',
+    'Support 1M stored images (5TB total)',
+    '95% reads (image views), 5% writes (uploads)'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -394,9 +419,19 @@ This is what you'll build in production! Take your time. 🚀
     },
   },
 
-  scenarios: generateScenarios('tutorial-advanced-chat', problemConfigs['tutorial-advanced-chat']),
+  scenarios: generateScenarios('tutorial-advanced-chat', problemConfigs['tutorial-advanced-chat'], [
+    'Users can send/receive messages in real-time',
+    'Messages are delivered to all room participants instantly',
+    'Message history is persisted and searchable',
+    'Support for 1:1 chats and group rooms (up to 10K members)',
+    'Typing indicators and presence (online/offline)',
+    'File attachments and rich media'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -440,9 +475,14 @@ export const boeWalkthroughChatProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('boe-walkthrough-chat', problemConfigs['boe-walkthrough-chat']),
+  scenarios: generateScenarios('boe-walkthrough-chat', problemConfigs['boe-walkthrough-chat'], [
+    
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

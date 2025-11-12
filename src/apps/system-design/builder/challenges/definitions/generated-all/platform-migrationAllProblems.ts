@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Platform-migration Problems - Complete Set
@@ -60,9 +68,18 @@ export const l5MigrationNetflixMicroservicesProblemDefinition: ProblemDefinition
     },
   },
 
-  scenarios: generateScenarios('l5-migration-netflix-microservices', problemConfigs['l5-migration-netflix-microservices']),
+  scenarios: generateScenarios('l5-migration-netflix-microservices', problemConfigs['l5-migration-netflix-microservices'], [
+    'Support parallel running of monolith and microservices',
+    'Maintain all existing APIs during migration',
+    'Enable gradual traffic shifting between systems',
+    'Support rollback at any migration phase',
+    'Preserve all user data and preferences'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -120,9 +137,18 @@ export const l5MigrationTwitterEventDrivenProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l5-migration-twitter-event-driven', problemConfigs['l5-migration-twitter-event-driven']),
+  scenarios: generateScenarios('l5-migration-twitter-event-driven', problemConfigs['l5-migration-twitter-event-driven'], [
+    'Convert REST APIs to event publishers',
+    'Maintain timeline generation < 2 seconds',
+    'Support both push and pull notification models',
+    'Enable event replay for debugging',
+    'Preserve tweet ordering guarantees'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -181,9 +207,18 @@ export const l5MigrationSpotifyServerlessProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l5-migration-spotify-serverless', problemConfigs['l5-migration-spotify-serverless']),
+  scenarios: generateScenarios('l5-migration-spotify-serverless', problemConfigs['l5-migration-spotify-serverless'], [
+    'Support stateful music streaming sessions',
+    'Maintain < 50ms audio buffering',
+    'Handle both request/response and long-running jobs',
+    'Support WebSocket connections for real-time features',
+    'Enable local development environment'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -240,9 +275,18 @@ export const l5MigrationUberMultiRegionProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-uber-multi-region', problemConfigs['l5-migration-uber-multi-region']),
+  scenarios: generateScenarios('l5-migration-uber-multi-region', problemConfigs['l5-migration-uber-multi-region'], [
+    'Support cross-region ride matching',
+    'Maintain consistent pricing across regions',
+    'Handle split-brain scenarios',
+    'Enable region-local data compliance',
+    'Support gradual region activation'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -300,9 +344,18 @@ export const l5MigrationAirbnbGraphqlProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-airbnb-graphql', problemConfigs['l5-migration-airbnb-graphql']),
+  scenarios: generateScenarios('l5-migration-airbnb-graphql', problemConfigs['l5-migration-airbnb-graphql'], [
+    'Support GraphQL and REST simultaneously',
+    'Enable schema stitching across services',
+    'Maintain sub-100ms query performance',
+    'Support real-time subscriptions',
+    'Enable field-level authorization'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -360,9 +413,18 @@ export const l5MigrationStripeDatabaseProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-stripe-database', problemConfigs['l5-migration-stripe-database']),
+  scenarios: generateScenarios('l5-migration-stripe-database', problemConfigs['l5-migration-stripe-database'], [
+    'Maintain ACID for payment transactions',
+    'Support cross-shard transactions',
+    'Enable online resharding',
+    'Preserve audit trail integrity',
+    'Support instant reconciliation'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -419,9 +481,18 @@ export const l5MigrationSlackWebsocketProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-slack-websocket', problemConfigs['l5-migration-slack-websocket']),
+  scenarios: generateScenarios('l5-migration-slack-websocket', problemConfigs['l5-migration-slack-websocket'], [
+    'Support 20M concurrent WebSocket connections',
+    'Maintain message ordering per channel',
+    'Enable presence detection',
+    'Support connection migration',
+    'Handle graceful reconnection'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -475,9 +546,18 @@ export const l5MigrationGithubMonorepoProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-github-monorepo', problemConfigs['l5-migration-github-monorepo']),
+  scenarios: generateScenarios('l5-migration-github-monorepo', problemConfigs['l5-migration-github-monorepo'], [
+    'Support 1B+ files per repository',
+    'Enable partial clones and sparse checkouts',
+    'Maintain sub-second file operations',
+    'Support 10K concurrent pushes',
+    'Enable cross-repo dependencies'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -531,9 +611,18 @@ export const l5MigrationInstagramCassandraProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l5-migration-instagram-cassandra', problemConfigs['l5-migration-instagram-cassandra']),
+  scenarios: generateScenarios('l5-migration-instagram-cassandra', problemConfigs['l5-migration-instagram-cassandra'], [
+    'Migrate 100B social graph edges',
+    'Support both SQL and CQL during transition',
+    'Maintain friend recommendation latency',
+    'Enable zero-downtime migration',
+    'Support gradual rollback capability'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -586,9 +675,18 @@ export const l5MigrationDoordashRoutingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-doordash-routing', problemConfigs['l5-migration-doordash-routing']),
+  scenarios: generateScenarios('l5-migration-doordash-routing', problemConfigs['l5-migration-doordash-routing'], [
+    'Calculate optimal routes for multi-stop deliveries',
+    'Support real-time traffic updates',
+    'Handle 1M concurrent dashers',
+    'Enable A/B testing old vs new routing',
+    'Maintain fallback to Google Maps'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -641,9 +739,18 @@ export const l5MigrationZoomWebrtcProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-zoom-webrtc', problemConfigs['l5-migration-zoom-webrtc']),
+  scenarios: generateScenarios('l5-migration-zoom-webrtc', problemConfigs['l5-migration-zoom-webrtc'], [
+    'Support 1000 participants per meeting',
+    'Maintain end-to-end encryption',
+    'Enable cloud recording',
+    'Support virtual backgrounds',
+    'Handle protocol translation for legacy clients'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -696,9 +803,18 @@ export const l5MigrationPinterestRecommendationProblemDefinition: ProblemDefinit
     },
   },
 
-  scenarios: generateScenarios('l5-migration-pinterest-recommendation', problemConfigs['l5-migration-pinterest-recommendation']),
+  scenarios: generateScenarios('l5-migration-pinterest-recommendation', problemConfigs['l5-migration-pinterest-recommendation'], [
+    'Serve recommendations in < 50ms',
+    'Support online learning from user actions',
+    'Handle 100B item catalog',
+    'Enable real-time personalization',
+    'Maintain recommendation diversity'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -752,9 +868,18 @@ export const l5MigrationLinkedinKafkaProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-linkedin-kafka', problemConfigs['l5-migration-linkedin-kafka']),
+  scenarios: generateScenarios('l5-migration-linkedin-kafka', problemConfigs['l5-migration-linkedin-kafka'], [
+    'Migrate 7 trillion messages/day throughput',
+    'Support Kafka protocol during transition',
+    'Enable tiered storage to S3',
+    'Maintain exactly-once semantics',
+    'Support 100K topics'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -808,9 +933,18 @@ export const l5MigrationRedditPostgresProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-reddit-postgres', problemConfigs['l5-migration-reddit-postgres']),
+  scenarios: generateScenarios('l5-migration-reddit-postgres', problemConfigs['l5-migration-reddit-postgres'], [
+    'Migrate 100B+ posts and comments',
+    'Maintain vote consistency',
+    'Support complex queries for feeds',
+    'Enable geo-distributed replicas',
+    'Preserve karma calculation accuracy'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -864,9 +998,18 @@ export const l5MigrationSnapchatStorageProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-snapchat-storage', problemConfigs['l5-migration-snapchat-storage']),
+  scenarios: generateScenarios('l5-migration-snapchat-storage', problemConfigs['l5-migration-snapchat-storage'], [
+    'Auto-delete content after viewing',
+    'Support 24-hour stories',
+    'Handle 5B snaps daily',
+    'Enable instant playback',
+    'Maintain encryption at rest'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -919,9 +1062,18 @@ export const l5MigrationShopifyMultiCloudProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l5-migration-shopify-multi-cloud', problemConfigs['l5-migration-shopify-multi-cloud']),
+  scenarios: generateScenarios('l5-migration-shopify-multi-cloud', problemConfigs['l5-migration-shopify-multi-cloud'], [
+    'Support cloud-agnostic services',
+    'Enable workload placement optimization',
+    'Maintain data consistency across clouds',
+    'Support cloud-specific managed services',
+    'Enable disaster recovery across clouds'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -974,9 +1126,18 @@ export const l5MigrationTwitchLowLatencyProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-twitch-low-latency', problemConfigs['l5-migration-twitch-low-latency']),
+  scenarios: generateScenarios('l5-migration-twitch-low-latency', problemConfigs['l5-migration-twitch-low-latency'], [
+    'Achieve < 1 second glass-to-glass latency',
+    'Support 15M concurrent viewers',
+    'Maintain 1080p60 quality',
+    'Enable instant channel switching',
+    'Support legacy HLS players'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1029,9 +1190,18 @@ export const l5MigrationCoinbaseMatchingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-migration-coinbase-matching', problemConfigs['l5-migration-coinbase-matching']),
+  scenarios: generateScenarios('l5-migration-coinbase-matching', problemConfigs['l5-migration-coinbase-matching'], [
+    'Process orders in < 10 microseconds',
+    'Maintain FIFO order fairness',
+    'Support 1M orders/second',
+    'Enable instant settlement',
+    'Preserve full audit trail'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1085,9 +1255,18 @@ export const l5MigrationFigmaCollaborationProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l5-migration-figma-collaboration', problemConfigs['l5-migration-figma-collaboration']),
+  scenarios: generateScenarios('l5-migration-figma-collaboration', problemConfigs['l5-migration-figma-collaboration'], [
+    'Support 1000+ concurrent editors',
+    'Maintain 60 FPS performance',
+    'Handle 1GB+ document sizes',
+    'Enable selective sync',
+    'Support offline editing'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1145,9 +1324,18 @@ export const l5PlatformMigration1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-1', problemConfigs['l5-platform-migration-1']),
+  scenarios: generateScenarios('l5-platform-migration-1', problemConfigs['l5-platform-migration-1'], [
+    'Support monolith to microservices at Netflix scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1205,9 +1393,18 @@ export const l5PlatformMigration2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-2', problemConfigs['l5-platform-migration-2']),
+  scenarios: generateScenarios('l5-platform-migration-2', problemConfigs['l5-platform-migration-2'], [
+    'Support database migration at Uber scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1265,9 +1462,18 @@ export const l5PlatformMigration3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-3', problemConfigs['l5-platform-migration-3']),
+  scenarios: generateScenarios('l5-platform-migration-3', problemConfigs['l5-platform-migration-3'], [
+    'Support cloud migration at Airbnb scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1325,9 +1531,18 @@ export const l5PlatformMigration4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-4', problemConfigs['l5-platform-migration-4']),
+  scenarios: generateScenarios('l5-platform-migration-4', problemConfigs['l5-platform-migration-4'], [
+    'Support protocol upgrade at Spotify scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1385,9 +1600,18 @@ export const l5PlatformMigration5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-5', problemConfigs['l5-platform-migration-5']),
+  scenarios: generateScenarios('l5-platform-migration-5', problemConfigs['l5-platform-migration-5'], [
+    'Support infrastructure modernization at Twitter scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1445,9 +1669,18 @@ export const l5PlatformMigration6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-6', problemConfigs['l5-platform-migration-6']),
+  scenarios: generateScenarios('l5-platform-migration-6', problemConfigs['l5-platform-migration-6'], [
+    'Support monolith to microservices at LinkedIn scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1505,9 +1738,18 @@ export const l5PlatformMigration7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-7', problemConfigs['l5-platform-migration-7']),
+  scenarios: generateScenarios('l5-platform-migration-7', problemConfigs['l5-platform-migration-7'], [
+    'Support database migration at Pinterest scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1565,9 +1807,18 @@ export const l5PlatformMigration8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-8', problemConfigs['l5-platform-migration-8']),
+  scenarios: generateScenarios('l5-platform-migration-8', problemConfigs['l5-platform-migration-8'], [
+    'Support cloud migration at Slack scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1625,9 +1876,18 @@ export const l5PlatformMigration9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-9', problemConfigs['l5-platform-migration-9']),
+  scenarios: generateScenarios('l5-platform-migration-9', problemConfigs['l5-platform-migration-9'], [
+    'Support protocol upgrade at Discord scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1685,9 +1945,18 @@ export const l5PlatformMigration10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-10', problemConfigs['l5-platform-migration-10']),
+  scenarios: generateScenarios('l5-platform-migration-10', problemConfigs['l5-platform-migration-10'], [
+    'Support infrastructure modernization at Reddit scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1745,9 +2014,18 @@ export const l5PlatformMigration11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-11', problemConfigs['l5-platform-migration-11']),
+  scenarios: generateScenarios('l5-platform-migration-11', problemConfigs['l5-platform-migration-11'], [
+    'Support monolith to microservices at Snapchat scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1805,9 +2083,18 @@ export const l5PlatformMigration12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-12', problemConfigs['l5-platform-migration-12']),
+  scenarios: generateScenarios('l5-platform-migration-12', problemConfigs['l5-platform-migration-12'], [
+    'Support database migration at TikTok scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1865,9 +2152,18 @@ export const l5PlatformMigration13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-13', problemConfigs['l5-platform-migration-13']),
+  scenarios: generateScenarios('l5-platform-migration-13', problemConfigs['l5-platform-migration-13'], [
+    'Support cloud migration at Zoom scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1925,9 +2221,18 @@ export const l5PlatformMigration14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-14', problemConfigs['l5-platform-migration-14']),
+  scenarios: generateScenarios('l5-platform-migration-14', problemConfigs['l5-platform-migration-14'], [
+    'Support protocol upgrade at Shopify scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1985,9 +2290,18 @@ export const l5PlatformMigration15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-15', problemConfigs['l5-platform-migration-15']),
+  scenarios: generateScenarios('l5-platform-migration-15', problemConfigs['l5-platform-migration-15'], [
+    'Support infrastructure modernization at Square scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2045,9 +2359,18 @@ export const l5PlatformMigration16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-16', problemConfigs['l5-platform-migration-16']),
+  scenarios: generateScenarios('l5-platform-migration-16', problemConfigs['l5-platform-migration-16'], [
+    'Support monolith to microservices at Stripe scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2105,9 +2428,18 @@ export const l5PlatformMigration17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-17', problemConfigs['l5-platform-migration-17']),
+  scenarios: generateScenarios('l5-platform-migration-17', problemConfigs['l5-platform-migration-17'], [
+    'Support database migration at PayPal scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2165,9 +2497,18 @@ export const l5PlatformMigration18ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-platform-migration-18', problemConfigs['l5-platform-migration-18']),
+  scenarios: generateScenarios('l5-platform-migration-18', problemConfigs['l5-platform-migration-18'], [
+    'Support cloud migration at Netflix scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

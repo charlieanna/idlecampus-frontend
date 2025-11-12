@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Multi-tenant Problems - Complete Set
@@ -54,9 +62,18 @@ export const l5MultitenantSalesforceProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multitenant-salesforce', problemConfigs['l5-multitenant-salesforce']),
+  scenarios: generateScenarios('l5-multitenant-salesforce', problemConfigs['l5-multitenant-salesforce'], [
+    'Support 100K tenant organizations',
+    'Enable custom fields and objects per tenant',
+    'Provide tenant-specific API limits',
+    'Support custom workflows and triggers',
+    'Enable cross-tenant data sharing with consent'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -114,9 +131,18 @@ export const l5MultiTenant1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-1', problemConfigs['l5-multi-tenant-1']),
+  scenarios: generateScenarios('l5-multi-tenant-1', problemConfigs['l5-multi-tenant-1'], [
+    'Support tenant isolation at Salesforce scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -174,9 +200,18 @@ export const l5MultiTenant2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-2', problemConfigs['l5-multi-tenant-2']),
+  scenarios: generateScenarios('l5-multi-tenant-2', problemConfigs['l5-multi-tenant-2'], [
+    'Support resource allocation at Workday scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -234,9 +269,18 @@ export const l5MultiTenant3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-3', problemConfigs['l5-multi-tenant-3']),
+  scenarios: generateScenarios('l5-multi-tenant-3', problemConfigs['l5-multi-tenant-3'], [
+    'Support data partitioning at ServiceNow scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -294,9 +338,18 @@ export const l5MultiTenant4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-4', problemConfigs['l5-multi-tenant-4']),
+  scenarios: generateScenarios('l5-multi-tenant-4', problemConfigs['l5-multi-tenant-4'], [
+    'Support custom domains at Zendesk scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -354,9 +407,18 @@ export const l5MultiTenant5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-5', problemConfigs['l5-multi-tenant-5']),
+  scenarios: generateScenarios('l5-multi-tenant-5', problemConfigs['l5-multi-tenant-5'], [
+    'Support compliance per tenant at HubSpot scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -414,9 +476,18 @@ export const l5MultiTenant6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-6', problemConfigs['l5-multi-tenant-6']),
+  scenarios: generateScenarios('l5-multi-tenant-6', problemConfigs['l5-multi-tenant-6'], [
+    'Support tenant isolation at Atlassian scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -474,9 +545,18 @@ export const l5MultiTenant7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-7', problemConfigs['l5-multi-tenant-7']),
+  scenarios: generateScenarios('l5-multi-tenant-7', problemConfigs['l5-multi-tenant-7'], [
+    'Support resource allocation at Slack scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -534,9 +614,18 @@ export const l5MultiTenant8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-8', problemConfigs['l5-multi-tenant-8']),
+  scenarios: generateScenarios('l5-multi-tenant-8', problemConfigs['l5-multi-tenant-8'], [
+    'Support data partitioning at Microsoft Teams scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -594,9 +683,18 @@ export const l5MultiTenant9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-9', problemConfigs['l5-multi-tenant-9']),
+  scenarios: generateScenarios('l5-multi-tenant-9', problemConfigs['l5-multi-tenant-9'], [
+    'Support custom domains at Box scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -654,9 +752,18 @@ export const l5MultiTenant10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-10', problemConfigs['l5-multi-tenant-10']),
+  scenarios: generateScenarios('l5-multi-tenant-10', problemConfigs['l5-multi-tenant-10'], [
+    'Support compliance per tenant at Dropbox scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -714,9 +821,18 @@ export const l5MultiTenant11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-11', problemConfigs['l5-multi-tenant-11']),
+  scenarios: generateScenarios('l5-multi-tenant-11', problemConfigs['l5-multi-tenant-11'], [
+    'Support tenant isolation at DocuSign scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -774,9 +890,18 @@ export const l5MultiTenant12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-12', problemConfigs['l5-multi-tenant-12']),
+  scenarios: generateScenarios('l5-multi-tenant-12', problemConfigs['l5-multi-tenant-12'], [
+    'Support resource allocation at Zoom scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -834,9 +959,18 @@ export const l5MultiTenant13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-13', problemConfigs['l5-multi-tenant-13']),
+  scenarios: generateScenarios('l5-multi-tenant-13', problemConfigs['l5-multi-tenant-13'], [
+    'Support data partitioning at Figma scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -894,9 +1028,18 @@ export const l5MultiTenant14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-14', problemConfigs['l5-multi-tenant-14']),
+  scenarios: generateScenarios('l5-multi-tenant-14', problemConfigs['l5-multi-tenant-14'], [
+    'Support custom domains at Notion scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -954,9 +1097,18 @@ export const l5MultiTenant15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-15', problemConfigs['l5-multi-tenant-15']),
+  scenarios: generateScenarios('l5-multi-tenant-15', problemConfigs['l5-multi-tenant-15'], [
+    'Support compliance per tenant at Airtable scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1014,9 +1166,18 @@ export const l5MultiTenant16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-16', problemConfigs['l5-multi-tenant-16']),
+  scenarios: generateScenarios('l5-multi-tenant-16', problemConfigs['l5-multi-tenant-16'], [
+    'Support tenant isolation at Monday scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1074,9 +1235,18 @@ export const l5MultiTenant17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-multi-tenant-17', problemConfigs['l5-multi-tenant-17']),
+  scenarios: generateScenarios('l5-multi-tenant-17', problemConfigs['l5-multi-tenant-17'], [
+    'Support resource allocation at Asana scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

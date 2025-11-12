@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Ai-infrastructure Problems - Complete Set
@@ -54,9 +62,18 @@ export const l6AiAgiTrainingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-agi-training', problemConfigs['l6-ai-agi-training']),
+  scenarios: generateScenarios('l6-ai-agi-training', problemConfigs['l6-ai-agi-training'], [
+    'Support 10 trillion parameter models',
+    'Handle 10^26 FLOPs training runs',
+    'Enable distributed training across continents',
+    'Support online learning during deployment',
+    'Provide interpretability interfaces'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -109,9 +126,18 @@ export const l6AiBrainComputerProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-brain-computer', problemConfigs['l6-ai-brain-computer']),
+  scenarios: generateScenarios('l6-ai-brain-computer', problemConfigs['l6-ai-brain-computer'], [
+    'Process 1M neural channels',
+    'Decode intentions in real-time',
+    'Support bidirectional communication',
+    'Enable neural stimulation feedback',
+    'Maintain long-term signal stability'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -163,9 +189,18 @@ export const l6AiConsciousArchitectureProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-conscious-architecture', problemConfigs['l6-ai-conscious-architecture']),
+  scenarios: generateScenarios('l6-ai-conscious-architecture', problemConfigs['l6-ai-conscious-architecture'], [
+    'Measure integrated information (Φ)',
+    'Preserve information integration',
+    'Support gradual state transfer',
+    'Enable consciousness verification',
+    'Maintain causal relationships'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -218,9 +253,18 @@ export const l6AiInfrastructure1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-1', problemConfigs['l6-ai-infrastructure-1']),
+  scenarios: generateScenarios('l6-ai-infrastructure-1', problemConfigs['l6-ai-infrastructure-1'], [
+    'Implement AGI training at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -273,9 +317,18 @@ export const l6AiInfrastructure2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-2', problemConfigs['l6-ai-infrastructure-2']),
+  scenarios: generateScenarios('l6-ai-infrastructure-2', problemConfigs['l6-ai-infrastructure-2'], [
+    'Implement consciousness simulation at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -328,9 +381,18 @@ export const l6AiInfrastructure3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-3', problemConfigs['l6-ai-infrastructure-3']),
+  scenarios: generateScenarios('l6-ai-infrastructure-3', problemConfigs['l6-ai-infrastructure-3'], [
+    'Implement swarm intelligence at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -383,9 +445,18 @@ export const l6AiInfrastructure4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-4', problemConfigs['l6-ai-infrastructure-4']),
+  scenarios: generateScenarios('l6-ai-infrastructure-4', problemConfigs['l6-ai-infrastructure-4'], [
+    'Implement quantum ML at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -438,9 +509,18 @@ export const l6AiInfrastructure5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-5', problemConfigs['l6-ai-infrastructure-5']),
+  scenarios: generateScenarios('l6-ai-infrastructure-5', problemConfigs['l6-ai-infrastructure-5'], [
+    'Implement biological computing at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -493,9 +573,18 @@ export const l6AiInfrastructure6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-6', problemConfigs['l6-ai-infrastructure-6']),
+  scenarios: generateScenarios('l6-ai-infrastructure-6', problemConfigs['l6-ai-infrastructure-6'], [
+    'Implement AGI training at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -548,9 +637,18 @@ export const l6AiInfrastructure7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-7', problemConfigs['l6-ai-infrastructure-7']),
+  scenarios: generateScenarios('l6-ai-infrastructure-7', problemConfigs['l6-ai-infrastructure-7'], [
+    'Implement consciousness simulation at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -603,9 +701,18 @@ export const l6AiInfrastructure8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-8', problemConfigs['l6-ai-infrastructure-8']),
+  scenarios: generateScenarios('l6-ai-infrastructure-8', problemConfigs['l6-ai-infrastructure-8'], [
+    'Implement swarm intelligence at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -658,9 +765,18 @@ export const l6AiInfrastructure9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-9', problemConfigs['l6-ai-infrastructure-9']),
+  scenarios: generateScenarios('l6-ai-infrastructure-9', problemConfigs['l6-ai-infrastructure-9'], [
+    'Implement quantum ML at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -713,9 +829,18 @@ export const l6AiInfrastructure10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-10', problemConfigs['l6-ai-infrastructure-10']),
+  scenarios: generateScenarios('l6-ai-infrastructure-10', problemConfigs['l6-ai-infrastructure-10'], [
+    'Implement biological computing at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -768,9 +893,18 @@ export const l6AiInfrastructure11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-11', problemConfigs['l6-ai-infrastructure-11']),
+  scenarios: generateScenarios('l6-ai-infrastructure-11', problemConfigs['l6-ai-infrastructure-11'], [
+    'Implement AGI training at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -823,9 +957,18 @@ export const l6AiInfrastructure12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-12', problemConfigs['l6-ai-infrastructure-12']),
+  scenarios: generateScenarios('l6-ai-infrastructure-12', problemConfigs['l6-ai-infrastructure-12'], [
+    'Implement consciousness simulation at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -878,9 +1021,18 @@ export const l6AiInfrastructure13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-13', problemConfigs['l6-ai-infrastructure-13']),
+  scenarios: generateScenarios('l6-ai-infrastructure-13', problemConfigs['l6-ai-infrastructure-13'], [
+    'Implement swarm intelligence at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -933,9 +1085,18 @@ export const l6AiInfrastructure14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-14', problemConfigs['l6-ai-infrastructure-14']),
+  scenarios: generateScenarios('l6-ai-infrastructure-14', problemConfigs['l6-ai-infrastructure-14'], [
+    'Implement quantum ML at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -988,9 +1149,18 @@ export const l6AiInfrastructure15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-15', problemConfigs['l6-ai-infrastructure-15']),
+  scenarios: generateScenarios('l6-ai-infrastructure-15', problemConfigs['l6-ai-infrastructure-15'], [
+    'Implement biological computing at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1043,9 +1213,18 @@ export const l6AiInfrastructure16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-16', problemConfigs['l6-ai-infrastructure-16']),
+  scenarios: generateScenarios('l6-ai-infrastructure-16', problemConfigs['l6-ai-infrastructure-16'], [
+    'Implement AGI training at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1098,9 +1277,18 @@ export const l6AiInfrastructure17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-17', problemConfigs['l6-ai-infrastructure-17']),
+  scenarios: generateScenarios('l6-ai-infrastructure-17', problemConfigs['l6-ai-infrastructure-17'], [
+    'Implement consciousness simulation at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1153,9 +1341,18 @@ export const l6AiInfrastructure18ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-ai-infrastructure-18', problemConfigs['l6-ai-infrastructure-18']),
+  scenarios: generateScenarios('l6-ai-infrastructure-18', problemConfigs['l6-ai-infrastructure-18'], [
+    'Implement swarm intelligence at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

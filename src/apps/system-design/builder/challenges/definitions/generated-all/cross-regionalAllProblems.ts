@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Cross-regional Problems - Complete Set
@@ -54,9 +62,18 @@ export const l5RegionalTiktokPlatformProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-regional-tiktok-platform', problemConfigs['l5-regional-tiktok-platform']),
+  scenarios: generateScenarios('l5-regional-tiktok-platform', problemConfigs['l5-regional-tiktok-platform'], [
+    'Comply with regional data residency laws',
+    'Support region-specific content filtering',
+    'Enable cross-border content delivery',
+    'Maintain unified recommendation system',
+    'Support government audit requirements'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -114,9 +131,18 @@ export const l5CrossRegional1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-1', problemConfigs['l5-cross-regional-1']),
+  scenarios: generateScenarios('l5-cross-regional-1', problemConfigs['l5-cross-regional-1'], [
+    'Support global CDN at Netflix scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -174,9 +200,18 @@ export const l5CrossRegional2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-2', problemConfigs['l5-cross-regional-2']),
+  scenarios: generateScenarios('l5-cross-regional-2', problemConfigs['l5-cross-regional-2'], [
+    'Support data replication at YouTube scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -234,9 +269,18 @@ export const l5CrossRegional3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-3', problemConfigs['l5-cross-regional-3']),
+  scenarios: generateScenarios('l5-cross-regional-3', problemConfigs['l5-cross-regional-3'], [
+    'Support geo-routing at Facebook scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -294,9 +338,18 @@ export const l5CrossRegional4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-4', problemConfigs['l5-cross-regional-4']),
+  scenarios: generateScenarios('l5-cross-regional-4', problemConfigs['l5-cross-regional-4'], [
+    'Support compliance per region at Instagram scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -354,9 +407,18 @@ export const l5CrossRegional5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-5', problemConfigs['l5-cross-regional-5']),
+  scenarios: generateScenarios('l5-cross-regional-5', problemConfigs['l5-cross-regional-5'], [
+    'Support edge computing at WhatsApp scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -414,9 +476,18 @@ export const l5CrossRegional6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-6', problemConfigs['l5-cross-regional-6']),
+  scenarios: generateScenarios('l5-cross-regional-6', problemConfigs['l5-cross-regional-6'], [
+    'Support global CDN at Telegram scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -474,9 +545,18 @@ export const l5CrossRegional7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-7', problemConfigs['l5-cross-regional-7']),
+  scenarios: generateScenarios('l5-cross-regional-7', problemConfigs['l5-cross-regional-7'], [
+    'Support data replication at Signal scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -534,9 +614,18 @@ export const l5CrossRegional8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-8', problemConfigs['l5-cross-regional-8']),
+  scenarios: generateScenarios('l5-cross-regional-8', problemConfigs['l5-cross-regional-8'], [
+    'Support geo-routing at Discord scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -594,9 +683,18 @@ export const l5CrossRegional9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-9', problemConfigs['l5-cross-regional-9']),
+  scenarios: generateScenarios('l5-cross-regional-9', problemConfigs['l5-cross-regional-9'], [
+    'Support compliance per region at Twitch scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -654,9 +752,18 @@ export const l5CrossRegional10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-10', problemConfigs['l5-cross-regional-10']),
+  scenarios: generateScenarios('l5-cross-regional-10', problemConfigs['l5-cross-regional-10'], [
+    'Support edge computing at TikTok scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -714,9 +821,18 @@ export const l5CrossRegional11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-11', problemConfigs['l5-cross-regional-11']),
+  scenarios: generateScenarios('l5-cross-regional-11', problemConfigs['l5-cross-regional-11'], [
+    'Support global CDN at Spotify scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -774,9 +890,18 @@ export const l5CrossRegional12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-12', problemConfigs['l5-cross-regional-12']),
+  scenarios: generateScenarios('l5-cross-regional-12', problemConfigs['l5-cross-regional-12'], [
+    'Support data replication at Apple Music scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -834,9 +959,18 @@ export const l5CrossRegional13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-13', problemConfigs['l5-cross-regional-13']),
+  scenarios: generateScenarios('l5-cross-regional-13', problemConfigs['l5-cross-regional-13'], [
+    'Support geo-routing at Disney+ scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -894,9 +1028,18 @@ export const l5CrossRegional14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-14', problemConfigs['l5-cross-regional-14']),
+  scenarios: generateScenarios('l5-cross-regional-14', problemConfigs['l5-cross-regional-14'], [
+    'Support compliance per region at HBO Max scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -954,9 +1097,18 @@ export const l5CrossRegional15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-15', problemConfigs['l5-cross-regional-15']),
+  scenarios: generateScenarios('l5-cross-regional-15', problemConfigs['l5-cross-regional-15'], [
+    'Support edge computing at Prime Video scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1014,9 +1166,18 @@ export const l5CrossRegional16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-16', problemConfigs['l5-cross-regional-16']),
+  scenarios: generateScenarios('l5-cross-regional-16', problemConfigs['l5-cross-regional-16'], [
+    'Support global CDN at Hulu scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1074,9 +1235,18 @@ export const l5CrossRegional17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-cross-regional-17', problemConfigs['l5-cross-regional-17']),
+  scenarios: generateScenarios('l5-cross-regional-17', problemConfigs['l5-cross-regional-17'], [
+    'Support data replication at ESPN+ scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

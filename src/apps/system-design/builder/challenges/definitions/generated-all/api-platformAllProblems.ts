@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Api-platform Problems - Complete Set
@@ -58,9 +66,18 @@ export const l5ApiGatewayFacebookProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-gateway-facebook', problemConfigs['l5-api-gateway-facebook']),
+  scenarios: generateScenarios('l5-api-gateway-facebook', problemConfigs['l5-api-gateway-facebook'], [
+    'Route to 10,000+ backend services',
+    'Support REST, GraphQL, gRPC protocols',
+    'Handle authentication and authorization',
+    'Enable rate limiting per client',
+    'Support API versioning and deprecation'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -114,9 +131,18 @@ export const l5ApiGraphqlFederationProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-graphql-federation', problemConfigs['l5-api-graphql-federation']),
+  scenarios: generateScenarios('l5-api-graphql-federation', problemConfigs['l5-api-graphql-federation'], [
+    'Federate 1000 service schemas',
+    'Optimize query execution plans',
+    'Support real-time subscriptions',
+    'Enable field-level caching',
+    'Handle partial failures gracefully'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -174,9 +200,18 @@ export const l5ApiPlatform1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-1', problemConfigs['l5-api-platform-1']),
+  scenarios: generateScenarios('l5-api-platform-1', problemConfigs['l5-api-platform-1'], [
+    'Support GraphQL federation at Twilio scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -234,9 +269,18 @@ export const l5ApiPlatform2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-2', problemConfigs['l5-api-platform-2']),
+  scenarios: generateScenarios('l5-api-platform-2', problemConfigs['l5-api-platform-2'], [
+    'Support API gateway at SendGrid scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -294,9 +338,18 @@ export const l5ApiPlatform3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-3', problemConfigs['l5-api-platform-3']),
+  scenarios: generateScenarios('l5-api-platform-3', problemConfigs['l5-api-platform-3'], [
+    'Support rate limiting at Stripe scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -354,9 +407,18 @@ export const l5ApiPlatform4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-4', problemConfigs['l5-api-platform-4']),
+  scenarios: generateScenarios('l5-api-platform-4', problemConfigs['l5-api-platform-4'], [
+    'Support webhook platform at Square scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -414,9 +476,18 @@ export const l5ApiPlatform5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-5', problemConfigs['l5-api-platform-5']),
+  scenarios: generateScenarios('l5-api-platform-5', problemConfigs['l5-api-platform-5'], [
+    'Support SDK generation at Plaid scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -474,9 +545,18 @@ export const l5ApiPlatform6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-6', problemConfigs['l5-api-platform-6']),
+  scenarios: generateScenarios('l5-api-platform-6', problemConfigs['l5-api-platform-6'], [
+    'Support GraphQL federation at Auth0 scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -534,9 +614,18 @@ export const l5ApiPlatform7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-7', problemConfigs['l5-api-platform-7']),
+  scenarios: generateScenarios('l5-api-platform-7', problemConfigs['l5-api-platform-7'], [
+    'Support API gateway at Okta scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -594,9 +683,18 @@ export const l5ApiPlatform8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-8', problemConfigs['l5-api-platform-8']),
+  scenarios: generateScenarios('l5-api-platform-8', problemConfigs['l5-api-platform-8'], [
+    'Support rate limiting at Segment scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -654,9 +752,18 @@ export const l5ApiPlatform9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-9', problemConfigs['l5-api-platform-9']),
+  scenarios: generateScenarios('l5-api-platform-9', problemConfigs['l5-api-platform-9'], [
+    'Support webhook platform at Amplitude scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -714,9 +821,18 @@ export const l5ApiPlatform10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-10', problemConfigs['l5-api-platform-10']),
+  scenarios: generateScenarios('l5-api-platform-10', problemConfigs['l5-api-platform-10'], [
+    'Support SDK generation at Datadog scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -774,9 +890,18 @@ export const l5ApiPlatform11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-11', problemConfigs['l5-api-platform-11']),
+  scenarios: generateScenarios('l5-api-platform-11', problemConfigs['l5-api-platform-11'], [
+    'Support GraphQL federation at New Relic scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -834,9 +959,18 @@ export const l5ApiPlatform12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-12', problemConfigs['l5-api-platform-12']),
+  scenarios: generateScenarios('l5-api-platform-12', problemConfigs['l5-api-platform-12'], [
+    'Support API gateway at PagerDuty scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -894,9 +1028,18 @@ export const l5ApiPlatform13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-13', problemConfigs['l5-api-platform-13']),
+  scenarios: generateScenarios('l5-api-platform-13', problemConfigs['l5-api-platform-13'], [
+    'Support rate limiting at Elastic scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -954,9 +1097,18 @@ export const l5ApiPlatform14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-14', problemConfigs['l5-api-platform-14']),
+  scenarios: generateScenarios('l5-api-platform-14', problemConfigs['l5-api-platform-14'], [
+    'Support webhook platform at MongoDB scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1014,9 +1166,18 @@ export const l5ApiPlatform15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-15', problemConfigs['l5-api-platform-15']),
+  scenarios: generateScenarios('l5-api-platform-15', problemConfigs['l5-api-platform-15'], [
+    'Support SDK generation at Redis scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1074,9 +1235,18 @@ export const l5ApiPlatform16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-16', problemConfigs['l5-api-platform-16']),
+  scenarios: generateScenarios('l5-api-platform-16', problemConfigs['l5-api-platform-16'], [
+    'Support GraphQL federation at Confluent scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1134,9 +1304,18 @@ export const l5ApiPlatform17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-api-platform-17', problemConfigs['l5-api-platform-17']),
+  scenarios: generateScenarios('l5-api-platform-17', problemConfigs['l5-api-platform-17'], [
+    'Support API gateway at Snowflake scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

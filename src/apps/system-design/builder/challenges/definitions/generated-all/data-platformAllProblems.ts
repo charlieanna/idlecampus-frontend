@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Data-platform Problems - Complete Set
@@ -55,9 +63,18 @@ export const l5DataPlatformUberProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-uber', problemConfigs['l5-data-platform-uber']),
+  scenarios: generateScenarios('l5-data-platform-uber', problemConfigs['l5-data-platform-uber'], [
+    'Ingest 1 trillion events daily',
+    'Support sub-minute data freshness',
+    'Enable SQL queries on streaming data',
+    'Compute ML features in real-time',
+    'Support time-travel queries'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -115,9 +132,18 @@ export const l5DataPlatform1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-1', problemConfigs['l5-data-platform-1']),
+  scenarios: generateScenarios('l5-data-platform-1', problemConfigs['l5-data-platform-1'], [
+    'Support data lake at Databricks scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -175,9 +201,18 @@ export const l5DataPlatform2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-2', problemConfigs['l5-data-platform-2']),
+  scenarios: generateScenarios('l5-data-platform-2', problemConfigs['l5-data-platform-2'], [
+    'Support ETL pipeline at Snowflake scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -235,9 +270,18 @@ export const l5DataPlatform3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-3', problemConfigs['l5-data-platform-3']),
+  scenarios: generateScenarios('l5-data-platform-3', problemConfigs['l5-data-platform-3'], [
+    'Support real-time analytics at Palantir scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -295,9 +339,18 @@ export const l5DataPlatform4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-4', problemConfigs['l5-data-platform-4']),
+  scenarios: generateScenarios('l5-data-platform-4', problemConfigs['l5-data-platform-4'], [
+    'Support ML feature store at Splunk scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -355,9 +408,18 @@ export const l5DataPlatform5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-5', problemConfigs['l5-data-platform-5']),
+  scenarios: generateScenarios('l5-data-platform-5', problemConfigs['l5-data-platform-5'], [
+    'Support data governance at Tableau scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -415,9 +477,18 @@ export const l5DataPlatform6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-6', problemConfigs['l5-data-platform-6']),
+  scenarios: generateScenarios('l5-data-platform-6', problemConfigs['l5-data-platform-6'], [
+    'Support data lake at Looker scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -475,9 +546,18 @@ export const l5DataPlatform7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-7', problemConfigs['l5-data-platform-7']),
+  scenarios: generateScenarios('l5-data-platform-7', problemConfigs['l5-data-platform-7'], [
+    'Support ETL pipeline at Domo scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -535,9 +615,18 @@ export const l5DataPlatform8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-8', problemConfigs['l5-data-platform-8']),
+  scenarios: generateScenarios('l5-data-platform-8', problemConfigs['l5-data-platform-8'], [
+    'Support real-time analytics at Sisense scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -595,9 +684,18 @@ export const l5DataPlatform9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-9', problemConfigs['l5-data-platform-9']),
+  scenarios: generateScenarios('l5-data-platform-9', problemConfigs['l5-data-platform-9'], [
+    'Support ML feature store at ThoughtSpot scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -655,9 +753,18 @@ export const l5DataPlatform10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-10', problemConfigs['l5-data-platform-10']),
+  scenarios: generateScenarios('l5-data-platform-10', problemConfigs['l5-data-platform-10'], [
+    'Support data governance at Alteryx scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -715,9 +822,18 @@ export const l5DataPlatform11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-11', problemConfigs['l5-data-platform-11']),
+  scenarios: generateScenarios('l5-data-platform-11', problemConfigs['l5-data-platform-11'], [
+    'Support data lake at Informatica scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -775,9 +891,18 @@ export const l5DataPlatform12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-12', problemConfigs['l5-data-platform-12']),
+  scenarios: generateScenarios('l5-data-platform-12', problemConfigs['l5-data-platform-12'], [
+    'Support ETL pipeline at Talend scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -835,9 +960,18 @@ export const l5DataPlatform13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-13', problemConfigs['l5-data-platform-13']),
+  scenarios: generateScenarios('l5-data-platform-13', problemConfigs['l5-data-platform-13'], [
+    'Support real-time analytics at Fivetran scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -895,9 +1029,18 @@ export const l5DataPlatform14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-14', problemConfigs['l5-data-platform-14']),
+  scenarios: generateScenarios('l5-data-platform-14', problemConfigs['l5-data-platform-14'], [
+    'Support ML feature store at Stitch scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -955,9 +1098,18 @@ export const l5DataPlatform15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-15', problemConfigs['l5-data-platform-15']),
+  scenarios: generateScenarios('l5-data-platform-15', problemConfigs['l5-data-platform-15'], [
+    'Support data governance at Segment scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1015,9 +1167,18 @@ export const l5DataPlatform16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-16', problemConfigs['l5-data-platform-16']),
+  scenarios: generateScenarios('l5-data-platform-16', problemConfigs['l5-data-platform-16'], [
+    'Support data lake at Census scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1075,9 +1236,18 @@ export const l5DataPlatform17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-data-platform-17', problemConfigs['l5-data-platform-17']),
+  scenarios: generateScenarios('l5-data-platform-17', problemConfigs['l5-data-platform-17'], [
+    'Support ETL pipeline at Hightouch scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Economic-systems Problems - Complete Set
@@ -54,9 +62,18 @@ export const l6EconomicCbdcProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-cbdc', problemConfigs['l6-economic-cbdc']),
+  scenarios: generateScenarios('l6-economic-cbdc', problemConfigs['l6-economic-cbdc'], [
+    'Process 150B transactions/year',
+    'Support programmable money',
+    'Enable instant settlement',
+    'Provide offline transactions',
+    'Integrate with existing banks'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -108,9 +125,18 @@ export const l6EconomicInterplanetaryProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-interplanetary', problemConfigs['l6-economic-interplanetary']),
+  scenarios: generateScenarios('l6-economic-interplanetary', problemConfigs['l6-economic-interplanetary'], [
+    'Handle 24-minute transaction delays',
+    'Support resource futures trading',
+    'Enable currency exchange',
+    'Manage supply chain financing',
+    'Provide dispute resolution'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -163,9 +189,18 @@ export const l6EconomicSystems1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-1', problemConfigs['l6-economic-systems-1']),
+  scenarios: generateScenarios('l6-economic-systems-1', problemConfigs['l6-economic-systems-1'], [
+    'Implement post-scarcity economics at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -218,9 +253,18 @@ export const l6EconomicSystems2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-2', problemConfigs['l6-economic-systems-2']),
+  scenarios: generateScenarios('l6-economic-systems-2', problemConfigs['l6-economic-systems-2'], [
+    'Implement interplanetary commerce at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -273,9 +317,18 @@ export const l6EconomicSystems3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-3', problemConfigs['l6-economic-systems-3']),
+  scenarios: generateScenarios('l6-economic-systems-3', problemConfigs['l6-economic-systems-3'], [
+    'Implement AI governance tokens at planetary scale',
+    'Achieve predictive markets breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -328,9 +381,18 @@ export const l6EconomicSystems4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-4', problemConfigs['l6-economic-systems-4']),
+  scenarios: generateScenarios('l6-economic-systems-4', problemConfigs['l6-economic-systems-4'], [
+    'Implement quantum finance at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -383,9 +445,18 @@ export const l6EconomicSystems5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-5', problemConfigs['l6-economic-systems-5']),
+  scenarios: generateScenarios('l6-economic-systems-5', problemConfigs['l6-economic-systems-5'], [
+    'Implement biological assets at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -438,9 +509,18 @@ export const l6EconomicSystems6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-6', problemConfigs['l6-economic-systems-6']),
+  scenarios: generateScenarios('l6-economic-systems-6', problemConfigs['l6-economic-systems-6'], [
+    'Implement post-scarcity economics at planetary scale',
+    'Achieve predictive markets breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -493,9 +573,18 @@ export const l6EconomicSystems7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-7', problemConfigs['l6-economic-systems-7']),
+  scenarios: generateScenarios('l6-economic-systems-7', problemConfigs['l6-economic-systems-7'], [
+    'Implement interplanetary commerce at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -548,9 +637,18 @@ export const l6EconomicSystems8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-8', problemConfigs['l6-economic-systems-8']),
+  scenarios: generateScenarios('l6-economic-systems-8', problemConfigs['l6-economic-systems-8'], [
+    'Implement AI governance tokens at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -603,9 +701,18 @@ export const l6EconomicSystems9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-9', problemConfigs['l6-economic-systems-9']),
+  scenarios: generateScenarios('l6-economic-systems-9', problemConfigs['l6-economic-systems-9'], [
+    'Implement quantum finance at planetary scale',
+    'Achieve predictive markets breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -658,9 +765,18 @@ export const l6EconomicSystems10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-10', problemConfigs['l6-economic-systems-10']),
+  scenarios: generateScenarios('l6-economic-systems-10', problemConfigs['l6-economic-systems-10'], [
+    'Implement biological assets at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -713,9 +829,18 @@ export const l6EconomicSystems11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-11', problemConfigs['l6-economic-systems-11']),
+  scenarios: generateScenarios('l6-economic-systems-11', problemConfigs['l6-economic-systems-11'], [
+    'Implement post-scarcity economics at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -768,9 +893,18 @@ export const l6EconomicSystems12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-12', problemConfigs['l6-economic-systems-12']),
+  scenarios: generateScenarios('l6-economic-systems-12', problemConfigs['l6-economic-systems-12'], [
+    'Implement interplanetary commerce at planetary scale',
+    'Achieve predictive markets breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -823,9 +957,18 @@ export const l6EconomicSystems13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-13', problemConfigs['l6-economic-systems-13']),
+  scenarios: generateScenarios('l6-economic-systems-13', problemConfigs['l6-economic-systems-13'], [
+    'Implement AI governance tokens at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -878,9 +1021,18 @@ export const l6EconomicSystems14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-14', problemConfigs['l6-economic-systems-14']),
+  scenarios: generateScenarios('l6-economic-systems-14', problemConfigs['l6-economic-systems-14'], [
+    'Implement quantum finance at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -933,9 +1085,18 @@ export const l6EconomicSystems15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-15', problemConfigs['l6-economic-systems-15']),
+  scenarios: generateScenarios('l6-economic-systems-15', problemConfigs['l6-economic-systems-15'], [
+    'Implement biological assets at planetary scale',
+    'Achieve predictive markets breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -988,9 +1149,18 @@ export const l6EconomicSystems16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-16', problemConfigs['l6-economic-systems-16']),
+  scenarios: generateScenarios('l6-economic-systems-16', problemConfigs['l6-economic-systems-16'], [
+    'Implement post-scarcity economics at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1043,9 +1213,18 @@ export const l6EconomicSystems17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-economic-systems-17', problemConfigs['l6-economic-systems-17']),
+  scenarios: generateScenarios('l6-economic-systems-17', problemConfigs['l6-economic-systems-17'], [
+    'Implement interplanetary commerce at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

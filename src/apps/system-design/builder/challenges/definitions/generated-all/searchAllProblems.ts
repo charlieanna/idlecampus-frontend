@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Search Problems - Complete Set
@@ -86,9 +94,18 @@ export const basicTextSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('basic-text-search', problemConfigs['basic-text-search']),
+  scenarios: generateScenarios('basic-text-search', problemConfigs['basic-text-search'], [
+    'Index text documents',
+    'Search by keywords',
+    'Support AND/OR operators',
+    'Rank results by relevance',
+    'Highlight matching terms'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -173,9 +190,18 @@ export const autocompleteSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('autocomplete-search', problemConfigs['autocomplete-search']),
+  scenarios: generateScenarios('autocomplete-search', problemConfigs['autocomplete-search'], [
+    'Suggest completions for partial queries',
+    'Rank by popularity and recency',
+    'Support fuzzy matching for typos',
+    'Personalize based on user history',
+    'Update suggestions in real-time'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -263,9 +289,17 @@ export const facetedSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('faceted-search', problemConfigs['faceted-search']),
+  scenarios: generateScenarios('faceted-search', problemConfigs['faceted-search'], [
+    'Filter by multiple attributes',
+    'Show facet counts',
+    'Support range filters',
+    'Handle empty results gracefully'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -340,9 +374,17 @@ export const geoSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('geo-search', problemConfigs['geo-search']),
+  scenarios: generateScenarios('geo-search', problemConfigs['geo-search'], [
+    'Search within radius',
+    'Bounding box queries',
+    'Sort by distance',
+    'Filter by category'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -426,9 +468,17 @@ export const fuzzySearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('fuzzy-search', problemConfigs['fuzzy-search']),
+  scenarios: generateScenarios('fuzzy-search', problemConfigs['fuzzy-search'], [
+    'Tolerate 1-2 char errors',
+    'Suggest corrections',
+    'Phonetic matching',
+    'Support multiple languages'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -512,9 +562,17 @@ export const synonymSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('synonym-search', problemConfigs['synonym-search']),
+  scenarios: generateScenarios('synonym-search', problemConfigs['synonym-search'], [
+    'Expand with synonyms',
+    'Language-specific synonyms',
+    'Domain-specific terms',
+    'Bidirectional matching'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -589,9 +647,17 @@ export const highlightSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('highlight-search', problemConfigs['highlight-search']),
+  scenarios: generateScenarios('highlight-search', problemConfigs['highlight-search'], [
+    'Highlight all matched terms',
+    'Show context window',
+    'Handle multi-word matches',
+    'HTML-safe highlighting'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -675,9 +741,17 @@ export const boostingSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('boosting-search', problemConfigs['boosting-search']),
+  scenarios: generateScenarios('boosting-search', problemConfigs['boosting-search'], [
+    'Boost title matches 5x',
+    'Boost tags 3x',
+    'Recency boosting',
+    'Popularity signals'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -771,9 +845,18 @@ export const productDiscoveryProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('product-discovery', problemConfigs['product-discovery']),
+  scenarios: generateScenarios('product-discovery', problemConfigs['product-discovery'], [
+    'Category navigation',
+    'Faceted filters',
+    'Search within category',
+    'Sort options (price, rating, relevance)',
+    'Cross-sell recommendations'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -861,9 +944,17 @@ export const searchSuggestionsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('search-suggestions', problemConfigs['search-suggestions']),
+  scenarios: generateScenarios('search-suggestions', problemConfigs['search-suggestions'], [
+    'Suggest related queries',
+    'Show trending searches',
+    'Correct common mistakes',
+    'Personalized suggestions'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -965,9 +1056,21 @@ export const ecommerceSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('ecommerce-search', problemConfigs['ecommerce-search']),
+  scenarios: generateScenarios('ecommerce-search', problemConfigs['ecommerce-search'], [
+    'Search 10B+ products in <50ms P99 latency',
+    'Handle 1M searches/sec (10M during Prime Day)',
+    'Deep personalization for 500M+ users',
+    'Visual search with computer vision',
+    'Voice search with NLP understanding',
+    'Real-time inventory and pricing in results',
+    'Support 100+ languages and currencies',
+    'ML-based query understanding and expansion'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1047,9 +1150,17 @@ export const multilingualSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multilingual-search', problemConfigs['multilingual-search']),
+  scenarios: generateScenarios('multilingual-search', problemConfigs['multilingual-search'], [
+    'Detect query language',
+    'Language-specific analyzers',
+    'Cross-language search',
+    'Handle CJK languages'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1148,9 +1259,18 @@ export const searchAnalyticsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('search-analytics', problemConfigs['search-analytics']),
+  scenarios: generateScenarios('search-analytics', problemConfigs['search-analytics'], [
+    'Log all queries',
+    'Track CTR per query',
+    'Detect zero-result queries',
+    'Measure latency percentiles',
+    'Popular search trends'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1253,9 +1373,17 @@ export const personalizedSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('personalized-search', problemConfigs['personalized-search']),
+  scenarios: generateScenarios('personalized-search', problemConfigs['personalized-search'], [
+    'Track user interactions',
+    'Build user profiles',
+    'Re-rank with preferences',
+    'Privacy-preserving personalization'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1340,9 +1468,17 @@ export const voiceSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('voice-search', problemConfigs['voice-search']),
+  scenarios: generateScenarios('voice-search', problemConfigs['voice-search'], [
+    'Speech-to-text conversion',
+    'Handle accents and dialects',
+    'Noise cancellation',
+    'Intent recognition'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1444,9 +1580,21 @@ export const imageSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('image-search', problemConfigs['image-search']),
+  scenarios: generateScenarios('image-search', problemConfigs['image-search'], [
+    'Search 10B+ images with 100M queries/sec',
+    'Visual similarity using CLIP/Vision Transformers',
+    'Reverse image search with <100ms latency',
+    'Multi-modal search (text + image + video)',
+    'Real-time object/face/scene detection',
+    'Support image generation queries',
+    'Content moderation and safety filters',
+    'Cross-platform image deduplication'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1540,9 +1688,17 @@ export const realtimeIndexingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('realtime-indexing', problemConfigs['realtime-indexing']),
+  scenarios: generateScenarios('realtime-indexing', problemConfigs['realtime-indexing'], [
+    'Sub-second indexing latency',
+    'Handle write bursts',
+    'Maintain search availability during indexing',
+    'Incremental index updates'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1650,9 +1806,17 @@ export const federatedSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('federated-search', problemConfigs['federated-search']),
+  scenarios: generateScenarios('federated-search', problemConfigs['federated-search'], [
+    'Query multiple sources in parallel',
+    'Merge and deduplicate results',
+    'Unified ranking across sources',
+    'Handle partial failures'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1769,9 +1933,21 @@ export const logSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('log-search', problemConfigs['log-search']),
+  scenarios: generateScenarios('log-search', problemConfigs['log-search'], [
+    'Ingest 100M events/sec from 1M+ microservices',
+    'Search 100PB logs with <1s latency',
+    'Real-time anomaly detection with ML',
+    'Complex aggregations across years of data',
+    'Security forensics with pattern matching',
+    'Compliance with 10-year retention policies',
+    'Multi-tenant isolation for 10k+ enterprises',
+    'Automated incident root cause analysis'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1873,9 +2049,21 @@ export const codeSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('code-search', problemConfigs['code-search']),
+  scenarios: generateScenarios('code-search', problemConfigs['code-search'], [
+    'Index 1B+ repos with 100T+ lines of code',
+    'Process 100M code searches/sec globally',
+    'Semantic search using CodeBERT/Codex models',
+    'Support 500+ programming languages',
+    'Real-time indexing of 1M+ commits/minute',
+    'Cross-repo dependency and vulnerability scanning',
+    'AI-powered code completion and suggestions',
+    'Git history and blame integration at scale'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1966,9 +2154,18 @@ export const hybridSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('hybrid-search', problemConfigs['hybrid-search']),
+  scenarios: generateScenarios('hybrid-search', problemConfigs['hybrid-search'], [
+    'BM25 keyword scoring',
+    'Vector embedding search',
+    'Reciprocal rank fusion (RRF)',
+    'Query rewriting with LLM',
+    'Hybrid ranking tuning'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2077,9 +2274,18 @@ export const videoSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('video-search', problemConfigs['video-search']),
+  scenarios: generateScenarios('video-search', problemConfigs['video-search'], [
+    'Transcript search with timestamps',
+    'Visual scene search',
+    'Face recognition',
+    'Object detection in frames',
+    'Chapter/timestamp navigation'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2182,9 +2388,18 @@ export const securityEventSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('security-event-search', problemConfigs['security-event-search']),
+  scenarios: generateScenarios('security-event-search', problemConfigs['security-event-search'], [
+    'Ingest firewall, IDS, auth logs',
+    'Correlation rules across sources',
+    'Anomaly detection',
+    'Threat intelligence enrichment',
+    'Real-time alerting'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2283,9 +2498,18 @@ export const medicalRecordSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('medical-record-search', problemConfigs['medical-record-search']),
+  scenarios: generateScenarios('medical-record-search', problemConfigs['medical-record-search'], [
+    'Field-level encryption (PHI)',
+    'Audit all searches',
+    'ICD-10/SNOMED terminology',
+    'De-identified research queries',
+    'Access control by role'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2399,9 +2623,18 @@ export const socialMediaSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('social-media-search', problemConfigs['social-media-search']),
+  scenarios: generateScenarios('social-media-search', problemConfigs['social-media-search'], [
+    'Real-time indexing (<5s)',
+    'Hashtag and mention search',
+    'Trending topic detection',
+    'User search',
+    'Time-decay ranking'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2522,9 +2755,21 @@ export const semanticSearchPlatformProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('semantic-search-platform', problemConfigs['semantic-search-platform']),
+  scenarios: generateScenarios('semantic-search-platform', problemConfigs['semantic-search-platform'], [
+    'Process 100M semantic searches/sec globally',
+    'Index 100B+ documents with 2048-dim embeddings',
+    'GPT-4/PaLM-level query understanding',
+    'Multi-modal search across text/image/video/audio',
+    'Support 200+ languages with cross-lingual search',
+    'Real-time re-ranking with 100+ signals',
+    'Continuous learning from 1B+ daily interactions',
+    'Explainable AI with attribution and confidence'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2614,9 +2859,18 @@ export const jobSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('job-search', problemConfigs['job-search']),
+  scenarios: generateScenarios('job-search', problemConfigs['job-search'], [
+    'Search by skills/title',
+    'Location radius filter',
+    'Salary range filter',
+    'Experience level',
+    'ML relevance ranking'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2706,9 +2960,18 @@ export const travelSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('travel-search', problemConfigs['travel-search']),
+  scenarios: generateScenarios('travel-search', problemConfigs['travel-search'], [
+    'Multi-leg flight search',
+    'Flexible date ranges',
+    'Price + duration sorting',
+    'Airline/hotel filters',
+    'Real-time price updates'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2798,9 +3061,18 @@ export const academicPaperSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('academic-paper-search', problemConfigs['academic-paper-search']),
+  scenarios: generateScenarios('academic-paper-search', problemConfigs['academic-paper-search'], [
+    'Full-text search',
+    'Citation graph traversal',
+    'Author search',
+    'Topic clustering',
+    'Related paper suggestions'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2876,9 +3148,18 @@ export const recipeSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('recipe-search', problemConfigs['recipe-search']),
+  scenarios: generateScenarios('recipe-search', problemConfigs['recipe-search'], [
+    'Ingredient-based search',
+    'Dietary filter (vegan, gluten-free)',
+    'Cook time filter',
+    'Nutrition info',
+    'User ratings'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -2963,9 +3244,18 @@ export const legalDocSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('legal-doc-search', problemConfigs['legal-doc-search']),
+  scenarios: generateScenarios('legal-doc-search', problemConfigs['legal-doc-search'], [
+    'Full-text legal search',
+    'Citation linking',
+    'Jurisdiction filter',
+    'Date range queries',
+    'Shepardize (track case history)'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -3055,9 +3345,18 @@ export const newsSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('news-search', problemConfigs['news-search']),
+  scenarios: generateScenarios('news-search', problemConfigs['news-search'], [
+    'Real-time article indexing',
+    'Story clustering',
+    'Entity extraction (people, places)',
+    'Topic categorization',
+    'Recency-weighted ranking'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -3142,9 +3441,18 @@ export const musicSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('music-search', problemConfigs['music-search']),
+  scenarios: generateScenarios('music-search', problemConfigs['music-search'], [
+    'Search songs, artists, albums',
+    'Audio feature filters',
+    'Lyrics search',
+    'Genre/mood filters',
+    'Playlist search'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -3229,9 +3537,18 @@ export const appStoreSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('app-store-search', problemConfigs['app-store-search']),
+  scenarios: generateScenarios('app-store-search', problemConfigs['app-store-search'], [
+    'Keyword search',
+    'Category filters',
+    'Rating/download sorting',
+    'App icon/screenshot display',
+    'Similar app recommendations'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -3330,9 +3647,18 @@ export const documentCollabSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('document-collab-search', problemConfigs['document-collab-search']),
+  scenarios: generateScenarios('document-collab-search', problemConfigs['document-collab-search'], [
+    'Permission-aware search',
+    'Full-text in docs/PDFs',
+    'Search by owner/editor',
+    'Recent activity boost',
+    'Folder hierarchy'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

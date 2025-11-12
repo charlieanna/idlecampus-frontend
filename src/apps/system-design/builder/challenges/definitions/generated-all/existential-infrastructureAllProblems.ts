@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Existential-infrastructure Problems - Complete Set
@@ -54,9 +62,18 @@ export const l6ExistentialNuclearResilientProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l6-existential-nuclear-resilient', problemConfigs['l6-existential-nuclear-resilient']),
+  scenarios: generateScenarios('l6-existential-nuclear-resilient', problemConfigs['l6-existential-nuclear-resilient'], [
+    'Survive EMP attacks',
+    'Operate in radiation',
+    'Handle 90% node failure',
+    'Support emergency broadcast',
+    'Enable survivor coordination'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -108,9 +125,18 @@ export const l6ExistentialClimateAdaptationProblemDefinition: ProblemDefinition 
     },
   },
 
-  scenarios: generateScenarios('l6-existential-climate-adaptation', problemConfigs['l6-existential-climate-adaptation']),
+  scenarios: generateScenarios('l6-existential-climate-adaptation', problemConfigs['l6-existential-climate-adaptation'], [
+    'Operate at 60°C ambient',
+    'Survive category 6 hurricanes',
+    'Handle mass migration logistics',
+    'Coordinate disaster response',
+    'Manage resource allocation'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -163,9 +189,18 @@ export const l6ExistentialPandemicResponseProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l6-existential-pandemic-response', problemConfigs['l6-existential-pandemic-response']),
+  scenarios: generateScenarios('l6-existential-pandemic-response', problemConfigs['l6-existential-pandemic-response'], [
+    'Track 8B people health status',
+    'Coordinate vaccine distribution',
+    'Manage quarantine zones',
+    'Allocate critical resources',
+    'Predict outbreak patterns'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -218,9 +253,18 @@ export const l6ExistentialAsteroidDefenseProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l6-existential-asteroid-defense', problemConfigs['l6-existential-asteroid-defense']),
+  scenarios: generateScenarios('l6-existential-asteroid-defense', problemConfigs['l6-existential-asteroid-defense'], [
+    'Track 1M asteroids',
+    'Calculate trajectories for 100 years',
+    'Coordinate deflection missions',
+    'Simulate intervention outcomes',
+    'Manage global resources'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -273,9 +317,18 @@ export const l6ExistentialInfrastructure1ProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-1', problemConfigs['l6-existential-infrastructure-1']),
+  scenarios: generateScenarios('l6-existential-infrastructure-1', problemConfigs['l6-existential-infrastructure-1'], [
+    'Implement planetary defense at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -328,9 +381,18 @@ export const l6ExistentialInfrastructure2ProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-2', problemConfigs['l6-existential-infrastructure-2']),
+  scenarios: generateScenarios('l6-existential-infrastructure-2', problemConfigs['l6-existential-infrastructure-2'], [
+    'Implement asteroid mining at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -383,9 +445,18 @@ export const l6ExistentialInfrastructure3ProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-3', problemConfigs['l6-existential-infrastructure-3']),
+  scenarios: generateScenarios('l6-existential-infrastructure-3', problemConfigs['l6-existential-infrastructure-3'], [
+    'Implement dyson spheres at planetary scale',
+    'Achieve multiverse computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -438,9 +509,18 @@ export const l6ExistentialInfrastructure4ProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-4', problemConfigs['l6-existential-infrastructure-4']),
+  scenarios: generateScenarios('l6-existential-infrastructure-4', problemConfigs['l6-existential-infrastructure-4'], [
+    'Implement generation ships at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -493,9 +573,18 @@ export const l6ExistentialInfrastructure5ProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-5', problemConfigs['l6-existential-infrastructure-5']),
+  scenarios: generateScenarios('l6-existential-infrastructure-5', problemConfigs['l6-existential-infrastructure-5'], [
+    'Implement terraforming at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -548,9 +637,18 @@ export const l6ExistentialInfrastructure6ProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-6', problemConfigs['l6-existential-infrastructure-6']),
+  scenarios: generateScenarios('l6-existential-infrastructure-6', problemConfigs['l6-existential-infrastructure-6'], [
+    'Implement planetary defense at planetary scale',
+    'Achieve multiverse computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -603,9 +701,18 @@ export const l6ExistentialInfrastructure7ProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-7', problemConfigs['l6-existential-infrastructure-7']),
+  scenarios: generateScenarios('l6-existential-infrastructure-7', problemConfigs['l6-existential-infrastructure-7'], [
+    'Implement asteroid mining at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -658,9 +765,18 @@ export const l6ExistentialInfrastructure8ProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-8', problemConfigs['l6-existential-infrastructure-8']),
+  scenarios: generateScenarios('l6-existential-infrastructure-8', problemConfigs['l6-existential-infrastructure-8'], [
+    'Implement dyson spheres at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -713,9 +829,18 @@ export const l6ExistentialInfrastructure9ProblemDefinition: ProblemDefinition = 
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-9', problemConfigs['l6-existential-infrastructure-9']),
+  scenarios: generateScenarios('l6-existential-infrastructure-9', problemConfigs['l6-existential-infrastructure-9'], [
+    'Implement generation ships at planetary scale',
+    'Achieve multiverse computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -768,9 +893,18 @@ export const l6ExistentialInfrastructure10ProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-10', problemConfigs['l6-existential-infrastructure-10']),
+  scenarios: generateScenarios('l6-existential-infrastructure-10', problemConfigs['l6-existential-infrastructure-10'], [
+    'Implement terraforming at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -823,9 +957,18 @@ export const l6ExistentialInfrastructure11ProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-11', problemConfigs['l6-existential-infrastructure-11']),
+  scenarios: generateScenarios('l6-existential-infrastructure-11', problemConfigs['l6-existential-infrastructure-11'], [
+    'Implement planetary defense at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -878,9 +1021,18 @@ export const l6ExistentialInfrastructure12ProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-12', problemConfigs['l6-existential-infrastructure-12']),
+  scenarios: generateScenarios('l6-existential-infrastructure-12', problemConfigs['l6-existential-infrastructure-12'], [
+    'Implement asteroid mining at planetary scale',
+    'Achieve multiverse computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -933,9 +1085,18 @@ export const l6ExistentialInfrastructure13ProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-13', problemConfigs['l6-existential-infrastructure-13']),
+  scenarios: generateScenarios('l6-existential-infrastructure-13', problemConfigs['l6-existential-infrastructure-13'], [
+    'Implement dyson spheres at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -988,9 +1149,18 @@ export const l6ExistentialInfrastructure14ProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-14', problemConfigs['l6-existential-infrastructure-14']),
+  scenarios: generateScenarios('l6-existential-infrastructure-14', problemConfigs['l6-existential-infrastructure-14'], [
+    'Implement generation ships at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1043,9 +1213,18 @@ export const l6ExistentialInfrastructure15ProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-15', problemConfigs['l6-existential-infrastructure-15']),
+  scenarios: generateScenarios('l6-existential-infrastructure-15', problemConfigs['l6-existential-infrastructure-15'], [
+    'Implement terraforming at planetary scale',
+    'Achieve multiverse computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1098,9 +1277,18 @@ export const l6ExistentialInfrastructure16ProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-16', problemConfigs['l6-existential-infrastructure-16']),
+  scenarios: generateScenarios('l6-existential-infrastructure-16', problemConfigs['l6-existential-infrastructure-16'], [
+    'Implement planetary defense at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1153,9 +1341,18 @@ export const l6ExistentialInfrastructure17ProblemDefinition: ProblemDefinition =
     },
   },
 
-  scenarios: generateScenarios('l6-existential-infrastructure-17', problemConfigs['l6-existential-infrastructure-17']),
+  scenarios: generateScenarios('l6-existential-infrastructure-17', problemConfigs['l6-existential-infrastructure-17'], [
+    'Implement asteroid mining at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,

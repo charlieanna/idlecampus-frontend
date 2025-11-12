@@ -1,7 +1,15 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  urlShorteningValidator,
+  urlRedirectValidator,
+  analyticsTrackingValidator,
+  photoUploadValidator,
+  feedViewValidator,
+  basicFunctionalValidator,
+} from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Privacy-innovation Problems - Complete Set
@@ -53,9 +61,18 @@ export const l6PrivacyHomomorphicScaleProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-homomorphic-scale', problemConfigs['l6-privacy-homomorphic-scale']),
+  scenarios: generateScenarios('l6-privacy-homomorphic-scale', problemConfigs['l6-privacy-homomorphic-scale'], [
+    'Support arbitrary computations',
+    'Maintain full encryption',
+    'Enable SQL on encrypted databases',
+    'Support machine learning training',
+    'Provide verifiable computation'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -107,9 +124,18 @@ export const l6PrivacyZkpInternetProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-zkp-internet', problemConfigs['l6-privacy-zkp-internet']),
+  scenarios: generateScenarios('l6-privacy-zkp-internet', problemConfigs['l6-privacy-zkp-internet'], [
+    'Generate ZK proofs for all requests',
+    'Verify proofs in milliseconds',
+    'Support recursive proof composition',
+    'Enable selective disclosure',
+    'Maintain auditability'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -162,9 +188,18 @@ export const l6PrivacyInnovation1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-1', problemConfigs['l6-privacy-innovation-1']),
+  scenarios: generateScenarios('l6-privacy-innovation-1', problemConfigs['l6-privacy-innovation-1'], [
+    'Implement homomorphic everything at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -217,9 +252,18 @@ export const l6PrivacyInnovation2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-2', problemConfigs['l6-privacy-innovation-2']),
+  scenarios: generateScenarios('l6-privacy-innovation-2', problemConfigs['l6-privacy-innovation-2'], [
+    'Implement quantum privacy at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -272,9 +316,18 @@ export const l6PrivacyInnovation3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-3', problemConfigs['l6-privacy-innovation-3']),
+  scenarios: generateScenarios('l6-privacy-innovation-3', problemConfigs['l6-privacy-innovation-3'], [
+    'Implement biological privacy at planetary scale',
+    'Achieve consciousness isolation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -327,9 +380,18 @@ export const l6PrivacyInnovation4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-4', problemConfigs['l6-privacy-innovation-4']),
+  scenarios: generateScenarios('l6-privacy-innovation-4', problemConfigs['l6-privacy-innovation-4'], [
+    'Implement cognitive firewalls at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -382,9 +444,18 @@ export const l6PrivacyInnovation5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-5', problemConfigs['l6-privacy-innovation-5']),
+  scenarios: generateScenarios('l6-privacy-innovation-5', problemConfigs['l6-privacy-innovation-5'], [
+    'Implement temporal privacy at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -437,9 +508,18 @@ export const l6PrivacyInnovation6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-6', problemConfigs['l6-privacy-innovation-6']),
+  scenarios: generateScenarios('l6-privacy-innovation-6', problemConfigs['l6-privacy-innovation-6'], [
+    'Implement homomorphic everything at planetary scale',
+    'Achieve consciousness isolation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -492,9 +572,18 @@ export const l6PrivacyInnovation7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-7', problemConfigs['l6-privacy-innovation-7']),
+  scenarios: generateScenarios('l6-privacy-innovation-7', problemConfigs['l6-privacy-innovation-7'], [
+    'Implement quantum privacy at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -547,9 +636,18 @@ export const l6PrivacyInnovation8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-8', problemConfigs['l6-privacy-innovation-8']),
+  scenarios: generateScenarios('l6-privacy-innovation-8', problemConfigs['l6-privacy-innovation-8'], [
+    'Implement biological privacy at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -602,9 +700,18 @@ export const l6PrivacyInnovation9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-9', problemConfigs['l6-privacy-innovation-9']),
+  scenarios: generateScenarios('l6-privacy-innovation-9', problemConfigs['l6-privacy-innovation-9'], [
+    'Implement cognitive firewalls at planetary scale',
+    'Achieve consciousness isolation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -657,9 +764,18 @@ export const l6PrivacyInnovation10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-10', problemConfigs['l6-privacy-innovation-10']),
+  scenarios: generateScenarios('l6-privacy-innovation-10', problemConfigs['l6-privacy-innovation-10'], [
+    'Implement temporal privacy at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -712,9 +828,18 @@ export const l6PrivacyInnovation11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-11', problemConfigs['l6-privacy-innovation-11']),
+  scenarios: generateScenarios('l6-privacy-innovation-11', problemConfigs['l6-privacy-innovation-11'], [
+    'Implement homomorphic everything at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -767,9 +892,18 @@ export const l6PrivacyInnovation12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-12', problemConfigs['l6-privacy-innovation-12']),
+  scenarios: generateScenarios('l6-privacy-innovation-12', problemConfigs['l6-privacy-innovation-12'], [
+    'Implement quantum privacy at planetary scale',
+    'Achieve consciousness isolation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -822,9 +956,18 @@ export const l6PrivacyInnovation13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-13', problemConfigs['l6-privacy-innovation-13']),
+  scenarios: generateScenarios('l6-privacy-innovation-13', problemConfigs['l6-privacy-innovation-13'], [
+    'Implement biological privacy at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -877,9 +1020,18 @@ export const l6PrivacyInnovation14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-14', problemConfigs['l6-privacy-innovation-14']),
+  scenarios: generateScenarios('l6-privacy-innovation-14', problemConfigs['l6-privacy-innovation-14'], [
+    'Implement cognitive firewalls at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -932,9 +1084,18 @@ export const l6PrivacyInnovation15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-15', problemConfigs['l6-privacy-innovation-15']),
+  scenarios: generateScenarios('l6-privacy-innovation-15', problemConfigs['l6-privacy-innovation-15'], [
+    'Implement temporal privacy at planetary scale',
+    'Achieve consciousness isolation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -987,9 +1148,18 @@ export const l6PrivacyInnovation16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-16', problemConfigs['l6-privacy-innovation-16']),
+  scenarios: generateScenarios('l6-privacy-innovation-16', problemConfigs['l6-privacy-innovation-16'], [
+    'Implement homomorphic everything at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
@@ -1042,9 +1212,18 @@ export const l6PrivacyInnovation17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-privacy-innovation-17', problemConfigs['l6-privacy-innovation-17']),
+  scenarios: generateScenarios('l6-privacy-innovation-17', problemConfigs['l6-privacy-innovation-17'], [
+    'Implement quantum privacy at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
+    // Feature-specific validators for each FR
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
