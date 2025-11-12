@@ -19,6 +19,13 @@ import { allProblemDefinitions } from '../challenges/definitions';
 import { ProblemDefinition } from '../types/problemDefinition';
 import { DetailedAnalysisPanel } from './components/DetailedAnalysisPanel';
 import { DesignAnalysisResult } from '../validation/DesignAnalyzer';
+import Editor from '@monaco-editor/react';
+import { LoadTestControls } from './components/LoadTestControls';
+import { LiveMetricsDisplay } from './components/LiveMetricsDisplay';
+import { LoadTestResults } from './components/LoadTestResults';
+import { BottleneckAnalysis } from './components/BottleneckAnalysis';
+import { loadTestService } from '../services/loadTestService';
+import type { LoadTestProgress, LoadTestResults as LoadTestResultsType } from '../types/loadTest';
 
 // Initial graph with two Client components (Write and Read)
 const getInitialGraph = (): SystemGraph => ({
@@ -67,7 +74,36 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const [showSolutionPanel, setShowSolutionPanel] = useState(false);
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
-  const [activeTab, setActiveTab] = useState<string>('canvas'); // 'canvas', 'code', or component ID
+  const [activeTab, setActiveTab] = useState<string>('canvas'); // 'canvas', 'python', or component ID
+
+  // Load test state
+  const [loadTestRunning, setLoadTestRunning] = useState(false);
+  const [loadTestProgress, setLoadTestProgress] = useState<LoadTestProgress | null>(null);
+  const [loadTestResults, setLoadTestResults] = useState<LoadTestResultsType | null>(null);
+
+  // Default Python starter code
+  const [pythonCode, setPythonCode] = useState(`import random, string, hashlib, base64
+
+def shorten(url: str) -> str:
+    """
+    Implement logic to generate a short code for the given URL.
+    You can use any Python library.
+    Constraints:
+      - Must return a string of 6–10 chars.
+      - Must avoid collisions.
+      - Should be deterministic (same input → same code).
+    """
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(6))
+
+def expand(code: str, store: dict) -> str:
+    """
+    Optional: implement decode logic.
+    \`store\` is a dict of {code: url}.
+    Return the original URL or raise KeyError.
+    """
+    return store.get(code)
+`);
 
   // Convert challenge ID to URL-friendly path (replace underscores with hyphens)
   const challengeIdToPath = (id: string): string => {
@@ -301,6 +337,44 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
 
   const databaseComponents = getDatabaseComponents();
 
+  // Load test handlers
+  const handleRunLoadTest = async (config: Omit<LoadTestConfig, 'code' | 'challengeId'>) => {
+    setLoadTestRunning(true);
+    setLoadTestProgress(null);
+    setLoadTestResults(null);
+
+    try {
+      const results = await loadTestService.runLoadTest(
+        {
+          ...config,
+          code: pythonCode,
+          challengeId: 'tinyurl_hash_function', // TODO: Make this dynamic based on selected challenge
+        },
+        (progress) => {
+          setLoadTestProgress(progress);
+        }
+      );
+
+      setLoadTestResults(results);
+    } catch (error) {
+      console.error('Load test failed:', error);
+      alert('Load test failed. Check console for details.');
+    } finally {
+      setLoadTestRunning(false);
+      setLoadTestProgress(null);
+    }
+  };
+
+  const handleCancelLoadTest = () => {
+    loadTestService.cancel();
+    setLoadTestRunning(false);
+    setLoadTestProgress(null);
+  };
+
+  const handleResetLoadTest = () => {
+    setLoadTestResults(null);
+  };
+
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
       {/* Top Bar */}
@@ -317,7 +391,7 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
         </div>
       </div>
 
-      {/* Tab Bar */}
+      {/* Tab Bar - Always show with dynamic tabs */}
       <div className="bg-white border-b border-gray-200 px-6">
         <div className="flex gap-1">
           {/* Canvas Tab */}
@@ -332,17 +406,19 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
             🎨 Canvas
           </button>
 
-          {/* Code Tab */}
-          <button
-            onClick={() => setActiveTab('code')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'code'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-            }`}
-          >
-            💻 Python Code
-          </button>
+          {/* Python Code Tab - Only for TinyURL */}
+          {selectedChallenge?.id === 'tiny_url' && (
+            <button
+              onClick={() => setActiveTab('python')}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'python'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              🐍 Python Application Server
+            </button>
+          )}
 
           {/* Dynamic Database Component Tabs */}
           {databaseComponents.map((component) => (
@@ -361,7 +437,7 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
         </div>
       </div>
 
-      {/* Main Content - Three Panel Layout */}
+      {/* Main Content - Conditional based on active tab */}
       <div className="flex-1 flex overflow-hidden">
         {/* Canvas Tab Content */}
         {activeTab === 'canvas' && (
@@ -454,13 +530,126 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
           </>
         )}
 
-        {/* Code Tab Content */}
-        {activeTab === 'code' && (
-          <div className="flex-1 flex items-center justify-center bg-white">
-            <div className="text-center p-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">💻 Python Coding Challenge</h2>
-              <p className="text-gray-600 mb-4">Write code to implement your system design</p>
-              <p className="text-sm text-gray-500">(Coming soon)</p>
+        {/* Python Code Tab Content with Load Testing */}
+        {activeTab === 'python' && (
+          <div className="flex-1 flex overflow-hidden">
+            {/* Left Panel: Code Editor (60%) */}
+            <div className="flex-1 flex flex-col bg-gray-50">
+              {/* Header */}
+              <div className="bg-white border-b border-gray-200 px-6 py-4">
+                <h2 className="text-2xl font-bold text-gray-900">Application Server Implementation</h2>
+                <p className="text-sm text-gray-600 mt-1">
+                  Write your Python code and test it under realistic load conditions
+                </p>
+              </div>
+
+              {/* Code Editor */}
+              <div className="flex-1 p-6">
+                <div className="h-full border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
+                  <Editor
+                    height="100%"
+                    defaultLanguage="python"
+                    value={pythonCode}
+                    onChange={(value) => setPythonCode(value || '')}
+                    theme="vs-light"
+                    options={{
+                      minimap: { enabled: true },
+                      fontSize: 14,
+                      lineNumbers: 'on',
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                      tabSize: 4,
+                      wordWrap: 'on',
+                      formatOnPaste: true,
+                      formatOnType: true,
+                      readOnly: loadTestRunning,
+                    }}
+                  />
+                </div>
+              </div>
+
+              {/* Footer with actions */}
+              <div className="bg-white border-t border-gray-200 px-6 py-3 flex items-center justify-between">
+                <div className="text-xs text-gray-600">
+                  💡 Tip: Optimize for low latency and high throughput
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      const blob = new Blob([pythonCode], { type: 'text/plain' });
+                      const url = URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'tinyurl_server.py';
+                      a.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                  >
+                    📥 Download
+                  </button>
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(pythonCode);
+                      alert('Code copied to clipboard!');
+                    }}
+                    className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors"
+                  >
+                    📋 Copy
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Panel: Load Testing (40%) */}
+            <div className="w-2/5 bg-white border-l border-gray-200 flex flex-col overflow-hidden">
+              {!loadTestResults ? (
+                <>
+                  {/* Load Test Controls */}
+                  {!loadTestRunning && !loadTestProgress && (
+                    <LoadTestControls
+                      onRunTest={handleRunLoadTest}
+                      isRunning={loadTestRunning}
+                      onCancel={handleCancelLoadTest}
+                    />
+                  )}
+
+                  {/* Live Metrics During Test */}
+                  {loadTestRunning && loadTestProgress && (
+                    <div className="flex-1 flex flex-col">
+                      <div className="p-4 border-b border-gray-200">
+                        <h3 className="text-lg font-semibold text-gray-900">Running Load Test</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Testing your code with real traffic
+                        </p>
+                      </div>
+                      <LiveMetricsDisplay progress={loadTestProgress} />
+                      <div className="p-4 border-t border-gray-200">
+                        <button
+                          onClick={handleCancelLoadTest}
+                          className="w-full px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
+                        >
+                          ⏹ Cancel Test
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Test Results and Bottleneck Analysis */
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <div className="p-4 border-b border-gray-200">
+                    <h3 className="text-lg font-semibold text-gray-900">Test Results</h3>
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    <LoadTestResults
+                      metrics={loadTestResults.metrics}
+                      onReset={handleResetLoadTest}
+                    />
+                    <BottleneckAnalysis bottlenecks={loadTestResults.bottlenecks} />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         )}

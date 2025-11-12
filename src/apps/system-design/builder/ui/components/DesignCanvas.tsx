@@ -131,6 +131,12 @@ export function DesignCanvas({
   // Handle new connections
   const onConnect = useCallback(
     (connection: Connection) => {
+      console.log('[DesignCanvas] onConnect', {
+        source: connection.source,
+        target: connection.target,
+        sourceHandle: connection.sourceHandle,
+        targetHandle: connection.targetHandle,
+      });
       // Arrow direction follows the drag direction exactly
       // User drags FROM source TO target → arrow points source → target
       // Traffic flows in the direction of the arrow
