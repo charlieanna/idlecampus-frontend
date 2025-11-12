@@ -1,7 +1,7 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
-import { generateScenarios } from '../scenarioGenerator';
-import { problemConfigs } from '../problemConfigs';
+import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
+import { generateScenarios } from '../../scenarioGenerator';
+import { problemConfigs } from '../../problemConfigs';
 
 /**
  * Streaming Problems - Complete Set
