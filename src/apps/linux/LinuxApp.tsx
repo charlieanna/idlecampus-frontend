@@ -144,7 +144,8 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
     // Check lessons
     const lesson = currentModule.lessons?.find(l => `${currentModule.id}-${l.id}` === selectedItemId);
     if (lesson) {
-      selectedContent = lesson;
+      // Ensure the lesson has the correct ID format for the LessonViewer component
+      selectedContent = { ...lesson, id: selectedItemId };
       contentType = 'lesson';
     }
 

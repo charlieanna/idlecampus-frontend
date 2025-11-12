@@ -91,32 +91,25 @@ export { l6EconomicCbdcProblemDefinition, l6EconomicInterplanetaryProblemDefinit
 export { l6BioNeuralImplantProblemDefinition, l6BioDigitalTwinProblemDefinition, l6BioDigital1ProblemDefinition, l6BioDigital2ProblemDefinition, l6BioDigital3ProblemDefinition, l6BioDigital4ProblemDefinition, l6BioDigital5ProblemDefinition, l6BioDigital6ProblemDefinition, l6BioDigital7ProblemDefinition, l6BioDigital8ProblemDefinition, l6BioDigital9ProblemDefinition, l6BioDigital10ProblemDefinition, l6BioDigital11ProblemDefinition, l6BioDigital12ProblemDefinition, l6BioDigital13ProblemDefinition, l6BioDigital14ProblemDefinition, l6BioDigital15ProblemDefinition, l6BioDigital16ProblemDefinition, l6BioDigital17ProblemDefinition } from './generated-all/bio-digitalAllProblems';
 export { l6ExistentialNuclearResilientProblemDefinition, l6ExistentialClimateAdaptationProblemDefinition, l6ExistentialPandemicResponseProblemDefinition, l6ExistentialAsteroidDefenseProblemDefinition, l6ExistentialInfrastructure1ProblemDefinition, l6ExistentialInfrastructure2ProblemDefinition, l6ExistentialInfrastructure3ProblemDefinition, l6ExistentialInfrastructure4ProblemDefinition, l6ExistentialInfrastructure5ProblemDefinition, l6ExistentialInfrastructure6ProblemDefinition, l6ExistentialInfrastructure7ProblemDefinition, l6ExistentialInfrastructure8ProblemDefinition, l6ExistentialInfrastructure9ProblemDefinition, l6ExistentialInfrastructure10ProblemDefinition, l6ExistentialInfrastructure11ProblemDefinition, l6ExistentialInfrastructure12ProblemDefinition, l6ExistentialInfrastructure13ProblemDefinition, l6ExistentialInfrastructure14ProblemDefinition, l6ExistentialInfrastructure15ProblemDefinition, l6ExistentialInfrastructure16ProblemDefinition, l6ExistentialInfrastructure17ProblemDefinition } from './generated-all/existential-infrastructureAllProblems';
 // Extracted Problems - Tutorials (3)
-export { tutorialSimpleBlogProblemDefinition } from './tutorialSimpleBlog';
-export { tutorialImageHostingProblemDefinition } from './tutorialImageHosting';
-export { tutorialRealtimeChatProblemDefinition } from './tutorialRealtimeChat';
+// Note: These are now imported from generated-all/tutorialAllProblems
 
 // Extracted Problems - Caching (16)
-export { redditCommentSystemProblemDefinition } from './redditCommentSystem';
-export { staticContentCdnProblemDefinition } from './staticContentCdn';
-export { sessionStoreBasicProblemDefinition, databaseQueryCacheProblemDefinition, apiRateLimitCacheProblemDefinition, productCatalogCacheProblemDefinition } from './cachingProblems';
-// Note: gamingLeaderboardCacheProblemDefinition, geoLocationCacheProblemDefinition, etc. are now imported from generated-all/cachingAllProblems
+// Note: These are now imported from generated-all/cachingAllProblems
 
 // Extracted Problems - Streaming (5)
-export { basicMessageQueueProblemDefinition } from './basicMessageQueue';
-export { realtimeNotificationsProblemDefinition, basicEventLogProblemDefinition, simplePubsubProblemDefinition, realtimeChatMessagesProblemDefinition } from './streamingProblems';
+// Note: These are now imported from generated-all/streamingAllProblems
 
 // Extracted Problems - Storage (5)
-export { basicDatabaseDesignProblemDefinition } from './basicDatabaseDesign';
-export { nosqlBasicsProblemDefinition, keyValueStoreProblemDefinition, productCatalogProblemDefinition, objectStorageSystemProblemDefinition } from './storageProblems';
+// Note: These are now imported from generated-all/storageAllProblems
 
 // Extracted Problems - Gateway (4)
-export { basicApiGatewayProblemDefinition, simpleRateLimiterProblemDefinition, authenticationGatewayProblemDefinition, graphqlGatewayProblemDefinition } from './gatewayProblems';
+// Note: These are now imported from generated-all/gatewayAllProblems
 
 // Extracted Problems - Search (4)
-export { basicTextSearchProblemDefinition, autocompleteSearchProblemDefinition, facetedSearchProblemDefinition, geoSearchProblemDefinition } from './searchProblems';
+// Note: These are now imported from generated-all/searchAllProblems
 
 // Extracted Problems - Multiregion (4)
-export { basicMultiRegionProblemDefinition, activeActiveRegionsProblemDefinition, globalCdnProblemDefinition, crossRegionDrProblemDefinition } from './multiregionProblems';
+// Note: These are now imported from generated-all/multiregionAllProblems
 
 // Array of all problem definitions
 import { ProblemDefinition } from '../../types/problemDefinition';
@@ -189,20 +182,8 @@ import { l6PrivacyHomomorphicScaleProblemDefinition, l6PrivacyZkpInternetProblem
 import { l6EconomicCbdcProblemDefinition, l6EconomicInterplanetaryProblemDefinition, l6EconomicSystems1ProblemDefinition, l6EconomicSystems2ProblemDefinition, l6EconomicSystems3ProblemDefinition, l6EconomicSystems4ProblemDefinition, l6EconomicSystems5ProblemDefinition, l6EconomicSystems6ProblemDefinition, l6EconomicSystems7ProblemDefinition, l6EconomicSystems8ProblemDefinition, l6EconomicSystems9ProblemDefinition, l6EconomicSystems10ProblemDefinition, l6EconomicSystems11ProblemDefinition, l6EconomicSystems12ProblemDefinition, l6EconomicSystems13ProblemDefinition, l6EconomicSystems14ProblemDefinition, l6EconomicSystems15ProblemDefinition, l6EconomicSystems16ProblemDefinition, l6EconomicSystems17ProblemDefinition } from './generated-all/economic-systemsAllProblems';
 import { l6BioNeuralImplantProblemDefinition, l6BioDigitalTwinProblemDefinition, l6BioDigital1ProblemDefinition, l6BioDigital2ProblemDefinition, l6BioDigital3ProblemDefinition, l6BioDigital4ProblemDefinition, l6BioDigital5ProblemDefinition, l6BioDigital6ProblemDefinition, l6BioDigital7ProblemDefinition, l6BioDigital8ProblemDefinition, l6BioDigital9ProblemDefinition, l6BioDigital10ProblemDefinition, l6BioDigital11ProblemDefinition, l6BioDigital12ProblemDefinition, l6BioDigital13ProblemDefinition, l6BioDigital14ProblemDefinition, l6BioDigital15ProblemDefinition, l6BioDigital16ProblemDefinition, l6BioDigital17ProblemDefinition } from './generated-all/bio-digitalAllProblems';
 import { l6ExistentialNuclearResilientProblemDefinition, l6ExistentialClimateAdaptationProblemDefinition, l6ExistentialPandemicResponseProblemDefinition, l6ExistentialAsteroidDefenseProblemDefinition, l6ExistentialInfrastructure1ProblemDefinition, l6ExistentialInfrastructure2ProblemDefinition, l6ExistentialInfrastructure3ProblemDefinition, l6ExistentialInfrastructure4ProblemDefinition, l6ExistentialInfrastructure5ProblemDefinition, l6ExistentialInfrastructure6ProblemDefinition, l6ExistentialInfrastructure7ProblemDefinition, l6ExistentialInfrastructure8ProblemDefinition, l6ExistentialInfrastructure9ProblemDefinition, l6ExistentialInfrastructure10ProblemDefinition, l6ExistentialInfrastructure11ProblemDefinition, l6ExistentialInfrastructure12ProblemDefinition, l6ExistentialInfrastructure13ProblemDefinition, l6ExistentialInfrastructure14ProblemDefinition, l6ExistentialInfrastructure15ProblemDefinition, l6ExistentialInfrastructure16ProblemDefinition, l6ExistentialInfrastructure17ProblemDefinition } from './generated-all/existential-infrastructureAllProblems';
-import { tutorialSimpleBlogProblemDefinition } from './tutorialSimpleBlog';
-import { tutorialImageHostingProblemDefinition } from './tutorialImageHosting';
-import { tutorialRealtimeChatProblemDefinition } from './tutorialRealtimeChat';
-import { redditCommentSystemProblemDefinition } from './redditCommentSystem';
-import { staticContentCdnProblemDefinition } from './staticContentCdn';
-import { basicMessageQueueProblemDefinition } from './basicMessageQueue';
-import { basicDatabaseDesignProblemDefinition } from './basicDatabaseDesign';
-import { sessionStoreBasicProblemDefinition, databaseQueryCacheProblemDefinition, apiRateLimitCacheProblemDefinition, productCatalogCacheProblemDefinition } from './cachingProblems';
-// Note: gamingLeaderboardCacheProblemDefinition, geoLocationCacheProblemDefinition, etc. are imported from generated-all/cachingAllProblems below
-import { realtimeNotificationsProblemDefinition, basicEventLogProblemDefinition, simplePubsubProblemDefinition, realtimeChatMessagesProblemDefinition } from './streamingProblems';
-import { nosqlBasicsProblemDefinition, keyValueStoreProblemDefinition, productCatalogProblemDefinition, objectStorageSystemProblemDefinition } from './storageProblems';
-import { basicApiGatewayProblemDefinition, simpleRateLimiterProblemDefinition, authenticationGatewayProblemDefinition, graphqlGatewayProblemDefinition } from './gatewayProblems';
-import { basicTextSearchProblemDefinition, autocompleteSearchProblemDefinition, facetedSearchProblemDefinition, geoSearchProblemDefinition } from './searchProblems';
-import { basicMultiRegionProblemDefinition, activeActiveRegionsProblemDefinition, globalCdnProblemDefinition, crossRegionDrProblemDefinition } from './multiregionProblems';
+
+// Note: Individual problem definitions that were previously imported here are now imported from generated-all files above
 
 // Generated Problems (232 total)
 import { multiTenantSaasCacheProblemDefinition, cmsCacheProblemDefinition, authTokenCacheProblemDefinition, pricingEngineCacheProblemDefinition, recommendationEngineCacheProblemDefinition, rtbAdCacheProblemDefinition, gamingMatchmakingCacheProblemDefinition, iotDeviceCacheProblemDefinition, globalInventoryCacheProblemDefinition, hybridCdnCacheProblemDefinition, globalInventoryMasteryProblemDefinition, financialTradingCacheProblemDefinition, gameAssetCdnMasteryProblemDefinition, sportsBettingCacheProblemDefinition, autonomousVehicleCacheProblemDefinition, stockMarketDataCacheProblemDefinition, multiRegionSocialCacheProblemDefinition, healthcareRecordsCacheProblemDefinition, supplyChainCacheProblemDefinition, analyticsDashboardCacheProblemDefinition, configCacheBasicProblemDefinition, gamingLeaderboardCacheProblemDefinition, geoLocationCacheProblemDefinition, socialFeedCacheProblemDefinition, videoStreamingCacheProblemDefinition, searchSuggestionCacheProblemDefinition, newsAggregatorCacheProblemDefinition, graphqlCacheProblemDefinition, shoppingCartCacheProblemDefinition } from './generated-all/cachingAllProblems';

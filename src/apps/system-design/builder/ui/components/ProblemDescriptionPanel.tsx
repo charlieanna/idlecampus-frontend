@@ -86,47 +86,6 @@ export function ProblemDescriptionPanel({ challenge }: ProblemDescriptionPanelPr
         </div>
       </div>
 
-      {/* Test Scenarios - What gets validated */}
-      <div className="mb-6 bg-white border border-gray-200 rounded-lg p-4">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">📋 Test Scenarios</h3>
-        <p className="text-xs text-gray-600 mb-3">Your design will be validated against these scenarios:</p>
-
-        <div className="space-y-3">
-          <div>
-            <div className="text-xs font-medium text-purple-700 mb-2">Phase 1: Functional Requirements</div>
-            <div className="text-sm text-gray-700">
-              <p className="mb-2">Design a system that correctly implements these core features:</p>
-              <ul className="space-y-1.5 ml-4">
-                {challenge.testCases
-                  .filter(tc => tc.type === 'functional')
-                  .map((tc, idx) => (
-                    <li key={idx} className="flex items-start">
-                      <span className="text-purple-500 mr-2">✓</span>
-                      <span>{tc.description}</span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="pt-2 border-t border-gray-200">
-            <div className="text-xs font-medium text-purple-700 mb-2">Phase 2: Non-Functional Requirements</div>
-            <div className="text-sm text-gray-700">
-              <ul className="space-y-1.5 ml-4">
-                {challenge.testCases
-                  .filter(tc => tc.type !== 'functional')
-                  .map((tc, idx) => (
-                    <li key={idx} className="flex items-start">
-                      <span className="text-purple-500 mr-2">✓</span>
-                      <span>{tc.description}</span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Hint */}
       <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <div className="text-xs font-medium text-blue-700 mb-1">💡 Hint</div>

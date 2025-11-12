@@ -5,7 +5,6 @@ import 'reactflow/dist/style.css';
 import { Challenge, Solution, TestResult } from '../types/testCase';
 import { SystemGraph } from '../types/graph';
 import { challenges } from '../challenges';
-import { ChallengeSelector } from './components/ChallengeSelector';
 import { DesignCanvas, getComponentInfo, getDefaultConfig } from './components/DesignCanvas';
 import { ProblemDescriptionPanel } from './components/ProblemDescriptionPanel';
 import { SubmissionResultsPanel } from './components/SubmissionResultsPanel';
@@ -58,8 +57,13 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const navigate = useNavigate();
 
   // Find challenge by ID or default to first challenge
+  // Try both the original ID and with hyphens/underscores swapped
+  // (some challenges use underscores, some use hyphens)
   const initialChallenge = challengeId
-    ? challenges.find(c => c.id === challengeId) || challenges[0]
+    ? challenges.find(c => c.id === challengeId) ||
+      challenges.find(c => c.id === challengeId.replace(/-/g, '_')) ||
+      challenges.find(c => c.id === challengeId.replace(/_/g, '-')) ||
+      challenges[0]
     : challenges[0];
 
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
@@ -394,23 +398,32 @@ def expand(code: str, store: dict) -> str:
       {/* Top Bar */}
       <div className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-4">
-          {/* Back to Catalog Button */}
+          {/* Back to All Problems Button */}
           <button
             onClick={() => navigate('/system-design')}
-            className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-            title="Back to problem catalog"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors shadow-sm"
+            title="View all problems"
           >
-            ← Catalog
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+            All Problems
           </button>
 
-          <h1 className="text-2xl font-bold text-gray-900">
-            🏗️ System Design Builder
-          </h1>
-          <ChallengeSelector
-            challenges={challenges}
-            selectedChallenge={selectedChallenge}
-            onSelectChallenge={handleChallengeSelect}
-          />
+          <div className="flex items-center gap-3">
+            <h1 className="text-xl font-bold text-gray-900">
+              🏗️ System Design Builder
+            </h1>
+            <span className="text-gray-300">|</span>
+            <div className="flex flex-col">
+              <span className="text-sm font-semibold text-gray-900">
+                {selectedChallenge?.title}
+              </span>
+              <span className="text-xs text-gray-500 capitalize">
+                {selectedChallenge?.difficulty}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
