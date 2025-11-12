@@ -1,9 +1,11 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Instagram - Photo Sharing Platform
- * Level 1 ONLY: Brute force connectivity test
+ * Comprehensive FR and NFR scenarios
  */
 export const instagramProblemDefinition: ProblemDefinition = {
   id: 'instagram',
@@ -28,6 +30,14 @@ export const instagramProblemDefinition: ProblemDefinition = {
         type: 'object_storage',
         reason: 'Need to store photos and videos (large files)',
       },
+      {
+        type: 'cdn',
+        reason: 'Need CDN for fast global image delivery',
+      },
+      {
+        type: 'cache',
+        reason: 'Need caching for feed performance',
+      },
     ],
     mustConnect: [
       {
@@ -44,6 +54,16 @@ export const instagramProblemDefinition: ProblemDefinition = {
         from: 'compute',
         to: 'object_storage',
         reason: 'App server needs to upload/retrieve media files',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'App server caches feeds and user data',
+      },
+      {
+        from: 'cdn',
+        to: 'object_storage',
+        reason: 'CDN pulls images from object storage',
       },
     ],
     dataModel: {
@@ -63,21 +83,7 @@ export const instagramProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: [
-    {
-      name: 'Level 1: The Brute Force Test - Does It Even Work?',
-      description: 'Like algorithm brute force: ignore performance, just verify connectivity. Client → App → Database → S3 path exists. No optimization needed.',
-      traffic: {
-        rps: 0.1,
-        readWriteRatio: 0.5,
-        avgFileSize: 2, // 2MB photos
-      },
-      passCriteria: {
-        maxLatency: 30000,
-        maxErrorRate: 0.99,
-      },
-    },
-  ],
+  scenarios: generateScenarios('instagram', problemConfigs.instagram),
 
   validators: [
     {
