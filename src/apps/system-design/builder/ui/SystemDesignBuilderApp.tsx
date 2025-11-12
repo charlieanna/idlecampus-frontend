@@ -12,6 +12,7 @@ import { SubmissionResultsPanel } from './components/SubmissionResultsPanel';
 import { ComponentPalette } from './components/ComponentPalette';
 import { ReferenceSolutionPanel } from './components/ReferenceSolutionPanel';
 import { EnhancedInspector } from './components/EnhancedInspector';
+import { ComponentJustificationModal } from './components/ComponentJustificationModal';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 import { allProblemDefinitions } from '../challenges/definitions';
@@ -128,6 +129,21 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const handleSubmit = async () => {
     if (!selectedChallenge) return;
 
+    // Validate that all non-client components have justifications
+    const componentsWithoutJustification = systemGraph.components.filter(
+      comp => comp.type !== 'client' && !comp.config?.justification?.trim()
+    );
+
+    if (componentsWithoutJustification.length > 0) {
+      const componentNames = componentsWithoutJustification
+        .map(comp => comp.config?.displayName || comp.type)
+        .join(', ');
+      alert(
+        `⚠️ Missing Justifications\n\nPlease provide justifications for the following components before submitting:\n\n${componentNames}\n\nClick on each component to add a justification explaining why you added it.`
+      );
+      return;
+    }
+
     // Get the problem definition for this challenge
     const problemDefinition = getProblemDefinition(selectedChallenge.id);
     if (!problemDefinition) {
@@ -202,6 +218,17 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const handleUpdateConfig = (nodeId: string, config: Record<string, any>) => {
     const updatedComponents = systemGraph.components.map((comp) =>
       comp.id === nodeId ? { ...comp, config: { ...comp.config, ...config } } : comp
+    );
+
+    setSystemGraph({
+      ...systemGraph,
+      components: updatedComponents,
+    });
+  };
+
+  const handleSaveJustification = (nodeId: string, justification: string) => {
+    const updatedComponents = systemGraph.components.map((comp) =>
+      comp.id === nodeId ? { ...comp, config: { ...comp.config, justification } } : comp
     );
 
     setSystemGraph({
@@ -511,6 +538,18 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
           );
         })}
       </div>
+
+      {/* Component Justification Modal */}
+      {selectedNode && selectedNode.data.componentType !== 'client' && (
+        <ComponentJustificationModal
+          node={selectedNode}
+          initialJustification={
+            systemGraph.components.find(c => c.id === selectedNode.id)?.config?.justification || ''
+          }
+          onSave={handleSaveJustification}
+          onClose={() => setSelectedNode(null)}
+        />
+      )}
 
       {/* Reference Solution Modal */}
       {showSolutionPanel && selectedChallenge?.testCases[0]?.solution && (
