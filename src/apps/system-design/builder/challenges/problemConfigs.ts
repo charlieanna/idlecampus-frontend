@@ -440,7 +440,39 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
 
   // ========== EXTRACTED PROBLEMS (from extracted-problems/) ==========
 
-  // CACHING
+  // TUTORIALS (3)
+  'tutorial-simple-blog': {
+    baseRps: 1000, // Scale 100 -> 1000
+    readRatio: 0.9, // 90% reads
+    maxLatency: 200,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'tutorial-intermediate-images': {
+    baseRps: 10000, // 10k requests/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 100,
+    availability: 0.9999,
+    avgFileSize: 5, // 5MB images
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: true,
+  },
+
+  'tutorial-advanced-chat': {
+    baseRps: 50000, // 50k messages/sec
+    readRatio: 0.8, // 80% reads
+    maxLatency: 500,
+    availability: 0.9999,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: true,
+  },
+
+  // CACHING (2)
   'reddit-comment-system': {
     baseRps: 5000000, // 5M reads/sec normal
     readRatio: 0.99, // 99% reads (viewing comments)
@@ -451,7 +483,17 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  // STREAMING
+  'static-content-cdn': {
+    baseRps: 20000, // 20k requests/sec
+    readRatio: 1.0, // 100% reads (static assets)
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: true,
+    hasCache: false,
+    hasObjectStorage: true,
+  },
+
+  // STREAMING (1)
   'basic-message-queue': {
     baseRps: 5000, // 5k messages/sec
     readRatio: 0.5, // Balanced read/write (pub/sub)
@@ -462,7 +504,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  // STORAGE
+  // STORAGE (1)
   'basic-database-design': {
     baseRps: 11000, // 10k reads + 1k writes
     readRatio: 0.91, // 91% reads

@@ -62,8 +62,14 @@ export { ticketmasterProblemDefinition } from './ticketmaster';
 export { bookingcomProblemDefinition } from './bookingcom';
 export { weatherapiProblemDefinition } from './weatherapi';
 
-// Extracted Problems - Caching (1)
+// Extracted Problems - Tutorials (3)
+export { tutorialSimpleBlogProblemDefinition } from './tutorialSimpleBlog';
+export { tutorialImageHostingProblemDefinition } from './tutorialImageHosting';
+export { tutorialRealtimeChatProblemDefinition } from './tutorialRealtimeChat';
+
+// Extracted Problems - Caching (2)
 export { redditCommentSystemProblemDefinition } from './redditCommentSystem';
+export { staticContentCdnProblemDefinition } from './staticContentCdn';
 
 // Extracted Problems - Streaming (1)
 export { basicMessageQueueProblemDefinition } from './basicMessageQueue';
@@ -113,7 +119,11 @@ import { steamProblemDefinition } from './steam';
 import { ticketmasterProblemDefinition } from './ticketmaster';
 import { bookingcomProblemDefinition } from './bookingcom';
 import { weatherapiProblemDefinition } from './weatherapi';
+import { tutorialSimpleBlogProblemDefinition } from './tutorialSimpleBlog';
+import { tutorialImageHostingProblemDefinition } from './tutorialImageHosting';
+import { tutorialRealtimeChatProblemDefinition } from './tutorialRealtimeChat';
 import { redditCommentSystemProblemDefinition } from './redditCommentSystem';
+import { staticContentCdnProblemDefinition } from './staticContentCdn';
 import { basicMessageQueueProblemDefinition } from './basicMessageQueue';
 import { basicDatabaseDesignProblemDefinition } from './basicDatabaseDesign';
 
@@ -174,8 +184,12 @@ export const allProblemDefinitions: ProblemDefinition[] = [
   bookingcomProblemDefinition,
   weatherapiProblemDefinition,
 
-  // Extracted Problems (3)
+  // Extracted Problems (7)
+  tutorialSimpleBlogProblemDefinition,
+  tutorialImageHostingProblemDefinition,
+  tutorialRealtimeChatProblemDefinition,
   redditCommentSystemProblemDefinition,
+  staticContentCdnProblemDefinition,
   basicMessageQueueProblemDefinition,
   basicDatabaseDesignProblemDefinition,
 ];

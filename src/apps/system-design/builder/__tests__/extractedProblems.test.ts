@@ -33,8 +33,40 @@ describe('Extracted Problems - Integration Tests', () => {
       expect(dbProblem?.title).toBe('Basic RDBMS Design');
     });
 
-    it('should have expected total count of problems (40 original + 3 extracted)', () => {
-      expect(allProblemDefinitions.length).toBe(43);
+    it('should include Tutorial Simple Blog problem', () => {
+      const tutorialProblem = allProblemDefinitions.find(
+        (p) => p.id === 'tutorial-simple-blog'
+      );
+      expect(tutorialProblem).toBeDefined();
+      expect(tutorialProblem?.title).toContain('Tutorial');
+    });
+
+    it('should include Tutorial Image Hosting problem', () => {
+      const tutorialProblem = allProblemDefinitions.find(
+        (p) => p.id === 'tutorial-intermediate-images'
+      );
+      expect(tutorialProblem).toBeDefined();
+      expect(tutorialProblem?.title).toContain('Image');
+    });
+
+    it('should include Tutorial Real-Time Chat problem', () => {
+      const tutorialProblem = allProblemDefinitions.find(
+        (p) => p.id === 'tutorial-advanced-chat'
+      );
+      expect(tutorialProblem).toBeDefined();
+      expect(tutorialProblem?.title).toContain('Chat');
+    });
+
+    it('should include Static Content CDN problem', () => {
+      const cdnProblem = allProblemDefinitions.find(
+        (p) => p.id === 'static-content-cdn'
+      );
+      expect(cdnProblem).toBeDefined();
+      expect(cdnProblem?.title).toBe('Static Content CDN');
+    });
+
+    it('should have expected total count of problems (40 original + 7 extracted)', () => {
+      expect(allProblemDefinitions.length).toBe(47);
     });
   });
 
@@ -60,7 +92,7 @@ describe('Extracted Problems - Integration Tests', () => {
 
   describe('Generated Challenges', () => {
     it('should generate challenges for all problem definitions', () => {
-      expect(generatedChallenges.length).toBe(43);
+      expect(generatedChallenges.length).toBe(47);
     });
 
     it('should generate challenge for Reddit Comment System', () => {
