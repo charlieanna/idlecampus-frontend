@@ -62,6 +62,15 @@ export { ticketmasterProblemDefinition } from './ticketmaster';
 export { bookingcomProblemDefinition } from './bookingcom';
 export { weatherapiProblemDefinition } from './weatherapi';
 
+// Extracted Problems - Caching (1)
+export { redditCommentSystemProblemDefinition } from './redditCommentSystem';
+
+// Extracted Problems - Streaming (1)
+export { basicMessageQueueProblemDefinition } from './basicMessageQueue';
+
+// Extracted Problems - Storage (1)
+export { basicDatabaseDesignProblemDefinition } from './basicDatabaseDesign';
+
 // Array of all problem definitions
 import { ProblemDefinition } from '../../types/problemDefinition';
 import { instagramProblemDefinition } from './instagram';
@@ -104,6 +113,9 @@ import { steamProblemDefinition } from './steam';
 import { ticketmasterProblemDefinition } from './ticketmaster';
 import { bookingcomProblemDefinition } from './bookingcom';
 import { weatherapiProblemDefinition } from './weatherapi';
+import { redditCommentSystemProblemDefinition } from './redditCommentSystem';
+import { basicMessageQueueProblemDefinition } from './basicMessageQueue';
+import { basicDatabaseDesignProblemDefinition } from './basicDatabaseDesign';
 
 export const allProblemDefinitions: ProblemDefinition[] = [
   // Social Media (10)
@@ -161,4 +173,9 @@ export const allProblemDefinitions: ProblemDefinition[] = [
   ticketmasterProblemDefinition,
   bookingcomProblemDefinition,
   weatherapiProblemDefinition,
+
+  // Extracted Problems (3)
+  redditCommentSystemProblemDefinition,
+  basicMessageQueueProblemDefinition,
+  basicDatabaseDesignProblemDefinition,
 ];

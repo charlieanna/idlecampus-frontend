@@ -437,4 +437,39 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasCache: true,
     hasObjectStorage: false,
   },
+
+  // ========== EXTRACTED PROBLEMS (from extracted-problems/) ==========
+
+  // CACHING
+  'reddit-comment-system': {
+    baseRps: 5000000, // 5M reads/sec normal
+    readRatio: 0.99, // 99% reads (viewing comments)
+    maxLatency: 100,
+    availability: 0.9999,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  // STREAMING
+  'basic-message-queue': {
+    baseRps: 5000, // 5k messages/sec
+    readRatio: 0.5, // Balanced read/write (pub/sub)
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  // STORAGE
+  'basic-database-design': {
+    baseRps: 11000, // 10k reads + 1k writes
+    readRatio: 0.91, // 91% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
 };
