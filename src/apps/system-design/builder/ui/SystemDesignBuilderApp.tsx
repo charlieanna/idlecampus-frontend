@@ -10,7 +10,6 @@ import { DesignCanvas, getComponentInfo, getDefaultConfig } from './components/D
 import { ProblemDescriptionPanel } from './components/ProblemDescriptionPanel';
 import { SubmissionResultsPanel } from './components/SubmissionResultsPanel';
 import { ComponentPalette } from './components/ComponentPalette';
-import { InspectorModal } from './components/InspectorModal';
 import { ReferenceSolutionPanel } from './components/ReferenceSolutionPanel';
 import { EnhancedInspector } from './components/EnhancedInspector';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
@@ -512,17 +511,6 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
           );
         })}
       </div>
-
-      {/* Inspector Modal */}
-      {selectedNode && (
-        <InspectorModal
-          node={selectedNode}
-          systemGraph={systemGraph}
-          onUpdateConfig={handleUpdateConfig}
-          onClose={() => setSelectedNode(null)}
-          onDelete={handleDeleteComponent}
-        />
-      )}
 
       {/* Reference Solution Modal */}
       {showSolutionPanel && selectedChallenge?.testCases[0]?.solution && (
