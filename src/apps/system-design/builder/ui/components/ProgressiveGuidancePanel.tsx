@@ -14,6 +14,7 @@ export function ProgressiveGuidancePanel({
   testResult,
   currentComponentCount,
   onShowSolution,
+  onShowDetailedAnalysis,
 }: ProgressiveGuidancePanelProps) {
   const [showHint, setShowHint] = useState(false);
 
@@ -106,14 +107,14 @@ export function ProgressiveGuidancePanel({
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600">Max Latency:</span>
               <span className={`font-semibold ${
-                testResult && testResult.metrics.p99Latency <= testCase.passCriteria.maxP99Latency
+                testResult && testResult.metrics && (testResult.metrics.p99Latency ?? 0) <= testCase.passCriteria.maxP99Latency
                   ? 'text-green-600'
                   : 'text-gray-900'
               }`}>
                 &lt; {testCase.passCriteria.maxP99Latency}ms
-                {testResult && (
+                {testResult && testResult.metrics && testResult.metrics.p99Latency != null && (
                   <span className="ml-2 text-xs">
-                    (yours: {testResult.metrics.p99Latency.toFixed(0)}ms)
+                    (yours: {(testResult.metrics.p99Latency ?? 0).toFixed(0)}ms)
                   </span>
                 )}
               </span>
@@ -124,14 +125,14 @@ export function ProgressiveGuidancePanel({
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600">Max Cost:</span>
               <span className={`font-semibold ${
-                testResult && testResult.metrics.totalCost <= testCase.passCriteria.maxMonthlyCost
+                testResult && testResult.metrics && (testResult.metrics.monthlyCost ?? 0) <= testCase.passCriteria.maxMonthlyCost
                   ? 'text-green-600'
                   : 'text-gray-900'
               }`}>
                 &lt; ${testCase.passCriteria.maxMonthlyCost}/mo
-                {testResult && (
+                {testResult && testResult.metrics && testResult.metrics.monthlyCost != null && (
                   <span className="ml-2 text-xs">
-                    (yours: ${testResult.metrics.totalCost.toFixed(0)})
+                    (yours: ${(testResult.metrics.monthlyCost ?? 0).toFixed(0)})
                   </span>
                 )}
               </span>

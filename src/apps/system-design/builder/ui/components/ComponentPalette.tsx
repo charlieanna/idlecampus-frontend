@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 interface ComponentPaletteProps {
   availableComponents: string[];
   onAddComponent: (componentType: string) => void;
@@ -30,6 +32,8 @@ export function ComponentPalette({
   availableComponents,
   onAddComponent,
 }: ComponentPaletteProps) {
+  const [draggingComponent, setDraggingComponent] = useState<string | null>(null);
+
   // Group components by category
   const componentsByCategory = availableComponents.reduce((acc, comp) => {
     const category = COMPONENT_INFO[comp]?.category || 'Other';
@@ -37,6 +41,16 @@ export function ComponentPalette({
     acc[category].push(comp);
     return acc;
   }, {} as Record<string, string[]>);
+
+  const handleDragStart = (event: React.DragEvent, componentType: string) => {
+    event.dataTransfer.setData('application/reactflow', componentType);
+    event.dataTransfer.effectAllowed = 'move';
+    setDraggingComponent(componentType);
+  };
+
+  const handleDragEnd = () => {
+    setDraggingComponent(null);
+  };
 
   return (
     <div className="w-56 bg-white border-r border-gray-200 p-4 overflow-y-auto">
@@ -51,11 +65,18 @@ export function ComponentPalette({
             <div className="space-y-1">
               {components.map((comp) => {
                 const info = COMPONENT_INFO[comp];
+                const isDragging = draggingComponent === comp;
                 return (
                   <button
                     key={comp}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, comp)}
+                    onDragEnd={handleDragEnd}
                     onClick={() => onAddComponent(comp)}
-                    className="w-full px-3 py-2 text-left text-sm rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-colors border border-gray-200 hover:border-blue-300 flex items-center gap-2"
+                    className={`w-full px-3 py-2 text-left text-sm rounded-lg hover:bg-blue-50 hover:text-blue-700 transition-all border border-gray-200 hover:border-blue-300 flex items-center gap-2 cursor-move ${
+                      isDragging ? 'opacity-50 scale-95' : ''
+                    }`}
+                    title="Click to add or drag to canvas"
                   >
                     <span className="text-lg">{info.icon}</span>
                     <span>{info.label}</span>
@@ -76,7 +97,7 @@ export function ComponentPalette({
       <div className="mt-6 pt-6 border-t border-gray-200">
         <div className="text-xs text-gray-500 space-y-1">
           <p className="font-medium">💡 Tip:</p>
-          <p>Click components to add them to the canvas. Connect them by dragging from one to another.</p>
+          <p>Drag components to the canvas or click to add them. Connect components by dragging from one to another.</p>
         </div>
       </div>
     </div>

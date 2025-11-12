@@ -50,31 +50,35 @@ function CustomNode({ data, selected }: NodeProps) {
   const componentType = data.componentType || 'app_server';
   const style = COMPONENT_STYLES[componentType] || COMPONENT_STYLES.app_server;
   const displayName = data.displayName || data.label;
+  const isClient = componentType === 'client';
 
   return (
     <div
-      className={`px-2 py-1.5 rounded border-2 shadow-sm transition-all min-w-[90px] ${
+      className={`px-1.5 py-1 rounded border shadow-sm transition-all min-w-[70px] ${
         style.bgColor
       } ${style.borderColor} ${
         selected ? 'ring-2 ring-blue-500 ring-offset-1 shadow-md' : 'hover:shadow-md'
-      }`}
+      } ${isClient ? 'cursor-default' : ''}`}
     >
-      {/* Input Handle (Top) */}
-      <Handle
-        type="target"
-        position={Position.Top}
-        className="w-2 h-2 !bg-blue-500 !border-2 !border-white"
-      />
+      {/* Input Handle (Top) - Hidden for client since it's the source */}
+      {!isClient && (
+        <Handle
+          type="target"
+          position={Position.Top}
+          className="w-1.5 h-1.5 !bg-blue-500 !border !border-white"
+        />
+      )}
 
       {/* Node Content */}
-      <div className="flex items-center gap-1.5">
-        <span className="text-lg">{style.icon}</span>
+      <div className="flex items-center gap-1">
+        <span className="text-sm">{style.icon}</span>
         <div className="flex-1 min-w-0">
-          <div className={`font-semibold text-xs ${style.color} truncate`}>
+          <div className={`font-semibold text-[10px] ${style.color} truncate flex items-center gap-0.5`}>
             {displayName}
+            {isClient && <span className="text-[8px]">🔒</span>}
           </div>
           {data.subtitle && (
-            <div className="text-[10px] text-gray-500 truncate">{data.subtitle}</div>
+            <div className="text-[8px] text-gray-500 truncate">{data.subtitle}</div>
           )}
         </div>
       </div>
@@ -83,7 +87,7 @@ function CustomNode({ data, selected }: NodeProps) {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-2 h-2 !bg-green-500 !border-2 !border-white"
+        className="w-1.5 h-1.5 !bg-green-500 !border !border-white"
       />
 
       {/* Left Handle */}
@@ -91,7 +95,7 @@ function CustomNode({ data, selected }: NodeProps) {
         type="target"
         position={Position.Left}
         id="left"
-        className="w-2 h-2 !bg-blue-500 !border-2 !border-white"
+        className="w-1.5 h-1.5 !bg-blue-500 !border !border-white"
       />
 
       {/* Right Handle */}
@@ -99,7 +103,7 @@ function CustomNode({ data, selected }: NodeProps) {
         type="source"
         position={Position.Right}
         id="right"
-        className="w-2 h-2 !bg-green-500 !border-2 !border-white"
+        className="w-1.5 h-1.5 !bg-green-500 !border !border-white"
       />
     </div>
   );

@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -9,9 +9,9 @@ import ReactFlow, {
   Controls,
   Background,
   BackgroundVariant,
-  MiniMap,
   NodeTypes,
   MarkerType,
+  ReactFlowInstance,
 } from 'reactflow';
 import { SystemGraph } from '../../types/graph';
 import CustomNode from './CustomNode';
@@ -50,6 +50,9 @@ export function DesignCanvas({
 }: DesignCanvasProps) {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
+  const [isDraggingOver, setIsDraggingOver] = useState(false);
+  const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
+  const reactFlowWrapper = useRef<HTMLDivElement>(null);
 
   // Sync nodes with systemGraph components
   useEffect(() => {
@@ -65,17 +68,22 @@ export function DesignCanvas({
       // Create nodes for new components
       const newNodes: Node[] = newComponents.map((comp, index) => {
         const componentInfo = getComponentInfo(comp.type);
+        const isClient = comp.type === 'client';
         return {
           id: comp.id,
           type: 'custom',
-          position: {
-            x: 250 + (currentNodes.length + index) * 50,
-            y: 150 + (currentNodes.length + index) * 30,
-          },
+          position: isClient
+            ? { x: 50, y: 250 } // Fixed position for client on the left, vertically centered
+            : {
+                x: 300 + (currentNodes.length + index) * 40,
+                y: 100 + (currentNodes.length + index) * 25,
+              },
+          draggable: !isClient, // Client is not draggable
+          selectable: isClient, // Client is selectable (for info, but locked position)
           data: {
             label: componentInfo.label,
             displayName: componentInfo.displayName,
-            subtitle: componentInfo.subtitle,
+            subtitle: isClient ? 'User Traffic Source' : componentInfo.subtitle,
             componentType: comp.type,
           },
         };
@@ -128,8 +136,86 @@ export function DesignCanvas({
     onNodeSelect(null);
   }, [onNodeSelect]);
 
+  // Capture ReactFlow instance when it initializes
+  const onInit = useCallback((instance: ReactFlowInstance) => {
+    reactFlowInstanceRef.current = instance;
+  }, []);
+
+  // Handle drag over
+  const onDragOver = useCallback((event: React.DragEvent) => {
+    event.preventDefault();
+    event.dataTransfer.dropEffect = 'move';
+    setIsDraggingOver(true);
+  }, []);
+
+  const onDragLeave = useCallback(() => {
+    setIsDraggingOver(false);
+  }, []);
+
+  // Handle drop
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      setIsDraggingOver(false);
+
+      const componentType = event.dataTransfer.getData('application/reactflow');
+
+      if (!componentType || !reactFlowWrapper.current || !reactFlowInstanceRef.current) {
+        return;
+      }
+
+      // Get the position relative to the ReactFlow canvas
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+      const position = reactFlowInstanceRef.current.screenToFlowPosition({
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
+      });
+
+      // Create new component with the drop position
+      const id = `${componentType}_${Date.now()}`;
+      const componentInfo = getComponentInfo(componentType);
+
+      const newComponent = {
+        id,
+        type: componentType as any,
+        config: getDefaultConfig(componentType),
+      };
+
+      // Update system graph
+      onSystemGraphChange({
+        ...systemGraph,
+        components: [...systemGraph.components, newComponent],
+      });
+
+      // Manually add node at drop position (will be synced by useEffect but this is faster)
+      setNodes((nds) => [
+        ...nds,
+        {
+          id,
+          type: 'custom',
+          position,
+          data: {
+            label: componentInfo.label,
+            displayName: componentInfo.displayName,
+            subtitle: componentInfo.subtitle,
+            componentType: componentType,
+          },
+        },
+      ]);
+    },
+    [systemGraph, onSystemGraphChange, setNodes]
+  );
+
   return (
-    <div className="flex-1 bg-gradient-to-br from-slate-50 to-slate-100 relative">
+    <div
+      ref={reactFlowWrapper}
+      className={`flex-1 w-full h-full bg-gradient-to-br from-slate-50 to-slate-100 relative transition-all ${
+        isDraggingOver ? 'ring-4 ring-blue-400 ring-inset' : ''
+      }`}
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+    >
         <ReactFlow
           nodes={nodes}
           edges={edges}
@@ -138,6 +224,7 @@ export function DesignCanvas({
           onConnect={onConnect}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
+          onInit={onInit}
           nodeTypes={nodeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
           connectionLineStyle={{ stroke: '#3b82f6', strokeWidth: 2 }}
@@ -152,22 +239,6 @@ export function DesignCanvas({
             color="#cbd5e1"
           />
           <Controls showInteractive={false} />
-          <MiniMap
-            nodeColor={(node) => {
-              const type = node.data.componentType || 'app_server';
-              const colors: Record<string, string> = {
-                client: '#6b7280',
-                load_balancer: '#3b82f6',
-                app_server: '#8b5cf6',
-                postgresql: '#6366f1',
-                redis: '#ef4444',
-                cdn: '#10b981',
-                s3: '#f97316',
-              };
-              return colors[type] || '#8b5cf6';
-            }}
-            maskColor="rgba(0, 0, 0, 0.1)"
-          />
         </ReactFlow>
       </div>
     );

@@ -3,9 +3,12 @@ import { Node } from 'reactflow';
 import { SystemGraph } from '../../types/graph';
 
 interface InspectorProps {
-  selectedNode: Node | null;
+  node?: Node | null;
+  selectedNode?: Node | null;
   systemGraph: SystemGraph;
   onUpdateConfig: (nodeId: string, config: Record<string, any>) => void;
+  onBack?: () => void;
+  isModal?: boolean;
 }
 
 interface ConfigPreset {
@@ -16,13 +19,18 @@ interface ConfigPreset {
 }
 
 export function EnhancedInspector({
+  node,
   selectedNode,
   systemGraph,
   onUpdateConfig,
+  onBack,
+  isModal = false,
 }: InspectorProps) {
+  // Support both 'node' and 'selectedNode' props for backward compatibility
+  const activeNode = node || selectedNode;
   const [expandedSection, setExpandedSection] = useState<string>('basic');
 
-  if (!selectedNode) {
+  if (!activeNode) {
     return (
       <div className="p-6">
         <h2 className="text-lg font-semibold text-gray-900 mb-2">Inspector</h2>
@@ -39,15 +47,15 @@ export function EnhancedInspector({
     );
   }
 
-  const component = systemGraph.components.find((c) => c.id === selectedNode.id);
+  const component = systemGraph.components.find((c) => c.id === activeNode.id);
   if (!component) return null;
 
   const handleChange = (key: string, value: any) => {
-    onUpdateConfig(selectedNode.id, { ...component.config, [key]: value });
+    onUpdateConfig(activeNode.id, { ...component.config, [key]: value });
   };
 
   const applyPreset = (preset: Record<string, any>) => {
-    onUpdateConfig(selectedNode.id, { ...component.config, ...preset });
+    onUpdateConfig(activeNode.id, { ...component.config, ...preset });
   };
 
   // Calculate estimated cost for current config
@@ -84,25 +92,37 @@ export function EnhancedInspector({
 
   return (
     <div className="h-full flex flex-col">
-      {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex items-start justify-between">
-          <div>
-            <h2 className="text-lg font-semibold text-gray-900">
-              {selectedNode.data.label}
-            </h2>
-            <p className="text-xs text-gray-500 mt-1">
-              {getComponentTypeLabel(component.type)}
-            </p>
-          </div>
-          <div className="text-right">
-            <div className="text-sm font-semibold text-green-600">
-              ${estimatedCost.toFixed(0)}/mo
+      {/* Header - Only show if not in modal (modal has its own header) */}
+      {!isModal && (
+        <div className="p-6 border-b border-gray-200">
+          <div className="flex items-start justify-between">
+            <div>
+              <h2 className="text-lg font-semibold text-gray-900">
+                {activeNode.data.label}
+              </h2>
+              <p className="text-xs text-gray-500 mt-1">
+                {getComponentTypeLabel(component.type)}
+              </p>
             </div>
-            <div className="text-xs text-gray-500">Estimated cost</div>
+            <div className="text-right">
+              <div className="text-sm font-semibold text-green-600">
+                ${estimatedCost.toFixed(0)}/mo
+              </div>
+              <div className="text-xs text-gray-500">Estimated cost</div>
+            </div>
           </div>
+
+          {/* Back button - only when not in modal */}
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="mt-4 text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
+            >
+              ← Back to Palette
+            </button>
+          )}
         </div>
-      </div>
+      )}
 
       {/* Configuration Content */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6">

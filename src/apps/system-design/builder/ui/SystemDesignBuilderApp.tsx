@@ -9,7 +9,7 @@ import { DesignCanvas, getComponentInfo, getDefaultConfig } from './components/D
 import { ProgressiveTestSidebar } from './components/ProgressiveTestSidebar';
 import { ProgressiveGuidancePanel } from './components/ProgressiveGuidancePanel';
 import { ComponentPalette } from './components/ComponentPalette';
-import { EnhancedInspector } from './components/EnhancedInspector';
+import { InspectorModal } from './components/InspectorModal';
 import { ReferenceSolutionPanel } from './components/ReferenceSolutionPanel';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
@@ -211,9 +211,9 @@ export default function SystemDesignBuilderApp() {
           </div>
         )}
 
-        {/* Right Panel - Progressive Guidance + Palette/Inspector */}
+        {/* Right Panel - Progressive Guidance + Palette (Always Visible) */}
         <div className={`flex flex-col bg-white border-l border-gray-200 transition-all ${
-          canvasCollapsed ? 'flex-1' : 'w-96'
+          canvasCollapsed ? 'flex-1' : 'w-80'
         }`}>
           {/* Top: Progressive Guidance Panel */}
           {currentTestCase && (
@@ -228,24 +228,25 @@ export default function SystemDesignBuilderApp() {
             </div>
           )}
 
-          {/* Bottom: Component Palette or Inspector */}
+          {/* Bottom: Component Palette (Always Visible) */}
           <div className="flex-1 overflow-y-auto border-t border-gray-200">
-            {selectedNode ? (
-              <EnhancedInspector
-                node={selectedNode}
-                systemGraph={systemGraph}
-                onUpdateConfig={handleUpdateConfig}
-                onBack={handleBackToPalette}
-              />
-            ) : (
-              <ComponentPalette
-                availableComponents={selectedChallenge?.availableComponents || []}
-                onAddComponent={handleAddComponent}
-              />
-            )}
+            <ComponentPalette
+              availableComponents={selectedChallenge?.availableComponents || []}
+              onAddComponent={handleAddComponent}
+            />
           </div>
         </div>
       </div>
+
+      {/* Inspector Modal */}
+      {selectedNode && (
+        <InspectorModal
+          node={selectedNode}
+          systemGraph={systemGraph}
+          onUpdateConfig={handleUpdateConfig}
+          onClose={() => setSelectedNode(null)}
+        />
+      )}
 
       {/* Reference Solution Modal */}
       {showSolutionPanel && currentTestCase?.solution && (

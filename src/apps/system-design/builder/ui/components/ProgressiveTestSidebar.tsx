@@ -212,27 +212,27 @@ export function ProgressiveTestSidebar({
                     )}
 
                     {/* Test Result */}
-                    {result && (
+                    {result && result.metrics && (
                       <div className="mt-3 pt-3 border-t border-gray-200">
                         <div className="grid grid-cols-2 gap-2 text-xs">
                           <div>
                             <div className="text-gray-500">Latency</div>
                             <div className={`font-semibold ${
-                              result.metrics.p99Latency <= (testCase.passCriteria.maxP99Latency || Infinity)
+                              (result.metrics.p99Latency ?? 0) <= (testCase.passCriteria.maxP99Latency || Infinity)
                                 ? 'text-green-600'
                                 : 'text-red-600'
                             }`}>
-                              {result.metrics.p99Latency.toFixed(0)}ms
+                              {(result.metrics.p99Latency ?? 0).toFixed(0)}ms
                             </div>
                           </div>
                           <div>
                             <div className="text-gray-500">Cost</div>
                             <div className={`font-semibold ${
-                              result.metrics.totalCost <= (testCase.passCriteria.maxMonthlyCost || Infinity)
+                              (result.metrics.monthlyCost ?? 0) <= (testCase.passCriteria.maxMonthlyCost || Infinity)
                                 ? 'text-green-600'
                                 : 'text-red-600'
                             }`}>
-                              ${result.metrics.totalCost.toFixed(0)}
+                              ${(result.metrics.monthlyCost ?? 0).toFixed(0)}
                             </div>
                           </div>
                         </div>
