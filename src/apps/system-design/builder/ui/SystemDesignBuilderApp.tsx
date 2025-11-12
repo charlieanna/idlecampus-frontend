@@ -50,6 +50,19 @@ export default function SystemDesignBuilderApp() {
     setShowSolutionPanel(false);
   }, [selectedChallenge?.id]);
 
+  // Keyboard handler for Delete key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.key === 'Delete' || e.key === 'Backspace') && selectedNode) {
+        e.preventDefault();
+        handleDeleteComponent(selectedNode.id);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [selectedNode]);
+
   const handleRunTest = async (testIndex: number) => {
     if (!selectedChallenge) return;
 
@@ -108,6 +121,35 @@ export default function SystemDesignBuilderApp() {
 
   const handleBackToPalette = () => {
     setSelectedNode(null);
+  };
+
+  const handleDeleteComponent = (nodeId: string) => {
+    // Find the component
+    const component = systemGraph.components.find(c => c.id === nodeId);
+
+    // Prevent deletion of client (locked component)
+    if (component?.type === 'client') {
+      alert('Cannot delete the Client component - it is locked');
+      return;
+    }
+
+    // Remove component from components array
+    const updatedComponents = systemGraph.components.filter(c => c.id !== nodeId);
+
+    // Remove all connections involving this component
+    const updatedConnections = systemGraph.connections.filter(
+      conn => conn.from !== nodeId && conn.to !== nodeId
+    );
+
+    setSystemGraph({
+      components: updatedComponents,
+      connections: updatedConnections,
+    });
+
+    // Close inspector if this node was selected
+    if (selectedNode?.id === nodeId) {
+      setSelectedNode(null);
+    }
   };
 
   const handleLoadSolution = (solution: Solution) => {
@@ -245,6 +287,7 @@ export default function SystemDesignBuilderApp() {
           systemGraph={systemGraph}
           onUpdateConfig={handleUpdateConfig}
           onClose={() => setSelectedNode(null)}
+          onDelete={handleDeleteComponent}
         />
       )}
 

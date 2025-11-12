@@ -8,6 +8,7 @@ interface InspectorModalProps {
   systemGraph: SystemGraph;
   onUpdateConfig: (nodeId: string, config: Record<string, any>) => void;
   onClose: () => void;
+  onDelete: (nodeId: string) => void;
 }
 
 export function InspectorModal({
@@ -15,6 +16,7 @@ export function InspectorModal({
   systemGraph,
   onUpdateConfig,
   onClose,
+  onDelete,
 }: InspectorModalProps) {
   // Close on ESC key
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -65,13 +67,36 @@ export function InspectorModal({
           </div>
 
           {/* Content */}
-          <div className="overflow-y-auto max-h-[calc(80vh-80px)]">
+          <div className="overflow-y-auto max-h-[calc(80vh-160px)]">
             <EnhancedInspector
               node={node}
               systemGraph={systemGraph}
               onUpdateConfig={onUpdateConfig}
               isModal={true}
             />
+          </div>
+
+          {/* Footer with Delete button */}
+          <div className="flex justify-between items-center px-6 py-4 border-t border-gray-200 bg-gray-50">
+            {node.data.componentType !== 'client' ? (
+              <button
+                onClick={() => onDelete(node.id)}
+                className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 border border-red-300 rounded transition-colors"
+                title="Delete Node (Delete key)"
+              >
+                🗑️ Delete Node
+              </button>
+            ) : (
+              <div className="text-xs text-gray-500 flex items-center gap-1">
+                🔒 Client component is locked
+              </div>
+            )}
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-100 border border-gray-300 rounded transition-colors"
+            >
+              Close
+            </button>
           </div>
         </motion.div>
       </motion.div>
