@@ -138,13 +138,29 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
 
       try {
         const justification = JSON.parse(justificationStr);
-        // Check all fields are present and have minimum length
-        return !justification.why?.trim() || justification.why.trim().length < 20 ||
-               !justification.benefits?.trim() || justification.benefits.trim().length < 20 ||
-               !justification.alternatives?.trim() || justification.alternatives.trim().length < 20 ||
-               !justification.tradeoffs?.trim() || justification.tradeoffs.trim().length < 20;
+
+        // Helper to validate text fields (15+ words, not repetitive)
+        const validateText = (text: string): boolean => {
+          if (!text?.trim()) return false;
+          const words = text.trim().split(/\s+/).filter(w => w.length > 0);
+          if (words.length < 15) return false;
+
+          // Check for repetitive text
+          const uniqueWords = new Set(words.map(w => w.toLowerCase()));
+          if (uniqueWords.size < words.length * 0.6) return false;
+
+          return true;
+        };
+
+        // Check all fields are present and valid
+        const whyValid = validateText(justification.why);
+        const benefitsValid = validateText(justification.benefits);
+        const alternativesValid = validateText(justification.alternatives);
+        const tradeoffsValid = Array.isArray(justification.tradeoffIds) && justification.tradeoffIds.length >= 2;
+
+        return !whyValid || !benefitsValid || !alternativesValid || !tradeoffsValid;
       } catch {
-        // Legacy format or invalid JSON
+        // Invalid JSON
         return true;
       }
     });
@@ -154,7 +170,7 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
         .map(comp => comp.config?.displayName || comp.type)
         .join(', ');
       alert(
-        `⚠️ Incomplete Justifications\n\nPlease complete all justification fields for the following components before submitting:\n\n${componentNames}\n\nClick on each component to provide:\n• Why you chose it\n• Key benefits\n• Alternatives considered\n• Trade-offs\n\nEach field requires at least 20 characters.`
+        `⚠️ Incomplete Justifications\n\nPlease complete all justification fields for the following components before submitting:\n\n${componentNames}\n\nClick on each component to provide:\n• Why you chose it (15+ words)\n• Key benefits (15+ words)\n• Alternatives considered (15+ words)\n• Trade-offs (select at least 2)\n\nProvide meaningful, non-repetitive explanations.`
       );
       return;
     }

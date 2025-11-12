@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Node } from 'reactflow';
+import { getTradeoffsForComponent, ComponentTradeoff } from '../../data/componentTradeoffs';
 
 interface ComponentJustificationModalProps {
   node: Node;
@@ -13,8 +14,43 @@ interface JustificationData {
   why: string;
   benefits: string;
   alternatives: string;
-  tradeoffs: string;
+  tradeoffIds: string[]; // Changed from freetext to IDs
 }
+
+// Validation helper functions
+const validateText = (text: string, minWords: number = 15): { valid: boolean; error?: string } => {
+  const trimmed = text.trim();
+
+  if (!trimmed) {
+    return { valid: false, error: 'This field is required' };
+  }
+
+  const words = trimmed.split(/\s+/).filter(w => w.length > 0);
+
+  if (words.length < minWords) {
+    return { valid: false, error: `Need at least ${minWords} words (currently ${words.length})` };
+  }
+
+  // Check for repetitive text (same word repeated)
+  const uniqueWords = new Set(words.map(w => w.toLowerCase()));
+  if (uniqueWords.size < words.length * 0.6) {
+    return { valid: false, error: 'Please avoid repetitive text' };
+  }
+
+  // Check for keyboard spam (aaaa, asdfasdf, etc.)
+  const hasSpam = words.some(word => {
+    if (word.length < 4) return false;
+    const chars = word.split('');
+    const uniqueChars = new Set(chars);
+    return uniqueChars.size <= 2; // e.g., "aaaa" or "abab"
+  });
+
+  if (hasSpam) {
+    return { valid: false, error: 'Please write meaningful text' };
+  }
+
+  return { valid: true };
+};
 
 export function ComponentJustificationModal({
   node,
@@ -22,28 +58,36 @@ export function ComponentJustificationModal({
   onClose,
   initialJustification = '',
 }: ComponentJustificationModalProps) {
-  // Parse initial justification if it exists (could be JSON or legacy string)
+  // Parse initial justification if it exists
   const parseInitialJustification = (initial: string): JustificationData => {
     if (!initial) {
-      return { why: '', benefits: '', alternatives: '', tradeoffs: '' };
+      return { why: '', benefits: '', alternatives: '', tradeoffIds: [] };
     }
 
     try {
       const parsed = JSON.parse(initial);
       if (parsed.why !== undefined) {
-        return parsed;
+        return {
+          why: parsed.why || '',
+          benefits: parsed.benefits || '',
+          alternatives: parsed.alternatives || '',
+          tradeoffIds: parsed.tradeoffIds || parsed.tradeoffs || [], // Handle both formats
+        };
       }
     } catch {
-      // Legacy format - single string, put it in 'why' field
-      return { why: initial, benefits: '', alternatives: '', tradeoffs: '' };
+      // Legacy format - single string
+      return { why: initial, benefits: '', alternatives: '', tradeoffIds: [] };
     }
 
-    return { why: '', benefits: '', alternatives: '', tradeoffs: '' };
+    return { why: '', benefits: '', alternatives: '', tradeoffIds: [] };
   };
 
   const [justification, setJustification] = useState<JustificationData>(
     parseInitialJustification(initialJustification)
   );
+
+  const componentType = node.data.componentType;
+  const availableTradeoffs = getTradeoffsForComponent(componentType);
 
   const handleSave = () => {
     // Save as JSON string
@@ -58,18 +102,51 @@ export function ComponentJustificationModal({
     }
   };
 
-  const updateField = (field: keyof JustificationData, value: string) => {
+  const updateField = (field: keyof JustificationData, value: any) => {
     setJustification(prev => ({ ...prev, [field]: value }));
   };
 
-  const isFormValid = () => {
-    return (
-      justification.why.trim().length >= 20 &&
-      justification.benefits.trim().length >= 20 &&
-      justification.alternatives.trim().length >= 20 &&
-      justification.tradeoffs.trim().length >= 20
-    );
+  const toggleTradeoff = (tradeoffId: string) => {
+    setJustification(prev => {
+      const currentIds = prev.tradeoffIds;
+      if (currentIds.includes(tradeoffId)) {
+        return { ...prev, tradeoffIds: currentIds.filter(id => id !== tradeoffId) };
+      } else {
+        return { ...prev, tradeoffIds: [...currentIds, tradeoffId] };
+      }
+    });
   };
+
+  const isFormValid = () => {
+    const whyValid = validateText(justification.why, 15).valid;
+    const benefitsValid = validateText(justification.benefits, 15).valid;
+    const alternativesValid = validateText(justification.alternatives, 15).valid;
+    const tradeoffsValid = justification.tradeoffIds.length >= 2; // At least 2 trade-offs
+
+    return whyValid && benefitsValid && alternativesValid && tradeoffsValid;
+  };
+
+  // Group trade-offs by category
+  const groupedTradeoffs = availableTradeoffs.reduce((acc, tradeoff) => {
+    if (!acc[tradeoff.category]) {
+      acc[tradeoff.category] = [];
+    }
+    acc[tradeoff.category].push(tradeoff);
+    return acc;
+  }, {} as Record<string, ComponentTradeoff[]>);
+
+  const categoryLabels: Record<string, string> = {
+    cost: '💰 Cost',
+    complexity: '🔧 Complexity',
+    performance: '⚡ Performance',
+    reliability: '🛡️ Reliability',
+    scalability: '📈 Scalability',
+    maintenance: '🔨 Maintenance',
+  };
+
+  const whyValidation = validateText(justification.why, 15);
+  const benefitsValidation = validateText(justification.benefits, 15);
+  const alternativesValidation = validateText(justification.alternatives, 15);
 
   return (
     <AnimatePresence>
@@ -87,7 +164,7 @@ export function ComponentJustificationModal({
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.9, opacity: 0, y: 20 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="bg-white rounded-lg shadow-2xl w-[700px] max-h-[90vh] overflow-hidden flex flex-col"
+          className="bg-white rounded-lg shadow-2xl w-[800px] max-h-[90vh] overflow-hidden flex flex-col"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
@@ -116,8 +193,8 @@ export function ComponentJustificationModal({
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-900">
-                <strong>📝 Note:</strong> All fields are required (minimum 20 characters each).
-                Think critically about your design choice and provide meaningful explanations.
+                <strong>📝 Note:</strong> All fields are required. Provide meaningful explanations (min 15 words each).
+                For trade-offs, select at least 2 that apply to your use case.
               </p>
             </div>
 
@@ -132,13 +209,15 @@ export function ComponentJustificationModal({
               <textarea
                 value={justification.why}
                 onChange={(e) => updateField('why', e.target.value)}
-                placeholder="E.g., 'I chose Redis cache because the tiny URL system needs to handle millions of read requests per second. The short URLs are read much more frequently than they are created, making caching essential for performance...'"
-                className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                placeholder="E.g., 'I chose Redis cache because the tiny URL system needs to handle millions of read requests per second. The short URLs are read much more frequently than they are created, making caching essential for performance and reducing database load...'"
+                className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
+                  justification.why && !whyValidation.valid ? 'border-red-300' : 'border-gray-300'
+                }`}
                 autoFocus
               />
               <div className="flex justify-between items-center mt-1">
-                <span className={`text-xs ${justification.why.length >= 20 ? 'text-green-600' : 'text-gray-400'}`}>
-                  {justification.why.length >= 20 ? '✓' : `${justification.why.length}/20`} characters
+                <span className={`text-xs ${whyValidation.valid ? 'text-green-600' : 'text-gray-400'}`}>
+                  {whyValidation.valid ? '✓ Valid' : whyValidation.error || `${justification.why.split(/\s+/).filter(w => w).length}/15 words`}
                 </span>
               </div>
             </div>
@@ -154,12 +233,14 @@ export function ComponentJustificationModal({
               <textarea
                 value={justification.benefits}
                 onChange={(e) => updateField('benefits', e.target.value)}
-                placeholder="E.g., 'Benefits: (1) Reduces database load by 90%, (2) Sub-millisecond response times, (3) Handles traffic spikes gracefully, (4) Simple key-value structure perfect for URL mapping...'"
-                className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                placeholder="E.g., 'Benefits include: Sub-millisecond response times for cached URLs, reduces database load by 90%, handles traffic spikes gracefully with memory-based storage, simple key-value structure perfect for URL mapping, supports TTL for automatic cleanup...'"
+                className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
+                  justification.benefits && !benefitsValidation.valid ? 'border-red-300' : 'border-gray-300'
+                }`}
               />
               <div className="flex justify-between items-center mt-1">
-                <span className={`text-xs ${justification.benefits.length >= 20 ? 'text-green-600' : 'text-gray-400'}`}>
-                  {justification.benefits.length >= 20 ? '✓' : `${justification.benefits.length}/20`} characters
+                <span className={`text-xs ${benefitsValidation.valid ? 'text-green-600' : 'text-gray-400'}`}>
+                  {benefitsValidation.valid ? '✓ Valid' : benefitsValidation.error || `${justification.benefits.split(/\s+/).filter(w => w).length}/15 words`}
                 </span>
               </div>
             </div>
@@ -175,33 +256,64 @@ export function ComponentJustificationModal({
               <textarea
                 value={justification.alternatives}
                 onChange={(e) => updateField('alternatives', e.target.value)}
-                placeholder="E.g., 'I considered CDN edge caching, but that only helps with geographic distribution. I also looked at Memcached, but Redis offers better data structure support and persistence options for our use case...'"
-                className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
+                placeholder="E.g., 'I considered CDN edge caching, but that only helps with geographic distribution not application-level caching. I also looked at Memcached, but Redis offers better data structure support and persistence options for our use case...'"
+                className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
+                  justification.alternatives && !alternativesValidation.valid ? 'border-red-300' : 'border-gray-300'
+                }`}
               />
               <div className="flex justify-between items-center mt-1">
-                <span className={`text-xs ${justification.alternatives.length >= 20 ? 'text-green-600' : 'text-gray-400'}`}>
-                  {justification.alternatives.length >= 20 ? '✓' : `${justification.alternatives.length}/20`} characters
+                <span className={`text-xs ${alternativesValidation.valid ? 'text-green-600' : 'text-gray-400'}`}>
+                  {alternativesValidation.valid ? '✓ Valid' : alternativesValidation.error || `${justification.alternatives.split(/\s+/).filter(w => w).length}/15 words`}
                 </span>
               </div>
             </div>
 
-            {/* Trade-offs Section */}
+            {/* Trade-offs Section - Checkboxes */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
                 4. What are the trade-offs? <span className="text-red-500">*</span>
               </label>
-              <p className="text-xs text-gray-500 mb-2">
-                Be honest about the downsides, costs, complexity, or limitations this component introduces.
+              <p className="text-xs text-gray-500 mb-3">
+                Select at least 2 trade-offs that apply to your use case. Be honest about the downsides.
               </p>
-              <textarea
-                value={justification.tradeoffs}
-                onChange={(e) => updateField('tradeoffs', e.target.value)}
-                placeholder="E.g., 'Trade-offs: (1) Additional cost for Redis cluster (~$200/month), (2) Cache invalidation complexity when URLs are updated, (3) Need to handle cache misses gracefully, (4) Increased system complexity with another component to monitor...'"
-                className="w-full h-24 px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm"
-              />
-              <div className="flex justify-between items-center mt-1">
-                <span className={`text-xs ${justification.tradeoffs.length >= 20 ? 'text-green-600' : 'text-gray-400'}`}>
-                  {justification.tradeoffs.length >= 20 ? '✓' : `${justification.tradeoffs.length}/20`} characters
+
+              {availableTradeoffs.length === 0 ? (
+                <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 text-sm text-gray-600">
+                  No predefined trade-offs for this component type.
+                </div>
+              ) : (
+                <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto">
+                  {Object.entries(groupedTradeoffs).map(([category, tradeoffs]) => (
+                    <div key={category}>
+                      <div className="text-xs font-semibold text-gray-700 mb-2">
+                        {categoryLabels[category] || category}
+                      </div>
+                      <div className="space-y-2 ml-2">
+                        {tradeoffs.map(tradeoff => (
+                          <label
+                            key={tradeoff.id}
+                            className="flex items-start gap-2 cursor-pointer hover:bg-white p-2 rounded transition-colors"
+                          >
+                            <input
+                              type="checkbox"
+                              checked={justification.tradeoffIds.includes(tradeoff.id)}
+                              onChange={() => toggleTradeoff(tradeoff.id)}
+                              className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                            />
+                            <span className="text-sm text-gray-700">{tradeoff.text}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              <div className="flex justify-between items-center mt-2">
+                <span className={`text-xs ${justification.tradeoffIds.length >= 2 ? 'text-green-600' : 'text-gray-400'}`}>
+                  {justification.tradeoffIds.length >= 2
+                    ? `✓ ${justification.tradeoffIds.length} selected`
+                    : `${justification.tradeoffIds.length}/2 minimum`}
                 </span>
               </div>
             </div>
@@ -226,7 +338,7 @@ export function ComponentJustificationModal({
               onClick={handleSave}
               disabled={!isFormValid()}
               className="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded transition-colors shadow-sm"
-              title={!isFormValid() ? 'Please complete all fields (min 20 characters each)' : 'Save justification'}
+              title={!isFormValid() ? 'Please complete all fields' : 'Save justification'}
             >
               {isFormValid() ? '✓ Save Justification' : 'Complete All Fields'}
             </button>
