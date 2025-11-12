@@ -1,0 +1,164 @@
+/**
+ * All 40 System Design Challenge Definitions
+ *
+ * Each challenge has ONLY Level 1: "The Brute Force Test - Does It Even Work?"
+ * Focus: Verify connectivity (Client → App → Database path exists)
+ * No performance optimization, just basic connectivity
+ */
+
+// Social Media (10)
+export { instagramProblemDefinition } from './instagram';
+export { twitterProblemDefinition } from './twitter';
+export { redditProblemDefinition } from './reddit';
+export { linkedinProblemDefinition } from './linkedin';
+export { facebookProblemDefinition } from './facebook';
+export { tiktokProblemDefinition } from './tiktok';
+export { pinterestProblemDefinition } from './pinterest';
+export { snapchatProblemDefinition } from './snapchat';
+export { discordProblemDefinition } from './discord';
+export { mediumProblemDefinition } from './medium';
+
+// E-commerce & Services (5)
+export { amazonProblemDefinition } from './amazon';
+export { shopifyProblemDefinition } from './shopify';
+export { stripeProblemDefinition } from './stripe';
+export { uberProblemDefinition } from './uber';
+export { airbnbProblemDefinition } from './airbnb';
+
+// Streaming & Media (5)
+export { netflixProblemDefinition } from './netflix';
+export { spotifyProblemDefinition } from './spotify';
+export { youtubeProblemDefinition } from './youtube';
+export { twitchProblemDefinition } from './twitch';
+export { huluProblemDefinition } from './hulu';
+
+// Messaging (4)
+export { whatsappProblemDefinition } from './whatsapp';
+export { slackProblemDefinition } from './slack';
+export { telegramProblemDefinition } from './telegram';
+export { messengerProblemDefinition } from './messenger';
+
+// Infrastructure (5)
+export { pastebinProblemDefinition } from './pastebin';
+export { dropboxProblemDefinition } from './dropbox';
+export { googledriveProblemDefinition } from './googledrive';
+export { githubProblemDefinition } from './github';
+export { stackoverflowProblemDefinition } from './stackoverflow';
+
+// Food & Delivery (3)
+export { doordashProblemDefinition } from './doordash';
+export { instacartProblemDefinition } from './instacart';
+export { yelpProblemDefinition } from './yelp';
+
+// Productivity (4)
+export { notionProblemDefinition } from './notion';
+export { trelloProblemDefinition } from './trello';
+export { googlecalendarProblemDefinition } from './googlecalendar';
+export { zoomProblemDefinition } from './zoom';
+
+// Gaming & Other (4)
+export { steamProblemDefinition } from './steam';
+export { ticketmasterProblemDefinition } from './ticketmaster';
+export { bookingcomProblemDefinition } from './bookingcom';
+export { weatherapiProblemDefinition } from './weatherapi';
+
+// Array of all problem definitions
+import { ProblemDefinition } from '../../types/problemDefinition';
+import { instagramProblemDefinition } from './instagram';
+import { twitterProblemDefinition } from './twitter';
+import { redditProblemDefinition } from './reddit';
+import { linkedinProblemDefinition } from './linkedin';
+import { facebookProblemDefinition } from './facebook';
+import { tiktokProblemDefinition } from './tiktok';
+import { pinterestProblemDefinition } from './pinterest';
+import { snapchatProblemDefinition } from './snapchat';
+import { discordProblemDefinition } from './discord';
+import { mediumProblemDefinition } from './medium';
+import { amazonProblemDefinition } from './amazon';
+import { shopifyProblemDefinition } from './shopify';
+import { stripeProblemDefinition } from './stripe';
+import { uberProblemDefinition } from './uber';
+import { airbnbProblemDefinition } from './airbnb';
+import { netflixProblemDefinition } from './netflix';
+import { spotifyProblemDefinition } from './spotify';
+import { youtubeProblemDefinition } from './youtube';
+import { twitchProblemDefinition } from './twitch';
+import { huluProblemDefinition } from './hulu';
+import { whatsappProblemDefinition } from './whatsapp';
+import { slackProblemDefinition } from './slack';
+import { telegramProblemDefinition } from './telegram';
+import { messengerProblemDefinition } from './messenger';
+import { pastebinProblemDefinition } from './pastebin';
+import { dropboxProblemDefinition } from './dropbox';
+import { googledriveProblemDefinition } from './googledrive';
+import { githubProblemDefinition } from './github';
+import { stackoverflowProblemDefinition } from './stackoverflow';
+import { doordashProblemDefinition } from './doordash';
+import { instacartProblemDefinition } from './instacart';
+import { yelpProblemDefinition } from './yelp';
+import { notionProblemDefinition } from './notion';
+import { trelloProblemDefinition } from './trello';
+import { googlecalendarProblemDefinition } from './googlecalendar';
+import { zoomProblemDefinition } from './zoom';
+import { steamProblemDefinition } from './steam';
+import { ticketmasterProblemDefinition } from './ticketmaster';
+import { bookingcomProblemDefinition } from './bookingcom';
+import { weatherapiProblemDefinition } from './weatherapi';
+
+export const allProblemDefinitions: ProblemDefinition[] = [
+  // Social Media (10)
+  instagramProblemDefinition,
+  twitterProblemDefinition,
+  redditProblemDefinition,
+  linkedinProblemDefinition,
+  facebookProblemDefinition,
+  tiktokProblemDefinition,
+  pinterestProblemDefinition,
+  snapchatProblemDefinition,
+  discordProblemDefinition,
+  mediumProblemDefinition,
+
+  // E-commerce & Services (5)
+  amazonProblemDefinition,
+  shopifyProblemDefinition,
+  stripeProblemDefinition,
+  uberProblemDefinition,
+  airbnbProblemDefinition,
+
+  // Streaming & Media (5)
+  netflixProblemDefinition,
+  spotifyProblemDefinition,
+  youtubeProblemDefinition,
+  twitchProblemDefinition,
+  huluProblemDefinition,
+
+  // Messaging (4)
+  whatsappProblemDefinition,
+  slackProblemDefinition,
+  telegramProblemDefinition,
+  messengerProblemDefinition,
+
+  // Infrastructure (5)
+  pastebinProblemDefinition,
+  dropboxProblemDefinition,
+  googledriveProblemDefinition,
+  githubProblemDefinition,
+  stackoverflowProblemDefinition,
+
+  // Food & Delivery (3)
+  doordashProblemDefinition,
+  instacartProblemDefinition,
+  yelpProblemDefinition,
+
+  // Productivity (4)
+  notionProblemDefinition,
+  trelloProblemDefinition,
+  googlecalendarProblemDefinition,
+  zoomProblemDefinition,
+
+  // Gaming & Other (4)
+  steamProblemDefinition,
+  ticketmasterProblemDefinition,
+  bookingcomProblemDefinition,
+  weatherapiProblemDefinition,
+];
