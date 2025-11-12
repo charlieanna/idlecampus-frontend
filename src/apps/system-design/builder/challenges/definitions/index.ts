@@ -83,6 +83,12 @@ export { nosqlBasicsProblemDefinition, keyValueStoreProblemDefinition, productCa
 // Extracted Problems - Gateway (4)
 export { basicApiGatewayProblemDefinition, simpleRateLimiterProblemDefinition, authenticationGatewayProblemDefinition, graphqlGatewayProblemDefinition } from './gatewayProblems';
 
+// Extracted Problems - Search (4)
+export { basicTextSearchProblemDefinition, autocompleteSearchProblemDefinition, facetedSearchProblemDefinition, geoSearchProblemDefinition } from './searchProblems';
+
+// Extracted Problems - Multiregion (4)
+export { basicMultiRegionProblemDefinition, activeActiveRegionsProblemDefinition, globalCdnProblemDefinition, crossRegionDrProblemDefinition } from './multiregionProblems';
+
 // Array of all problem definitions
 import { ProblemDefinition } from '../../types/problemDefinition';
 import { instagramProblemDefinition } from './instagram';
@@ -136,6 +142,8 @@ import { sessionStoreBasicProblemDefinition, databaseQueryCacheProblemDefinition
 import { realtimeNotificationsProblemDefinition, basicEventLogProblemDefinition, simplePubsubProblemDefinition, realtimeChatMessagesProblemDefinition } from './streamingProblems';
 import { nosqlBasicsProblemDefinition, keyValueStoreProblemDefinition, productCatalogProblemDefinition, objectStorageSystemProblemDefinition } from './storageProblems';
 import { basicApiGatewayProblemDefinition, simpleRateLimiterProblemDefinition, authenticationGatewayProblemDefinition, graphqlGatewayProblemDefinition } from './gatewayProblems';
+import { basicTextSearchProblemDefinition, autocompleteSearchProblemDefinition, facetedSearchProblemDefinition, geoSearchProblemDefinition } from './searchProblems';
+import { basicMultiRegionProblemDefinition, activeActiveRegionsProblemDefinition, globalCdnProblemDefinition, crossRegionDrProblemDefinition } from './multiregionProblems';
 
 export const allProblemDefinitions: ProblemDefinition[] = [
   // Social Media (10)
@@ -194,7 +202,7 @@ export const allProblemDefinitions: ProblemDefinition[] = [
   bookingcomProblemDefinition,
   weatherapiProblemDefinition,
 
-  // Extracted Problems (23 total)
+  // Extracted Problems (31 total)
   // Tutorials (3)
   tutorialSimpleBlogProblemDefinition,
   tutorialImageHostingProblemDefinition,
@@ -223,4 +231,14 @@ export const allProblemDefinitions: ProblemDefinition[] = [
   simpleRateLimiterProblemDefinition,
   authenticationGatewayProblemDefinition,
   graphqlGatewayProblemDefinition,
+  // Search (4)
+  basicTextSearchProblemDefinition,
+  autocompleteSearchProblemDefinition,
+  facetedSearchProblemDefinition,
+  geoSearchProblemDefinition,
+  // Multiregion (4)
+  basicMultiRegionProblemDefinition,
+  activeActiveRegionsProblemDefinition,
+  globalCdnProblemDefinition,
+  crossRegionDrProblemDefinition,
 ];

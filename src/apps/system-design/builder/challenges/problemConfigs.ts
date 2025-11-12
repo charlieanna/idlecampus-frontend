@@ -676,4 +676,86 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasCache: true,
     hasObjectStorage: false,
   },
+
+  // SEARCH (4)
+  'basic-text-search': {
+    baseRps: 1000, // 1k searches/sec
+    readRatio: 0.99, // 99% reads
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'autocomplete-search': {
+    baseRps: 50000, // 50k keystrokes/sec
+    readRatio: 1.0, // 100% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'faceted-search': {
+    baseRps: 5000, // 5k filtered searches/sec
+    readRatio: 0.99, // 99% reads
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'geo-search': {
+    baseRps: 20000, // 20k location queries/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 50,
+    availability: 0.9995,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  // MULTIREGION (4)
+  'basic-multi-region': {
+    baseRps: 10000, // 10k per region
+    readRatio: 0.9, // 90% reads
+    maxLatency: 100,
+    availability: 0.9995,
+    hasCdn: true,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'active-active-regions': {
+    baseRps: 5000, // 5k writes/sec per region
+    readRatio: 0.7, // 70% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'global-cdn': {
+    baseRps: 10000000, // 10M requests/sec
+    readRatio: 1.0, // 100% reads (static)
+    maxLatency: 50,
+    availability: 0.9999,
+    hasCdn: true,
+    hasCache: false,
+    hasObjectStorage: true,
+  },
+
+  'cross-region-dr': {
+    baseRps: 10000, // 10k requests/sec
+    readRatio: 0.9, // 90% reads
+    maxLatency: 100,
+    availability: 0.9999,
+    hasCdn: true,
+    hasCache: false,
+    hasObjectStorage: true,
+  },
 };
