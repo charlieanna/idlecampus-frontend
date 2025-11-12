@@ -22,6 +22,18 @@ export const l6PrivacyHomomorphicScaleProblemDefinition: ProblemDefinition = {
 - Enable SQL on encrypted databases
 - Support machine learning training`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support arbitrary computations',
+    'Maintain full encryption',
+    'Enable SQL on encrypted databases',
+    'Support machine learning training',
+    'Provide verifiable computation'
+  ],
+  userFacingNFRs: [
+    
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -63,6 +75,18 @@ export const l6PrivacyZkpInternetProblemDefinition: ProblemDefinition = {
 - Verify proofs in milliseconds
 - Support recursive proof composition
 - Enable selective disclosure`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Generate ZK proofs for all requests',
+    'Verify proofs in milliseconds',
+    'Support recursive proof composition',
+    'Enable selective disclosure',
+    'Maintain auditability'
+  ],
+  userFacingNFRs: [
+    
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -106,6 +130,19 @@ export const l6PrivacyInnovation1ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement homomorphic everything at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -147,6 +184,19 @@ export const l6PrivacyInnovation2ProblemDefinition: ProblemDefinition = {
 - Achieve privacy time travel breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum privacy at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -190,6 +240,19 @@ export const l6PrivacyInnovation3ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological privacy at planetary scale',
+    'Achieve consciousness isolation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -231,6 +294,19 @@ export const l6PrivacyInnovation4ProblemDefinition: ProblemDefinition = {
 - Achieve unbreakable encryption breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement cognitive firewalls at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -274,6 +350,19 @@ export const l6PrivacyInnovation5ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement temporal privacy at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -315,6 +404,19 @@ export const l6PrivacyInnovation6ProblemDefinition: ProblemDefinition = {
 - Achieve consciousness isolation breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement homomorphic everything at planetary scale',
+    'Achieve consciousness isolation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -358,6 +460,19 @@ export const l6PrivacyInnovation7ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum privacy at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -399,6 +514,19 @@ export const l6PrivacyInnovation8ProblemDefinition: ProblemDefinition = {
 - Achieve privacy time travel breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological privacy at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -442,6 +570,19 @@ export const l6PrivacyInnovation9ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement cognitive firewalls at planetary scale',
+    'Achieve consciousness isolation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -483,6 +624,19 @@ export const l6PrivacyInnovation10ProblemDefinition: ProblemDefinition = {
 - Achieve unbreakable encryption breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement temporal privacy at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -526,6 +680,19 @@ export const l6PrivacyInnovation11ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement homomorphic everything at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -567,6 +734,19 @@ export const l6PrivacyInnovation12ProblemDefinition: ProblemDefinition = {
 - Achieve consciousness isolation breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum privacy at planetary scale',
+    'Achieve consciousness isolation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -610,6 +790,19 @@ export const l6PrivacyInnovation13ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological privacy at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -651,6 +844,19 @@ export const l6PrivacyInnovation14ProblemDefinition: ProblemDefinition = {
 - Achieve privacy time travel breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement cognitive firewalls at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -694,6 +900,19 @@ export const l6PrivacyInnovation15ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement temporal privacy at planetary scale',
+    'Achieve consciousness isolation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -736,6 +955,19 @@ export const l6PrivacyInnovation16ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement homomorphic everything at planetary scale',
+    'Achieve unbreakable encryption breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -777,6 +1009,19 @@ export const l6PrivacyInnovation17ProblemDefinition: ProblemDefinition = {
 - Achieve privacy time travel breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum privacy at planetary scale',
+    'Achieve privacy time travel breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [

@@ -37,6 +37,20 @@ In this tutorial, you'll learn:
 - Authors can publish new posts
 - System handles both reads (90%) and writes (10%)`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can read blog posts',
+    'Users can view comments',
+    'Authors can publish new posts',
+    'System handles both reads (90%) and writes (10%)'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 200ms',
+    'Request Rate: Start: 100 req/sec, Target: 1,000 req/sec',
+    'Dataset Size: 10,000 blog posts, 100,000 comments (~100MB)',
+    'Availability: 99.9% uptime (no single point of failure)'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -125,6 +139,22 @@ In this tutorial, you'll learn:
 - Users can view images via URLs (read)
 - Images are served globally with low latency
 - Support 1M stored images (5TB total)`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can upload images (write)',
+    'Users can view images via URLs (read)',
+    'Images are served globally with low latency',
+    'Support 1M stored images (5TB total)',
+    '95% reads (image views), 5% writes (uploads)'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms globally (P50 < 20ms)',
+    'Request Rate: 10,000 requests/sec (9,500 reads, 500 writes)',
+    'Dataset Size: 1M images, 5TB storage, growing 100GB/month',
+    'Availability: 99.99% uptime',
+    'Durability: 99.999999999% (eleven nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -247,6 +277,23 @@ This is what you'll build in production! Take your time. 🚀
 - Message history is persisted and searchable
 - Support for 1:1 chats and group rooms (up to 10K members)`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can send/receive messages in real-time',
+    'Messages are delivered to all room participants instantly',
+    'Message history is persisted and searchable',
+    'Support for 1:1 chats and group rooms (up to 10K members)',
+    'Typing indicators and presence (online/offline)',
+    'File attachments and rich media'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 500ms for message delivery, P99 < 100ms for message send',
+    'Request Rate: 50,000 messages/sec peak, 100,000 concurrent WebSocket connections',
+    'Dataset Size: 1B messages (10TB), growing 1TB/month',
+    'Availability: 99.99% uptime globally',
+    'Durability: No message loss, 30-day message retention'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -365,6 +412,14 @@ export const boeWalkthroughChatProblemDefinition: ProblemDefinition = {
   id: 'boe-walkthrough-chat',
   title: '📚 BoE Walkthrough: Real-Time Chat System',
   description: `Learn to apply all 6 NFRs step-by-step to design WhatsApp-scale chat`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    
+  ],
+  userFacingNFRs: [
+    
+  ],
 
   functionalRequirements: {
     mustHave: [

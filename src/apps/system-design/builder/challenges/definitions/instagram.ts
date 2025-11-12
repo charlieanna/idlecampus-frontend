@@ -16,6 +16,14 @@ export const instagramProblemDefinition: ProblemDefinition = {
 - Users can like and comment on photos
 - Users can search for other users and content`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can upload photos and videos',
+    'Users can view a feed of photos from people they follow',
+    'Users can like and comment on photos',
+    'Users can search for other users and content'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

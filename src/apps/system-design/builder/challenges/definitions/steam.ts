@@ -16,6 +16,13 @@ export const steamProblemDefinition: ProblemDefinition = {
 - Platform supports user reviews and community features
 - Users can add friends and view achievements`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can browse and purchase games',
+    'Users can download and launch games',
+    'Users can add friends and view achievements'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

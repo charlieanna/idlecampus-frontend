@@ -22,6 +22,19 @@ export const l6ExistentialNuclearResilientProblemDefinition: ProblemDefinition =
 - Handle 90% node failure
 - Support emergency broadcast`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Survive EMP attacks',
+    'Operate in radiation',
+    'Handle 90% node failure',
+    'Support emergency broadcast',
+    'Enable survivor coordination'
+  ],
+  userFacingNFRs: [
+    'Latency: Best effort delivery',
+    'Availability: Survive 100MT blast'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -63,6 +76,18 @@ export const l6ExistentialClimateAdaptationProblemDefinition: ProblemDefinition 
 - Survive category 6 hurricanes
 - Handle mass migration logistics
 - Coordinate disaster response`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Operate at 60°C ambient',
+    'Survive category 6 hurricanes',
+    'Handle mass migration logistics',
+    'Coordinate disaster response',
+    'Manage resource allocation'
+  ],
+  userFacingNFRs: [
+    'Availability: Submarine operation'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -106,6 +131,19 @@ export const l6ExistentialPandemicResponseProblemDefinition: ProblemDefinition =
 - Manage quarantine zones
 - Allocate critical resources`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Track 8B people health status',
+    'Coordinate vaccine distribution',
+    'Manage quarantine zones',
+    'Allocate critical resources',
+    'Predict outbreak patterns'
+  ],
+  userFacingNFRs: [
+    'Latency: <1hr outbreak detection',
+    'Availability: Operate with 50% staff'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -147,6 +185,19 @@ export const l6ExistentialAsteroidDefenseProblemDefinition: ProblemDefinition = 
 - Calculate trajectories for 100 years
 - Coordinate deflection missions
 - Simulate intervention outcomes`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Track 1M asteroids',
+    'Calculate trajectories for 100 years',
+    'Coordinate deflection missions',
+    'Simulate intervention outcomes',
+    'Manage global resources'
+  ],
+  userFacingNFRs: [
+    'Latency: 10+ year advance warning',
+    'Availability: No false negatives'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -190,6 +241,19 @@ export const l6ExistentialInfrastructure1ProblemDefinition: ProblemDefinition = 
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement planetary defense at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -231,6 +295,19 @@ export const l6ExistentialInfrastructure2ProblemDefinition: ProblemDefinition = 
 - Achieve stellar engineering breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement asteroid mining at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -274,6 +351,19 @@ export const l6ExistentialInfrastructure3ProblemDefinition: ProblemDefinition = 
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement dyson spheres at planetary scale',
+    'Achieve multiverse computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -315,6 +405,19 @@ export const l6ExistentialInfrastructure4ProblemDefinition: ProblemDefinition = 
 - Achieve galactic internet breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement generation ships at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -358,6 +461,19 @@ export const l6ExistentialInfrastructure5ProblemDefinition: ProblemDefinition = 
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement terraforming at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -399,6 +515,19 @@ export const l6ExistentialInfrastructure6ProblemDefinition: ProblemDefinition = 
 - Achieve multiverse computing breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement planetary defense at planetary scale',
+    'Achieve multiverse computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -442,6 +571,19 @@ export const l6ExistentialInfrastructure7ProblemDefinition: ProblemDefinition = 
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement asteroid mining at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -483,6 +625,19 @@ export const l6ExistentialInfrastructure8ProblemDefinition: ProblemDefinition = 
 - Achieve stellar engineering breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement dyson spheres at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -526,6 +681,19 @@ export const l6ExistentialInfrastructure9ProblemDefinition: ProblemDefinition = 
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement generation ships at planetary scale',
+    'Achieve multiverse computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -567,6 +735,19 @@ export const l6ExistentialInfrastructure10ProblemDefinition: ProblemDefinition =
 - Achieve galactic internet breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement terraforming at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -610,6 +791,19 @@ export const l6ExistentialInfrastructure11ProblemDefinition: ProblemDefinition =
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement planetary defense at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -651,6 +845,19 @@ export const l6ExistentialInfrastructure12ProblemDefinition: ProblemDefinition =
 - Achieve multiverse computing breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement asteroid mining at planetary scale',
+    'Achieve multiverse computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -694,6 +901,19 @@ export const l6ExistentialInfrastructure13ProblemDefinition: ProblemDefinition =
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement dyson spheres at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -735,6 +955,19 @@ export const l6ExistentialInfrastructure14ProblemDefinition: ProblemDefinition =
 - Achieve stellar engineering breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement generation ships at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -778,6 +1011,19 @@ export const l6ExistentialInfrastructure15ProblemDefinition: ProblemDefinition =
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement terraforming at planetary scale',
+    'Achieve multiverse computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -820,6 +1066,19 @@ export const l6ExistentialInfrastructure16ProblemDefinition: ProblemDefinition =
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement planetary defense at planetary scale',
+    'Achieve galactic internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -861,6 +1120,19 @@ export const l6ExistentialInfrastructure17ProblemDefinition: ProblemDefinition =
 - Achieve stellar engineering breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement asteroid mining at planetary scale',
+    'Achieve stellar engineering breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [

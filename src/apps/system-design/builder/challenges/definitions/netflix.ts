@@ -16,6 +16,12 @@ export const netflixProblemDefinition: ProblemDefinition = {
 - Platform recommends content based on viewing history
 - Videos are available in multiple qualities (SD, HD, 4K)`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can browse movies and TV shows',
+    'Users can stream videos on-demand'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

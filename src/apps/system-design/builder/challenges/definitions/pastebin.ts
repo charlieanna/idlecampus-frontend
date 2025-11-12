@@ -16,6 +16,12 @@ export const pastebinProblemDefinition: ProblemDefinition = {
 - Pastes can expire after a certain time
 - Users can view paste syntax highlighting`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can paste text and get a shareable URL',
+    'Users can view paste syntax highlighting'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

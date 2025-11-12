@@ -22,6 +22,19 @@ export const l6ComputeQuantumCloudProblemDefinition: ProblemDefinition = {
 - Provide quantum circuit compilation
 - Handle quantum error correction`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support 1000-qubit processors',
+    'Enable quantum-classical hybrid',
+    'Provide quantum circuit compilation',
+    'Handle quantum error correction',
+    'Support multiple quantum algorithms'
+  ],
+  userFacingNFRs: [
+    'Latency: <100ms job submission',
+    'Availability: 95% quantum uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -63,6 +76,18 @@ export const l6ComputeBiologicalProblemDefinition: ProblemDefinition = {
 - Solve NP-complete problems
 - Support molecular programming
 - Enable error correction`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Perform 10^20 parallel operations',
+    'Solve NP-complete problems',
+    'Support molecular programming',
+    'Enable error correction',
+    'Interface with silicon computers'
+  ],
+  userFacingNFRs: [
+    
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -106,6 +131,19 @@ export const l6NewComputing1ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum supremacy at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -147,6 +185,19 @@ export const l6NewComputing2ProblemDefinition: ProblemDefinition = {
 - Achieve biological processors breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement neuromorphic chips at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -190,6 +241,19 @@ export const l6NewComputing3ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement DNA computing at planetary scale',
+    'Achieve zero-energy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -231,6 +295,19 @@ export const l6NewComputing4ProblemDefinition: ProblemDefinition = {
 - Achieve room temperature quantum breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement photonic processors at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -274,6 +351,19 @@ export const l6NewComputing5ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement reversible computing at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -315,6 +405,19 @@ export const l6NewComputing6ProblemDefinition: ProblemDefinition = {
 - Achieve zero-energy computing breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum supremacy at planetary scale',
+    'Achieve zero-energy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -358,6 +461,19 @@ export const l6NewComputing7ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement neuromorphic chips at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -399,6 +515,19 @@ export const l6NewComputing8ProblemDefinition: ProblemDefinition = {
 - Achieve biological processors breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement DNA computing at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -442,6 +571,19 @@ export const l6NewComputing9ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement photonic processors at planetary scale',
+    'Achieve zero-energy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -483,6 +625,19 @@ export const l6NewComputing10ProblemDefinition: ProblemDefinition = {
 - Achieve room temperature quantum breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement reversible computing at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -526,6 +681,19 @@ export const l6NewComputing11ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum supremacy at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -567,6 +735,19 @@ export const l6NewComputing12ProblemDefinition: ProblemDefinition = {
 - Achieve zero-energy computing breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement neuromorphic chips at planetary scale',
+    'Achieve zero-energy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -610,6 +791,19 @@ export const l6NewComputing13ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement DNA computing at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -651,6 +845,19 @@ export const l6NewComputing14ProblemDefinition: ProblemDefinition = {
 - Achieve biological processors breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement photonic processors at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -694,6 +901,19 @@ export const l6NewComputing15ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement reversible computing at planetary scale',
+    'Achieve zero-energy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -736,6 +956,19 @@ export const l6NewComputing16ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum supremacy at planetary scale',
+    'Achieve room temperature quantum breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -777,6 +1010,19 @@ export const l6NewComputing17ProblemDefinition: ProblemDefinition = {
 - Achieve biological processors breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement neuromorphic chips at planetary scale',
+    'Achieve biological processors breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [

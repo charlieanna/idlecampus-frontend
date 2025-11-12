@@ -16,6 +16,12 @@ export const notionProblemDefinition: ProblemDefinition = {
 - Pages can be organized hierarchically
 - Users can share and collaborate on workspaces`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can create pages with rich content (text, images, databases)',
+    'Users can share and collaborate on workspaces'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

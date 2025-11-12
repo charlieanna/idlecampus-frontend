@@ -18,6 +18,14 @@ export const rateLimiterProblemDefinition: ProblemDefinition = {
   title: 'GitHub/Stripe API Rate Limiter',
   description: `Design an API gateway that enforces both per‑user and global request limits while keeping latency low. Your design should handle short bursts without overloading backends by using counters in a fast data store and smoothing traffic with queues or buckets. Address hot‑key risk, multi‑region counter correctness, and provide a clear path for retries and error budgets.`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    
+  ],
+  userFacingNFRs: [
+    
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -94,6 +102,20 @@ export const basicApiGatewayProblemDefinition: ProblemDefinition = {
 - Transform request/response formats
 - Handle service discovery`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Route requests based on URL path',
+    'Add authentication headers',
+    'Transform request/response formats',
+    'Handle service discovery',
+    'Implement basic health checks'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms overhead, P99 < 100ms',
+    'Request Rate: 10k requests/sec across all services',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -167,6 +189,21 @@ export const simpleRateLimiterProblemDefinition: ProblemDefinition = {
 - Return 429 with retry-after header
 - Track usage per API key`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Limit requests per user per minute',
+    'Support burst allowance',
+    'Return 429 with retry-after header',
+    'Track usage per API key',
+    'Allow different tiers with different limits'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms for limit checks',
+    'Request Rate: 20k requests/sec to validate',
+    'Dataset Size: 100k active API keys',
+    'Availability: 99.9% uptime, fail open on errors'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -238,6 +275,20 @@ export const authenticationGatewayProblemDefinition: ProblemDefinition = {
 - Cache public keys for verification
 - Extract user context from tokens
 - Support token refresh flow`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Validate JWT tokens on every request',
+    'Cache public keys for verification',
+    'Extract user context from tokens',
+    'Support token refresh flow',
+    'Forward user context to services'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 20ms for validation',
+    'Request Rate: 30k authenticated requests/sec',
+    'Availability: 99.99% uptime for auth'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -320,6 +371,20 @@ export const loadBalancingGatewayProblemDefinition: ProblemDefinition = {
 - Health check backend services
 - Remove unhealthy instances`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement round-robin load balancing',
+    'Support weighted distribution',
+    'Health check backend services',
+    'Remove unhealthy instances',
+    'Support sticky sessions'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 30ms routing overhead',
+    'Request Rate: 15k requests/sec',
+    'Availability: 99.9% with automatic failover'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -391,6 +456,20 @@ export const requestTransformGatewayProblemDefinition: ProblemDefinition = {
 - Transform JSON to Protocol Buffers
 - Map between different schemas
 - Support API versioning`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Convert REST requests to GraphQL',
+    'Transform JSON to Protocol Buffers',
+    'Map between different schemas',
+    'Support API versioning',
+    'Handle format validation'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 40ms transformation overhead',
+    'Request Rate: 8k requests/sec',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -469,6 +548,20 @@ export const corsGatewayProblemDefinition: ProblemDefinition = {
 - Set proper CORS headers
 - Support credentials in requests`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Handle OPTIONS preflight requests',
+    'Configure allowed origins',
+    'Set proper CORS headers',
+    'Support credentials in requests',
+    'Cache preflight responses'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms for preflight',
+    'Request Rate: 5k requests/sec',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -540,6 +633,20 @@ export const retryGatewayProblemDefinition: ProblemDefinition = {
 - Implement circuit breaker pattern
 - Add jitter to prevent thundering herd
 - Track failure rates per service`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Retry failed requests with exponential backoff',
+    'Implement circuit breaker pattern',
+    'Add jitter to prevent thundering herd',
+    'Track failure rates per service',
+    'Return cached responses when circuit open'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 200ms including retries',
+    'Request Rate: 10k requests/sec',
+    'Availability: 99.95% with degraded mode, prevent cascading failures'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -617,6 +724,19 @@ export const compressionGatewayProblemDefinition: ProblemDefinition = {
 - Support Accept-Encoding negotiation
 - Skip compression for small payloads
 - Cache compressed responses`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Compress responses with gzip/brotli',
+    'Support Accept-Encoding negotiation',
+    'Skip compression for small payloads',
+    'Cache compressed responses',
+    'Monitor compression ratios'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms compression overhead',
+    'Request Rate: 12k requests/sec, reduce bandwidth by 70% for text'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -704,6 +824,21 @@ export const loggingGatewayProblemDefinition: ProblemDefinition = {
 - Support sampling for high volume
 - Send logs to centralized system`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Log request/response metadata',
+    'Implement correlation IDs',
+    'Support sampling for high volume',
+    'Send logs to centralized system',
+    'Extract metrics from logs'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5ms logging overhead',
+    'Request Rate: 25k requests/sec',
+    'Dataset Size: 1TB logs per day',
+    'Durability: 30 days retention'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -780,6 +915,20 @@ export const healthCheckGatewayProblemDefinition: ProblemDefinition = {
 - Report overall system health
 - Track dependency health
 - Support different health levels (healthy, degraded, down)`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Aggregate health checks from all services',
+    'Report overall system health',
+    'Track dependency health',
+    'Support different health levels (healthy, degraded, down)',
+    'Cache health results with TTL'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for health endpoint',
+    'Request Rate: 1k health checks/sec',
+    'Availability: 99.9% uptime for health endpoint'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -863,6 +1012,20 @@ export const apiRoutingGatewayProblemDefinition: ProblemDefinition = {
 - Enable A/B testing by user segment
 - Implement feature flags via routing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Route based on headers and query params',
+    'Support canary releases with percentage',
+    'Enable A/B testing by user segment',
+    'Implement feature flags via routing',
+    'Track routing decisions for analytics'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 30ms routing overhead',
+    'Request Rate: 18k requests/sec',
+    'Availability: 99.9% uptime, 99.99% correct routing'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -939,6 +1102,20 @@ export const responseTransformGatewayProblemDefinition: ProblemDefinition = {
 - Merge responses from multiple services
 - Convert between data formats (JSON/XML)
 - Add computed fields to responses`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Filter response fields by client type',
+    'Merge responses from multiple services',
+    'Convert between data formats (JSON/XML)',
+    'Add computed fields to responses',
+    'Support response templates'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 60ms transformation time',
+    'Request Rate: 14k requests/sec',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1021,6 +1198,21 @@ export const apiAggregationGatewayProblemDefinition: ProblemDefinition = {
 - Shape responses for different clients
 - Execute parallel API calls
 - Handle partial failures gracefully`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Aggregate multiple service calls',
+    'Shape responses for different clients',
+    'Execute parallel API calls',
+    'Handle partial failures gracefully',
+    'Cache aggregated responses',
+    'Support GraphQL-like field selection'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 200ms for aggregated calls',
+    'Request Rate: 50k requests/sec',
+    'Availability: 99.9% with degraded responses'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1123,6 +1315,21 @@ export const graphqlGatewayProblemDefinition: ProblemDefinition = {
 - Implement DataLoader for batching
 - Handle GraphQL subscriptions`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Federate schemas from multiple services',
+    'Resolve cross-service references',
+    'Implement DataLoader for batching',
+    'Handle GraphQL subscriptions',
+    'Cache query results',
+    'Support schema introspection'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for typical queries',
+    'Request Rate: 30k queries/sec',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1214,6 +1421,24 @@ export const oauth2GatewayProblemDefinition: ProblemDefinition = {
 - Implement authorization code flow with PKCE at scale
 - Rotate all tokens within 1 hour during security breach`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Handle 10M token operations/sec (100M during spikes)',
+    'Support 2 billion active users globally',
+    'Implement authorization code flow with PKCE at scale',
+    'Rotate all tokens within 1 hour during security breach',
+    'Support multi-region token validation with <50ms latency',
+    'Detect and block credential stuffing attacks in real-time',
+    'Provide audit logs for compliance (7-year retention)',
+    'Handle graceful degradation during 50% infrastructure failure'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 50ms globally, P99.9 < 100ms even during spikes',
+    'Request Rate: 10M ops/sec normal, 100M ops/sec during viral events',
+    'Dataset Size: 2B users, 10B active tokens, 100TB audit logs',
+    'Availability: 99.99% uptime (4.38 minutes downtime/month)'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1304,6 +1529,21 @@ export const websocketGatewayProblemDefinition: ProblemDefinition = {
 - Implement pub/sub for broadcasting
 - Handle connection lifecycle events`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Accept WebSocket connections at scale',
+    'Route messages to backend services',
+    'Implement pub/sub for broadcasting',
+    'Handle connection lifecycle events',
+    'Support message acknowledgments',
+    'Provide connection state tracking'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 20ms message delivery',
+    'Request Rate: 500k messages/sec',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1390,6 +1630,21 @@ export const grpcGatewayProblemDefinition: ProblemDefinition = {
 - Handle bidirectional streaming
 - Implement connection pooling`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Convert REST requests to gRPC calls',
+    'Support unary and streaming RPCs',
+    'Handle bidirectional streaming',
+    'Implement connection pooling',
+    'Support gRPC metadata and deadlines',
+    'Provide error mapping to HTTP status'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 40ms conversion overhead',
+    'Request Rate: 35k requests/sec',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1475,6 +1730,20 @@ export const mobileGatewayProblemDefinition: ProblemDefinition = {
 - Compress responses aggressively
 - Support offline-first patterns
 - Implement delta updates`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Batch multiple API calls into one request',
+    'Compress responses aggressively',
+    'Support offline-first patterns',
+    'Implement delta updates',
+    'Handle push notifications',
+    'Adapt to network quality'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 300ms on 3G',
+    'Request Rate: 60k requests/sec, reduce bandwidth by 80% vs REST'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1576,6 +1845,22 @@ export const partnerGatewayProblemDefinition: ProblemDefinition = {
 - Implement priority queues by SLA
 - Support burst allowances`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Enforce rate limits per partner tier',
+    'Track API usage for billing',
+    'Implement priority queues by SLA',
+    'Support burst allowances',
+    'Provide usage analytics',
+    'Handle quota resets'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms for premium, < 200ms for free',
+    'Request Rate: 100k requests/sec',
+    'Availability: 99.99% for premium, 99.9% for free',
+    'Durability: 100% billing accuracy'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1676,6 +1961,22 @@ export const webhookGatewayProblemDefinition: ProblemDefinition = {
 - Track delivery status
 - Support webhook signing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Deliver webhooks with retry logic',
+    'Implement exponential backoff',
+    'Track delivery status',
+    'Support webhook signing',
+    'Handle dead letter queue',
+    'Provide delivery analytics'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms first attempt',
+    'Request Rate: 200k webhooks/sec',
+    'Availability: 99.9% delivery rate',
+    'Durability: 7 days retry window'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1761,6 +2062,24 @@ export const serverlessGatewayProblemDefinition: ProblemDefinition = {
 - Support 1M concurrent function executions
 - ML-based predictive warming to keep cold starts <0.1%
 - Request coalescing and buffering during cold starts`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Route 5M requests/sec to serverless functions (50M during spikes)',
+    'Support 1M concurrent function executions',
+    'ML-based predictive warming to keep cold starts <0.1%',
+    'Request coalescing and buffering during cold starts',
+    'Support 100k+ unique functions across 10k customers',
+    'Handle function cascading failures gracefully',
+    'Implement priority-based execution during resource constraints',
+    'Support WebAssembly and container-based functions'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 50ms warm, P99 < 500ms cold, <0.1% cold start rate',
+    'Request Rate: 5M requests/sec normal, 50M during Prime Day',
+    'Dataset Size: 100k functions, 10PB function code storage',
+    'Availability: 99.99% uptime, survive AZ failures'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1848,6 +2167,21 @@ export const multiProtocolGatewayProblemDefinition: ProblemDefinition = {
 - Convert between protocols
 - Maintain unified schema`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support REST, SOAP, and GraphQL',
+    'Auto-detect protocol from request',
+    'Convert between protocols',
+    'Maintain unified schema',
+    'Handle protocol-specific errors',
+    'Provide protocol metrics'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 80ms across protocols',
+    'Request Rate: 50k requests/sec mixed',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1934,6 +2268,21 @@ export const versioningGatewayProblemDefinition: ProblemDefinition = {
 - Route by version header or path
 - Transform between versions
 - Track version usage`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support multiple API versions',
+    'Route by version header or path',
+    'Transform between versions',
+    'Track version usage',
+    'Deprecate old versions gracefully',
+    'Provide migration guides'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 60ms including transforms',
+    'Request Rate: 70k requests/sec',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2036,6 +2385,21 @@ export const quotaGatewayProblemDefinition: ProblemDefinition = {
 - Handle quota overages gracefully
 - Provide quota usage API`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Enforce per-second, per-day, per-month quotas',
+    'Support tiered plans (free, pro, enterprise)',
+    'Handle quota overages gracefully',
+    'Provide quota usage API',
+    'Implement quota resets',
+    'Support quota pooling for teams'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 15ms for quota checks',
+    'Request Rate: 120k requests/sec',
+    'Availability: 99.95% uptime, 99.99% quota enforcement accuracy'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2135,6 +2499,22 @@ export const monetizationGatewayProblemDefinition: ProblemDefinition = {
 - Track bandwidth consumption
 - Calculate costs in real-time
 - Support tiered pricing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Meter API usage by endpoint and method',
+    'Track bandwidth consumption',
+    'Calculate costs in real-time',
+    'Support tiered pricing',
+    'Provide usage reports',
+    'Integrate with billing systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms metering overhead',
+    'Request Rate: 150k requests/sec',
+    'Availability: 99.99% uptime for metering',
+    'Durability: 100% billing accuracy'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2236,6 +2616,24 @@ export const zeroTrustGatewayProblemDefinition: ProblemDefinition = {
 - Hardware-accelerated crypto for <10ms validation
 - Continuous risk scoring and adaptive authentication`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Handle 20M requests/sec with mTLS (2B during attacks)',
+    'Support 500k+ unique service identities globally',
+    'Hardware-accelerated crypto for <10ms validation',
+    'Continuous risk scoring and adaptive authentication',
+    'Auto-rotate 1M certificates daily without downtime',
+    'Micro-segment 10k+ different service meshes',
+    'Real-time threat detection with ML anomaly detection',
+    'Support FIDO2, WebAuthn, and biometric authentication'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 10ms with crypto, P99.9 < 25ms during attacks',
+    'Request Rate: 20M requests/sec normal, 2B during DDoS',
+    'Dataset Size: 500k services, 100M certificates, 10PB audit logs',
+    'Availability: 99.999% uptime (26 seconds downtime/month)'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2330,6 +2728,24 @@ export const mlModelGatewayProblemDefinition: ProblemDefinition = {
 - Support 10k+ different models with 1000+ versions
 - GPU orchestration across 100k+ GPUs globally
 - Real-time A/B testing with statistical significance`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Serve 100M predictions/sec (2B during viral ChatGPT moments)',
+    'Support 10k+ different models with 1000+ versions',
+    'GPU orchestration across 100k+ GPUs globally',
+    'Real-time A/B testing with statistical significance',
+    'Automatic rollback when model quality degrades >5%',
+    'Batch inference with dynamic batch sizing',
+    'Multi-modal support (text, image, video, audio)',
+    'Federated learning and edge inference capabilities'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 20ms inference, P99.9 < 50ms during spikes',
+    'Request Rate: 100M predictions/sec normal, 2B during viral events',
+    'Dataset Size: 10k models, 100PB training data, 1EB logs',
+    'Availability: 99.99% uptime, automatic failover between GPU clusters'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2431,6 +2847,23 @@ export const fraudDetectionGatewayProblemDefinition: ProblemDefinition = {
 - Apply multiple fraud models
 - Risk-based routing (block, challenge, allow)`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Score all transactions in real-time',
+    'Extract features from transaction data',
+    'Apply multiple fraud models',
+    'Risk-based routing (block, challenge, allow)',
+    'Real-time model updates',
+    'Track fraud patterns',
+    'Generate fraud alerts',
+    'Support manual review queue'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5ms scoring time',
+    'Request Rate: 500k transactions/sec',
+    'Availability: 99.99% uptime, <0.1% false positive rate, >95% fraud detection'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2526,6 +2959,23 @@ export const hftGatewayProblemDefinition: ProblemDefinition = {
 - Kernel bypass networking (DPDK)
 - Lock-free data structures`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Route orders to exchanges with <100μs latency',
+    'Implement FIX protocol support',
+    'Kernel bypass networking (DPDK)',
+    'Lock-free data structures',
+    'Deterministic garbage collection',
+    'Hardware timestamping',
+    'Market data fanout',
+    'Order validation and risk checks'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100μs tick-to-trade, <10μs jitter',
+    'Request Rate: 1M orders/sec',
+    'Availability: 99.999% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2606,6 +3056,23 @@ export const iotGatewayProblemDefinition: ProblemDefinition = {
 - Handle 10M+ concurrent connections
 - Implement QoS levels (0, 1, 2)
 - Topic-based message routing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support MQTT and CoAP protocols',
+    'Handle 10M+ concurrent connections',
+    'Implement QoS levels (0, 1, 2)',
+    'Topic-based message routing',
+    'Device authentication and authorization',
+    'Offline message buffering',
+    'Device shadow synchronization',
+    'Firmware update distribution'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms message delivery',
+    'Request Rate: 5M messages/sec',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2701,6 +3168,23 @@ export const blockchainGatewayProblemDefinition: ProblemDefinition = {
 - Implement node health checking
 - Cache immutable blockchain data
 - Handle node sync lag`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Load balance across blockchain nodes',
+    'Implement node health checking',
+    'Cache immutable blockchain data',
+    'Handle node sync lag',
+    'Support WebSocket subscriptions',
+    'Track mempool for pending txs',
+    'Batch RPC calls',
+    'Provide historical data archive'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for cached calls',
+    'Request Rate: 300k RPC calls/sec',
+    'Availability: 99.95% uptime, handle blockchain reorgs'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2801,6 +3285,23 @@ export const globalTrafficGatewayProblemDefinition: ProblemDefinition = {
 - Deploy across 300+ edge locations in 100+ countries
 - Mitigate 10Tbps volumetric DDoS attacks
 - Support 50M+ customer domains with custom rules`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Handle 100M requests/sec globally (10B during attacks)',
+    'Deploy across 300+ edge locations in 100+ countries',
+    'Mitigate 10Tbps volumetric DDoS attacks',
+    'Support 50M+ customer domains with custom rules',
+    'ML-based zero-day attack detection <100ms',
+    'Real-time threat intelligence across all PoPs',
+    'Anycast routing with <50ms convergence on failure',
+    'Support HTTP/3, QUIC, and experimental protocols'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 5ms at edge, P99.9 < 10ms during attacks',
+    'Request Rate: 100M requests/sec normal, 10B during nation-state attacks',
+    'Availability: 99.999% uptime, survive 3 simultaneous region failures'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2926,6 +3427,23 @@ export const edgeComputeGatewayProblemDefinition: ProblemDefinition = {
 - Enforce CPU/memory quotas
 - Handle cold start optimization`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Deploy functions to 100+ edge locations',
+    'Isolate tenant execution',
+    'Enforce CPU/memory quotas',
+    'Handle cold start optimization',
+    'Support multiple runtimes',
+    'Provide edge KV storage'
+  ],
+  userFacingNFRs: [
+    'Latency: P50 < 5ms, P95 < 15ms, cold start < 50ms',
+    'Request Rate: 5M req/s globally across edges',
+    'Dataset Size: 100k functions, 1MB avg size',
+    'Availability: 99.99% uptime',
+    'Durability: Function code replicated to all edges'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -3035,6 +3553,23 @@ export const apiCachingGatewayProblemDefinition: ProblemDefinition = {
 - Implement conditional requests (ETag, Last-Modified)
 - Vary cache by query params`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache GET requests by URL+headers',
+    'Support cache control headers',
+    'Implement conditional requests (ETag, Last-Modified)',
+    'Vary cache by query params',
+    'Tag-based cache invalidation',
+    'Bypass cache for authenticated requests'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 15ms cache hit, P95 < 100ms cache miss',
+    'Request Rate: 50k req/s (40k cacheable)',
+    'Dataset Size: 10GB cache, 1M unique URLs',
+    'Availability: 99.95% uptime',
+    'Durability: Cache ephemeral, rebuild from backend'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -3106,6 +3641,23 @@ export const serviceDiscoveryGatewayProblemDefinition: ProblemDefinition = {
 - Perform active health checks
 - Route to healthy endpoints only
 - Support multiple service versions`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Auto-discover service instances',
+    'Perform active health checks',
+    'Route to healthy endpoints only',
+    'Support multiple service versions',
+    'Load balance across instances',
+    'Handle service failures gracefully'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 20ms routing decision',
+    'Request Rate: 100k req/s across all services',
+    'Dataset Size: 1000 service instances, 100 services',
+    'Availability: 99.99% uptime with failover',
+    'Durability: Service registry rebuilt from discovery'
+  ],
 
   functionalRequirements: {
     mustHave: [

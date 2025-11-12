@@ -22,6 +22,19 @@ export const l6EconomicCbdcProblemDefinition: ProblemDefinition = {
 - Enable instant settlement
 - Provide offline transactions`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 150B transactions/year',
+    'Support programmable money',
+    'Enable instant settlement',
+    'Provide offline transactions',
+    'Integrate with existing banks'
+  ],
+  userFacingNFRs: [
+    'Latency: <100ms settlement',
+    'Availability: 99.999% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -63,6 +76,18 @@ export const l6EconomicInterplanetaryProblemDefinition: ProblemDefinition = {
 - Support resource futures trading
 - Enable currency exchange
 - Manage supply chain financing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Handle 24-minute transaction delays',
+    'Support resource futures trading',
+    'Enable currency exchange',
+    'Manage supply chain financing',
+    'Provide dispute resolution'
+  ],
+  userFacingNFRs: [
+    'Latency: Light-speed limited'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -106,6 +131,19 @@ export const l6EconomicSystems1ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement post-scarcity economics at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -147,6 +185,19 @@ export const l6EconomicSystems2ProblemDefinition: ProblemDefinition = {
 - Achieve infinite liquidity breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement interplanetary commerce at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -190,6 +241,19 @@ export const l6EconomicSystems3ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement AI governance tokens at planetary scale',
+    'Achieve predictive markets breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -231,6 +295,19 @@ export const l6EconomicSystems4ProblemDefinition: ProblemDefinition = {
 - Achieve self-balancing economies breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum finance at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -274,6 +351,19 @@ export const l6EconomicSystems5ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological assets at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -315,6 +405,19 @@ export const l6EconomicSystems6ProblemDefinition: ProblemDefinition = {
 - Achieve predictive markets breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement post-scarcity economics at planetary scale',
+    'Achieve predictive markets breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -358,6 +461,19 @@ export const l6EconomicSystems7ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement interplanetary commerce at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -399,6 +515,19 @@ export const l6EconomicSystems8ProblemDefinition: ProblemDefinition = {
 - Achieve infinite liquidity breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement AI governance tokens at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -442,6 +571,19 @@ export const l6EconomicSystems9ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum finance at planetary scale',
+    'Achieve predictive markets breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -483,6 +625,19 @@ export const l6EconomicSystems10ProblemDefinition: ProblemDefinition = {
 - Achieve self-balancing economies breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological assets at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -526,6 +681,19 @@ export const l6EconomicSystems11ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement post-scarcity economics at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -567,6 +735,19 @@ export const l6EconomicSystems12ProblemDefinition: ProblemDefinition = {
 - Achieve predictive markets breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement interplanetary commerce at planetary scale',
+    'Achieve predictive markets breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -610,6 +791,19 @@ export const l6EconomicSystems13ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement AI governance tokens at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -651,6 +845,19 @@ export const l6EconomicSystems14ProblemDefinition: ProblemDefinition = {
 - Achieve infinite liquidity breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum finance at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -694,6 +901,19 @@ export const l6EconomicSystems15ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological assets at planetary scale',
+    'Achieve predictive markets breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -736,6 +956,19 @@ export const l6EconomicSystems16ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement post-scarcity economics at planetary scale',
+    'Achieve self-balancing economies breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -777,6 +1010,19 @@ export const l6EconomicSystems17ProblemDefinition: ProblemDefinition = {
 - Achieve infinite liquidity breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement interplanetary commerce at planetary scale',
+    'Achieve infinite liquidity breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [

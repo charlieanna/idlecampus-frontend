@@ -16,6 +16,13 @@ export const tiktokProblemDefinition: ProblemDefinition = {
 - Users can like, comment, and share videos
 - Videos auto-play as users scroll`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can upload short videos (15-60 seconds)',
+    'Users can scroll through an infinite feed of videos',
+    'Users can like, comment, and share videos'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

@@ -22,6 +22,20 @@ export const l5DataPlatformUberProblemDefinition: ProblemDefinition = {
 - Enable SQL queries on streaming data
 - Compute ML features in real-time`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ingest 1 trillion events daily',
+    'Support sub-minute data freshness',
+    'Enable SQL queries on streaming data',
+    'Compute ML features in real-time',
+    'Support time-travel queries'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1 minute end-to-end',
+    'Dataset Size: 1 exabyte total capacity',
+    'Availability: 99.95% data availability'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -63,6 +77,21 @@ export const l5DataPlatform1ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support data lake at Databricks scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 10M requests per second',
+    'Dataset Size: 100TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -109,6 +138,21 @@ export const l5DataPlatform2ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support ETL pipeline at Snowflake scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 11M requests per second',
+    'Dataset Size: 110TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -153,6 +197,21 @@ export const l5DataPlatform3ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support real-time analytics at Palantir scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 12M requests per second',
+    'Dataset Size: 120TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -199,6 +258,21 @@ export const l5DataPlatform4ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support ML feature store at Splunk scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 13M requests per second',
+    'Dataset Size: 130TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -243,6 +317,21 @@ export const l5DataPlatform5ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support data governance at Tableau scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 14M requests per second',
+    'Dataset Size: 140TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -289,6 +378,21 @@ export const l5DataPlatform6ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support data lake at Looker scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 15M requests per second',
+    'Dataset Size: 150TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -333,6 +437,21 @@ export const l5DataPlatform7ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support ETL pipeline at Domo scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 16M requests per second',
+    'Dataset Size: 160TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -379,6 +498,21 @@ export const l5DataPlatform8ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support real-time analytics at Sisense scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 17M requests per second',
+    'Dataset Size: 170TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -423,6 +557,21 @@ export const l5DataPlatform9ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support ML feature store at ThoughtSpot scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 18M requests per second',
+    'Dataset Size: 180TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -469,6 +618,21 @@ export const l5DataPlatform10ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support data governance at Alteryx scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 19M requests per second',
+    'Dataset Size: 190TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -513,6 +677,21 @@ export const l5DataPlatform11ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support data lake at Informatica scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 20M requests per second',
+    'Dataset Size: 200TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -559,6 +738,21 @@ export const l5DataPlatform12ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support ETL pipeline at Talend scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 21M requests per second',
+    'Dataset Size: 210TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -603,6 +797,21 @@ export const l5DataPlatform13ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support real-time analytics at Fivetran scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 22M requests per second',
+    'Dataset Size: 220TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -649,6 +858,21 @@ export const l5DataPlatform14ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support ML feature store at Stitch scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 23M requests per second',
+    'Dataset Size: 230TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -693,6 +917,21 @@ export const l5DataPlatform15ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support data governance at Segment scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 24M requests per second',
+    'Dataset Size: 240TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -739,6 +978,21 @@ export const l5DataPlatform16ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support data lake at Census scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 25M requests per second',
+    'Dataset Size: 250TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -783,6 +1037,21 @@ export const l5DataPlatform17ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support ETL pipeline at Hightouch scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 26M requests per second',
+    'Dataset Size: 260TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [

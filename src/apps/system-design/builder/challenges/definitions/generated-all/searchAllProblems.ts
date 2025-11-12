@@ -22,6 +22,21 @@ export const basicTextSearchProblemDefinition: ProblemDefinition = {
 - Support AND/OR operators
 - Rank results by relevance`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Index text documents',
+    'Search by keywords',
+    'Support AND/OR operators',
+    'Rank results by relevance',
+    'Highlight matching terms'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for queries',
+    'Request Rate: 1k searches/sec',
+    'Dataset Size: 1M documents',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -94,6 +109,21 @@ export const autocompleteSearchProblemDefinition: ProblemDefinition = {
 - Support fuzzy matching for typos
 - Personalize based on user history`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Suggest completions for partial queries',
+    'Rank by popularity and recency',
+    'Support fuzzy matching for typos',
+    'Personalize based on user history',
+    'Update suggestions in real-time'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms per keystroke',
+    'Request Rate: 50k keystrokes/sec',
+    'Dataset Size: 10M unique queries',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -165,6 +195,20 @@ export const facetedSearchProblemDefinition: ProblemDefinition = {
 - Show facet counts
 - Support range filters
 - Handle empty results gracefully`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Filter by multiple attributes',
+    'Show facet counts',
+    'Support range filters',
+    'Handle empty results gracefully'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms',
+    'Request Rate: 5k req/s',
+    'Dataset Size: 1M products, 20 facets',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -242,6 +286,20 @@ export const geoSearchProblemDefinition: ProblemDefinition = {
 - Sort by distance
 - Filter by category`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Search within radius',
+    'Bounding box queries',
+    'Sort by distance',
+    'Filter by category'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms',
+    'Request Rate: 20k req/s',
+    'Dataset Size: 10M locations worldwide',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -304,6 +362,20 @@ export const fuzzySearchProblemDefinition: ProblemDefinition = {
 - Suggest corrections
 - Phonetic matching
 - Support multiple languages`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Tolerate 1-2 char errors',
+    'Suggest corrections',
+    'Phonetic matching',
+    'Support multiple languages'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 150ms',
+    'Request Rate: 10k req/s',
+    'Dataset Size: 5M documents',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -377,6 +449,20 @@ export const synonymSearchProblemDefinition: ProblemDefinition = {
 - Domain-specific terms
 - Bidirectional matching`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Expand with synonyms',
+    'Language-specific synonyms',
+    'Domain-specific terms',
+    'Bidirectional matching'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms',
+    'Request Rate: 15k req/s',
+    'Dataset Size: 2M products, 50k synonym rules',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -449,6 +535,20 @@ export const highlightSearchProblemDefinition: ProblemDefinition = {
 - Handle multi-word matches
 - HTML-safe highlighting`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Highlight all matched terms',
+    'Show context window',
+    'Handle multi-word matches',
+    'HTML-safe highlighting'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 120ms',
+    'Request Rate: 8k req/s',
+    'Dataset Size: 3M documents',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -511,6 +611,20 @@ export const boostingSearchProblemDefinition: ProblemDefinition = {
 - Boost tags 3x
 - Recency boosting
 - Popularity signals`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Boost title matches 5x',
+    'Boost tags 3x',
+    'Recency boosting',
+    'Popularity signals'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms',
+    'Request Rate: 12k req/s',
+    'Dataset Size: 8M documents',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -583,6 +697,21 @@ export const productDiscoveryProblemDefinition: ProblemDefinition = {
 - Faceted filters
 - Search within category
 - Sort options (price, rating, relevance)`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Category navigation',
+    'Faceted filters',
+    'Search within category',
+    'Sort options (price, rating, relevance)',
+    'Cross-sell recommendations'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms',
+    'Request Rate: 50k req/s',
+    'Dataset Size: 50M products, 1k categories',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -665,6 +794,20 @@ export const searchSuggestionsProblemDefinition: ProblemDefinition = {
 - Correct common mistakes
 - Personalized suggestions`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Suggest related queries',
+    'Show trending searches',
+    'Correct common mistakes',
+    'Personalized suggestions'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms',
+    'Request Rate: 40k req/s',
+    'Dataset Size: 100M unique queries',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -740,6 +883,24 @@ export const ecommerceSearchProblemDefinition: ProblemDefinition = {
 - Handle 1M searches/sec (10M during Prime Day)
 - Deep personalization for 500M+ users
 - Visual search with computer vision`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Search 10B+ products in <50ms P99 latency',
+    'Handle 1M searches/sec (10M during Prime Day)',
+    'Deep personalization for 500M+ users',
+    'Visual search with computer vision',
+    'Voice search with NLP understanding',
+    'Real-time inventory and pricing in results',
+    'Support 100+ languages and currencies',
+    'ML-based query understanding and expansion'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 50ms, P99.9 < 100ms even during spikes',
+    'Request Rate: 1M searches/sec normal, 10M during Prime Day',
+    'Dataset Size: 10B products, 500M user profiles, 100TB indexes',
+    'Availability: 99.99% uptime with region failover'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -827,6 +988,20 @@ export const multilingualSearchProblemDefinition: ProblemDefinition = {
 - Cross-language search
 - Handle CJK languages`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Detect query language',
+    'Language-specific analyzers',
+    'Cross-language search',
+    'Handle CJK languages'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 150ms',
+    'Request Rate: 25k req/s',
+    'Dataset Size: 50M documents, 20 languages',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -894,6 +1069,21 @@ export const searchAnalyticsProblemDefinition: ProblemDefinition = {
 - Track CTR per query
 - Detect zero-result queries
 - Measure latency percentiles`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Log all queries',
+    'Track CTR per query',
+    'Detect zero-result queries',
+    'Measure latency percentiles',
+    'Popular search trends'
+  ],
+  userFacingNFRs: [
+    'Latency: Logging adds < 5ms overhead',
+    'Request Rate: 30k search req/s, 30k log writes/s',
+    'Dataset Size: 1B query logs/month',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -980,6 +1170,20 @@ export const personalizedSearchProblemDefinition: ProblemDefinition = {
 - Build user profiles
 - Re-rank with preferences
 - Privacy-preserving personalization`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Track user interactions',
+    'Build user profiles',
+    'Re-rank with preferences',
+    'Privacy-preserving personalization'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 200ms with personalization',
+    'Request Rate: 20k req/s',
+    'Dataset Size: 100M users, 10M products',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1072,6 +1276,20 @@ export const voiceSearchProblemDefinition: ProblemDefinition = {
 - Noise cancellation
 - Intent recognition`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Speech-to-text conversion',
+    'Handle accents and dialects',
+    'Noise cancellation',
+    'Intent recognition'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 1s including transcription',
+    'Request Rate: 10k req/s',
+    'Dataset Size: 50M voice queries/month',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1144,6 +1362,24 @@ export const imageSearchProblemDefinition: ProblemDefinition = {
 - Visual similarity using CLIP/Vision Transformers
 - Reverse image search with <100ms latency
 - Multi-modal search (text + image + video)`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Search 10B+ images with 100M queries/sec',
+    'Visual similarity using CLIP/Vision Transformers',
+    'Reverse image search with <100ms latency',
+    'Multi-modal search (text + image + video)',
+    'Real-time object/face/scene detection',
+    'Support image generation queries',
+    'Content moderation and safety filters',
+    'Cross-platform image deduplication'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms visual search, <200ms multi-modal',
+    'Request Rate: 100M searches/sec, 1B during viral events',
+    'Dataset Size: 10B images, 100TB embeddings, 1PB raw data',
+    'Availability: 99.99% uptime with GPU failover'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1231,6 +1467,20 @@ export const realtimeIndexingProblemDefinition: ProblemDefinition = {
 - Maintain search availability during indexing
 - Incremental index updates`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Sub-second indexing latency',
+    'Handle write bursts',
+    'Maintain search availability during indexing',
+    'Incremental index updates'
+  ],
+  userFacingNFRs: [
+    'Latency: Indexing < 1s, Search P95 < 100ms',
+    'Request Rate: 100k writes/s, 50k searches/s',
+    'Dataset Size: 500M documents',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1312,6 +1562,20 @@ export const federatedSearchProblemDefinition: ProblemDefinition = {
 - Merge and deduplicate results
 - Unified ranking across sources
 - Handle partial failures`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Query multiple sources in parallel',
+    'Merge and deduplicate results',
+    'Unified ranking across sources',
+    'Handle partial failures'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 500ms querying 5 sources',
+    'Request Rate: 8k req/s',
+    'Dataset Size: 100M docs across 10 sources',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1408,6 +1672,24 @@ export const logSearchProblemDefinition: ProblemDefinition = {
 - Search 100PB logs with <1s latency
 - Real-time anomaly detection with ML
 - Complex aggregations across years of data`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ingest 100M events/sec from 1M+ microservices',
+    'Search 100PB logs with <1s latency',
+    'Real-time anomaly detection with ML',
+    'Complex aggregations across years of data',
+    'Security forensics with pattern matching',
+    'Compliance with 10-year retention policies',
+    'Multi-tenant isolation for 10k+ enterprises',
+    'Automated incident root cause analysis'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1s for day queries, < 10s for year queries',
+    'Request Rate: 100M events/sec ingestion, 100k queries/sec',
+    'Dataset Size: 100PB hot storage, 1EB total with archives',
+    'Availability: 99.999% for ingestion, 99.99% for search'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1510,6 +1792,24 @@ export const codeSearchProblemDefinition: ProblemDefinition = {
 - Semantic search using CodeBERT/Codex models
 - Support 500+ programming languages`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Index 1B+ repos with 100T+ lines of code',
+    'Process 100M code searches/sec globally',
+    'Semantic search using CodeBERT/Codex models',
+    'Support 500+ programming languages',
+    'Real-time indexing of 1M+ commits/minute',
+    'Cross-repo dependency and vulnerability scanning',
+    'AI-powered code completion and suggestions',
+    'Git history and blame integration at scale'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms symbol search, < 200ms semantic',
+    'Request Rate: 100M searches/sec, 1B during launches',
+    'Dataset Size: 1B repos, 100T lines, 10PB indexes',
+    'Availability: 99.99% uptime with instant failover'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1596,6 +1896,21 @@ export const hybridSearchProblemDefinition: ProblemDefinition = {
 - Reciprocal rank fusion (RRF)
 - Query rewriting with LLM`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'BM25 keyword scoring',
+    'Vector embedding search',
+    'Reciprocal rank fusion (RRF)',
+    'Query rewriting with LLM',
+    'Hybrid ranking tuning'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 150ms',
+    'Request Rate: 30k req/s',
+    'Dataset Size: 10M documents with embeddings',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1673,6 +1988,21 @@ export const videoSearchProblemDefinition: ProblemDefinition = {
 - Visual scene search
 - Face recognition
 - Object detection in frames`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Transcript search with timestamps',
+    'Visual scene search',
+    'Face recognition',
+    'Object detection in frames',
+    'Chapter/timestamp navigation'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 300ms',
+    'Request Rate: 100k req/s',
+    'Dataset Size: 1B videos, 100PB storage',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1770,6 +2100,21 @@ export const securityEventSearchProblemDefinition: ProblemDefinition = {
 - Anomaly detection
 - Threat intelligence enrichment`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ingest firewall, IDS, auth logs',
+    'Correlation rules across sources',
+    'Anomaly detection',
+    'Threat intelligence enrichment',
+    'Real-time alerting'
+  ],
+  userFacingNFRs: [
+    'Latency: Alerting < 10s, Search P95 < 1s',
+    'Request Rate: 500k events/s',
+    'Dataset Size: 100TB/month',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1860,6 +2205,21 @@ export const medicalRecordSearchProblemDefinition: ProblemDefinition = {
 - ICD-10/SNOMED terminology
 - De-identified research queries`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Field-level encryption (PHI)',
+    'Audit all searches',
+    'ICD-10/SNOMED terminology',
+    'De-identified research queries',
+    'Access control by role'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 300ms',
+    'Request Rate: 5k req/s',
+    'Dataset Size: 500M patient records',
+    'Availability: 99.99% uptime, HIPAA compliant'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1945,6 +2305,21 @@ export const socialMediaSearchProblemDefinition: ProblemDefinition = {
 - Hashtag and mention search
 - Trending topic detection
 - User search`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Real-time indexing (<5s)',
+    'Hashtag and mention search',
+    'Trending topic detection',
+    'User search',
+    'Time-decay ranking'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms',
+    'Request Rate: 200k req/s',
+    'Dataset Size: 500B posts, 1B users',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2046,6 +2421,24 @@ export const semanticSearchPlatformProblemDefinition: ProblemDefinition = {
 - Index 100B+ documents with 2048-dim embeddings
 - GPT-4/PaLM-level query understanding
 - Multi-modal search across text/image/video/audio`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 100M semantic searches/sec globally',
+    'Index 100B+ documents with 2048-dim embeddings',
+    'GPT-4/PaLM-level query understanding',
+    'Multi-modal search across text/image/video/audio',
+    'Support 200+ languages with cross-lingual search',
+    'Real-time re-ranking with 100+ signals',
+    'Continuous learning from 1B+ daily interactions',
+    'Explainable AI with attribution and confidence'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms end-to-end, <10ms embedding generation',
+    'Request Rate: 100M searches/sec, 1B during major events',
+    'Dataset Size: 100B docs, 1PB embeddings, 100TB models',
+    'Availability: 99.999% uptime with automatic GPU failover'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2152,6 +2545,21 @@ export const jobSearchProblemDefinition: ProblemDefinition = {
 - Salary range filter
 - Experience level`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Search by skills/title',
+    'Location radius filter',
+    'Salary range filter',
+    'Experience level',
+    'ML relevance ranking'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 150ms',
+    'Request Rate: 50k req/s',
+    'Dataset Size: 100M jobs, 500M candidates',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2228,6 +2636,21 @@ export const travelSearchProblemDefinition: ProblemDefinition = {
 - Flexible date ranges
 - Price + duration sorting
 - Airline/hotel filters`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Multi-leg flight search',
+    'Flexible date ranges',
+    'Price + duration sorting',
+    'Airline/hotel filters',
+    'Real-time price updates'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 2s aggregating 100 providers',
+    'Request Rate: 30k req/s',
+    'Dataset Size: 10M daily price updates',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2306,6 +2729,21 @@ export const academicPaperSearchProblemDefinition: ProblemDefinition = {
 - Author search
 - Topic clustering`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Full-text search',
+    'Citation graph traversal',
+    'Author search',
+    'Topic clustering',
+    'Related paper suggestions'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 300ms',
+    'Request Rate: 15k req/s',
+    'Dataset Size: 200M papers, 2B citations',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2383,6 +2821,21 @@ export const recipeSearchProblemDefinition: ProblemDefinition = {
 - Cook time filter
 - Nutrition info`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ingredient-based search',
+    'Dietary filter (vegan, gluten-free)',
+    'Cook time filter',
+    'Nutrition info',
+    'User ratings'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms',
+    'Request Rate: 10k req/s',
+    'Dataset Size: 5M recipes',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2445,6 +2898,21 @@ export const legalDocSearchProblemDefinition: ProblemDefinition = {
 - Citation linking
 - Jurisdiction filter
 - Date range queries`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Full-text legal search',
+    'Citation linking',
+    'Jurisdiction filter',
+    'Date range queries',
+    'Shepardize (track case history)'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 500ms',
+    'Request Rate: 5k req/s',
+    'Dataset Size: 50M court opinions, 100M citations',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2517,6 +2985,21 @@ export const newsSearchProblemDefinition: ProblemDefinition = {
 - Story clustering
 - Entity extraction (people, places)
 - Topic categorization`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Real-time article indexing',
+    'Story clustering',
+    'Entity extraction (people, places)',
+    'Topic categorization',
+    'Recency-weighted ranking'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms',
+    'Request Rate: 40k req/s',
+    'Dataset Size: 500M articles, 10k new/hour',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2595,6 +3078,21 @@ export const musicSearchProblemDefinition: ProblemDefinition = {
 - Lyrics search
 - Genre/mood filters`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Search songs, artists, albums',
+    'Audio feature filters',
+    'Lyrics search',
+    'Genre/mood filters',
+    'Playlist search'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 80ms',
+    'Request Rate: 100k req/s',
+    'Dataset Size: 100M tracks, 10M artists',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2667,6 +3165,21 @@ export const appStoreSearchProblemDefinition: ProblemDefinition = {
 - Rating/download sorting
 - App icon/screenshot display`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Keyword search',
+    'Category filters',
+    'Rating/download sorting',
+    'App icon/screenshot display',
+    'Similar app recommendations'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms',
+    'Request Rate: 80k req/s',
+    'Dataset Size: 5M apps',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2738,6 +3251,21 @@ export const documentCollabSearchProblemDefinition: ProblemDefinition = {
 - Full-text in docs/PDFs
 - Search by owner/editor
 - Recent activity boost`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Permission-aware search',
+    'Full-text in docs/PDFs',
+    'Search by owner/editor',
+    'Recent activity boost',
+    'Folder hierarchy'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 150ms including ACL check',
+    'Request Rate: 50k req/s',
+    'Dataset Size: 10B documents',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [

@@ -27,13 +27,73 @@ export function ProblemDescriptionPanel({ challenge }: ProblemDescriptionPanelPr
         </div>
       </div>
 
-      {/* Your Goal */}
-      <div className="mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+      {/* Your Goal - High-level requirements */}
+      <div className="mb-4 bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
         <h3 className="text-sm font-semibold text-gray-900 mb-3">🎯 Your Goal</h3>
 
         <div className="space-y-3">
           <div>
-            <div className="text-xs font-medium text-indigo-700 mb-2">Phase 1: Functional Requirements</div>
+            <div className="text-xs font-medium text-indigo-700 mb-2">Functional Requirements</div>
+            <div className="text-sm text-gray-700">
+              <p className="mb-2">Design a system that implements these features:</p>
+              <ul className="space-y-1.5 ml-4">
+                {challenge.requirements.functional.map((req, idx) => (
+                  <li key={idx} className="flex items-start">
+                    <span className="text-blue-500 mr-2">✓</span>
+                    <span>{req}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-blue-200">
+            <div className="text-xs font-medium text-indigo-700 mb-2">Non-Functional Requirements</div>
+            <div className="text-sm text-gray-700">
+              {challenge.requirements.nfrs && challenge.requirements.nfrs.length > 0 ? (
+                // Show detailed user-facing NFRs if available
+                <ul className="space-y-1.5 ml-4">
+                  {challenge.requirements.nfrs.map((nfr, idx) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="text-blue-500 mr-2">✓</span>
+                      <span>{nfr}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                // Fallback to old format if no detailed NFRs
+                <ul className="space-y-1.5 ml-4">
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-2">📊</span>
+                    <span><strong>Traffic:</strong> {challenge.requirements.traffic}</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-2">⚡</span>
+                    <span><strong>Latency:</strong> {challenge.requirements.latency}</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-2">🎯</span>
+                    <span><strong>Availability:</strong> {challenge.requirements.availability}</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-2">💰</span>
+                    <span><strong>Budget:</strong> {challenge.requirements.budget}</span>
+                  </li>
+                </ul>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Test Scenarios - What gets validated */}
+      <div className="mb-6 bg-white border border-gray-200 rounded-lg p-4">
+        <h3 className="text-sm font-semibold text-gray-900 mb-3">📋 Test Scenarios</h3>
+        <p className="text-xs text-gray-600 mb-3">Your design will be validated against these scenarios:</p>
+
+        <div className="space-y-3">
+          <div>
+            <div className="text-xs font-medium text-purple-700 mb-2">Phase 1: Functional Requirements</div>
             <div className="text-sm text-gray-700">
               <p className="mb-2">Design a system that correctly implements these core features:</p>
               <ul className="space-y-1.5 ml-4">
@@ -41,7 +101,7 @@ export function ProblemDescriptionPanel({ challenge }: ProblemDescriptionPanelPr
                   .filter(tc => tc.type === 'functional')
                   .map((tc, idx) => (
                     <li key={idx} className="flex items-start">
-                      <span className="text-blue-500 mr-2">✓</span>
+                      <span className="text-purple-500 mr-2">✓</span>
                       <span>{tc.description}</span>
                     </li>
                   ))}
@@ -49,46 +109,20 @@ export function ProblemDescriptionPanel({ challenge }: ProblemDescriptionPanelPr
             </div>
           </div>
 
-          <div className="pt-2 border-t border-blue-200">
-            <div className="text-xs font-medium text-indigo-700 mb-2">Phase 2: Non-Functional Requirements</div>
+          <div className="pt-2 border-t border-gray-200">
+            <div className="text-xs font-medium text-purple-700 mb-2">Phase 2: Non-Functional Requirements</div>
             <div className="text-sm text-gray-700">
               <ul className="space-y-1.5 ml-4">
                 {challenge.testCases
                   .filter(tc => tc.type !== 'functional')
                   .map((tc, idx) => (
                     <li key={idx} className="flex items-start">
-                      <span className="text-blue-500 mr-2">✓</span>
+                      <span className="text-purple-500 mr-2">✓</span>
                       <span>{tc.description}</span>
                     </li>
                   ))}
               </ul>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Performance Targets */}
-      <div className="mb-6">
-        <h3 className="text-sm font-semibold text-gray-900 mb-3">Performance Targets</h3>
-        <div className="space-y-2">
-          <div>
-            <div className="text-xs font-medium text-gray-500 mb-1">Traffic</div>
-            <p className="text-sm text-gray-700">{challenge.requirements.traffic}</p>
-          </div>
-
-          <div>
-            <div className="text-xs font-medium text-gray-500 mb-1">Latency</div>
-            <p className="text-sm text-gray-700">{challenge.requirements.latency}</p>
-          </div>
-
-          <div>
-            <div className="text-xs font-medium text-gray-500 mb-1">Availability</div>
-            <p className="text-sm text-gray-700">{challenge.requirements.availability}</p>
-          </div>
-
-          <div>
-            <div className="text-xs font-medium text-gray-500 mb-1">Budget</div>
-            <p className="text-sm text-gray-700">{challenge.requirements.budget}</p>
           </div>
         </div>
       </div>

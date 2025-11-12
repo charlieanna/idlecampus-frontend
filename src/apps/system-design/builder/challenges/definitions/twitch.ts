@@ -16,6 +16,11 @@ export const twitchProblemDefinition: ProblemDefinition = {
 - Users can chat in real-time during streams
 - Platform supports VOD (Video on Demand) playback`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can chat in real-time during streams'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

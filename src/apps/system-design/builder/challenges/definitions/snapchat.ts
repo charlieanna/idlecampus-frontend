@@ -16,6 +16,13 @@ export const snapchatProblemDefinition: ProblemDefinition = {
 - Users can send messages that auto-delete
 - Content expires automatically`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can send photos/videos that disappear after viewing',
+    'Users can post stories that last 24 hours',
+    'Users can send messages that auto-delete'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

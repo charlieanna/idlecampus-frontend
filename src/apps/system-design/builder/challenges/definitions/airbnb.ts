@@ -16,6 +16,11 @@ export const airbnbProblemDefinition: ProblemDefinition = {
 - Platform handles payments and bookings
 - Users can leave reviews`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can leave reviews'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

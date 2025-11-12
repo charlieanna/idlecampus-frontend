@@ -22,6 +22,27 @@ export const chatProblemDefinition: ProblemDefinition = {
 - Show online/offline/typing presence indicators
 - Persist message history (last 30 days minimum)`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Send text messages between users in real-time',
+    'Create group chats with up to 100 participants',
+    'Show online/offline/typing presence indicators',
+    'Persist message history (last 30 days minimum)',
+    'Support message delivery receipts (sent/delivered/read)',
+    'Enable message search within conversations',
+    'Share files/images up to 25MB',
+    'Support message reactions/emojis',
+    '@mention notifications in group chats',
+    'End-to-end encryption for private messages'
+  ],
+  userFacingNFRs: [
+    'Latency: Message delivery: P95 < 100ms, P99 < 200ms, P999 < 500ms. Message history fetch: P95 < 200ms. Presence updates: P95 < 50ms',
+    'Request Rate: 100k messages/sec sustained. 1M concurrent WebSocket connections. 500k presence updates/sec. Peak traffic during business hours 3x normal (300k msg/sec)',
+    'Dataset Size: 1B messages/day stored. Average message 500 bytes. Total storage ~500GB/day, 180TB/year. 100M active users. P99 group chat size: 100 members',
+    'Availability: 99.95% uptime (4.38 hours downtime/year). Message delivery must work during partial outages (graceful degradation). Read-your-writes consistency for sender',
+    'Durability: All messages must be persistent and reconstructable. Zero message loss is critical for user trust and legal compliance. Message retention: 90 days for free tier, unlimited for premium. Real-time backups with RPO < 1 minute'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -106,6 +127,20 @@ export const ingestionProblemDefinition: ProblemDefinition = {
 - Partition incoming events by workspace/customer key to preserve ordering guarantees.
 - Buffer events in a Kafka/Kinesis topic with configurable retention and replay capabilities.
 - Deliver events from the stream to downstream consumers/ETL workers for real-time feature generation.`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Expose a public ingestion endpoint that accepts JSON event payloads from web, mobile, and server SDKs.',
+    'Partition incoming events by workspace/customer key to preserve ordering guarantees.',
+    'Buffer events in a Kafka/Kinesis topic with configurable retention and replay capabilities.',
+    'Deliver events from the stream to downstream consumers/ETL workers for real-time feature generation.',
+    'Persist processed events to an analytics datastore and archive raw payloads to durable object storage.'
+  ],
+  userFacingNFRs: [
+    'Request Rate: Sustain 10k events/sec steady state with 2× bursts (20k events/sec) for five minutes.',
+    'Availability: 99.9% uptime for ingestion API and streaming pipeline.',
+    'Durability: Retain events for 24h in-stream with triple replication and archive raw events for 30 days in object storage.'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -192,6 +227,21 @@ export const basicMessageQueueProblemDefinition: ProblemDefinition = {
 - Handle message acknowledgments
 - Implement retry on failure`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Publish messages to queues',
+    'Subscribe multiple consumers',
+    'Handle message acknowledgments',
+    'Implement retry on failure',
+    'Support message persistence'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms end-to-end',
+    'Request Rate: 5k messages/sec',
+    'Dataset Size: 1M messages in queue',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -264,6 +314,20 @@ export const realtimeNotificationsProblemDefinition: ProblemDefinition = {
 - Handle connection drops/reconnects
 - Support topic subscriptions`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Maintain WebSocket connections',
+    'Push notifications instantly',
+    'Handle connection drops/reconnects',
+    'Support topic subscriptions',
+    'Batch notifications for efficiency'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms delivery time',
+    'Request Rate: 100k notifications/sec',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -335,6 +399,21 @@ export const basicEventLogProblemDefinition: ProblemDefinition = {
 - Parse structured log formats
 - Store events for querying
 - Support real-time monitoring`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Collect events from multiple sources',
+    'Parse structured log formats',
+    'Store events for querying',
+    'Support real-time monitoring',
+    'Enable basic filtering and search'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 200ms for log ingestion',
+    'Request Rate: 50k events/sec',
+    'Dataset Size: 500GB daily logs',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -412,6 +491,21 @@ export const simplePubsubProblemDefinition: ProblemDefinition = {
 - Filter by topic patterns
 - Support wildcard subscriptions`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Publish messages to topics',
+    'Subscribe to multiple topics',
+    'Filter by topic patterns',
+    'Support wildcard subscriptions',
+    'Handle subscriber backpressure'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms delivery',
+    'Request Rate: 10k messages/sec',
+    'Dataset Size: 1M active subscriptions',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -483,6 +577,21 @@ export const realtimeChatMessagesProblemDefinition: ProblemDefinition = {
 - Support channels and DMs
 - Show online presence
 - Persist message history`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Send messages in real-time',
+    'Support channels and DMs',
+    'Show online presence',
+    'Persist message history',
+    'Handle message ordering'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms message delivery',
+    'Request Rate: 20k messages/sec',
+    'Dataset Size: 10M messages/day',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -574,6 +683,21 @@ export const clickstreamAnalyticsProblemDefinition: ProblemDefinition = {
 - Sessionize user activity
 - Generate real-time metrics`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Collect click events from web/mobile',
+    'Track page views and interactions',
+    'Sessionize user activity',
+    'Generate real-time metrics',
+    'Support custom event properties'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 500ms for ingestion',
+    'Request Rate: 100k events/sec',
+    'Dataset Size: 10B events/day',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -659,6 +783,21 @@ export const serverLogAggregationProblemDefinition: ProblemDefinition = {
 - Index for fast searching
 - Alert on error patterns`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ship logs from many servers',
+    'Parse different log formats',
+    'Index for fast searching',
+    'Alert on error patterns',
+    'Visualize with dashboards'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5s from log to search',
+    'Request Rate: 200k log lines/sec',
+    'Dataset Size: 5TB logs/day',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -734,6 +873,21 @@ export const sensorDataCollectionProblemDefinition: ProblemDefinition = {
 - Handle intermittent connectivity
 - Store time-series data efficiently
 - Support data aggregation`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ingest from millions of sensors',
+    'Handle intermittent connectivity',
+    'Store time-series data efficiently',
+    'Support data aggregation',
+    'Alert on anomalies'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 1s for critical sensors',
+    'Request Rate: 500k readings/sec',
+    'Dataset Size: 100TB time-series data',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -815,6 +969,21 @@ export const emailQueueSystemProblemDefinition: ProblemDefinition = {
 - Rate limit per domain
 - Retry failed deliveries
 - Handle bounces and complaints`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Queue emails for delivery',
+    'Rate limit per domain',
+    'Retry failed deliveries',
+    'Handle bounces and complaints',
+    'Track delivery status'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 30s for transactional',
+    'Request Rate: 10k emails/sec',
+    'Dataset Size: 100M emails/day',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -901,6 +1070,21 @@ export const eventSourcingBasicProblemDefinition: ProblemDefinition = {
 - Rebuild state from event log
 - Create read projections
 - Support event replay`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store all state changes as events',
+    'Rebuild state from event log',
+    'Create read projections',
+    'Support event replay',
+    'Handle out-of-order events'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for reads',
+    'Request Rate: 10k events/sec',
+    'Dataset Size: 100M events',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -991,6 +1175,24 @@ export const orderProcessingStreamProblemDefinition: ProblemDefinition = {
 - Coordinate inventory across 500+ fulfillment centers
 - Distributed saga pattern for multi-step transactions
 - Real-time fraud detection on all orders`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 100M orders/day (1B during Prime Day)',
+    'Coordinate inventory across 500+ fulfillment centers',
+    'Distributed saga pattern for multi-step transactions',
+    'Real-time fraud detection on all orders',
+    'Same-day delivery orchestration for 50M+ orders',
+    'Handle 10M concurrent shopping carts',
+    'Support 100+ payment methods globally',
+    'Automatic rollback and compensation for failures'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 500ms order confirmation, P99.9 < 1s',
+    'Request Rate: 1.2M orders/sec during Prime Day',
+    'Dataset Size: 10B historical orders, 1B products',
+    'Availability: 99.999% uptime, zero duplicate orders'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1093,6 +1295,25 @@ export const paymentTransactionLogProblemDefinition: ProblemDefinition = {
 - Immutable audit trail with 10-year retention
 - Real-time fraud detection with <10ms latency`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 50B transactions/day (500B during Black Friday)',
+    'Real-time settlement with 10k+ banks globally',
+    'Immutable audit trail with 10-year retention',
+    'Real-time fraud detection with <10ms latency',
+    'Support 200+ currencies with real-time FX',
+    'Distributed ledger with perfect consistency',
+    'Handle chargebacks and dispute resolution',
+    'Comply with GDPR, PCI-DSS, SOC2, ISO27001'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 10ms authorization, P99.9 < 25ms',
+    'Request Rate: 580k transactions/sec normal, 5.8M during spikes',
+    'Dataset Size: 10PB daily logs, 100PB historical, 10-year retention',
+    'Availability: 99.9999% uptime (31 seconds downtime/year)',
+    'Durability: 11 nines durability, zero financial loss'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1178,6 +1399,22 @@ export const stockPriceUpdatesProblemDefinition: ProblemDefinition = {
 - Enable subscription filtering
 - Provide historical replay`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Stream tick-by-tick price data',
+    'Support thousands of symbols',
+    'Enable subscription filtering',
+    'Provide historical replay',
+    'Calculate technical indicators',
+    'Handle market data gaps'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 10ms for price updates',
+    'Request Rate: 1M ticks/sec',
+    'Dataset Size: 50TB daily market data',
+    'Availability: 99.99% during market hours'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1262,6 +1499,22 @@ export const socialMediaFeedProblemDefinition: ProblemDefinition = {
 - Rank by relevance and recency
 - Support real-time updates
 - Handle viral content efficiently`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Aggregate posts from followees',
+    'Rank by relevance and recency',
+    'Support real-time updates',
+    'Handle viral content efficiently',
+    'Personalize per user',
+    'Cache popular content'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 300ms for feed generation',
+    'Request Rate: 500k feed requests/sec',
+    'Dataset Size: 1B users, 100M posts/day',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1357,6 +1610,24 @@ export const videoUploadPipelineProblemDefinition: ProblemDefinition = {
 - Transcode to 20+ formats in <2min for 4K videos
 - Support 100M concurrent live stream viewers
 - ML-based content moderation and copyright detection`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 500k hours of video daily (2M during viral events)',
+    'Transcode to 20+ formats in <2min for 4K videos',
+    'Support 100M concurrent live stream viewers',
+    'ML-based content moderation and copyright detection',
+    'Detect copyrighted content against 1B+ references',
+    'Adaptive bitrate streaming based on network',
+    'Generate AI highlights and auto-chapters',
+    'Distributed transcoding across 10k+ GPU nodes'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 2min for 4K transcode, <10s live streaming delay',
+    'Request Rate: 500k hours/day uploads, 100M concurrent streams',
+    'Dataset Size: 100PB raw videos, 1EB with all formats',
+    'Availability: 99.99% uptime, zero data loss guarantee'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1458,6 +1729,24 @@ export const fraudDetectionStreamProblemDefinition: ProblemDefinition = {
 - Graph analysis for fraud ring detection across 1B+ entities
 - Real-time feature computation from 100B+ transaction history`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 10M transactions/sec (100M during Black Friday)',
+    'Score with <5ms P99 latency using 1000+ ML models',
+    'Graph analysis for fraud ring detection across 1B+ entities',
+    'Real-time feature computation from 100B+ transaction history',
+    'Support 100+ payment methods and currencies',
+    'Automatic model retraining when drift detected >2%',
+    'Coordinate global blocklists across 50+ countries',
+    'Handle chargebacks and dispute resolution workflows'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 5ms scoring, P99.9 < 10ms during spikes',
+    'Request Rate: 10M transactions/sec normal, 100M during Black Friday',
+    'Dataset Size: 100B transactions, 1B user profiles, 10PB feature store',
+    'Availability: 99.999% uptime, zero false negatives for high-risk'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1542,6 +1831,22 @@ export const userActivityTrackingProblemDefinition: ProblemDefinition = {
 - Build user profiles
 - Calculate funnel metrics
 - Segment users into cohorts`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Track user events across platforms',
+    'Build user profiles',
+    'Calculate funnel metrics',
+    'Segment users into cohorts',
+    'Support A/B test analysis',
+    'Generate behavioral insights'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 1s for event ingestion',
+    'Request Rate: 300k events/sec',
+    'Dataset Size: 50M active users',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1638,6 +1943,24 @@ export const iotTelemetryAggregationProblemDefinition: ProblemDefinition = {
 - Edge computing for 100ms decision making in vehicles
 - Support OTA updates to entire fleet within 1 hour`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ingest 100M messages/sec from 1B+ devices (1B during OTA)',
+    'Real-time anomaly detection across fleet with ML models',
+    'Edge computing for 100ms decision making in vehicles',
+    'Support OTA updates to entire fleet within 1 hour',
+    'Hierarchical aggregation (device→edge→region→global)',
+    'Process video streams from 10M+ cameras',
+    'Coordinate swarm intelligence for autonomous fleets',
+    'Predictive maintenance using telemetry patterns'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for critical telemetry, P99.9 < 500ms',
+    'Request Rate: 100M messages/sec normal, 1B during fleet updates',
+    'Dataset Size: 1B devices, 10PB daily telemetry, 100PB historical',
+    'Availability: 99.999% for safety-critical data'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1729,6 +2052,22 @@ export const gameEventProcessingProblemDefinition: ProblemDefinition = {
 - Award achievements
 - Detect cheating`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process player actions in real-time',
+    'Update leaderboards',
+    'Award achievements',
+    'Detect cheating',
+    'Track player progression',
+    'Generate live analytics'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for rankings',
+    'Request Rate: 500k events/sec',
+    'Dataset Size: 10M concurrent players',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1819,6 +2158,22 @@ export const deliveryTrackingUpdatesProblemDefinition: ProblemDefinition = {
 - Notify on status changes
 - Handle route updates`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Track package locations',
+    'Calculate real-time ETAs',
+    'Notify on status changes',
+    'Handle route updates',
+    'Support delivery proof',
+    'Generate delivery analytics'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 500ms for location updates',
+    'Request Rate: 100k updates/sec',
+    'Dataset Size: 50M active deliveries',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1903,6 +2258,22 @@ export const notificationFanoutProblemDefinition: ProblemDefinition = {
 - Respect user preferences
 - Batch similar notifications
 - Rate limit per channel`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support multiple channels',
+    'Respect user preferences',
+    'Batch similar notifications',
+    'Rate limit per channel',
+    'Track delivery status',
+    'Handle failures with retries'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5s for fan-out',
+    'Request Rate: 50k notifications/sec',
+    'Dataset Size: 500M users',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2000,6 +2371,22 @@ export const contentModerationQueueProblemDefinition: ProblemDefinition = {
 - Apply automated filters
 - Route to human moderators
 - Prioritize by urgency`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Queue content for review',
+    'Apply automated filters',
+    'Route to human moderators',
+    'Prioritize by urgency',
+    'Track SLA compliance',
+    'Support appeals process'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 15min for high-priority',
+    'Request Rate: 100k submissions/sec',
+    'Dataset Size: 1B pieces of content/day',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2107,6 +2494,22 @@ export const searchIndexUpdatesProblemDefinition: ProblemDefinition = {
 - Maintain search consistency
 - Reindex on schema changes`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Stream document changes',
+    'Update indexes incrementally',
+    'Maintain search consistency',
+    'Reindex on schema changes',
+    'Update ranking signals',
+    'Support rollback on errors'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5s from update to searchable',
+    'Request Rate: 50k document changes/sec',
+    'Dataset Size: 10B documents',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2187,6 +2590,22 @@ export const recommendationPipelineProblemDefinition: ProblemDefinition = {
 - Extract behavioral features
 - Serve ML recommendations
 - A/B test models`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Track user interactions',
+    'Extract behavioral features',
+    'Serve ML recommendations',
+    'A/B test models',
+    'Update models incrementally',
+    'Cache recommendations'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for recommendations',
+    'Request Rate: 200k requests/sec',
+    'Dataset Size: 100M users, 1M items',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2283,6 +2702,23 @@ export const auditLogStreamingProblemDefinition: ProblemDefinition = {
 - Encrypt sensitive data
 - Support compliance queries`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Capture all system actions',
+    'Ensure log immutability',
+    'Encrypt sensitive data',
+    'Support compliance queries',
+    'Archive to cold storage',
+    'Detect security anomalies'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 1s for log ingestion',
+    'Request Rate: 500k audit events/sec',
+    'Dataset Size: 100TB logs, 7-year retention',
+    'Availability: 99.99% uptime',
+    'Durability: 11 nines durability'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2368,6 +2804,22 @@ export const kafkaStreamingPipelineProblemDefinition: ProblemDefinition = {
 - Process with exactly-once semantics
 - Support stream joins and aggregations
 - Handle late-arriving data`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ingest 1B events per day',
+    'Process with exactly-once semantics',
+    'Support stream joins and aggregations',
+    'Handle late-arriving data',
+    'Provide real-time analytics',
+    'Support event replay for reprocessing'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms end-to-end',
+    'Request Rate: 100k events/sec peak',
+    'Dataset Size: 30 days retention, 30TB',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2464,6 +2916,24 @@ export const exactlyOncePaymentProblemDefinition: ProblemDefinition = {
 - Support distributed transactions
 - Maintain strict ordering`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Guarantee exactly-once payment execution',
+    'Handle network failures gracefully',
+    'Support distributed transactions',
+    'Maintain strict ordering',
+    'Enable idempotent retries',
+    'Provide strong consistency',
+    'Track transaction state',
+    'Support rollback on failure'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 500ms for payments',
+    'Request Rate: 50k payments/sec',
+    'Dataset Size: 10B transactions/year',
+    'Availability: 99.999% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2558,6 +3028,24 @@ export const globalEventSourcingSystemProblemDefinition: ProblemDefinition = {
 - Maintain causal ordering
 - Replicate events globally
 - Resolve conflicts with CRDTs`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store events across regions',
+    'Maintain causal ordering',
+    'Replicate events globally',
+    'Resolve conflicts with CRDTs',
+    'Support global queries',
+    'Enable regional projections',
+    'Provide point-in-time recovery',
+    'Handle network partitions'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms regional, < 1s cross-region',
+    'Request Rate: 200k events/sec globally',
+    'Dataset Size: 500TB event history',
+    'Availability: 99.99% per region'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2663,6 +3151,24 @@ export const multiDcStreamReplicationProblemDefinition: ProblemDefinition = {
 - Handle DC failures
 - Support bidirectional replication`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Replicate streams across DCs',
+    'Maintain message ordering',
+    'Handle DC failures',
+    'Support bidirectional replication',
+    'Monitor replication lag',
+    'Enable selective replication',
+    'Provide conflict detection',
+    'Support topic remapping'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 2s cross-DC replication',
+    'Request Rate: 500k messages/sec per DC',
+    'Dataset Size: 100TB per DC',
+    'Availability: 99.95% per DC'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2763,6 +3269,24 @@ export const realtimeMlFeatureStoreProblemDefinition: ProblemDefinition = {
 - Maintain point-in-time correctness
 - Support feature versioning`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Compute features from streams',
+    'Serve features with <10ms latency',
+    'Maintain point-in-time correctness',
+    'Support feature versioning',
+    'Enable batch and streaming',
+    'Provide feature lineage',
+    'Handle feature drift',
+    'Support A/B testing'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms for feature serving',
+    'Request Rate: 1M feature requests/sec',
+    'Dataset Size: 10B feature vectors',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2857,6 +3381,24 @@ export const gdprCompliantStreamingProblemDefinition: ProblemDefinition = {
 - Anonymize PII in streams
 - Track consent across events
 - Enable data portability`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support right to be forgotten',
+    'Anonymize PII in streams',
+    'Track consent across events',
+    'Enable data portability',
+    'Audit all data access',
+    'Implement retention policies',
+    'Support data minimization',
+    'Provide transparency reports'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms with privacy checks',
+    'Request Rate: 100k events/sec',
+    'Dataset Size: 50TB with 30-day retention',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2958,6 +3500,25 @@ export const financialSettlementStreamProblemDefinition: ProblemDefinition = {
 - Support multi-currency
 - Handle dispute resolution`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process settlements in real-time',
+    'Maintain double-entry accounting',
+    'Support multi-currency',
+    'Handle dispute resolution',
+    'Enable transaction reconciliation',
+    'Provide regulatory reporting',
+    'Implement circuit breakers',
+    'Support settlement windows'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 1s for settlements',
+    'Request Rate: 50k settlements/sec',
+    'Dataset Size: 100TB transaction history',
+    'Availability: 99.999% uptime',
+    'Durability: 11 nines durability'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -3048,6 +3609,24 @@ export const autonomousVehicleTelemetryProblemDefinition: ProblemDefinition = {
 - Process video streams
 - Log decision traces
 - Detect safety events`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ingest multi-modal sensor data',
+    'Process video streams',
+    'Log decision traces',
+    'Detect safety events',
+    'Update ML models OTA',
+    'Support fleet analytics',
+    'Enable remote diagnostics',
+    'Compress data efficiently'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for safety events',
+    'Request Rate: 10M readings/sec fleet-wide',
+    'Dataset Size: 1PB/day from fleet',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -3154,6 +3733,25 @@ export const healthcareDataStreamHipaaProblemDefinition: ProblemDefinition = {
 - Enforce access controls
 - Audit all data access`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Stream HL7/FHIR messages',
+    'Encrypt PHI end-to-end',
+    'Enforce access controls',
+    'Audit all data access',
+    'Support clinical workflows',
+    'Enable real-time alerts',
+    'Maintain data lineage',
+    'Provide patient consent'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 500ms for critical alerts',
+    'Request Rate: 100k messages/sec',
+    'Dataset Size: 500TB patient data',
+    'Availability: 99.99% uptime',
+    'Durability: 11 nines durability'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -3248,6 +3846,24 @@ export const globalCdcPipelineProblemDefinition: ProblemDefinition = {
 - Stream across regions with low latency
 - Handle schema evolution gracefully
 - Transform data between formats`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Capture changes from multiple databases',
+    'Stream across regions with low latency',
+    'Handle schema evolution gracefully',
+    'Transform data between formats',
+    'Maintain ordering guarantees',
+    'Support filtering and routing',
+    'Enable point-in-time recovery',
+    'Monitor lag and data quality'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 1s cross-region replication',
+    'Request Rate: 500k changes/sec globally',
+    'Dataset Size: 100TB daily change volume',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [

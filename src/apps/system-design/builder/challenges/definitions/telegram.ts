@@ -16,6 +16,12 @@ export const telegramProblemDefinition: ProblemDefinition = {
 - Users can create channels for broadcasting
 - Platform supports bots and automation`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can send messages, photos, and videos',
+    'Users can create channels for broadcasting'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

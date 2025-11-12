@@ -16,6 +16,13 @@ export const githubProblemDefinition: ProblemDefinition = {
 - Platform supports code review and collaboration
 - Users can fork and star repositories`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can host Git repositories',
+    'Users can create pull requests and issues',
+    'Users can fork and star repositories'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

@@ -22,6 +22,25 @@ export const tinyurlProblemDefinition: ProblemDefinition = {
 - Support custom aliases for premium users (optional)
 - Provide analytics: click count, referrer, geographic data`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Shorten long URLs to 7-character unique codes',
+    'Redirect users from short URL to original URL via HTTP 301/302',
+    'Support custom aliases for premium users (optional)',
+    'Provide analytics: click count, referrer, geographic data',
+    'Allow URL expiration after configurable time (30/60/90 days)',
+    'Bulk URL creation via API for enterprise customers',
+    'QR code generation for each short URL',
+    'Blacklist/spam detection for malicious URLs'
+  ],
+  userFacingNFRs: [
+    'Latency: Request-response latency: P95 < 50ms for redirects, P99 < 100ms for redirects, P95 < 120ms for creates, P999 < 300ms for creates',
+    'Request Rate: 1M requests/sec total (950k redirects/sec, 50k creates/sec). Read:write ratio 20:1. Peak traffic 2x normal load during business hours',
+    'Dataset Size: 10B URLs stored over 5 years. Average URL length 100 chars. Total storage ~1TB. 100M daily active short URLs. P99 of URL length: 200 chars',
+    'Availability: 99.99% uptime (52.6 minutes downtime/year). Graceful degradation for read path during DB issues. Write path must maintain consistency',
+    'Durability: All URL mappings must be persistent and reconstructable. Zero data loss acceptable. Critical for business operations. Retention: 5 years default or until explicitly deleted'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -121,6 +140,23 @@ export const basicWebCacheProblemDefinition: ProblemDefinition = {
 - Support real-time comment updates and vote counting
 - Implement hot-key protection for viral threads
 - Handle cache stampede during failures`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Serve comment threads at 5M QPS (normal) and 50M QPS (viral)',
+    'Support real-time comment updates and vote counting',
+    'Implement hot-key protection for viral threads',
+    'Handle cache stampede during failures',
+    'Provide consistent view of comment hierarchy',
+    'Support comment collapsing and pagination'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms normal, P99 < 500ms during viral spike',
+    'Request Rate: 5M reads/sec, 50k writes/sec normal. 50M reads/sec viral spike',
+    'Dataset Size: 100TB comments, 1PB with media. Hot set: 10GB in cache',
+    'Availability: 99.99% uptime. Survive single region failure',
+    'Durability: No data loss. Eventually consistent within 1 second'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -231,6 +267,22 @@ export const staticContentCdnProblemDefinition: ProblemDefinition = {
 - Implement origin shield to reduce origin load
 - Support cache purge for updated content`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Serve static assets (images, CSS, JS) from edge locations',
+    'Configure browser cache headers (Cache-Control, ETag)',
+    'Implement origin shield to reduce origin load',
+    'Support cache purge for updated content',
+    'Monitor CDN hit rate and bandwidth savings'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms globally for cached content, P99 < 200ms for origin fetch',
+    'Request Rate: 20k requests/sec for static assets. 95% should be cache hits',
+    'Dataset Size: 10GB of static content. Average file 100KB. 100k unique assets',
+    'Availability: 99.9% uptime. Fallback to origin on CDN failure',
+    'Durability: Origin stores master copies. CDN cache is ephemeral'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -302,6 +354,22 @@ export const sessionStoreBasicProblemDefinition: ProblemDefinition = {
 - Support session invalidation on logout
 - Handle concurrent session updates safely`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store user sessions with 30-minute TTL',
+    'Implement sliding window expiration on activity',
+    'Support session invalidation on logout',
+    'Handle concurrent session updates safely',
+    'Provide session count per user for security'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms for session validation, P99 < 20ms',
+    'Request Rate: 10k requests/sec (9k reads, 1k writes)',
+    'Dataset Size: 1M active sessions. 1KB per session. Total ~1GB',
+    'Availability: 99.99% uptime. Authentication must always work',
+    'Durability: Sessions can be ephemeral but prefer persistence'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -368,6 +436,22 @@ export const databaseQueryCacheProblemDefinition: ProblemDefinition = {
 - Implement query fingerprinting for cache keys
 - Invalidate cache when source data updates
 - Support partial cache invalidation by table`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache results of expensive analytical queries',
+    'Implement query fingerprinting for cache keys',
+    'Invalidate cache when source data updates',
+    'Support partial cache invalidation by table',
+    'Monitor cache effectiveness and query patterns'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for cached queries, P99 < 2s for cache misses',
+    'Request Rate: 1k dashboard loads/sec generating 10k queries/sec',
+    'Dataset Size: 10GB of cached query results. Average result 10KB',
+    'Availability: 99.9% uptime. Fallback to direct DB queries',
+    'Durability: Cache can be rebuilt from database'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -450,6 +534,22 @@ export const apiRateLimitCacheProblemDefinition: ProblemDefinition = {
 - Return remaining quota in response headers
 - Support different limits for different tiers`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Track API calls per user per hour',
+    'Implement sliding window rate limiting',
+    'Return remaining quota in response headers',
+    'Support different limits for different tiers',
+    'Reset counters at window boundaries'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5ms for rate limit checks, P99 < 10ms',
+    'Request Rate: 50k API requests/sec to validate',
+    'Dataset Size: 100k active users. 100 bytes per counter',
+    'Availability: 99.9% uptime. Fail open if cache unavailable',
+    'Durability: Counters can be lost on failure'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -516,6 +616,22 @@ export const productCatalogCacheProblemDefinition: ProblemDefinition = {
 - Update inventory counts in near real-time
 - Warm cache before sales events
 - Prevent thundering herd on popular items`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache product details, prices, and images',
+    'Update inventory counts in near real-time',
+    'Warm cache before sales events',
+    'Prevent thundering herd on popular items',
+    'Support cache invalidation for price changes'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for product pages, P99 < 200ms during sales',
+    'Request Rate: 100k requests/sec during Black Friday (10x normal)',
+    'Dataset Size: 1M products. Average 5KB per product. Total ~5GB',
+    'Availability: 99.95% during sales events',
+    'Durability: Source of truth in database. Cache is ephemeral'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -611,6 +727,22 @@ export const gamingLeaderboardCacheProblemDefinition: ProblemDefinition = {
 - Show player rank and nearby players
 - Support multiple leaderboards (daily/weekly/all-time)`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Track player scores in real-time',
+    'Display top 100 global rankings',
+    'Show player rank and nearby players',
+    'Support multiple leaderboards (daily/weekly/all-time)',
+    'Handle concurrent score updates atomically'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms for rank queries, P99 < 100ms for updates',
+    'Request Rate: 20k score updates/sec, 50k rank queries/sec',
+    'Dataset Size: 10M players. 100 bytes per player entry',
+    'Availability: 99.9% uptime. Degrade to stale data if needed',
+    'Durability: Persist to database, cache can be rebuilt'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -686,6 +818,22 @@ export const geoLocationCacheProblemDefinition: ProblemDefinition = {
 - Implement geohash-based cache keys
 - Support different radius searches (1km, 5km, 10km)
 - Invalidate cache when businesses update`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache search results by geographic area',
+    'Implement geohash-based cache keys',
+    'Support different radius searches (1km, 5km, 10km)',
+    'Invalidate cache when businesses update',
+    'Handle overlapping search areas efficiently'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for cached areas, P99 < 500ms for new searches',
+    'Request Rate: 10k searches/sec across major cities',
+    'Dataset Size: 10M businesses. 1KB per business. Cache top areas',
+    'Availability: 99.9% uptime. Fallback to database search',
+    'Durability: Business data in database, cache is derived'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -767,6 +915,22 @@ export const configCacheBasicProblemDefinition: ProblemDefinition = {
 - Support hot reload without restarts
 - Implement version tracking for rollbacks
 - Notify services of config changes`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache application configs locally on each server',
+    'Support hot reload without restarts',
+    'Implement version tracking for rollbacks',
+    'Notify services of config changes',
+    'Provide audit log of config changes'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5ms for config reads (local cache)',
+    'Request Rate: 100k config reads/sec across all services',
+    'Dataset Size: 10k config keys. 100KB total config data',
+    'Availability: 99.99% uptime. Services must start with cached configs',
+    'Durability: Configs must be persistent and versioned'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -852,6 +1016,23 @@ export const socialFeedCacheProblemDefinition: ProblemDefinition = {
 - Handle celebrity posts with millions of followers
 - Support real-time updates for online users
 - Implement hybrid push/pull based on follower count`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache home timelines for active users',
+    'Handle celebrity posts with millions of followers',
+    'Support real-time updates for online users',
+    'Implement hybrid push/pull based on follower count',
+    'Cache user timelines and recent posts',
+    'Invalidate stale content after edits/deletes'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for timeline fetch, P99 < 200ms',
+    'Request Rate: 500k timeline requests/sec, 10k posts/sec',
+    'Dataset Size: 100M users, 1B daily posts, cache 7 days of content',
+    'Availability: 99.95% uptime. Degrade to pull model if needed',
+    'Durability: Posts in database, timeline cache can be rebuilt'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -953,6 +1134,24 @@ export const videoStreamingCacheProblemDefinition: ProblemDefinition = {
 - ML-based predictive prefetch with 90% accuracy
 - Cache at 10k+ edge POPs worldwide`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Stream 500M concurrent 4K/8K videos globally',
+    'Support 100M concurrent live viewers (World Cup scale)',
+    'ML-based predictive prefetch with 90% accuracy',
+    'Cache at 10k+ edge POPs worldwide',
+    'Adaptive bitrate from 144p to 8K HDR',
+    'Handle viral videos (10B views/hour)',
+    'Multi-CDN orchestration with failover',
+    'ISP cache cooperation and peering optimization'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 200ms video start globally, < 500ms during spikes',
+    'Request Rate: 500M concurrent streams, 5B during viral events',
+    'Dataset Size: 100M titles, 10 quality levels, 100TB per edge POP',
+    'Availability: 99.999% for top 1000 titles, 99.99% overall'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1047,6 +1246,24 @@ export const searchSuggestionCacheProblemDefinition: ProblemDefinition = {
 - Support 100+ languages and scripts
 - Personalize for 5B+ user profiles`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 10M keystrokes/sec globally',
+    'Return suggestions in <20ms P99 latency',
+    'Support 100+ languages and scripts',
+    'Personalize for 5B+ user profiles',
+    'Update trending topics within 60 seconds',
+    'Distributed trie with 100T+ unique queries',
+    'ML-based ranking and query understanding',
+    'Voice and visual search integration'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 20ms per keystroke, P99.9 < 50ms',
+    'Request Rate: 10M keystrokes/sec, 100M during events',
+    'Dataset Size: 100T unique queries, 1B trending topics',
+    'Availability: 99.999% uptime globally'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1132,6 +1349,23 @@ export const newsAggregatorCacheProblemDefinition: ProblemDefinition = {
 - Detect and cache trending topics
 - Implement time-decay for article relevance
 - Deduplicate similar stories across sources`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Aggregate news from 100+ sources',
+    'Detect and cache trending topics',
+    'Implement time-decay for article relevance',
+    'Deduplicate similar stories across sources',
+    'Personalize cache based on user interests',
+    'Update rankings in real-time'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for homepage, P99 < 200ms for personalized',
+    'Request Rate: 100k requests/sec, 1k new articles/min',
+    'Dataset Size: 10M articles, 1M active topics, cache 24 hours',
+    'Availability: 99.9% uptime. Fallback to recent cache',
+    'Durability: Articles in database, rankings cached'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1228,6 +1462,23 @@ export const graphqlCacheProblemDefinition: ProblemDefinition = {
 - Handle nested object dependencies
 - Implement cache normalization by ID`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache GraphQL query results by operation',
+    'Support field-level cache invalidation',
+    'Handle nested object dependencies',
+    'Implement cache normalization by ID',
+    'Support subscription-based invalidation',
+    'Merge partial cache hits'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms for cached queries, P99 < 200ms for partial hits',
+    'Request Rate: 50k GraphQL queries/sec',
+    'Dataset Size: 100GB normalized cache data',
+    'Availability: 99.9% uptime. Fallback to resolver',
+    'Durability: Cache rebuilt from source systems'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1313,6 +1564,23 @@ export const shoppingCartCacheProblemDefinition: ProblemDefinition = {
 - Handle cart merging when users log in
 - Implement 30-minute cart expiration with reminders`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache active shopping carts in Redis',
+    'Persist cart changes to database asynchronously',
+    'Handle cart merging when users log in',
+    'Implement 30-minute cart expiration with reminders',
+    'Reserve inventory temporarily during checkout',
+    'Sync cart across devices for logged-in users'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 20ms for cart operations, P99 < 50ms',
+    'Request Rate: 100k cart operations/sec (70k reads, 30k writes)',
+    'Dataset Size: 5M active carts. Average 10 items per cart. 50KB per cart',
+    'Availability: 99.95% uptime. Degrade to DB-only mode on cache failure',
+    'Durability: No cart loss on cache failure. Async DB writes acceptable'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1397,6 +1665,23 @@ export const analyticsDashboardCacheProblemDefinition: ProblemDefinition = {
 - Layer cache: browser → Redis → materialized views
 - Support drill-down queries with partial cache hits
 - Real-time metrics bypass cache with 1-min aggregation`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache pre-computed hourly/daily aggregations',
+    'Layer cache: browser → Redis → materialized views',
+    'Support drill-down queries with partial cache hits',
+    'Real-time metrics bypass cache with 1-min aggregation',
+    'Cache invalidation on data pipeline completion',
+    'Support user-specific dashboard customizations'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 500ms for cached dashboards, P99 < 2s with partial cache',
+    'Request Rate: 5k dashboard loads/sec generating 50k widget queries/sec',
+    'Dataset Size: 100TB raw data. 1TB cached aggregates. 50GB query cache',
+    'Availability: 99.9% uptime. Show stale data if live query fails',
+    'Durability: Cached data can be recomputed. Source in data warehouse'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1489,6 +1774,24 @@ export const multiTenantSaasCacheProblemDefinition: ProblemDefinition = {
 - Prevent noisy neighbor impact (<1% degradation)
 - Hierarchical quotas (org/workspace/user)`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Isolate cache for 100M+ tenants globally',
+    'Process 10M cache operations/sec',
+    'Prevent noisy neighbor impact (<1% degradation)',
+    'Hierarchical quotas (org/workspace/user)',
+    'Tenant-specific encryption keys',
+    'GDPR/SOC2 compliant data isolation',
+    'Auto-scale for viral tenant growth (100x)',
+    'Multi-tier caching based on plan level'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 5ms for all tenants, P99.9 < 10ms',
+    'Request Rate: 10M req/sec normal, 100M during Black Friday',
+    'Dataset Size: 100M tenants, 10PB cache, 100PB total data',
+    'Availability: 99.999% per tenant with isolated failures'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1574,6 +1877,23 @@ export const cmsCacheProblemDefinition: ProblemDefinition = {
 - Implement tag-based cache invalidation
 - Handle content dependencies (articles reference authors)
 - Support versioned content with preview mode`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache published content at CDN edge',
+    'Implement tag-based cache invalidation',
+    'Handle content dependencies (articles reference authors)',
+    'Support versioned content with preview mode',
+    'Purge related content when parent updates',
+    'Invalidate downstream caches (customer CDNs)'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms for cached content, P99 < 200ms globally',
+    'Request Rate: 1M API requests/sec across all customer sites',
+    'Dataset Size: 10M content items. Average 50KB per item. 500GB total',
+    'Availability: 99.99% uptime. Stale content acceptable during incidents',
+    'Durability: Content in database. Cache can be rebuilt'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1674,6 +1994,23 @@ export const authTokenCacheProblemDefinition: ProblemDefinition = {
 - Support refresh token rotation
 - Handle token expiration and renewal`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache decoded JWT claims for fast validation',
+    'Implement token revocation blacklist',
+    'Support refresh token rotation',
+    'Handle token expiration and renewal',
+    'Distribute revocation across all nodes instantly',
+    'Audit log all token operations'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5ms for token validation, P99 < 10ms',
+    'Request Rate: 500k authentications/sec across all services',
+    'Dataset Size: 50M active tokens. 1KB per cached token. Blacklist 100k tokens',
+    'Availability: 99.99% uptime. Auth failure = service outage',
+    'Durability: Revocation must be durable. Token cache can be rebuilt'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1769,6 +2106,24 @@ export const pricingEngineCacheProblemDefinition: ProblemDefinition = {
 - ML-based price optimization in real-time
 - Handle Prime Day surge (10x normal load)`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Calculate 100M personalized prices/sec',
+    'Support 1B+ SKUs with dynamic pricing',
+    'ML-based price optimization in real-time',
+    'Handle Prime Day surge (10x normal load)',
+    '100k+ concurrent promotions and rules',
+    'Real-time inventory and competitor pricing',
+    'Currency conversion for 200+ countries',
+    'A/B test pricing across 10M+ cohorts'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 5ms calculation, P99.9 < 10ms',
+    'Request Rate: 100M pricing req/sec, 1B during Prime Day',
+    'Dataset Size: 1B SKUs, 100k promotions, 10B price points',
+    'Availability: 99.999% uptime with instant failover'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1859,6 +2214,23 @@ export const recommendationEngineCacheProblemDefinition: ProblemDefinition = {
 - Store user feature vectors for real-time scoring
 - Handle cold start with trending item fallback
 - Update recommendations hourly from ML pipeline`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache top-N recommendations per user segment',
+    'Store user feature vectors for real-time scoring',
+    'Handle cold start with trending item fallback',
+    'Update recommendations hourly from ML pipeline',
+    'Support A/B testing different models',
+    'Blend cached recommendations with real-time signals'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms for personalized recommendations',
+    'Request Rate: 100k recommendation requests/sec',
+    'Dataset Size: 100M users. 1M items. 10GB feature vectors. 50GB cached recommendations',
+    'Availability: 99.9% uptime. Degrade to popular items on failure',
+    'Durability: Recommendations can be recomputed. Models in object storage'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1958,6 +2330,23 @@ export const rtbAdCacheProblemDefinition: ProblemDefinition = {
 - Track campaign budgets in real-time (approximate)
 - Select top bid ad within latency budget
 - Support frequency capping per user`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache ad creatives and targeting rules',
+    'Track campaign budgets in real-time (approximate)',
+    'Select top bid ad within latency budget',
+    'Support frequency capping per user',
+    'Implement pacing to spread budget over day',
+    'Handle concurrent bid requests without overspending'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms for ad selection, P99 < 15ms',
+    'Request Rate: 500k bid requests/sec',
+    'Dataset Size: 1M active ad campaigns. 10M creatives. 100M user profiles',
+    'Availability: 99.9% uptime. Default ads on failure',
+    'Durability: Budget tracking must be accurate to 5%. Impressions logged async'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2059,6 +2448,23 @@ export const gamingMatchmakingCacheProblemDefinition: ProblemDefinition = {
 - Support party matchmaking (groups of friends)
 - Handle players leaving queue gracefully`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Maintain pool of available players by skill tier',
+    'Match players within 200 rating points in <3s',
+    'Support party matchmaking (groups of friends)',
+    'Handle players leaving queue gracefully',
+    'Prevent duplicate matches during reconnection',
+    'Cache recent match history to avoid repeats'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 3s for match formation, P99 < 5s',
+    'Request Rate: 50k players entering queue/sec during peak',
+    'Dataset Size: 1M concurrent players in queue. 10k matches/sec',
+    'Availability: 99.9% uptime. Degrade to wider skill range on load',
+    'Durability: Queue state can be lost. Match results must persist'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2154,6 +2560,23 @@ export const iotDeviceCacheProblemDefinition: ProblemDefinition = {
 - Support bulk queries (all devices in building)
 - Implement conflict resolution for concurrent updates`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache device shadow state (reported and desired)',
+    'Handle offline devices with state deltas on reconnect',
+    'Support bulk queries (all devices in building)',
+    'Implement conflict resolution for concurrent updates',
+    'Expire stale device state after inactivity',
+    'Aggregate device metrics from shadows'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 20ms for shadow reads, P99 < 50ms',
+    'Request Rate: 200k shadow updates/sec, 500k queries/sec',
+    'Dataset Size: 100M devices. 2KB shadow per device. 50% active daily',
+    'Availability: 99.9% uptime. Stale shadows acceptable',
+    'Durability: Shadow cache can be rebuilt from device storage'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2243,6 +2666,25 @@ export const globalInventoryCacheProblemDefinition: ProblemDefinition = {
 - Prevent overselling with distributed locks
 - Support inventory reservations with timeout
 - Implement eventual consistency for browsing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache inventory across multiple regions',
+    'Prevent overselling with distributed locks',
+    'Support inventory reservations with timeout',
+    'Implement eventual consistency for browsing',
+    'Strong consistency for checkout',
+    'Handle split-brain scenarios',
+    'Support batch inventory updates',
+    'Provide real-time inventory webhooks'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 20ms same-region, < 100ms cross-region',
+    'Request Rate: 1M inventory checks/sec globally',
+    'Dataset Size: 100M SKUs, 1000 warehouses',
+    'Availability: 99.99% uptime with regional failover',
+    'Durability: Zero inventory discrepancies allowed'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2373,6 +2815,25 @@ export const hybridCdnCacheProblemDefinition: ProblemDefinition = {
 - Peer-to-peer assisted delivery
 - Adaptive bitrate based on cache availability`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Deploy cache boxes at ISP locations',
+    'Predictive content placement using ML',
+    'Peer-to-peer assisted delivery',
+    'Adaptive bitrate based on cache availability',
+    'Monitor cache health and failover',
+    'Support live and on-demand content',
+    'Implement cache hierarchy (edge/mid/origin)',
+    'Handle cache misses without buffering'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 1s start time, rebuffer ratio < 0.5%',
+    'Request Rate: 10M concurrent streams globally',
+    'Dataset Size: 1PB total content, 100TB per ISP cache',
+    'Availability: 99.99% stream availability',
+    'Durability: Origin has all content, edge ephemeral'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2482,6 +2943,23 @@ export const globalInventoryMasteryProblemDefinition: ProblemDefinition = {
 - Prevent overselling with pessimistic or optimistic locking
 - Reserve inventory during checkout with timeout
 - Handle network partitions gracefully (AP with repair)`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Maintain inventory counts across 5 geographic regions',
+    'Prevent overselling with pessimistic or optimistic locking',
+    'Reserve inventory during checkout with timeout',
+    'Handle network partitions gracefully (AP with repair)',
+    'Sync inventory changes globally within 100ms',
+    'Support backorder when stock depleted'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms local, P95 < 200ms cross-region for inventory check',
+    'Request Rate: 500k inventory checks/sec globally, 50k purchases/sec',
+    'Dataset Size: 10M SKUs. Inventory distributed across regions. 100GB total',
+    'Availability: 99.99% uptime per region. Survive single region failure',
+    'Durability: No double-booking allowed. Inventory must be strongly consistent'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2628,6 +3106,23 @@ export const financialTradingCacheProblemDefinition: ProblemDefinition = {
 - Replicate critical data to hot standby with RDMA
 - Support historical tick data queries (last 1 hour)`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache order book snapshots with <100μs updates',
+    'Maintain position and risk limits in local memory',
+    'Replicate critical data to hot standby with RDMA',
+    'Support historical tick data queries (last 1 hour)',
+    'Atomic position updates across multiple instruments',
+    'Audit log all trades to durable storage async'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 500μs for order processing, P99 < 1ms. Market data <100μs',
+    'Request Rate: 1M orders/sec, 10M market data updates/sec',
+    'Dataset Size: 10k instruments. 1M orders in book. 100GB market data/day',
+    'Availability: 99.999% uptime. Hot standby failover <10ms',
+    'Durability: Position data must survive crashes. Use battery-backed RAM'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2717,6 +3212,23 @@ export const gameAssetCdnMasteryProblemDefinition: ProblemDefinition = {
 - Chunk files into verifiable blocks (4MB each)
 - Peer discovery and selection based on bandwidth
 - Fallback to CDN if P2P peers unavailable`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Distribute game assets via CDN + P2P hybrid',
+    'Chunk files into verifiable blocks (4MB each)',
+    'Peer discovery and selection based on bandwidth',
+    'Fallback to CDN if P2P peers unavailable',
+    'Verify chunk integrity with content hashing',
+    'Incentivize seeding with in-game rewards'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 download time <10 minutes for 50GB game',
+    'Request Rate: 100k concurrent downloads during game launch',
+    'Dataset Size: 500GB game library. 50GB new releases. 10k active torrents',
+    'Availability: 99.9% CDN uptime. P2P best-effort',
+    'Durability: CDN is source of truth. P2P augments capacity'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2837,6 +3349,23 @@ export const sportsBettingCacheProblemDefinition: ProblemDefinition = {
 - Prevent arbitrage from regional odds discrepancies
 - Handle bet placement spikes during key moments`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache current odds with <100ms staleness guarantee',
+    'Update odds on game events (goals, fouls, etc.)',
+    'Prevent arbitrage from regional odds discrepancies',
+    'Handle bet placement spikes during key moments',
+    'Support rollback to previous odds on disputed calls',
+    'Rate limit suspicious betting patterns'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 1ms for odds fetch, P99 < 5ms. Updates propagate <100ms',
+    'Request Rate: 2M odds fetches/sec, 100k bets/sec during major events',
+    'Dataset Size: 100k live betting markets. 10M concurrent users. 1GB cache',
+    'Availability: 99.99% uptime. Freeze betting on cache failure',
+    'Durability: Odds history in DB for audit. Live cache can be rebuilt'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2936,6 +3465,23 @@ export const autonomousVehicleCacheProblemDefinition: ProblemDefinition = {
 - Prefetch maps based on predicted route
 - Update maps incrementally (road closures, construction)
 - Fallback to cached maps if connectivity lost`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache HD maps on vehicle (upcoming 50km route)',
+    'Prefetch maps based on predicted route',
+    'Update maps incrementally (road closures, construction)',
+    'Fallback to cached maps if connectivity lost',
+    'Verify map integrity with signatures',
+    'Support multi-vehicle map sharing (V2V)'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 20ms for map tile fetch from cache. Offline operation required',
+    'Request Rate: 1M vehicles × 10 tile fetches/sec = 10M QPS',
+    'Dataset Size: 100TB global map data. 5GB per vehicle cache. 50km route prefetch',
+    'Availability: 99.999% effective (online + offline). Safety-critical',
+    'Durability: Map updates must be atomic. No partial map states'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -3061,6 +3607,23 @@ export const stockMarketDataCacheProblemDefinition: ProblemDefinition = {
 - Handle burst traffic during market events
 - Support historical data queries (1min/5min OHLC)`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache last 1 hour of tick data per symbol',
+    'Stream real-time updates with <10ms lag',
+    'Handle burst traffic during market events',
+    'Support historical data queries (1min/5min OHLC)',
+    'Implement backpressure: drop old updates, not new',
+    'Prioritize subscriptions (institutional > retail)'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms for live ticks, P99 < 25ms. Historical queries <100ms',
+    'Request Rate: 10k symbols × 100 ticks/sec = 1M ticks/sec. 100k concurrent subscribers',
+    'Dataset Size: 10k symbols. 1 hour cache @ 100 ticks/sec = 3.6M ticks. 100GB/hour',
+    'Availability: 99.99% uptime. Degrade gracefully under load',
+    'Durability: Ticks logged to S3 for audit. Cache is ephemeral'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -3160,6 +3723,23 @@ export const multiRegionSocialCacheProblemDefinition: ProblemDefinition = {
 - Replicate posts to all regions asynchronously
 - Detect concurrent edits (same post, different regions)
 - Resolve conflicts with last-write-wins or custom logic`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache user feeds in nearest region',
+    'Replicate posts to all regions asynchronously',
+    'Detect concurrent edits (same post, different regions)',
+    'Resolve conflicts with last-write-wins or custom logic',
+    'Provide read-after-write consistency for own posts',
+    'Support post deletions with tombstones'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms local reads, P95 < 500ms cross-region propagation',
+    'Request Rate: 1M posts/sec globally, 10M feed reads/sec',
+    'Dataset Size: 1B users. 10B posts cached (last 7 days). 10TB total cache',
+    'Availability: 99.95% per region. Operate during regional outages',
+    'Durability: Posts in database. Cache can be rebuilt'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -3306,6 +3886,23 @@ export const healthcareRecordsCacheProblemDefinition: ProblemDefinition = {
 - Log all cache access with user ID, timestamp, and purpose
 - Support patient consent-based data sharing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache patient records encrypted at rest and in transit',
+    'Enforce role-based access control (RBAC) at cache layer',
+    'Log all cache access with user ID, timestamp, and purpose',
+    'Support patient consent-based data sharing',
+    'Implement data retention policies (purge after 7 years)',
+    'Enable emergency access override with post-audit'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for authorized record access',
+    'Request Rate: 50k patient record lookups/sec across hospitals',
+    'Dataset Size: 100M patient records. Average 5MB per record. Hot cache 10GB',
+    'Availability: 99.99% uptime. Patient care depends on access',
+    'Durability: Zero data loss. All changes must be audited'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -3400,6 +3997,23 @@ export const supplyChainCacheProblemDefinition: ProblemDefinition = {
 - Support supplier, warehouse, and customer views
 - Aggregate metrics by region, product category, etc.
 - Real-time updates as shipments scan at checkpoints`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cache shipment status with multi-level hierarchy',
+    'Support supplier, warehouse, and customer views',
+    'Aggregate metrics by region, product category, etc.',
+    'Real-time updates as shipments scan at checkpoints',
+    'Enforce data access rules (supplier A cannot see supplier B)',
+    'Historical trend queries (avg delivery time last 30 days)'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 200ms for dashboard queries with aggregations',
+    'Request Rate: 100k dashboard loads/sec, 50k shipment updates/sec',
+    'Dataset Size: 10M active shipments. 100 suppliers. 1k warehouses. 100GB cache',
+    'Availability: 99.9% uptime per tenant. Isolated failures',
+    'Durability: Shipment events in event store. Cache can be rebuilt'
+  ],
 
   functionalRequirements: {
     mustHave: [

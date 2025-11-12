@@ -22,6 +22,22 @@ export const l5MigrationNetflixMicroservicesProblemDefinition: ProblemDefinition
 - Enable gradual traffic shifting between systems
 - Support rollback at any migration phase`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support parallel running of monolith and microservices',
+    'Maintain all existing APIs during migration',
+    'Enable gradual traffic shifting between systems',
+    'Support rollback at any migration phase',
+    'Preserve all user data and preferences'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for API calls',
+    'Request Rate: 10M concurrent streams',
+    'Dataset Size: 100TB metadata, 1PB content',
+    'Availability: 99.99% during migration',
+    'Durability: Zero data loss tolerance'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -66,6 +82,21 @@ export const l5MigrationTwitterEventDrivenProblemDefinition: ProblemDefinition =
 - Maintain timeline generation < 2 seconds
 - Support both push and pull notification models
 - Enable event replay for debugging`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Convert REST APIs to event publishers',
+    'Maintain timeline generation < 2 seconds',
+    'Support both push and pull notification models',
+    'Enable event replay for debugging',
+    'Preserve tweet ordering guarantees'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 2s for timeline generation',
+    'Request Rate: 6000 tweets/second average',
+    'Dataset Size: 500B historical tweets',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -112,6 +143,22 @@ export const l5MigrationSpotifyServerlessProblemDefinition: ProblemDefinition = 
 - Handle both request/response and long-running jobs
 - Support WebSocket connections for real-time features`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support stateful music streaming sessions',
+    'Maintain < 50ms audio buffering',
+    'Handle both request/response and long-running jobs',
+    'Support WebSocket connections for real-time features',
+    'Enable local development environment'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 50ms for API calls',
+    'Request Rate: 10M concurrent streams',
+    'Dataset Size: 100M songs, 4B playlists',
+    'Availability: 99.99% for streaming',
+    'Durability: Zero playlist data loss'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -156,6 +203,20 @@ export const l5MigrationUberMultiRegionProblemDefinition: ProblemDefinition = {
 - Maintain consistent pricing across regions
 - Handle split-brain scenarios
 - Enable region-local data compliance`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support cross-region ride matching',
+    'Maintain consistent pricing across regions',
+    'Handle split-brain scenarios',
+    'Enable region-local data compliance',
+    'Support gradual region activation'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms intra-region',
+    'Request Rate: 1M rides per hour peak',
+    'Availability: 99.99% per region'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -202,6 +263,21 @@ export const l5MigrationAirbnbGraphqlProblemDefinition: ProblemDefinition = {
 - Maintain sub-100ms query performance
 - Support real-time subscriptions`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support GraphQL and REST simultaneously',
+    'Enable schema stitching across services',
+    'Maintain sub-100ms query performance',
+    'Support real-time subscriptions',
+    'Enable field-level authorization'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for queries',
+    'Request Rate: 500K requests/second',
+    'Dataset Size: 10,000 types in schema',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -246,6 +322,21 @@ export const l5MigrationStripeDatabaseProblemDefinition: ProblemDefinition = {
 - Support cross-shard transactions
 - Enable online resharding
 - Preserve audit trail integrity`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Maintain ACID for payment transactions',
+    'Support cross-shard transactions',
+    'Enable online resharding',
+    'Preserve audit trail integrity',
+    'Support instant reconciliation'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 50ms for payments',
+    'Request Rate: 50K transactions/second',
+    'Dataset Size: 10PB transaction history',
+    'Availability: 99.999% for payments'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -292,6 +383,20 @@ export const l5MigrationSlackWebsocketProblemDefinition: ProblemDefinition = {
 - Enable presence detection
 - Support connection migration`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support 20M concurrent WebSocket connections',
+    'Maintain message ordering per channel',
+    'Enable presence detection',
+    'Support connection migration',
+    'Handle graceful reconnection'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms message delivery',
+    'Request Rate: 100K connections/second, 1M messages/second',
+    'Availability: 99.99% connection uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -337,6 +442,20 @@ export const l5MigrationGithubMonorepoProblemDefinition: ProblemDefinition = {
 - Maintain sub-second file operations
 - Support 10K concurrent pushes`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support 1B+ files per repository',
+    'Enable partial clones and sparse checkouts',
+    'Maintain sub-second file operations',
+    'Support 10K concurrent pushes',
+    'Enable cross-repo dependencies'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1s for file operations',
+    'Dataset Size: 10PB per monorepo',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -378,6 +497,20 @@ export const l5MigrationInstagramCassandraProblemDefinition: ProblemDefinition =
 - Support both SQL and CQL during transition
 - Maintain friend recommendation latency
 - Enable zero-downtime migration`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Migrate 100B social graph edges',
+    'Support both SQL and CQL during transition',
+    'Maintain friend recommendation latency',
+    'Enable zero-downtime migration',
+    'Support gradual rollback capability'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 10ms for graph queries',
+    'Dataset Size: 100B edges, 2B nodes',
+    'Availability: 99.99% during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -421,6 +554,19 @@ export const l5MigrationDoordashRoutingProblemDefinition: ProblemDefinition = {
 - Handle 1M concurrent dashers
 - Enable A/B testing old vs new routing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Calculate optimal routes for multi-stop deliveries',
+    'Support real-time traffic updates',
+    'Handle 1M concurrent dashers',
+    'Enable A/B testing old vs new routing',
+    'Maintain fallback to Google Maps'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms route calculation',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -462,6 +608,19 @@ export const l5MigrationZoomWebrtcProblemDefinition: ProblemDefinition = {
 - Maintain end-to-end encryption
 - Enable cloud recording
 - Support virtual backgrounds`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support 1000 participants per meeting',
+    'Maintain end-to-end encryption',
+    'Enable cloud recording',
+    'Support virtual backgrounds',
+    'Handle protocol translation for legacy clients'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 150ms audio/video',
+    'Availability: 99.99% meeting uptime (1080p quality, 20% packet loss tolerance)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -505,6 +664,19 @@ export const l5MigrationPinterestRecommendationProblemDefinition: ProblemDefinit
 - Handle 100B item catalog
 - Enable real-time personalization`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Serve recommendations in < 50ms',
+    'Support online learning from user actions',
+    'Handle 100B item catalog',
+    'Enable real-time personalization',
+    'Maintain recommendation diversity'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 50ms inference',
+    'Dataset Size: 100GB+ embedding tables'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -546,6 +718,20 @@ export const l5MigrationLinkedinKafkaProblemDefinition: ProblemDefinition = {
 - Support Kafka protocol during transition
 - Enable tiered storage to S3
 - Maintain exactly-once semantics`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Migrate 7 trillion messages/day throughput',
+    'Support Kafka protocol during transition',
+    'Enable tiered storage to S3',
+    'Maintain exactly-once semantics',
+    'Support 100K topics'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 5ms publish',
+    'Availability: 99.99% uptime',
+    'Durability: 7 days hot, 1 year cold retention'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -589,6 +775,20 @@ export const l5MigrationRedditPostgresProblemDefinition: ProblemDefinition = {
 - Support complex queries for feeds
 - Enable geo-distributed replicas`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Migrate 100B+ posts and comments',
+    'Maintain vote consistency',
+    'Support complex queries for feeds',
+    'Enable geo-distributed replicas',
+    'Preserve karma calculation accuracy'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms queries',
+    'Dataset Size: 50TB active data',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -630,6 +830,20 @@ export const l5MigrationSnapchatStorageProblemDefinition: ProblemDefinition = {
 - Support 24-hour stories
 - Handle 5B snaps daily
 - Enable instant playback`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Auto-delete content after viewing',
+    'Support 24-hour stories',
+    'Handle 5B snaps daily',
+    'Enable instant playback',
+    'Maintain encryption at rest'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 200ms retrieval',
+    'Dataset Size: 10PB active content',
+    'Availability: 99.9% content availability'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -673,6 +887,19 @@ export const l5MigrationShopifyMultiCloudProblemDefinition: ProblemDefinition = 
 - Maintain data consistency across clouds
 - Support cloud-specific managed services`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support cloud-agnostic services',
+    'Enable workload placement optimization',
+    'Maintain data consistency across clouds',
+    'Support cloud-specific managed services',
+    'Enable disaster recovery across clouds'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms API calls',
+    'Availability: 99.99% across clouds'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -714,6 +941,19 @@ export const l5MigrationTwitchLowLatencyProblemDefinition: ProblemDefinition = {
 - Support 15M concurrent viewers
 - Maintain 1080p60 quality
 - Enable instant channel switching`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Achieve < 1 second glass-to-glass latency',
+    'Support 15M concurrent viewers',
+    'Maintain 1080p60 quality',
+    'Enable instant channel switching',
+    'Support legacy HLS players'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1 second end-to-end',
+    'Availability: 99.95% stream uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -757,6 +997,19 @@ export const l5MigrationCoinbaseMatchingProblemDefinition: ProblemDefinition = {
 - Support 1M orders/second
 - Enable instant settlement`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process orders in < 10 microseconds',
+    'Maintain FIFO order fairness',
+    'Support 1M orders/second',
+    'Enable instant settlement',
+    'Preserve full audit trail'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 10 microseconds',
+    'Availability: 99.999% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -799,6 +1052,20 @@ export const l5MigrationFigmaCollaborationProblemDefinition: ProblemDefinition =
 - Handle 1GB+ document sizes
 - Enable selective sync`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support 1000+ concurrent editors',
+    'Maintain 60 FPS performance',
+    'Handle 1GB+ document sizes',
+    'Enable selective sync',
+    'Support offline editing'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 50ms for operations',
+    'Dataset Size: 1GB+ design files',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -840,6 +1107,21 @@ export const l5PlatformMigration1ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support monolith to microservices at Netflix scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 10M requests per second',
+    'Dataset Size: 100TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -886,6 +1168,21 @@ export const l5PlatformMigration2ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support database migration at Uber scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 11M requests per second',
+    'Dataset Size: 110TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -930,6 +1227,21 @@ export const l5PlatformMigration3ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support cloud migration at Airbnb scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 12M requests per second',
+    'Dataset Size: 120TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -976,6 +1288,21 @@ export const l5PlatformMigration4ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support protocol upgrade at Spotify scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 13M requests per second',
+    'Dataset Size: 130TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1020,6 +1347,21 @@ export const l5PlatformMigration5ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support infrastructure modernization at Twitter scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 14M requests per second',
+    'Dataset Size: 140TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1066,6 +1408,21 @@ export const l5PlatformMigration6ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support monolith to microservices at LinkedIn scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 15M requests per second',
+    'Dataset Size: 150TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1110,6 +1467,21 @@ export const l5PlatformMigration7ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support database migration at Pinterest scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 16M requests per second',
+    'Dataset Size: 160TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1156,6 +1528,21 @@ export const l5PlatformMigration8ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support cloud migration at Slack scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 17M requests per second',
+    'Dataset Size: 170TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1200,6 +1587,21 @@ export const l5PlatformMigration9ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support protocol upgrade at Discord scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 18M requests per second',
+    'Dataset Size: 180TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1246,6 +1648,21 @@ export const l5PlatformMigration10ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support infrastructure modernization at Reddit scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 19M requests per second',
+    'Dataset Size: 190TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1290,6 +1707,21 @@ export const l5PlatformMigration11ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support monolith to microservices at Snapchat scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 20M requests per second',
+    'Dataset Size: 200TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1336,6 +1768,21 @@ export const l5PlatformMigration12ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support database migration at TikTok scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 21M requests per second',
+    'Dataset Size: 210TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1380,6 +1827,21 @@ export const l5PlatformMigration13ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support cloud migration at Zoom scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 22M requests per second',
+    'Dataset Size: 220TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1426,6 +1888,21 @@ export const l5PlatformMigration14ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support protocol upgrade at Shopify scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 23M requests per second',
+    'Dataset Size: 230TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1470,6 +1947,21 @@ export const l5PlatformMigration15ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support infrastructure modernization at Square scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 24M requests per second',
+    'Dataset Size: 240TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1516,6 +2008,21 @@ export const l5PlatformMigration16ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support monolith to microservices at Stripe scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 25M requests per second',
+    'Dataset Size: 250TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1561,6 +2068,21 @@ export const l5PlatformMigration17ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support database migration at PayPal scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 26M requests per second',
+    'Dataset Size: 260TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1605,6 +2127,21 @@ export const l5PlatformMigration18ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support cloud migration at Netflix scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 27M requests per second',
+    'Dataset Size: 270TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [

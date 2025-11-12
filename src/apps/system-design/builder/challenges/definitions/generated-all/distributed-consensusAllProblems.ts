@@ -22,6 +22,19 @@ export const l6ConsensusPlanetaryProblemDefinition: ProblemDefinition = {
 - Support partition-tolerant operation
 - Enable local decision authority`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Achieve consensus despite 24-min delays',
+    'Handle relativistic time dilation',
+    'Support partition-tolerant operation',
+    'Enable local decision authority',
+    'Provide eventual global consistency'
+  ],
+  userFacingNFRs: [
+    'Latency: Speed of light bounded',
+    'Availability: Per-planet availability'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -63,6 +76,18 @@ export const l6ConsensusMillionNodesProblemDefinition: ProblemDefinition = {
 - Achieve sub-second finality
 - Handle 33% Byzantine nodes
 - Support dynamic membership`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support 1 million validators',
+    'Achieve sub-second finality',
+    'Handle 33% Byzantine nodes',
+    'Support dynamic membership',
+    'Enable sharded validation'
+  ],
+  userFacingNFRs: [
+    'Latency: <1 second finality'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -106,6 +131,19 @@ export const l6DistributedConsensus1ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -147,6 +185,19 @@ export const l6DistributedConsensus2ProblemDefinition: ProblemDefinition = {
 - Achieve zero-knowledge consensus breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement relativistic consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -190,6 +241,19 @@ export const l6DistributedConsensus3ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological consensus at planetary scale',
+    'Achieve self-organizing protocols breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -231,6 +295,19 @@ export const l6DistributedConsensus4ProblemDefinition: ProblemDefinition = {
 - Achieve faster than Byzantine breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement swarm consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -274,6 +351,19 @@ export const l6DistributedConsensus5ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement probabilistic consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -315,6 +405,19 @@ export const l6DistributedConsensus6ProblemDefinition: ProblemDefinition = {
 - Achieve self-organizing protocols breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum consensus at planetary scale',
+    'Achieve self-organizing protocols breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -358,6 +461,19 @@ export const l6DistributedConsensus7ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement relativistic consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -399,6 +515,19 @@ export const l6DistributedConsensus8ProblemDefinition: ProblemDefinition = {
 - Achieve zero-knowledge consensus breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -442,6 +571,19 @@ export const l6DistributedConsensus9ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement swarm consensus at planetary scale',
+    'Achieve self-organizing protocols breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -483,6 +625,19 @@ export const l6DistributedConsensus10ProblemDefinition: ProblemDefinition = {
 - Achieve faster than Byzantine breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement probabilistic consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -526,6 +681,19 @@ export const l6DistributedConsensus11ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -567,6 +735,19 @@ export const l6DistributedConsensus12ProblemDefinition: ProblemDefinition = {
 - Achieve self-organizing protocols breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement relativistic consensus at planetary scale',
+    'Achieve self-organizing protocols breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -610,6 +791,19 @@ export const l6DistributedConsensus13ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -651,6 +845,19 @@ export const l6DistributedConsensus14ProblemDefinition: ProblemDefinition = {
 - Achieve zero-knowledge consensus breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement swarm consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -694,6 +901,19 @@ export const l6DistributedConsensus15ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement probabilistic consensus at planetary scale',
+    'Achieve self-organizing protocols breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -736,6 +956,19 @@ export const l6DistributedConsensus16ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -777,6 +1010,19 @@ export const l6DistributedConsensus17ProblemDefinition: ProblemDefinition = {
 - Achieve zero-knowledge consensus breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement relativistic consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [

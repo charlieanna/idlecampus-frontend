@@ -66,9 +66,9 @@ export function convertProblemDefinitionToChallenge(
   });
 
   // Extract functional requirements as strings
-  const functionalReqs = def.functionalRequirements.mustHave.map(
-    (req) => req.reason
-  );
+  // Use user-facing FRs if provided, otherwise fall back to component reasons
+  const functionalReqs = def.userFacingFRs ||
+    def.functionalRequirements.mustHave.map((req) => req.reason);
 
   // Determine available components based on requirements
   const availableComponents = determineAvailableComponents(def);
@@ -87,6 +87,7 @@ export function convertProblemDefinitionToChallenge(
       latency: formatLatencyRequirement(def.scenarios[0]),
       availability: formatAvailabilityRequirement(def.scenarios[0]),
       budget: 'Optimize for cost efficiency',
+      nfrs: def.userFacingNFRs, // Pass through user-facing NFRs
     },
     availableComponents,
     testCases,

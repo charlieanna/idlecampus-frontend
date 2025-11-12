@@ -16,6 +16,14 @@ export const facebookProblemDefinition: ProblemDefinition = {
 - Users can see a news feed of friends' posts
 - Users can like and comment on posts`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can create profiles and friend other users',
+    'Users can post status updates, photos, and videos',
+    'Users can see a news feed of friends\' posts',
+    'Users can like and comment on posts'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

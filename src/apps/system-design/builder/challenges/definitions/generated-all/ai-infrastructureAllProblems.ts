@@ -22,6 +22,19 @@ export const l6AiAgiTrainingProblemDefinition: ProblemDefinition = {
 - Enable distributed training across continents
 - Support online learning during deployment`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support 10 trillion parameter models',
+    'Handle 10^26 FLOPs training runs',
+    'Enable distributed training across continents',
+    'Support online learning during deployment',
+    'Provide interpretability interfaces'
+  ],
+  userFacingNFRs: [
+    'Dataset Size: 1 exabyte model state',
+    'Availability: No restart for month-long training'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -63,6 +76,19 @@ export const l6AiBrainComputerProblemDefinition: ProblemDefinition = {
 - Decode intentions in real-time
 - Support bidirectional communication
 - Enable neural stimulation feedback`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 1M neural channels',
+    'Decode intentions in real-time',
+    'Support bidirectional communication',
+    'Enable neural stimulation feedback',
+    'Maintain long-term signal stability'
+  ],
+  userFacingNFRs: [
+    'Latency: <10ms thought-to-action',
+    'Availability: Medical device safety standards'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -106,6 +132,18 @@ export const l6AiConsciousArchitectureProblemDefinition: ProblemDefinition = {
 - Support gradual state transfer
 - Enable consciousness verification`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Measure integrated information (Φ)',
+    'Preserve information integration',
+    'Support gradual state transfer',
+    'Enable consciousness verification',
+    'Maintain causal relationships'
+  ],
+  userFacingNFRs: [
+    'Availability: No discontinuity in experience'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -147,6 +185,19 @@ export const l6AiInfrastructure1ProblemDefinition: ProblemDefinition = {
 - Achieve trillion parameter models breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement AGI training at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -190,6 +241,19 @@ export const l6AiInfrastructure2ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement consciousness simulation at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -231,6 +295,19 @@ export const l6AiInfrastructure3ProblemDefinition: ProblemDefinition = {
 - Achieve self-evolving systems breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement swarm intelligence at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -274,6 +351,19 @@ export const l6AiInfrastructure4ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum ML at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -315,6 +405,19 @@ export const l6AiInfrastructure5ProblemDefinition: ProblemDefinition = {
 - Achieve real-time learning breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological computing at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -358,6 +461,19 @@ export const l6AiInfrastructure6ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement AGI training at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -399,6 +515,19 @@ export const l6AiInfrastructure7ProblemDefinition: ProblemDefinition = {
 - Achieve trillion parameter models breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement consciousness simulation at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -442,6 +571,19 @@ export const l6AiInfrastructure8ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement swarm intelligence at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -483,6 +625,19 @@ export const l6AiInfrastructure9ProblemDefinition: ProblemDefinition = {
 - Achieve self-evolving systems breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum ML at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -526,6 +681,19 @@ export const l6AiInfrastructure10ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological computing at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -567,6 +735,19 @@ export const l6AiInfrastructure11ProblemDefinition: ProblemDefinition = {
 - Achieve real-time learning breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement AGI training at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -610,6 +791,19 @@ export const l6AiInfrastructure12ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement consciousness simulation at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -651,6 +845,19 @@ export const l6AiInfrastructure13ProblemDefinition: ProblemDefinition = {
 - Achieve trillion parameter models breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement swarm intelligence at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -694,6 +901,19 @@ export const l6AiInfrastructure14ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum ML at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -735,6 +955,19 @@ export const l6AiInfrastructure15ProblemDefinition: ProblemDefinition = {
 - Achieve self-evolving systems breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement biological computing at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -778,6 +1011,19 @@ export const l6AiInfrastructure16ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement AGI training at planetary scale',
+    'Achieve trillion parameter models breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -820,6 +1066,19 @@ export const l6AiInfrastructure17ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement consciousness simulation at planetary scale',
+    'Achieve real-time learning breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -861,6 +1120,19 @@ export const l6AiInfrastructure18ProblemDefinition: ProblemDefinition = {
 - Achieve self-evolving systems breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement swarm intelligence at planetary scale',
+    'Achieve self-evolving systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [

@@ -346,6 +346,33 @@ function generateProblemDefinition(problem: ParsedProblem): string {
   }
   const description = descParts.join('\n');
 
+  // Format user-facing FRs
+  const userFacingFRs = problem.functionalRequirements
+    .map(fr => fr.replace(/^- /, ''))
+    .map(fr => `'${fr.replace(/'/g, "\\'")}'`)
+    .join(',\n    ');
+
+  // Format user-facing NFRs from the NFR object
+  const nfrStrings: string[] = [];
+  if (problem.nonFunctionalRequirements.latency) {
+    nfrStrings.push(`Latency: ${problem.nonFunctionalRequirements.latency}`);
+  }
+  if (problem.nonFunctionalRequirements.requestRate) {
+    nfrStrings.push(`Request Rate: ${problem.nonFunctionalRequirements.requestRate}`);
+  }
+  if (problem.nonFunctionalRequirements.datasetSize) {
+    nfrStrings.push(`Dataset Size: ${problem.nonFunctionalRequirements.datasetSize}`);
+  }
+  if (problem.nonFunctionalRequirements.availability) {
+    nfrStrings.push(`Availability: ${problem.nonFunctionalRequirements.availability}`);
+  }
+  if (problem.nonFunctionalRequirements.durability) {
+    nfrStrings.push(`Durability: ${problem.nonFunctionalRequirements.durability}`);
+  }
+  const userFacingNFRs = nfrStrings
+    .map(nfr => `'${nfr.replace(/'/g, "\\'")}'`)
+    .join(',\n    ');
+
   const camelCaseId = problem.id.replace(/-([a-z])/g, (g) => g[1].toUpperCase()).replace(/-/g, '');
 
   return `/**
@@ -356,6 +383,14 @@ export const ${camelCaseId}ProblemDefinition: ProblemDefinition = {
   id: '${problem.id}',
   title: '${problem.title}',
   description: \`${description}\`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    ${userFacingFRs}
+  ],
+  userFacingNFRs: [
+    ${userFacingNFRs}
+  ],
 
   functionalRequirements: {
     mustHave: [

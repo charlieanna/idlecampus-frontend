@@ -16,6 +16,13 @@ export const mediumProblemDefinition: ProblemDefinition = {
 - Users can clap (like) and comment on articles
 - Articles are ranked by popularity and engagement`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can write and publish articles',
+    'Users can follow authors and topics',
+    'Users can clap (like) and comment on articles'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

@@ -22,6 +22,19 @@ export const l5DevprodGoogleCiProblemDefinition: ProblemDefinition = {
 - Support 5000 deployments daily
 - Enable incremental builds`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Handle 100K commits daily',
+    'Run 100M tests per day',
+    'Support 5000 deployments daily',
+    'Enable incremental builds',
+    'Provide < 10 minute feedback'
+  ],
+  userFacingNFRs: [
+    'Latency: P50 < 5 min build time',
+    'Availability: 99.9% CI availability'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -63,6 +76,21 @@ export const l5DeveloperProductivity1ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support CI/CD pipeline at GitHub scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 10M requests per second',
+    'Dataset Size: 100TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -109,6 +137,21 @@ export const l5DeveloperProductivity2ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support code review platform at GitLab scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 11M requests per second',
+    'Dataset Size: 110TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -153,6 +196,21 @@ export const l5DeveloperProductivity3ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support testing infrastructure at Bitbucket scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 12M requests per second',
+    'Dataset Size: 120TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -199,6 +257,21 @@ export const l5DeveloperProductivity4ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support deployment automation at CircleCI scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 13M requests per second',
+    'Dataset Size: 130TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -243,6 +316,21 @@ export const l5DeveloperProductivity5ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support developer portal at Travis CI scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 14M requests per second',
+    'Dataset Size: 140TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -289,6 +377,21 @@ export const l5DeveloperProductivity6ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support CI/CD pipeline at Jenkins scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 15M requests per second',
+    'Dataset Size: 150TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -333,6 +436,21 @@ export const l5DeveloperProductivity7ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support code review platform at TeamCity scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 16M requests per second',
+    'Dataset Size: 160TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -379,6 +497,21 @@ export const l5DeveloperProductivity8ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support testing infrastructure at Bamboo scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 17M requests per second',
+    'Dataset Size: 170TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -423,6 +556,21 @@ export const l5DeveloperProductivity9ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support deployment automation at CodeShip scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 18M requests per second',
+    'Dataset Size: 180TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -469,6 +617,21 @@ export const l5DeveloperProductivity10ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support developer portal at Buildkite scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 19M requests per second',
+    'Dataset Size: 190TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -513,6 +676,21 @@ export const l5DeveloperProductivity11ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support CI/CD pipeline at Codefresh scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 20M requests per second',
+    'Dataset Size: 200TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -559,6 +737,21 @@ export const l5DeveloperProductivity12ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support code review platform at Harness scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 21M requests per second',
+    'Dataset Size: 210TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -603,6 +796,21 @@ export const l5DeveloperProductivity13ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support testing infrastructure at Spinnaker scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 22M requests per second',
+    'Dataset Size: 220TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -649,6 +857,21 @@ export const l5DeveloperProductivity14ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support deployment automation at ArgoCD scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 23M requests per second',
+    'Dataset Size: 230TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -693,6 +916,21 @@ export const l5DeveloperProductivity15ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support developer portal at Flux scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 24M requests per second',
+    'Dataset Size: 240TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -739,6 +977,21 @@ export const l5DeveloperProductivity16ProblemDefinition: ProblemDefinition = {
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support CI/CD pipeline at Pulumi scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 25M requests per second',
+    'Dataset Size: 250TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -783,6 +1036,21 @@ export const l5DeveloperProductivity17ProblemDefinition: ProblemDefinition = {
 - Enable gradual migration with zero downtime
 - Maintain backward compatibility
 - Support A/B testing and gradual rollout`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support code review platform at Terraform scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for all operations',
+    'Request Rate: 26M requests per second',
+    'Dataset Size: 260TB data migration',
+    'Availability: 99.99% uptime during migration'
+  ],
 
   functionalRequirements: {
     mustHave: [
