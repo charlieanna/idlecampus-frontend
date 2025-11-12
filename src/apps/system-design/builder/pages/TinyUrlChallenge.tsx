@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Play, CheckCircle, XCircle, AlertCircle, Database, X } from 'lucide-react';
+import { Play, CheckCircle, XCircle, AlertCircle, Database, X, Download, Code } from 'lucide-react';
 import { SchemaEditor } from '../ui/components/SchemaEditor';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
@@ -29,6 +29,7 @@ export function TinyUrlChallenge() {
   const [currentConfig, setCurrentConfig] = useState<Record<string, any>>({});
   const [testResults, setTestResults] = useState<any>(null);
   const [currentLevel, setCurrentLevel] = useState(0);
+  const [showPythonChallenge, setShowPythonChallenge] = useState(false);
 
   const handleAddComponent = (type: ComponentType) => {
     setCurrentComponentType(type);
@@ -103,6 +104,16 @@ export function TinyUrlChallenge() {
     const result = validator.validate(graph, tinyUrlProblemDefinition, currentLevel);
 
     setTestResults(result);
+  };
+
+  const handleDownloadPython = () => {
+    // Download the Python file
+    const link = document.createElement('a');
+    link.href = '/tinyurl_challenge.py';
+    link.download = 'tinyurl_challenge.py';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   return (
@@ -195,6 +206,100 @@ export function TinyUrlChallenge() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            {/* Python Coding Challenge */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Code className="w-5 h-5 text-blue-600" />
+                  <h2 className="text-xl font-semibold text-gray-900">
+                    Coding Challenge: URL Shortening Algorithm
+                  </h2>
+                </div>
+                <button
+                  onClick={() => setShowPythonChallenge(!showPythonChallenge)}
+                  className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+                >
+                  {showPythonChallenge ? 'Hide' : 'Show'}
+                </button>
+              </div>
+
+              {!showPythonChallenge ? (
+                <div>
+                  <p className="text-sm text-gray-600 mb-4">
+                    Practice implementing the URL shortening algorithm in Python.
+                    Optimize for collision resistance, performance, and code quality.
+                  </p>
+                  <button
+                    onClick={handleDownloadPython}
+                    className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Python Template
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-sm text-gray-600">
+                    Implement and optimize the <code className="px-2 py-0.5 bg-gray-100 rounded text-sm font-mono">shorten(url)</code> function
+                    to generate short codes for long URLs.
+                  </p>
+
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <h3 className="text-sm font-semibold text-gray-900 mb-2">Requirements:</h3>
+                    <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                      <li>Generate 6-10 character short codes</li>
+                      <li>Must be collision-resistant</li>
+                      <li>Should handle 1000+ URLs per second</li>
+                      <li>Can be deterministic or use collision handling</li>
+                    </ul>
+                  </div>
+
+                  <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+                    <h3 className="text-sm font-semibold text-blue-900 mb-2">Available Libraries:</h3>
+                    <div className="flex flex-wrap gap-2">
+                      <code className="px-2 py-1 bg-white rounded text-xs font-mono border border-blue-200">random</code>
+                      <code className="px-2 py-1 bg-white rounded text-xs font-mono border border-blue-200">string</code>
+                      <code className="px-2 py-1 bg-white rounded text-xs font-mono border border-blue-200">hashlib</code>
+                      <code className="px-2 py-1 bg-white rounded text-xs font-mono border border-blue-200">base64</code>
+                    </div>
+                  </div>
+
+                  <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+                    <h3 className="text-sm font-semibold text-yellow-900 mb-2">💡 Optimization Strategies:</h3>
+                    <ul className="list-disc list-inside text-sm text-gray-700 space-y-1">
+                      <li><strong>MD5/SHA256 + Base64</strong> - Deterministic, fast</li>
+                      <li><strong>Base62 Encoding</strong> - Production-grade, no collisions</li>
+                      <li><strong>Random + Collision Detection</strong> - Simple but needs retry logic</li>
+                      <li><strong>Hybrid Approach</strong> - Best of both worlds</li>
+                    </ul>
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleDownloadPython}
+                      className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+                    >
+                      <Download className="w-4 h-4" />
+                      Download Template
+                    </button>
+                    <a
+                      href="/tinyurl_challenge.py"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      <Code className="w-4 h-4" />
+                      View in Browser
+                    </a>
+                  </div>
+
+                  <div className="text-xs text-gray-500 mt-2">
+                    The template includes test cases, multiple optimization examples, and interview tips.
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Component Selection */}
