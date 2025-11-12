@@ -18,7 +18,7 @@ interface JustificationData {
 }
 
 // Validation helper functions
-const validateText = (text: string, minWords: number = 15): { valid: boolean; error?: string } => {
+const validateText = (text: string): { valid: boolean; error?: string } => {
   const trimmed = text.trim();
 
   if (!trimmed) {
@@ -26,10 +26,6 @@ const validateText = (text: string, minWords: number = 15): { valid: boolean; er
   }
 
   const words = trimmed.split(/\s+/).filter(w => w.length > 0);
-
-  if (words.length < minWords) {
-    return { valid: false, error: `Need at least ${minWords} words (currently ${words.length})` };
-  }
 
   // Check for repetitive text (same word repeated)
   const uniqueWords = new Set(words.map(w => w.toLowerCase()));
@@ -105,20 +101,15 @@ export function ComponentJustificationModal({
   };
 
   const isFormValid = () => {
-    const whyValid = validateText(justification.why, 15).valid;
-    const benefitsValid = validateText(justification.benefits, 15).valid;
-    const alternativesValid = validateText(justification.alternatives, 15).valid;
-    const tradeoffsValid = validateText(justification.tradeoffs, 15).valid;
-    const tradeoffExplanationValid = validateText(justification.tradeoffExplanation, 15).valid;
-
-    return whyValid && benefitsValid && alternativesValid && tradeoffsValid && tradeoffExplanationValid;
+    // Always allow saving - fields are optional for now (testing purposes)
+    return true;
   };
 
-  const whyValidation = validateText(justification.why, 15);
-  const benefitsValidation = validateText(justification.benefits, 15);
-  const alternativesValidation = validateText(justification.alternatives, 15);
-  const tradeoffsValidation = validateText(justification.tradeoffs, 15);
-  const tradeoffExplanationValidation = validateText(justification.tradeoffExplanation, 15);
+  const whyValidation = validateText(justification.why);
+  const benefitsValidation = validateText(justification.benefits);
+  const alternativesValidation = validateText(justification.alternatives);
+  const tradeoffsValidation = validateText(justification.tradeoffs);
+  const tradeoffExplanationValidation = validateText(justification.tradeoffExplanation);
 
   return (
     <AnimatePresence>
@@ -165,15 +156,14 @@ export function ComponentJustificationModal({
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-900">
-                <strong>📝 Note:</strong> All 5 fields are required. Provide meaningful explanations (min 15 words each).
-                Think critically about your design choices.
+                <strong>📝 Note:</strong> Fields are optional. Provide meaningful explanations to help you think critically about your design choices.
               </p>
             </div>
 
             {/* Why Section */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
-                1. Why did you choose this component? <span className="text-red-500">*</span>
+                1. Why did you choose this component?
               </label>
               <p className="text-xs text-gray-500 mb-2">
                 Explain the specific problem this component solves in your design.
@@ -197,7 +187,7 @@ export function ComponentJustificationModal({
             {/* Benefits Section */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
-                2. What are the key benefits? <span className="text-red-500">*</span>
+                2. What are the key benefits?
               </label>
               <p className="text-xs text-gray-500 mb-2">
                 List the advantages this component brings (performance, scalability, reliability, etc.).
@@ -220,7 +210,7 @@ export function ComponentJustificationModal({
             {/* Alternatives Section */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
-                3. What alternatives did you consider? <span className="text-red-500">*</span>
+                3. What alternatives did you consider?
               </label>
               <p className="text-xs text-gray-500 mb-2">
                 Mention other options you thought about and why you didn't choose them.
@@ -243,7 +233,7 @@ export function ComponentJustificationModal({
             {/* Trade-offs Section - Text Fields Only */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
-                4. What are the trade-offs? <span className="text-red-500">*</span>
+                4. What are the trade-offs?
               </label>
               <p className="text-xs text-gray-500 mb-2">
                 List the trade-offs (downsides, costs, limitations, complexity):
@@ -301,11 +291,9 @@ export function ComponentJustificationModal({
             </button>
             <button
               onClick={handleSave}
-              disabled={!isFormValid()}
-              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded transition-colors shadow-sm"
-              title={!isFormValid() ? 'Please complete all fields' : 'Save justification'}
+              className="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded transition-colors shadow-sm"
             >
-              {isFormValid() ? '✓ Save Justification' : 'Complete All Fields'}
+              Save Justification
             </button>
           </div>
         </motion.div>

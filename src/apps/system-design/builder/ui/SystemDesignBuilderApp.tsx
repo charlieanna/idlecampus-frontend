@@ -129,52 +129,8 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const handleSubmit = async () => {
     if (!selectedChallenge) return;
 
-    // Validate that all non-client components have complete justifications
-    const componentsWithIncompleteJustification = systemGraph.components.filter(comp => {
-      if (comp.type === 'client') return false;
-
-      const justificationStr = comp.config?.justification?.trim();
-      if (!justificationStr) return true;
-
-      try {
-        const justification = JSON.parse(justificationStr);
-
-        // Helper to validate text fields (15+ words, not repetitive)
-        const validateText = (text: string): boolean => {
-          if (!text?.trim()) return false;
-          const words = text.trim().split(/\s+/).filter(w => w.length > 0);
-          if (words.length < 15) return false;
-
-          // Check for repetitive text
-          const uniqueWords = new Set(words.map(w => w.toLowerCase()));
-          if (uniqueWords.size < words.length * 0.6) return false;
-
-          return true;
-        };
-
-        // Check all fields are present and valid
-        const whyValid = validateText(justification.why);
-        const benefitsValid = validateText(justification.benefits);
-        const alternativesValid = validateText(justification.alternatives);
-        const tradeoffsValid = validateText(justification.tradeoffs);
-        const tradeoffExplanationValid = validateText(justification.tradeoffExplanation);
-
-        return !whyValid || !benefitsValid || !alternativesValid || !tradeoffsValid || !tradeoffExplanationValid;
-      } catch {
-        // Invalid JSON
-        return true;
-      }
-    });
-
-    if (componentsWithIncompleteJustification.length > 0) {
-      const componentNames = componentsWithIncompleteJustification
-        .map(comp => comp.config?.displayName || comp.type)
-        .join(', ');
-      alert(
-        `⚠️ Incomplete Justifications\n\nPlease complete all justification fields for the following components before submitting:\n\n${componentNames}\n\nClick on each component to provide:\n• Why you chose it (15+ words)\n• Key benefits (15+ words)\n• Alternatives considered (15+ words)\n• Trade-offs (15+ words)\n• Trade-off impact explanation (15+ words)\n\nProvide meaningful, non-repetitive explanations.`
-      );
-      return;
-    }
+    // Justifications are optional for now (testing purposes)
+    // No validation required before submission
 
     // Get the problem definition for this challenge
     const problemDefinition = getProblemDefinition(selectedChallenge.id);
