@@ -1,26 +1,50 @@
 import { Component } from './Component';
 import { ComponentMetrics, SimulationContext } from '../../types/component';
+import { EC2_INSTANCES } from '../../types/instanceTypes';
 
 /**
  * Application Server Component
  * Runs application logic (compute)
  */
 export class AppServer extends Component {
-  private readonly capacityPerInstance = 1000; // RPS
   private readonly baseLatency = 10; // ms
-  private readonly costPerInstance = 100; // $/month
 
-  constructor(id: string, config: { instances?: number } = {}) {
+  constructor(id: string, config: { instances?: number; instanceType?: string } = {}) {
     super(id, 'app_server', {
       instances: 1,
+      instanceType: 't3.medium', // Default instance type
       ...config,
     });
   }
 
   simulate(rps: number, context?: SimulationContext): ComponentMetrics {
     const instances = this.config.instances || 1;
+    const instanceType = this.config.instanceType || 't3.medium';
+
+    // Get capacity and cost from real instance specs
+    const instanceSpec = EC2_INSTANCES[instanceType];
+    if (!instanceSpec) {
+      console.warn(`Unknown instance type: ${instanceType}, using default`);
+      // Fallback to default
+      const capacityPerInstance = 500;
+      const costPerInstance = 50;
+      const rpsPerInstance = rps / instances;
+      const utilization = rpsPerInstance / capacityPerInstance;
+
+      return {
+        latency: this.baseLatency,
+        errorRate: 0,
+        utilization,
+        cost: instances * costPerInstance,
+        instances,
+        rpsPerInstance,
+      };
+    }
+
+    const capacityPerInstance = instanceSpec.requestsPerSecond;
+    const costPerInstance = instanceSpec.costPerHour * 730; // Monthly cost
     const rpsPerInstance = rps / instances;
-    const utilization = rpsPerInstance / this.capacityPerInstance;
+    const utilization = rpsPerInstance / capacityPerInstance;
 
     let latency: number;
     let errorRate: number;
@@ -44,7 +68,7 @@ export class AppServer extends Component {
       latency,
       errorRate,
       utilization,
-      cost: instances * this.costPerInstance,
+      cost: instances * costPerInstance,
       instances,
       rpsPerInstance,
     };
