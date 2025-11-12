@@ -22,6 +22,21 @@ export const basicDatabaseDesignProblemDefinition: ProblemDefinition = {
 - Handle user relationships (followers)
 - Enable full-text search on posts`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store users, posts, and comments',
+    'Support tags and categories',
+    'Handle user relationships (followers)',
+    'Enable full-text search on posts',
+    'Track view counts and likes'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms for queries',
+    'Request Rate: 10k reads/sec, 1k writes/sec',
+    'Dataset Size: 1M users, 10M posts',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -103,6 +118,21 @@ export const nosqlBasicsProblemDefinition: ProblemDefinition = {
 - Handle varying field types
 - Enable complex queries`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store flexible user profiles',
+    'Support nested preferences',
+    'Handle varying field types',
+    'Enable complex queries',
+    'Support schema evolution'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 30ms for document reads',
+    'Request Rate: 20k ops/sec',
+    'Dataset Size: 100M documents, 1KB average',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -179,6 +209,21 @@ export const keyValueStoreProblemDefinition: ProblemDefinition = {
 - Implement LRU eviction
 - Handle string, list, set, hash types
 - Provide pub/sub messaging`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support GET/SET operations',
+    'Implement LRU eviction',
+    'Handle string, list, set, hash types',
+    'Provide pub/sub messaging',
+    'Support TTL expiration'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 1ms for cache hits',
+    'Request Rate: 100k ops/sec',
+    'Dataset Size: 10GB in-memory',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -271,6 +316,21 @@ export const productCatalogProblemDefinition: ProblemDefinition = {
 - Track inventory per variant
 - Enable faceted search`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store products with variants (size, color)',
+    'Support category hierarchies',
+    'Track inventory per variant',
+    'Enable faceted search',
+    'Handle product reviews'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for product page',
+    'Request Rate: 5k reads/sec, 500 writes/sec',
+    'Dataset Size: 1M products, 10M variants',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -352,6 +412,21 @@ export const timeSeriesMetricsProblemDefinition: ProblemDefinition = {
 - Support aggregation queries
 - Implement retention policies`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ingest metrics at high rate',
+    'Store with microsecond precision',
+    'Support aggregation queries',
+    'Implement retention policies',
+    'Enable alerting on thresholds'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms for writes, < 100ms for queries',
+    'Request Rate: 1M metrics/sec ingestion',
+    'Dataset Size: 100TB time-series data',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -424,6 +499,21 @@ export const sessionStoreProblemDefinition: ProblemDefinition = {
 - Handle concurrent logins
 - Enable session revocation`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Create and validate sessions',
+    'Support session TTL',
+    'Handle concurrent logins',
+    'Enable session revocation',
+    'Store session metadata'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5ms for session lookup',
+    'Request Rate: 50k sessions/sec',
+    'Dataset Size: 10M active sessions',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -494,6 +584,21 @@ export const fileMetadataStoreProblemDefinition: ProblemDefinition = {
 - Support hierarchical paths
 - Track permissions and ownership
 - Enable quick path lookups`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store file and directory metadata',
+    'Support hierarchical paths',
+    'Track permissions and ownership',
+    'Enable quick path lookups',
+    'Handle renames efficiently'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 20ms for metadata ops',
+    'Request Rate: 100k ops/sec',
+    'Dataset Size: 1B files and directories',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -570,6 +675,21 @@ export const configManagementProblemDefinition: ProblemDefinition = {
 - Support versioning and rollback
 - Enable environment-specific configs
 - Provide audit trail`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store key-value configurations',
+    'Support versioning and rollback',
+    'Enable environment-specific configs',
+    'Provide audit trail',
+    'Push config updates to subscribers'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms for reads',
+    'Request Rate: 10k config reads/sec',
+    'Dataset Size: 100K config keys',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -655,6 +775,22 @@ export const ecommerceOrderDbProblemDefinition: ProblemDefinition = {
 - Support order status tracking
 - Handle inventory reservations
 - Enable customer order history`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store orders with line items',
+    'Support order status tracking',
+    'Handle inventory reservations',
+    'Enable customer order history',
+    'Provide merchant dashboards',
+    'Support refunds and cancellations'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms for order creation',
+    'Request Rate: 10k orders/sec peak',
+    'Dataset Size: 1B orders, 5B line items',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -756,6 +892,22 @@ export const socialGraphDbProblemDefinition: ProblemDefinition = {
 - Generate personalized feeds
 - Find mutual friends`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store user profiles and connections',
+    'Support bidirectional friendships',
+    'Generate personalized feeds',
+    'Find mutual friends',
+    'Suggest new connections',
+    'Track engagement metrics'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for feed generation',
+    'Request Rate: 50k queries/sec',
+    'Dataset Size: 1B users, 100B connections',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -837,6 +989,22 @@ export const analyticsWarehouseProblemDefinition: ProblemDefinition = {
 - Enable dimensional modeling
 - Provide fast group-by queries`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store clickstream and event data',
+    'Support complex aggregations',
+    'Enable dimensional modeling',
+    'Provide fast group-by queries',
+    'Handle late-arriving data',
+    'Support data cubes'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5s for analytical queries',
+    'Request Rate: 1M events/sec ingestion',
+    'Dataset Size: 1PB historical data',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -912,6 +1080,22 @@ export const multiTenantSaasProblemDefinition: ProblemDefinition = {
 - Support custom schemas per tenant
 - Handle varying tenant sizes
 - Provide per-tenant backups`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Isolate tenant data',
+    'Support custom schemas per tenant',
+    'Handle varying tenant sizes',
+    'Provide per-tenant backups',
+    'Enable tenant-specific SLAs',
+    'Support data residency requirements'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for queries',
+    'Request Rate: 50k queries/sec across all tenants',
+    'Dataset Size: 10k tenants, 100TB total',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1004,6 +1188,24 @@ export const inventoryManagementProblemDefinition: ProblemDefinition = {
 - Distributed locks preventing any overselling
 - ML-based predictive restocking across regions`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Track 10B SKUs across 5000+ fulfillment centers',
+    'Process 1M reservations/sec (10M Prime Day)',
+    'Distributed locks preventing any overselling',
+    'ML-based predictive restocking across regions',
+    'Real-time cross-warehouse inventory transfers',
+    'Support flash sales with 100x traffic spikes',
+    'Multi-channel inventory (stores, online, partners)',
+    'Complete audit trail for SOX compliance'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 10ms reservation, P99.9 < 25ms',
+    'Request Rate: 1M reservations/sec, 10M during Prime Day',
+    'Dataset Size: 10B SKUs, 5000 locations, 100TB hot data',
+    'Availability: 99.999% uptime, zero overselling tolerance'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1088,6 +1290,22 @@ export const cmsMediaStorageProblemDefinition: ProblemDefinition = {
 - Handle large media uploads
 - Support content versioning
 - Enable CDN distribution`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store articles and media metadata',
+    'Handle large media uploads',
+    'Support content versioning',
+    'Enable CDN distribution',
+    'Provide media transformations',
+    'Track usage analytics'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms for metadata, < 200ms for media',
+    'Request Rate: 10k reads/sec, 1k writes/sec',
+    'Dataset Size: 1M articles, 100M media files, 500TB',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1184,6 +1402,24 @@ export const bankingTransactionDbProblemDefinition: ProblemDefinition = {
 - Real-time fraud detection on every transaction
 - Instant cross-border transfers to 200+ countries`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 100M transactions/sec (1B during crises)',
+    'Zero tolerance for data loss or inconsistency',
+    'Real-time fraud detection on every transaction',
+    'Instant cross-border transfers to 200+ countries',
+    'Support 1B+ accounts across all products',
+    'Complete audit trail for 10-year retention',
+    'Meet Basel III, Dodd-Frank, GDPR requirements',
+    'Coordinate with 10k+ partner banks via APIs'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 50ms domestic, < 200ms international',
+    'Request Rate: 100M transactions/sec, 1B during market events',
+    'Dataset Size: 1B accounts, 100B transactions, 1PB audit logs',
+    'Availability: 99.9999% uptime (31 seconds/year downtime)'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1260,6 +1496,23 @@ export const healthcareRecordsProblemDefinition: ProblemDefinition = {
 - Enforce role-based access control
 - Track all data access
 - Support data encryption at rest and in transit`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store patient medical records',
+    'Enforce role-based access control',
+    'Track all data access',
+    'Support data encryption at rest and in transit',
+    'Enable patient consent management',
+    'Provide audit trail for compliance'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 200ms for record access',
+    'Request Rate: 5k queries/sec',
+    'Dataset Size: 100M patient records',
+    'Availability: 99.99% uptime',
+    'Durability: HIPAA, GDPR compliant'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1346,6 +1599,22 @@ export const iotTimeSeriesProblemDefinition: ProblemDefinition = {
 - Support time-range queries
 - Enable aggregation by device/sensor`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ingest sensor data from millions of devices',
+    'Apply delta and run-length compression',
+    'Support time-range queries',
+    'Enable aggregation by device/sensor',
+    'Implement data retention policies',
+    'Provide real-time dashboards'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5ms for writes, < 500ms for queries',
+    'Request Rate: 5M data points/sec',
+    'Dataset Size: 500TB compressed',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1425,6 +1694,22 @@ export const gamingLeaderboardProblemDefinition: ProblemDefinition = {
 - Query player rank by score
 - Retrieve top N players
 - Support multiple leaderboards`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Update player scores in real-time',
+    'Query player rank by score',
+    'Retrieve top N players',
+    'Support multiple leaderboards',
+    'Handle ties in ranking',
+    'Provide historical snapshots'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms for rank queries',
+    'Request Rate: 100k score updates/sec',
+    'Dataset Size: 100M active players',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1512,6 +1797,22 @@ export const bookingReservationProblemDefinition: ProblemDefinition = {
 - Handle concurrent booking attempts
 - Support hold/release of reservations`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Check availability in real-time',
+    'Reserve resources atomically',
+    'Handle concurrent booking attempts',
+    'Support hold/release of reservations',
+    'Enable waitlists',
+    'Provide booking confirmations'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for availability check',
+    'Request Rate: 10k bookings/sec',
+    'Dataset Size: 1M resources, 100M bookings/year',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1597,6 +1898,23 @@ export const auditTrailProblemDefinition: ProblemDefinition = {
 - Support time-range queries
 - Enable filtering by entity/action`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Log all system events',
+    'Guarantee immutability',
+    'Support time-range queries',
+    'Enable filtering by entity/action',
+    'Provide tamper detection',
+    'Archive old logs'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms for writes',
+    'Request Rate: 100k events/sec',
+    'Dataset Size: 1PB total logs',
+    'Availability: 99.99% uptime',
+    'Durability: Write-once, read-many immutability'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1676,6 +1994,22 @@ export const searchIndexStorageProblemDefinition: ProblemDefinition = {
 - Support boolean queries
 - Rank results by relevance
 - Handle typos and synonyms`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Index documents with full-text',
+    'Support boolean queries',
+    'Rank results by relevance',
+    'Handle typos and synonyms',
+    'Enable faceted filtering',
+    'Provide autocomplete'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for search queries',
+    'Request Rate: 50k queries/sec, 10k indexing/sec',
+    'Dataset Size: 100M documents, 1TB index',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1767,6 +2101,22 @@ export const mlModelRegistryProblemDefinition: ProblemDefinition = {
 - Store experiment metadata
 - Enable model comparison`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store model binaries and weights',
+    'Track model versions and lineage',
+    'Store experiment metadata',
+    'Enable model comparison',
+    'Support model rollback',
+    'Provide deployment tracking'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 200ms for metadata queries',
+    'Request Rate: 1k model uploads/day, 10k queries/sec',
+    'Dataset Size: 1M models, 100TB artifacts',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1852,6 +2202,22 @@ export const rateLimitCountersProblemDefinition: ProblemDefinition = {
 - Handle burst traffic
 - Provide real-time quota checks`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Track requests per time window',
+    'Support multiple rate limit tiers',
+    'Handle burst traffic',
+    'Provide real-time quota checks',
+    'Enable analytics on usage',
+    'Support rate limit headers'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 5ms for rate check',
+    'Request Rate: 1M rate checks/sec',
+    'Dataset Size: 10M active API keys',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1927,6 +2293,24 @@ export const distributedDatabaseProblemDefinition: ProblemDefinition = {
 - Distribute across 100+ regions with auto-sharding
 - TrueTime-based global consistency
 - Zero-downtime schema migrations at scale`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 10M transactions/sec globally',
+    'Distribute across 100+ regions with auto-sharding',
+    'TrueTime-based global consistency',
+    'Zero-downtime schema migrations at scale',
+    'Multi-version concurrency control (MVCC)',
+    'Support 1M+ concurrent connections',
+    'Automatic data rebalancing and healing',
+    'Point-in-time recovery to any second in 30 days'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 5ms same-region, < 50ms cross-region',
+    'Request Rate: 10M transactions/sec, 100M during spikes',
+    'Dataset Size: 1PB active data, 10PB historical',
+    'Availability: 99.999% with 5-second RTO'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2032,6 +2416,23 @@ export const contentDeliveryStorageProblemDefinition: ProblemDefinition = {
 - Auto-migrate to cold storage after 30 days
 - Restore from cold storage on demand
 - Generate multiple resolutions`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store videos and images',
+    'Auto-migrate to cold storage after 30 days',
+    'Restore from cold storage on demand',
+    'Generate multiple resolutions',
+    'Purge based on retention policy',
+    'Track access patterns for tier decisions'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms hot tier, < 50ms warm, < 500ms cold restore',
+    'Request Rate: 500k reads/s, 10k writes/s',
+    'Dataset Size: 10PB total (1PB hot, 3PB warm, 6PB cold)',
+    'Availability: 99.99% for hot tier, 99.9% for warm/cold',
+    'Durability: 11 nines durability required'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2152,6 +2553,24 @@ export const multiModelDatabaseProblemDefinition: ProblemDefinition = {
 - Global tables with <100ms replication
 - Auto-scale from 0 to 10M QPS in 60 seconds`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support 100M requests/sec across all models',
+    'Store 10PB+ with automatic sharding',
+    'Global tables with <100ms replication',
+    'Auto-scale from 0 to 10M QPS in 60 seconds',
+    'Stream 100k+ concurrent change streams',
+    'Adaptive capacity for hot partitions',
+    'Point-in-time recovery to any second',
+    'Support ACID transactions across items'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1ms single-region, < 10ms global',
+    'Request Rate: 100M requests/sec, 1B during spikes',
+    'Dataset Size: 10PB active, 100PB with backups',
+    'Availability: 99.999% SLA with automatic failover'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2262,6 +2681,24 @@ export const distributedTransactionsProblemDefinition: ProblemDefinition = {
 - Spanner-style TrueTime for global ordering
 - Percolator optimization for 2PC at scale`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Execute 10M cross-shard transactions/sec',
+    'Coordinate across 10k+ database shards globally',
+    'Spanner-style TrueTime for global ordering',
+    'Percolator optimization for 2PC at scale',
+    'Handle transactions spanning 100+ shards',
+    'Automatic deadlock detection and resolution',
+    'Zero-loss coordinator failover in <100ms',
+    'Support snapshot isolation and serializability'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms for 2PC, < 200ms for 100-shard txns',
+    'Request Rate: 10M distributed txns/sec, 100M during peaks',
+    'Dataset Size: 100PB across 10k nodes, 1000+ datacenters',
+    'Availability: 99.9999% with automatic coordinator failover'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2357,6 +2794,23 @@ export const multiMasterReplicationProblemDefinition: ProblemDefinition = {
 - Detect and resolve conflicts automatically
 - Propagate changes between replicas
 - Maintain causal consistency`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Accept writes at any replica',
+    'Detect and resolve conflicts automatically',
+    'Propagate changes between replicas',
+    'Maintain causal consistency',
+    'Support version vectors',
+    'Handle network partitions gracefully',
+    'Provide conflict-free data types'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms for local writes',
+    'Request Rate: 200k writes/sec globally',
+    'Dataset Size: 10 replicas, 50TB each',
+    'Availability: 99.999% per-replica'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2469,6 +2923,23 @@ export const globalInventoryStrongProblemDefinition: ProblemDefinition = {
 - Prevent overselling under any partition
 - Provide linearizable reads`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Maintain globally consistent stock counts',
+    'Support atomic cross-region transfers',
+    'Prevent overselling under any partition',
+    'Provide linearizable reads',
+    'Handle regional failures gracefully',
+    'Enable global transactions',
+    'Support multi-datacenter writes'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms same-region, < 300ms cross-region',
+    'Request Rate: 100k inventory operations/sec',
+    'Dataset Size: 50M SKUs across 10 regions',
+    'Availability: 99.99% per region'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2569,6 +3040,24 @@ export const financialLedgerProblemDefinition: ProblemDefinition = {
 - Provide immutable audit trail
 - Support complex transaction types`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement double-entry bookkeeping',
+    'Ensure zero balance drift',
+    'Provide immutable audit trail',
+    'Support complex transaction types',
+    'Enable real-time balance queries',
+    'Handle regulatory reporting',
+    'Prevent any data loss',
+    'Support transaction replay'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms for transactions',
+    'Request Rate: 50k transactions/sec',
+    'Dataset Size: 1B accounts, 100B transactions',
+    'Availability: 99.999% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2665,6 +3154,23 @@ export const blockchainStateDbProblemDefinition: ProblemDefinition = {
 - Support state snapshots
 - Enable fast state root calculation`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store account balances and smart contract state',
+    'Generate Merkle proofs for state',
+    'Support state snapshots',
+    'Enable fast state root calculation',
+    'Provide historical state queries',
+    'Handle state pruning',
+    'Support light client verification'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms for state reads',
+    'Request Rate: 100k state transitions/sec',
+    'Dataset Size: 1B accounts, 10TB state',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2754,6 +3260,23 @@ export const realtimeGamingStateProblemDefinition: ProblemDefinition = {
 - Handle 100+ players per game session
 - Resolve conflicting actions
 - Support lag compensation`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Sync player positions in real-time',
+    'Handle 100+ players per game session',
+    'Resolve conflicting actions',
+    'Support lag compensation',
+    'Enable spectator mode',
+    'Provide match replay',
+    'Handle player disconnections'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms globally',
+    'Request Rate: 1M state updates/sec',
+    'Dataset Size: 1M concurrent game sessions',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2848,6 +3371,23 @@ export const autonomousVehicleMapProblemDefinition: ProblemDefinition = {
 - Support spatial queries (nearby objects)
 - Handle real-time map updates
 - Provide versioned map tiles`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Store HD map data with cm precision',
+    'Support spatial queries (nearby objects)',
+    'Handle real-time map updates',
+    'Provide versioned map tiles',
+    'Enable offline map downloads',
+    'Support route planning queries',
+    'Track dynamic obstacles'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 10ms for map queries',
+    'Request Rate: 10M queries/sec from vehicles',
+    'Dataset Size: 1PB HD map data',
+    'Availability: 99.999% uptime, sub-10cm accuracy'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2948,6 +3488,23 @@ export const petabyteDataLakeProblemDefinition: ProblemDefinition = {
 - Support multiple file formats (Parquet, ORC, Avro)
 - Enable schema evolution`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Ingest data from 1000s of sources',
+    'Store raw, processed, and curated data',
+    'Support multiple file formats (Parquet, ORC, Avro)',
+    'Enable schema evolution',
+    'Provide data catalog and lineage',
+    'Support time travel queries',
+    'Enable data governance and compliance'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 1s for metadata queries, minutes for analytics',
+    'Request Rate: 100k files/sec ingestion',
+    'Dataset Size: 1PB+ multi-format data',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -3047,6 +3604,23 @@ export const blockStorageProblemDefinition: ProblemDefinition = {
 - Replicate blocks across availability zones
 - Create point-in-time snapshots
 - Restore volumes from snapshots`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Attach volumes to compute instances',
+    'Replicate blocks across availability zones',
+    'Create point-in-time snapshots',
+    'Restore volumes from snapshots',
+    'Support volume resizing',
+    'Handle node failures transparently'
+  ],
+  userFacingNFRs: [
+    'Latency: P50 < 1ms, P95 < 3ms, P99 < 10ms for block I/O',
+    'Request Rate: 100k IOPS per volume, millions globally',
+    'Dataset Size: 1PB total across all volumes. 16TB max volume size',
+    'Availability: 99.99% availability with auto-failover',
+    'Durability: 11 nines annual durability via replication'
+  ],
 
   functionalRequirements: {
     mustHave: [

@@ -16,6 +16,12 @@ export const huluProblemDefinition: ProblemDefinition = {
 - Users can record shows to watch later (DVR)
 - Content is available with or without ads`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can watch TV shows and movies',
+    'Users can record shows to watch later (DVR)'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

@@ -16,6 +16,13 @@ export const bookingcomProblemDefinition: ProblemDefinition = {
 - Users can book rooms and manage reservations
 - Platform handles payments and cancellations`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can search for hotels by location and dates',
+    'Users can view room availability and prices',
+    'Users can book rooms and manage reservations'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

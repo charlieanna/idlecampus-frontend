@@ -16,6 +16,12 @@ export const messengerProblemDefinition: ProblemDefinition = {
 - Group chats support multiple participants
 - Messages sync across all devices`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can send text messages and media',
+    'Users can make voice and video calls'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

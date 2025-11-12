@@ -16,6 +16,13 @@ export const youtubeProblemDefinition: ProblemDefinition = {
 - Users can subscribe to channels
 - Videos are recommended based on viewing history`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can upload and share videos',
+    'Users can watch, like, comment on videos',
+    'Users can subscribe to channels'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

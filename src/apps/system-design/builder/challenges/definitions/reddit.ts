@@ -16,6 +16,13 @@ export const redditProblemDefinition: ProblemDefinition = {
 - Users can upvote and downvote posts and comments
 - Posts are ranked by votes and recency`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can create posts in different subreddits',
+    'Users can comment on posts (nested comments)',
+    'Users can upvote and downvote posts and comments'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

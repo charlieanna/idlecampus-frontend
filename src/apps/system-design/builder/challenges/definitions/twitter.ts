@@ -16,6 +16,14 @@ export const twitterProblemDefinition: ProblemDefinition = {
 - Users can like and retweet posts
 - Users can search for tweets and users`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can post short messages (tweets) up to 280 characters',
+    'Users can follow other users and see their tweets in a timeline',
+    'Users can like and retweet posts',
+    'Users can search for tweets and users'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

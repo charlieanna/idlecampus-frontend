@@ -16,6 +16,12 @@ export const slackProblemDefinition: ProblemDefinition = {
 - Users can share files and integrate apps
 - Messages support threads and reactions`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can send messages in channels and direct messages',
+    'Users can share files and integrate apps'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

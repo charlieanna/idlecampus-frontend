@@ -16,6 +16,12 @@ export const zoomProblemDefinition: ProblemDefinition = {
 - Platform handles audio and video streaming
 - Users can chat during meetings`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can create and join video meetings',
+    'Users can chat during meetings'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

@@ -16,6 +16,13 @@ export const spotifyProblemDefinition: ProblemDefinition = {
 - Platform recommends music based on listening history
 - Users can follow artists and other users`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can search and play songs',
+    'Users can create and share playlists',
+    'Users can follow artists and other users'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

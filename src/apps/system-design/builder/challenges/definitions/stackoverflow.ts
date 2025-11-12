@@ -16,6 +16,11 @@ export const stackoverflowProblemDefinition: ProblemDefinition = {
 - Users earn reputation points
 - Questions have tags for categorization`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can ask and answer questions'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

@@ -16,6 +16,12 @@ export const yelpProblemDefinition: ProblemDefinition = {
 - Businesses are ranked by rating and relevance
 - Platform supports geospatial search`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can search for local businesses',
+    'Users can write reviews and upload photos'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

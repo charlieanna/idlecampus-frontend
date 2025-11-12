@@ -22,6 +22,20 @@ export const basicMultiRegionProblemDefinition: ProblemDefinition = {
 - Replicate data between regions
 - Handle region failures`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Deploy in US and EU regions',
+    'Route users to nearest region',
+    'Replicate data between regions',
+    'Handle region failures',
+    'Monitor cross-region latency'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms same-region, < 300ms cross-region',
+    'Request Rate: 10k requests/sec per region',
+    'Availability: 99.95% with regional failover'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -122,6 +136,20 @@ export const activeActiveRegionsProblemDefinition: ProblemDefinition = {
 - Resolve write conflicts
 - Maintain eventual consistency
 - Handle network partitions`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Accept writes in both regions',
+    'Resolve write conflicts',
+    'Maintain eventual consistency',
+    'Handle network partitions',
+    'Support regional preferences'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms for local writes',
+    'Request Rate: 5k writes/sec per region',
+    'Availability: 99.9% per region'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -234,6 +262,21 @@ export const globalCdnProblemDefinition: ProblemDefinition = {
 - Cache invalidation
 - Dynamic content bypass`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Edge caching in 100+ locations',
+    'Regional origin failover',
+    'Cache invalidation',
+    'Dynamic content bypass',
+    'DDoS protection'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms globally',
+    'Request Rate: 10M req/s',
+    'Dataset Size: 1PB static assets',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -319,6 +362,21 @@ export const globalLoadBalancingProblemDefinition: ProblemDefinition = {
 - Health-based routing
 - Latency-based routing
 - Traffic distribution`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Anycast IP routing',
+    'Health-based routing',
+    'Latency-based routing',
+    'Traffic distribution',
+    'DDoS mitigation'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 80ms globally',
+    'Request Rate: 5M req/s',
+    'Dataset Size: 100M users across 20 regions',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -407,6 +465,21 @@ export const distributedSessionStoreProblemDefinition: ProblemDefinition = {
 - TTL-based expiration
 - Sticky sessions optional`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Global session lookup',
+    'Session replication',
+    'TTL-based expiration',
+    'Sticky sessions optional',
+    'Session hijacking protection'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms local, < 200ms cross-region',
+    'Request Rate: 1M req/s',
+    'Dataset Size: 100M active sessions',
+    'Availability: 99.95% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -483,6 +556,21 @@ export const multiregionBackupProblemDefinition: ProblemDefinition = {
 - Cross-region replication
 - Point-in-time recovery (PITR)
 - Automated backup testing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Automated continuous backup',
+    'Cross-region replication',
+    'Point-in-time recovery (PITR)',
+    'Automated backup testing',
+    'Encryption at rest and in transit'
+  ],
+  userFacingNFRs: [
+    'Latency: Backup lag < 5min, Recovery RTO < 1hr',
+    'Request Rate: N/A (background)',
+    'Dataset Size: 100TB database',
+    'Availability: RPO < 5min, RTO < 1hr'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -565,6 +653,21 @@ export const globalDnsProblemDefinition: ProblemDefinition = {
 - Failover to backup regions
 - DNSSEC support`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'GeoDNS for latency-based routing',
+    'Health check integration',
+    'Failover to backup regions',
+    'DNSSEC support',
+    'DDoS protection'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms DNS resolution',
+    'Request Rate: 100k queries/s',
+    'Dataset Size: 1M DNS records',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -633,6 +736,21 @@ export const globalIpAnycastProblemDefinition: ProblemDefinition = {
 - DDoS mitigation
 - Traffic engineering`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'BGP anycast advertisement',
+    'Health-based route withdrawal',
+    'DDoS mitigation',
+    'Traffic engineering',
+    'Automatic failover'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms globally',
+    'Request Rate: 20M req/s',
+    'Dataset Size: 50+ POPs worldwide',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -700,6 +818,21 @@ export const geofencedFeaturesProblemDefinition: ProblemDefinition = {
 - Feature flag per region
 - Gradual rollout (0% → 100%)
 - Rollback capability`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'IP-based geolocation',
+    'Feature flag per region',
+    'Gradual rollout (0% → 100%)',
+    'Rollback capability',
+    'A/B testing per region'
+  ],
+  userFacingNFRs: [
+    'Latency: Flag check < 5ms',
+    'Request Rate: 10M req/s',
+    'Dataset Size: 10k feature flags',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -772,6 +905,21 @@ export const partialRegionFailureProblemDefinition: ProblemDefinition = {
 - Health checks per AZ
 - Automatic AZ failover
 - Degraded mode operation`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'AZ-aware deployment',
+    'Health checks per AZ',
+    'Automatic AZ failover',
+    'Degraded mode operation',
+    'Capacity planning for N-1 AZs'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 150ms normal, < 300ms degraded',
+    'Request Rate: 1M req/s',
+    'Dataset Size: 3 AZs per region',
+    'Availability: 99.95% with AZ failure'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -878,6 +1026,24 @@ export const globalSocialNetworkProblemDefinition: ProblemDefinition = {
 - Process 100M requests/sec (1B during viral events)
 - Deliver 1T+ messages daily with E2E encryption
 - Store user data in home region (GDPR/CCPA)`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support 3B+ users across 20+ global regions',
+    'Process 100M requests/sec (1B during viral events)',
+    'Deliver 1T+ messages daily with E2E encryption',
+    'Store user data in home region (GDPR/CCPA)',
+    'Handle viral content spreading to 1B users/hour',
+    'Real-time translation for 100+ languages',
+    'Cross-region friend graph with 100B+ edges',
+    'Support Stories/Reels with 10M concurrent uploads'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms same-region, < 200ms global messaging',
+    'Request Rate: 100M req/sec normal, 1B during viral events',
+    'Dataset Size: 10B users profiles, 100PB media, 1EB total',
+    'Availability: 99.999% for messaging, 99.99% for feed'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1003,6 +1169,21 @@ export const crossRegionFailoverProblemDefinition: ProblemDefinition = {
 - Async data replication
 - RPO < 5 minutes`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Health checks per region',
+    'Automatic DNS failover',
+    'Async data replication',
+    'RPO < 5 minutes',
+    'RTO < 10 minutes'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms normal, < 500ms during failover',
+    'Request Rate: 500k req/s',
+    'Dataset Size: 10TB per region',
+    'Availability: 99.99% with region failover'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1084,6 +1265,21 @@ export const geoPinningProblemDefinition: ProblemDefinition = {
 - User location detection
 - Data residency enforcement
 - Audit logging`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Geo-fencing per region',
+    'User location detection',
+    'Data residency enforcement',
+    'Audit logging',
+    'Cross-region aggregation for analytics'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 150ms',
+    'Request Rate: 200k req/s',
+    'Dataset Size: 50M EU users, 100M US users',
+    'Availability: 99.95% uptime, GDPR compliant'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1171,6 +1367,24 @@ export const multiregionStreamingProblemDefinition: ProblemDefinition = {
 - Exactly-once delivery with <100ms replication
 - Support 1M+ topics and 10M+ subscriptions
 - Maintain ordering per partition globally`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 100M events/sec across 50+ regions',
+    'Exactly-once delivery with <100ms replication',
+    'Support 1M+ topics and 10M+ subscriptions',
+    'Maintain ordering per partition globally',
+    'Schema registry with evolution support',
+    'Multi-region disaster recovery',
+    'Real-time stream processing for ML',
+    'Cross-region event replay and time travel'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 10ms local, < 100ms cross-region replication',
+    'Request Rate: 100M events/sec normal, 1B during peaks',
+    'Dataset Size: 10PB/month ingestion, 90-day retention',
+    'Availability: 99.999% for produce, 99.99% for consume'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1274,6 +1488,21 @@ export const latencyBasedRoutingProblemDefinition: ProblemDefinition = {
 - Dynamic routing updates
 - Fallback to geo-proximity`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Real User Monitoring (RUM)',
+    'Latency measurement per region',
+    'Dynamic routing updates',
+    'Fallback to geo-proximity',
+    'A/B testing support'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms optimized',
+    'Request Rate: 2M req/s',
+    'Dataset Size: 500M users',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1360,6 +1589,21 @@ export const multiregionSearchProblemDefinition: ProblemDefinition = {
 - Index replication
 - Unified ranking
 - Regional relevance tuning`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Regional search clusters',
+    'Index replication',
+    'Unified ranking',
+    'Regional relevance tuning',
+    'Real-time indexing'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms',
+    'Request Rate: 500k req/s globally',
+    'Dataset Size: 10B documents',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1463,6 +1707,21 @@ export const crossRegionAnalyticsProblemDefinition: ProblemDefinition = {
 - Real-time dashboards
 - Historical trend analysis`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Region-specific raw data storage',
+    'Anonymized cross-region aggregation',
+    'Real-time dashboards',
+    'Historical trend analysis',
+    'Export for data science'
+  ],
+  userFacingNFRs: [
+    'Latency: Dashboard < 2s, Batch < 1hr',
+    'Request Rate: 1M events/s write, 10k queries/s',
+    'Dataset Size: 1PB historical',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1562,6 +1821,21 @@ export const multiregionCacheProblemDefinition: ProblemDefinition = {
 - Invalidation propagation
 - Lazy replication
 - TTL-based expiry`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Regional cache clusters',
+    'Invalidation propagation',
+    'Lazy replication',
+    'TTL-based expiry',
+    'Cache warming'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 20ms local, < 500ms invalidation propagation',
+    'Request Rate: 5M req/s',
+    'Dataset Size: 100M cache entries',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1669,6 +1943,24 @@ export const globalContentDeliveryProblemDefinition: ProblemDefinition = {
 - Live streaming for 100M concurrent viewers
 - Start playback in <100ms globally`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Stream to 500M concurrent viewers globally',
+    'Support 4K/8K/HDR with adaptive bitrate',
+    'Live streaming for 100M concurrent viewers',
+    'Start playback in <100ms globally',
+    'Offline downloads for 100M+ devices',
+    'Multi-CDN strategy with ISP partnerships',
+    'DRM for 10k+ content providers',
+    'Serve 1 exabit/day of video traffic'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms to start, P99.9 < 200ms',
+    'Request Rate: 500M concurrent streams, 5B during viral events',
+    'Dataset Size: 10PB catalog, 1EB total cache capacity',
+    'Availability: 99.999% for popular content, 99.99% overall'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1750,6 +2042,21 @@ export const edgeComputingProblemDefinition: ProblemDefinition = {
 - Edge-to-origin communication
 - Edge state management`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Deploy functions globally',
+    'Request routing to nearest edge',
+    'Edge-to-origin communication',
+    'Edge state management',
+    'A/B testing at edge'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 50ms',
+    'Request Rate: 50M req/s globally',
+    'Dataset Size: 10k functions, 100+ edge locations',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1825,6 +2132,21 @@ export const multiregionQueueProblemDefinition: ProblemDefinition = {
 - Exactly-once delivery
 - Message ordering per partition
 - Dead letter queues`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Cross-region queue replication',
+    'Exactly-once delivery',
+    'Message ordering per partition',
+    'Dead letter queues',
+    'Regional consumers'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms local, < 500ms cross-region',
+    'Request Rate: 500k msg/s',
+    'Dataset Size: 1B messages/day',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1913,6 +2235,21 @@ export const regionalShardingProblemDefinition: ProblemDefinition = {
 - Shard rebalancing
 - Cross-shard transactions`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Shard by user region',
+    'Local writes, cross-region reads',
+    'Shard rebalancing',
+    'Cross-shard transactions',
+    'Consistent hashing'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 80ms local, < 300ms cross-region',
+    'Request Rate: 800k req/s',
+    'Dataset Size: 500M users, 5 regions',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1998,6 +2335,21 @@ export const crossRegionObservabilityProblemDefinition: ProblemDefinition = {
 - Distributed tracing
 - Log aggregation
 - Cross-region correlation`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Metrics aggregation',
+    'Distributed tracing',
+    'Log aggregation',
+    'Cross-region correlation',
+    'Alerting'
+  ],
+  userFacingNFRs: [
+    'Latency: Ingestion < 10s, Query < 5s',
+    'Request Rate: 10M events/s',
+    'Dataset Size: 1PB/month',
+    'Availability: 99.9% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2094,6 +2446,21 @@ export const regionalQuotaEnforcementProblemDefinition: ProblemDefinition = {
 - Real-time quota checks
 - Monthly billing rollup`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Per-region usage tracking',
+    'Global quota aggregation',
+    'Real-time quota checks',
+    'Monthly billing rollup',
+    'Usage exports'
+  ],
+  userFacingNFRs: [
+    'Latency: Quota check < 10ms',
+    'Request Rate: 5M ops/s',
+    'Dataset Size: 1M customers, 5 regions',
+    'Availability: 99.9% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2184,6 +2551,21 @@ export const crossRegionSecretsProblemDefinition: ProblemDefinition = {
 - Secret rotation
 - Access control (IAM)`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Encrypted storage',
+    'Cross-region replication',
+    'Secret rotation',
+    'Access control (IAM)',
+    'Audit logging'
+  ],
+  userFacingNFRs: [
+    'Latency: Retrieval < 100ms',
+    'Request Rate: 100k req/s',
+    'Dataset Size: 1M secrets',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2263,6 +2645,24 @@ export const planetScaleDatabaseProblemDefinition: ProblemDefinition = {
 - Implement external consistency
 - Use synchronized clocks (TrueTime)
 - Handle automatic sharding`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support global ACID transactions',
+    'Implement external consistency',
+    'Use synchronized clocks (TrueTime)',
+    'Handle automatic sharding',
+    'Support SQL with joins',
+    'Enable point-in-time recovery',
+    'Provide 5 nines availability',
+    'Scale to thousands of nodes'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 20ms local reads, < 100ms global writes',
+    'Request Rate: 10M ops/sec globally',
+    'Dataset Size: 100PB across all regions',
+    'Availability: 99.999% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2377,6 +2777,24 @@ export const conflictResolutionProblemDefinition: ProblemDefinition = {
 - Active-active replication across 100+ regions
 - TrueTime/HLC for global ordering
 - Support CRDTs for automatic resolution`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 10M concurrent writes/sec globally',
+    'Active-active replication across 100+ regions',
+    'TrueTime/HLC for global ordering',
+    'Support CRDTs for automatic resolution',
+    'Custom merge strategies for business logic',
+    'Detect conflicts within 10ms',
+    'Track lineage for 1B+ objects',
+    'Support financial ACID requirements'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 100ms conflict detection, < 200ms resolution',
+    'Request Rate: 10M writes/sec, 100M during Black Friday',
+    'Dataset Size: 100B objects, 1PB conflict logs',
+    'Availability: 99.999% with automatic failover'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2495,6 +2913,24 @@ export const globalRateLimitingProblemDefinition: ProblemDefinition = {
 - Hierarchical limits (user/org/global)
 - Sliding window and token bucket algorithms`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Process 100M rate limit decisions/sec globally',
+    'Track quotas for 100M+ API keys/users',
+    'Hierarchical limits (user/org/global)',
+    'Sliding window and token bucket algorithms',
+    'Distributed counter sync with <100ms lag',
+    'DDoS protection at 10B req/sec scale',
+    'Graceful degradation during attacks',
+    'Real-time quota adjustment and overrides'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1ms decision time, P99.9 < 5ms',
+    'Request Rate: 100M req/s normal, 10B during DDoS attacks',
+    'Dataset Size: 100M API keys, 1B rate limit rules',
+    'Availability: 99.999% for rate limiting decisions'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2597,6 +3033,21 @@ export const readYourWritesProblemDefinition: ProblemDefinition = {
 - Stale read detection
 - Automatic fallback to primary`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Session-based write tracking',
+    'Version vectors',
+    'Stale read detection',
+    'Automatic fallback to primary',
+    'Bounded staleness'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms, P99 < 300ms',
+    'Request Rate: 1M req/s',
+    'Dataset Size: 100M users',
+    'Availability: 99.99% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2682,6 +3133,21 @@ export const regionalComplianceProblemDefinition: ProblemDefinition = {
 - Data residency enforcement
 - Compliance audit logs
 - Cross-tenant isolation`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Per-tenant region preference',
+    'Data residency enforcement',
+    'Compliance audit logs',
+    'Cross-tenant isolation',
+    'Regional billing'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 150ms',
+    'Request Rate: 300k req/s',
+    'Dataset Size: 10k tenants, 1B records',
+    'Availability: 99.95% uptime per region'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -2789,6 +3255,21 @@ export const crossRegionMigrationProblemDefinition: ProblemDefinition = {
 - Data consistency verification
 - Rollback capability`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Dual-write during migration',
+    'Gradual traffic shift',
+    'Data consistency verification',
+    'Rollback capability',
+    'Migration progress tracking'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 150ms during migration',
+    'Request Rate: 500k req/s',
+    'Dataset Size: 10M users, 100TB data',
+    'Availability: 99.99% during migration'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2890,6 +3371,21 @@ export const timeSynchronizationProblemDefinition: ProblemDefinition = {
 - Uncertainty bounds
 - Commit wait protocol`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Atomic clock references',
+    'GPS synchronization',
+    'Uncertainty bounds',
+    'Commit wait protocol',
+    'Clock drift monitoring'
+  ],
+  userFacingNFRs: [
+    'Latency: Uncertainty < 7ms',
+    'Request Rate: 10M timestamps/s',
+    'Dataset Size: 100+ datacenters',
+    'Availability: 99.999% uptime'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -2957,6 +3453,21 @@ export const globalLeaderElectionProblemDefinition: ProblemDefinition = {
 - Automatic failover on leader failure
 - Split-brain prevention
 - Lease-based leadership`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Leader election via consensus',
+    'Automatic failover on leader failure',
+    'Split-brain prevention',
+    'Lease-based leadership',
+    'Observer nodes for reads'
+  ],
+  userFacingNFRs: [
+    'Latency: Election < 10s, Lease renewal < 100ms',
+    'Request Rate: 100k operations/s',
+    'Dataset Size: 5 regions, 15 nodes',
+    'Availability: 99.99% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -3039,6 +3550,21 @@ export const multiregionCrdtProblemDefinition: ProblemDefinition = {
 - CRDT sets
 - CRDT maps
 - Operation-based or state-based`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'CRDT counters',
+    'CRDT sets',
+    'CRDT maps',
+    'Operation-based or state-based',
+    'Garbage collection'
+  ],
+  userFacingNFRs: [
+    'Latency: P95 < 100ms local, < 500ms convergence',
+    'Request Rate: 500k ops/s',
+    'Dataset Size: 100M objects',
+    'Availability: 99.95% uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -3135,6 +3661,21 @@ export const multiregionOrchestrationProblemDefinition: ProblemDefinition = {
 - Global service discovery
 - Cross-region networking
 - Health monitoring`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Multi-cluster management',
+    'Global service discovery',
+    'Cross-region networking',
+    'Health monitoring',
+    'Rolling updates'
+  ],
+  userFacingNFRs: [
+    'Latency: Deploy < 5min globally',
+    'Request Rate: 10k containers deployed/hr',
+    'Dataset Size: 100k containers, 5 regions',
+    'Availability: 99.9% control plane uptime'
+  ],
 
   functionalRequirements: {
     mustHave: [

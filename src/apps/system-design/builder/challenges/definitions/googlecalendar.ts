@@ -16,6 +16,12 @@ export const googlecalendarProblemDefinition: ProblemDefinition = {
 - Users can share calendars with others
 - Platform sends notifications for upcoming events`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can create and manage events',
+    'Users can share calendars with others'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

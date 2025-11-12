@@ -16,6 +16,12 @@ export const trelloProblemDefinition: ProblemDefinition = {
 - Users can collaborate on boards
 - Cards support comments, attachments, and checklists`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can create boards with lists and cards',
+    'Users can collaborate on boards'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

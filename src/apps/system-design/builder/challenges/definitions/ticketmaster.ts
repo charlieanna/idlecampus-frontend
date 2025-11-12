@@ -16,6 +16,12 @@ export const ticketmasterProblemDefinition: ProblemDefinition = {
 - Platform prevents double-booking of seats
 - Tickets are delivered digitally`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can browse and search for events',
+    'Users can purchase tickets with seat selection'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

@@ -16,6 +16,13 @@ export const discordProblemDefinition: ProblemDefinition = {
 - Users can join voice/video calls
 - Messages are organized by channels and threads`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can create servers with multiple channels',
+    'Users can send text messages in real-time',
+    'Users can join voice/video calls'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

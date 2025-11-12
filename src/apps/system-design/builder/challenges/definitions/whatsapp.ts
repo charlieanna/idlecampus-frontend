@@ -16,6 +16,13 @@ export const whatsappProblemDefinition: ProblemDefinition = {
 - Messages are end-to-end encrypted
 - Users can create group chats`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can send text messages in real-time',
+    'Users can send photos, videos, and voice messages',
+    'Users can create group chats'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

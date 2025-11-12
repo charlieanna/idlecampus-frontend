@@ -16,6 +16,12 @@ export const dropboxProblemDefinition: ProblemDefinition = {
 - Users can share files and folders
 - Platform supports file versioning`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can upload and download files',
+    'Users can share files and folders'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

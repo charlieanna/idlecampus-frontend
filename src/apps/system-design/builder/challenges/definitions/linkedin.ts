@@ -16,6 +16,14 @@ export const linkedinProblemDefinition: ProblemDefinition = {
 - Users can post updates and articles
 - Users can search for jobs and people`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can create profiles with work experience',
+    'Users can connect with other professionals',
+    'Users can post updates and articles',
+    'Users can search for jobs and people'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

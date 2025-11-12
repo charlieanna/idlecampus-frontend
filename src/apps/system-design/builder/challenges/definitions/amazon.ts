@@ -16,6 +16,13 @@ export const amazonProblemDefinition: ProblemDefinition = {
 - Users can track orders and view order history
 - Sellers can list and manage products`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can browse and search for products',
+    'Users can add items to cart and checkout',
+    'Users can track orders and view order history'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

@@ -16,6 +16,12 @@ export const googledriveProblemDefinition: ProblemDefinition = {
 - Files can be shared with specific permissions
 - Platform supports searching across all files`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can upload, store, and organize files',
+    'Users can collaborate on documents in real-time'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

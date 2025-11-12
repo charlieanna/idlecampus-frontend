@@ -80,7 +80,11 @@ export interface ProblemDefinition {
   title: string;
   description: string;
 
-  // Architectural requirements
+  // User-facing requirements (interview-style)
+  userFacingFRs?: string[]; // e.g., "Users can upload photos", "Users can view feed"
+  userFacingNFRs?: string[]; // e.g., "Latency: P99 < 200ms", "Availability: 99.9% uptime"
+
+  // Architectural requirements (for validation)
   functionalRequirements: {
     mustHave: ComponentRequirement[];
     mustConnect: ConnectionRequirement[];

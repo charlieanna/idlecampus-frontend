@@ -16,6 +16,12 @@ export const weatherapiProblemDefinition: ProblemDefinition = {
 - Platform ingests data from weather stations
 - Supports high-volume read traffic`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can query current weather by location',
+    'Supports high-volume read traffic'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

@@ -16,6 +16,13 @@ export const pinterestProblemDefinition: ProblemDefinition = {
 - Users can follow boards and users
 - Images are organized into categories`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Users can create boards and pin images',
+    'Users can browse and search for pins',
+    'Users can follow boards and users'
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

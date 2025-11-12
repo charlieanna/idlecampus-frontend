@@ -22,6 +22,18 @@ export const l6ProtocolQuantumInternetProblemDefinition: ProblemDefinition = {
 - Maintain coherence over 1000km
 - Support quantum error correction`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support quantum entanglement distribution',
+    'Enable quantum teleportation of qubits',
+    'Maintain coherence over 1000km',
+    'Support quantum error correction',
+    'Interface with classical internet'
+  ],
+  userFacingNFRs: [
+    'Latency: Speed of light limited'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -63,6 +75,19 @@ export const l6ProtocolInterplanetaryProblemDefinition: ProblemDefinition = {
 - Support custody transfer
 - Enable bundle protocol routing
 - Manage solar conjunction blackouts`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Handle 24-minute round-trip delays',
+    'Support custody transfer',
+    'Enable bundle protocol routing',
+    'Manage solar conjunction blackouts',
+    'Support emergency priority messages'
+  ],
+  userFacingNFRs: [
+    'Latency: 4-24 minutes Earth-Mars',
+    'Availability: 95% excluding conjunctions'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -106,6 +131,19 @@ export const l6Protocol6gArchitectureProblemDefinition: ProblemDefinition = {
 - Enable AI-native network operations
 - Provide ubiquitous coverage including space`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Achieve 1Tbps peak data rates',
+    'Support holographic communication',
+    'Enable AI-native network operations',
+    'Provide ubiquitous coverage including space',
+    'Support 10M devices per km²'
+  ],
+  userFacingNFRs: [
+    'Latency: <0.1ms air interface',
+    'Availability: 99.99999% coverage with satellites'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -147,6 +185,18 @@ export const l6ProtocolTcpReplacementProblemDefinition: ProblemDefinition = {
 - Enable one-sided RDMA operations
 - Handle persistent memory semantics
 - Support multipath by default`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Support 400Gbps+ per connection',
+    'Enable one-sided RDMA operations',
+    'Handle persistent memory semantics',
+    'Support multipath by default',
+    'Integrate with quantum channels'
+  ],
+  userFacingNFRs: [
+    'Latency: <100ns in datacenter'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -190,6 +240,19 @@ export const l6NextGenProtocols1ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum networking at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -231,6 +294,19 @@ export const l6NextGenProtocols2ProblemDefinition: ProblemDefinition = {
 - Achieve brain-to-brain networks breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement interplanetary internet at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -274,6 +350,19 @@ export const l6NextGenProtocols3ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement 6G/7G networks at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -315,6 +404,19 @@ export const l6NextGenProtocols4ProblemDefinition: ProblemDefinition = {
 - Achieve faster-than-light communication breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement molecular communication at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -358,6 +460,19 @@ export const l6NextGenProtocols5ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement neuromorphic protocols at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -399,6 +514,19 @@ export const l6NextGenProtocols6ProblemDefinition: ProblemDefinition = {
 - Achieve holographic data transfer breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum networking at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -442,6 +570,19 @@ export const l6NextGenProtocols7ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement interplanetary internet at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -483,6 +624,19 @@ export const l6NextGenProtocols8ProblemDefinition: ProblemDefinition = {
 - Achieve brain-to-brain networks breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement 6G/7G networks at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -526,6 +680,19 @@ export const l6NextGenProtocols9ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement molecular communication at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -567,6 +734,19 @@ export const l6NextGenProtocols10ProblemDefinition: ProblemDefinition = {
 - Achieve faster-than-light communication breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement neuromorphic protocols at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -610,6 +790,19 @@ export const l6NextGenProtocols11ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum networking at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -651,6 +844,19 @@ export const l6NextGenProtocols12ProblemDefinition: ProblemDefinition = {
 - Achieve holographic data transfer breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement interplanetary internet at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -694,6 +900,19 @@ export const l6NextGenProtocols13ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement 6G/7G networks at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -735,6 +954,19 @@ export const l6NextGenProtocols14ProblemDefinition: ProblemDefinition = {
 - Achieve brain-to-brain networks breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement molecular communication at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -778,6 +1010,19 @@ export const l6NextGenProtocols15ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement neuromorphic protocols at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -819,6 +1064,19 @@ export const l6NextGenProtocols16ProblemDefinition: ProblemDefinition = {
 - Achieve faster-than-light communication breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement quantum networking at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -862,6 +1120,19 @@ export const l6NextGenProtocols17ProblemDefinition: ProblemDefinition = {
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
 
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement interplanetary internet at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
+
   functionalRequirements: {
     mustHave: [
 
@@ -903,6 +1174,19 @@ export const l6NextGenProtocols18ProblemDefinition: ProblemDefinition = {
 - Achieve holographic data transfer breakthrough
 - Support quantum-resistant security
 - Enable autonomous self-healing`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Implement 6G/7G networks at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ],
+  userFacingNFRs: [
+    'Latency: P99 < 1μs for critical paths',
+    'Availability: 99.9999% uptime (six nines)'
+  ],
 
   functionalRequirements: {
     mustHave: [
