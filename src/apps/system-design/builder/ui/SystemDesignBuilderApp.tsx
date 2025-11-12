@@ -13,6 +13,8 @@ import { EnhancedInspector } from './components/EnhancedInspector';
 import { ReferenceSolutionPanel } from './components/ReferenceSolutionPanel';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
+import { DetailedAnalysisPanel } from './components/DetailedAnalysisPanel';
+import { DesignAnalysisResult } from '../validation/DesignAnalyzer';
 
 // Initial graph with Client component
 const getInitialGraph = (): SystemGraph => ({
@@ -36,6 +38,7 @@ export default function SystemDesignBuilderApp() {
   const [isRunning, setIsRunning] = useState(false);
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [showSolutionPanel, setShowSolutionPanel] = useState(false);
+  const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
 
   // Reset graph when challenge changes
@@ -220,6 +223,7 @@ export default function SystemDesignBuilderApp() {
                 testResult={currentTestResult}
                 currentComponentCount={systemGraph.components.length}
                 onShowSolution={() => setShowSolutionPanel(true)}
+                onShowDetailedAnalysis={() => setShowAnalysisPanel(true)}
               />
             </div>
           )}
@@ -249,6 +253,14 @@ export default function SystemDesignBuilderApp() {
           testCase={currentTestCase}
           onClose={() => setShowSolutionPanel(false)}
           onApplySolution={handleLoadSolution}
+        />
+      )}
+
+      {/* Detailed Analysis Modal */}
+      {showAnalysisPanel && currentTestResult?.detailedAnalysis && (
+        <DetailedAnalysisPanel
+          analysis={currentTestResult.detailedAnalysis}
+          onClose={() => setShowAnalysisPanel(false)}
         />
       )}
     </div>

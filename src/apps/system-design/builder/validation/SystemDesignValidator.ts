@@ -2,6 +2,7 @@ import { SystemGraph } from '../types/graph';
 import { ProblemDefinition, Scenario, ValidationResult } from '../types/problemDefinition';
 import { TestResult } from '../types/testCase';
 import { TestRunner } from '../simulation/testRunner';
+import { DesignAnalyzer, DesignAnalysisResult } from './DesignAnalyzer';
 
 /**
  * SystemDesignValidator - Generic validation engine for any system design problem
@@ -15,12 +16,15 @@ import { TestRunner } from '../simulation/testRunner';
  * - Pass/fail result
  * - Detailed feedback
  * - Performance metrics
+ * - Deep analysis
  */
 export class SystemDesignValidator {
   private testRunner: TestRunner;
+  private analyzer: DesignAnalyzer;
 
   constructor() {
     this.testRunner = new TestRunner();
+    this.analyzer = new DesignAnalyzer();
   }
 
   /**
@@ -30,7 +34,7 @@ export class SystemDesignValidator {
     studentGraph: SystemGraph,
     problem: ProblemDefinition,
     levelIndex: number
-  ): TestResult & { architectureFeedback?: string[] } {
+  ): TestResult & { architectureFeedback?: string[]; detailedAnalysis?: DesignAnalysisResult } {
     const scenario = problem.scenarios[levelIndex];
     const results: ValidationResult[] = [];
 
@@ -55,6 +59,9 @@ export class SystemDesignValidator {
     // Step 3: Simulate performance
     const perfResult = this.simulatePerformance(studentGraph, scenario);
 
+    // Step 4: Deep analysis
+    const detailedAnalysis = this.analyzer.analyze(studentGraph, scenario);
+
     // Aggregate results
     const architecturePassed = results.every(r => r.valid);
     const performancePassed = perfResult.passed;
@@ -69,6 +76,7 @@ export class SystemDesignValidator {
       ...perfResult,
       passed: allPassed,
       architectureFeedback,
+      detailedAnalysis,
     };
   }
 
