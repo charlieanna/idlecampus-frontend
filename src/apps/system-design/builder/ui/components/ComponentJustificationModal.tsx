@@ -171,7 +171,6 @@ export function ComponentJustificationModal({
               <textarea
                 value={justification.why}
                 onChange={(e) => updateField('why', e.target.value)}
-                placeholder="E.g., 'I chose Redis cache because the tiny URL system needs to handle millions of read requests per second. The short URLs are read much more frequently than they are created, making caching essential for performance and reducing database load...'"
                 className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
                   justification.why && !whyValidation.valid ? 'border-red-300' : 'border-gray-300'
                 }`}
@@ -195,7 +194,6 @@ export function ComponentJustificationModal({
               <textarea
                 value={justification.benefits}
                 onChange={(e) => updateField('benefits', e.target.value)}
-                placeholder="E.g., 'Benefits include: Sub-millisecond response times for cached URLs, reduces database load by 90%, handles traffic spikes gracefully with memory-based storage, simple key-value structure perfect for URL mapping, supports TTL for automatic cleanup...'"
                 className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
                   justification.benefits && !benefitsValidation.valid ? 'border-red-300' : 'border-gray-300'
                 }`}
@@ -218,7 +216,6 @@ export function ComponentJustificationModal({
               <textarea
                 value={justification.alternatives}
                 onChange={(e) => updateField('alternatives', e.target.value)}
-                placeholder="E.g., 'I considered CDN edge caching, but that only helps with geographic distribution not application-level caching. I also looked at Memcached, but Redis offers better data structure support and persistence options for our use case...'"
                 className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
                   justification.alternatives && !alternativesValidation.valid ? 'border-red-300' : 'border-gray-300'
                 }`}
@@ -241,7 +238,6 @@ export function ComponentJustificationModal({
               <textarea
                 value={justification.tradeoffs}
                 onChange={(e) => updateField('tradeoffs', e.target.value)}
-                placeholder="E.g., 'Additional infrastructure cost (~$200/month), Cache invalidation complexity, Possible stale data if TTL is too long, Need monitoring for cache health, Single point of failure without replication...'"
                 className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
                   justification.tradeoffs && !tradeoffsValidation.valid ? 'border-red-300' : 'border-gray-300'
                 }`}
@@ -260,7 +256,6 @@ export function ComponentJustificationModal({
                 <textarea
                   value={justification.tradeoffExplanation}
                   onChange={(e) => updateField('tradeoffExplanation', e.target.value)}
-                  placeholder="E.g., 'The $200/month cost is justified because it prevents thousands in database scaling costs. Cache invalidation is acceptable since URLs rarely change. Stale data for 1-2 seconds is fine for our read-heavy use case...'"
                   className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
                     justification.tradeoffExplanation && !tradeoffExplanationValidation.valid ? 'border-red-300' : 'border-gray-300'
                   }`}
