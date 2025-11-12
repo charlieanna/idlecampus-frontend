@@ -325,31 +325,15 @@ function inferMustConnect(problem: ParsedProblem): Array<{ from: string; to: str
 
 /**
  * Get validator entries for a problem based on its ID
- * Returns the appropriate feature-specific validators as formatted string
+ * Returns basic functional validator that just checks connectivity
+ * FR tests should be like brute force - just verify the app is connected and works
+ * We don't care about performance or specific components (Redis, S3, etc.)
  */
 function getFeatureValidatorEntries(problemId: string): string {
-  // Map of problem IDs to their feature validator names
-  const validatorMap: Record<string, Array<{ name: string, funcName: string }>> = {
-    'tinyurl': [
-      { name: 'FR-1: URL Shortening', funcName: 'urlShorteningValidator' },
-      { name: 'FR-2: URL Redirect', funcName: 'urlRedirectValidator' },
-      { name: 'FR-4: Analytics Tracking', funcName: 'analyticsTrackingValidator' },
-    ],
-    'instagram': [
-      { name: 'FR-1: Photo Upload', funcName: 'photoUploadValidator' },
-      { name: 'FR-2: Feed View', funcName: 'feedViewValidator' },
-    ],
-  };
-
-  const validators = validatorMap[problemId];
-  if (!validators || validators.length === 0) {
-    // Fallback to basic functional validator
-    return `    { name: 'Basic Functionality', validate: basicFunctionalValidator },`;
-  }
-
-  return validators
-    .map(v => `    { name: '${v.name}', validate: ${v.funcName} }`)
-    .join(',\n') + ',';
+  // All FR tests use the same basic validator
+  // Just checks: Client → Compute → Storage path exists
+  // Think of it as running on a single dev laptop - does it work at all?
+  return `    { name: 'Basic Functionality', validate: basicFunctionalValidator },`;
 }
 
 /**
