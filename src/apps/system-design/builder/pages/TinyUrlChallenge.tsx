@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Play, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import { ComponentConfigWizard } from '../ui/components/ComponentConfigWizard';
+import { Play, CheckCircle, XCircle, AlertCircle, Database, X } from 'lucide-react';
+import { SchemaEditor } from '../ui/components/SchemaEditor';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
 import { SystemGraph } from '../types/graph';
+import { RDS_INSTANCES, EC2_INSTANCES, REDIS_INSTANCES } from '../types/instanceTypes';
 
 type ComponentType = 'app_server' | 'postgresql' | 'redis' | 'load_balancer';
 
@@ -23,22 +24,60 @@ interface ComponentConfig {
  */
 export function TinyUrlChallenge() {
   const [components, setComponents] = useState<ComponentConfig[]>([]);
-  const [showWizard, setShowWizard] = useState(false);
+  const [showConfigModal, setShowConfigModal] = useState(false);
   const [currentComponentType, setCurrentComponentType] = useState<ComponentType | null>(null);
+  const [currentConfig, setCurrentConfig] = useState<Record<string, any>>({});
   const [testResults, setTestResults] = useState<any>(null);
   const [currentLevel, setCurrentLevel] = useState(0);
 
   const handleAddComponent = (type: ComponentType) => {
     setCurrentComponentType(type);
-    setShowWizard(true);
+    // Set default config based on type
+    const defaultConfig = getDefaultConfig(type);
+    setCurrentConfig(defaultConfig);
+    setShowConfigModal(true);
   };
 
-  const handleWizardComplete = (config: Record<string, any>) => {
+  const handleConfigComplete = () => {
     if (currentComponentType) {
-      setComponents([...components, { type: currentComponentType, config }]);
+      setComponents([...components, { type: currentComponentType, config: currentConfig }]);
     }
-    setShowWizard(false);
+    setShowConfigModal(false);
     setCurrentComponentType(null);
+    setCurrentConfig({});
+  };
+
+  const getDefaultConfig = (type: ComponentType): Record<string, any> => {
+    switch (type) {
+      case 'app_server':
+        return {
+          instanceType: 't3.medium',
+          instances: 1,
+        };
+      case 'postgresql':
+        return {
+          instanceType: 'db.t3.medium',
+          engine: 'postgresql',
+          isolationLevel: 'read-committed',
+          replication: { enabled: false, replicas: 1, mode: 'async' },
+          storageType: 'gp3',
+          storageSizeGB: 100,
+          schema: [],
+        };
+      case 'redis':
+        return {
+          instanceType: 'cache.t3.small',
+          engine: 'redis',
+          evictionPolicy: 'lru',
+          ttl: 3600,
+          hitRatio: 0.9,
+          persistence: 'rdb',
+        };
+      case 'load_balancer':
+        return {};
+      default:
+        return {};
+    }
   };
 
   const handleRemoveComponent = (index: number) => {
@@ -460,17 +499,297 @@ export function TinyUrlChallenge() {
         </div>
       </div>
 
-      {/* Configuration Wizard Modal */}
-      {showWizard && currentComponentType && (
-        <ComponentConfigWizard
-          componentType={currentComponentType}
-          problemDefinition={tinyUrlProblemDefinition}
-          onComplete={handleWizardComplete}
-          onCancel={() => {
-            setShowWizard(false);
-            setCurrentComponentType(null);
-          }}
-        />
+      {/* Configuration Modal */}
+      {showConfigModal && currentComponentType && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 sticky top-0 bg-white z-10">
+              <div>
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Configure {getComponentName(currentComponentType)}
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  Define configuration and data model
+                </p>
+              </div>
+              <button
+                onClick={() => setShowConfigModal(false)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-6 space-y-6">
+              {currentComponentType === 'app_server' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Instance Type
+                    </label>
+                    <select
+                      value={currentConfig.instanceType || 't3.medium'}
+                      onChange={(e) => setCurrentConfig({ ...currentConfig, instanceType: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <optgroup label="T3 - Burstable">
+                        <option value="t3.micro">t3.micro - 2 vCPU, 1GB RAM, 100 RPS ($8/mo)</option>
+                        <option value="t3.small">t3.small - 2 vCPU, 2GB RAM, 250 RPS ($15/mo)</option>
+                        <option value="t3.medium">t3.medium - 2 vCPU, 4GB RAM, 500 RPS ($30/mo)</option>
+                      </optgroup>
+                      <optgroup label="M5 - General Purpose">
+                        <option value="m5.large">m5.large - 2 vCPU, 8GB RAM, 1000 RPS ($70/mo)</option>
+                        <option value="m5.xlarge">m5.xlarge - 4 vCPU, 16GB RAM, 2000 RPS ($140/mo)</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Number of Instances
+                    </label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={currentConfig.instances || 1}
+                      onChange={(e) => setCurrentConfig({ ...currentConfig, instances: parseInt(e.target.value) })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </>
+              )}
+
+              {currentComponentType === 'postgresql' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Instance Type
+                    </label>
+                    <select
+                      value={currentConfig.instanceType || 'db.t3.medium'}
+                      onChange={(e) => setCurrentConfig({ ...currentConfig, instanceType: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <optgroup label="T3 - Dev/Testing">
+                        <option value="db.t3.micro">db.t3.micro - 2 vCPU, 1GB RAM, 50 RPS ($13/mo)</option>
+                        <option value="db.t3.small">db.t3.small - 2 vCPU, 2GB RAM, 100 RPS ($26/mo)</option>
+                        <option value="db.t3.medium">db.t3.medium - 2 vCPU, 4GB RAM, 200 RPS ($53/mo)</option>
+                      </optgroup>
+                      <optgroup label="M5 - Production">
+                        <option value="db.m5.large">db.m5.large - 2 vCPU, 8GB RAM, 500 RPS ($133/mo)</option>
+                        <option value="db.m5.xlarge">db.m5.xlarge - 4 vCPU, 16GB RAM, 1000 RPS ($266/mo)</option>
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Isolation Level
+                    </label>
+                    <select
+                      value={currentConfig.isolationLevel || 'read-committed'}
+                      onChange={(e) => setCurrentConfig({ ...currentConfig, isolationLevel: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="read-committed">Read Committed (Default)</option>
+                      <option value="serializable">Serializable (Slower, more consistent)</option>
+                    </select>
+                  </div>
+
+                  <div className="border-t border-gray-200 pt-4">
+                    <label className="flex items-center gap-2 mb-4">
+                      <input
+                        type="checkbox"
+                        checked={currentConfig.replication?.enabled || false}
+                        onChange={(e) =>
+                          setCurrentConfig({
+                            ...currentConfig,
+                            replication: {
+                              ...currentConfig.replication,
+                              enabled: e.target.checked,
+                              replicas: 1,
+                              mode: 'async',
+                            },
+                          })
+                        }
+                        className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                      />
+                      <span className="text-sm font-medium text-gray-700">Enable Replication</span>
+                    </label>
+
+                    {currentConfig.replication?.enabled && (
+                      <div className="ml-6 space-y-3">
+                        <div>
+                          <label className="block text-sm text-gray-700 mb-1">Replicas:</label>
+                          <input
+                            type="number"
+                            min="1"
+                            max="5"
+                            value={currentConfig.replication?.replicas || 1}
+                            onChange={(e) =>
+                              setCurrentConfig({
+                                ...currentConfig,
+                                replication: {
+                                  ...currentConfig.replication,
+                                  replicas: parseInt(e.target.value),
+                                },
+                              })
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm text-gray-700 mb-1">Replication Mode:</label>
+                          <select
+                            value={currentConfig.replication?.mode || 'async'}
+                            onChange={(e) =>
+                              setCurrentConfig({
+                                ...currentConfig,
+                                replication: {
+                                  ...currentConfig.replication,
+                                  mode: e.target.value,
+                                },
+                              })
+                            }
+                            className="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          >
+                            <option value="async">Async (Fast, eventual consistency)</option>
+                            <option value="sync">Sync (10x slower, strong consistency)</option>
+                          </select>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Sync replication is 10x slower but guarantees no data loss
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Schema Editor */}
+                  <div className="border-t border-gray-200 pt-4">
+                    <SchemaEditor
+                      database="TinyURL Database"
+                      dbType="PostgreSQL"
+                      initialSchema={currentConfig.schema}
+                      onSchemaChange={(schema) =>
+                        setCurrentConfig({ ...currentConfig, schema })
+                      }
+                    />
+                  </div>
+                </>
+              )}
+
+              {currentComponentType === 'redis' && (
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Instance Type
+                    </label>
+                    <select
+                      value={currentConfig.instanceType || 'cache.t3.small'}
+                      onChange={(e) => setCurrentConfig({ ...currentConfig, instanceType: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <optgroup label="T3 - Small Workloads">
+                        <option value="cache.t3.micro">cache.t3.micro - 0.5GB RAM, 10K RPS ($12/mo)</option>
+                        <option value="cache.t3.small">cache.t3.small - 1.4GB RAM, 25K RPS ($25/mo)</option>
+                      </optgroup>
+                      <optgroup label="M5 - Medium Workloads">
+                        <option value="cache.m5.large">cache.m5.large - 6.4GB RAM, 50K RPS ($99/mo)</option>
+                      </optgroup>
+                      <optgroup label="R5 - High Memory">
+                        <option value="cache.r5.large">cache.r5.large - 13GB RAM, 75K RPS ($137/mo)</option>
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Eviction Policy
+                    </label>
+                    <select
+                      value={currentConfig.evictionPolicy || 'lru'}
+                      onChange={(e) => setCurrentConfig({ ...currentConfig, evictionPolicy: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="lru">LRU - Least Recently Used</option>
+                      <option value="lfu">LFU - Least Frequently Used</option>
+                      <option value="ttl">TTL - Time To Live</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      How to remove items when cache is full
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      TTL (seconds): {currentConfig.ttl || 3600}
+                    </label>
+                    <input
+                      type="range"
+                      min="60"
+                      max="7200"
+                      step="60"
+                      value={currentConfig.ttl || 3600}
+                      onChange={(e) => setCurrentConfig({ ...currentConfig, ttl: parseInt(e.target.value) })}
+                      className="w-full"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Expected Hit Ratio: {((currentConfig.hitRatio || 0.9) * 100).toFixed(0)}%
+                    </label>
+                    <input
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.05"
+                      value={currentConfig.hitRatio || 0.9}
+                      onChange={(e) => setCurrentConfig({ ...currentConfig, hitRatio: parseFloat(e.target.value) })}
+                      className="w-full"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Higher hit ratio = less database load. 90% is typical.
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Persistence
+                    </label>
+                    <select
+                      value={currentConfig.persistence || 'rdb'}
+                      onChange={(e) => setCurrentConfig({ ...currentConfig, persistence: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="none">None - Fastest, lose data on restart</option>
+                      <option value="rdb">RDB - Periodic snapshots (good balance)</option>
+                      <option value="aof">AOF - Write log (most durable, +10% cost)</option>
+                    </select>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 sticky bottom-0 bg-white">
+              <button
+                onClick={() => setShowConfigModal(false)}
+                className="px-4 py-2 text-gray-700 hover:bg-gray-100 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfigComplete}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Add Component
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
