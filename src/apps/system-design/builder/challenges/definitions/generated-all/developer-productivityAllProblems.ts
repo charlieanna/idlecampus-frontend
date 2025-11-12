@@ -54,7 +54,13 @@ export const l5DevprodGoogleCiProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-devprod-google-ci', problemConfigs['l5-devprod-google-ci']),
+  scenarios: generateScenarios('l5-devprod-google-ci', problemConfigs['l5-devprod-google-ci'], [
+    'Handle 100K commits daily',
+    'Run 100M tests per day',
+    'Support 5000 deployments daily',
+    'Enable incremental builds',
+    'Provide < 10 minute feedback'
+  ]),
 
   validators: [
     {
@@ -114,7 +120,13 @@ export const l5DeveloperProductivity1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-1', problemConfigs['l5-developer-productivity-1']),
+  scenarios: generateScenarios('l5-developer-productivity-1', problemConfigs['l5-developer-productivity-1'], [
+    'Support CI/CD pipeline at GitHub scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -174,7 +186,13 @@ export const l5DeveloperProductivity2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-2', problemConfigs['l5-developer-productivity-2']),
+  scenarios: generateScenarios('l5-developer-productivity-2', problemConfigs['l5-developer-productivity-2'], [
+    'Support code review platform at GitLab scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -234,7 +252,13 @@ export const l5DeveloperProductivity3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-3', problemConfigs['l5-developer-productivity-3']),
+  scenarios: generateScenarios('l5-developer-productivity-3', problemConfigs['l5-developer-productivity-3'], [
+    'Support testing infrastructure at Bitbucket scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -294,7 +318,13 @@ export const l5DeveloperProductivity4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-4', problemConfigs['l5-developer-productivity-4']),
+  scenarios: generateScenarios('l5-developer-productivity-4', problemConfigs['l5-developer-productivity-4'], [
+    'Support deployment automation at CircleCI scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -354,7 +384,13 @@ export const l5DeveloperProductivity5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-5', problemConfigs['l5-developer-productivity-5']),
+  scenarios: generateScenarios('l5-developer-productivity-5', problemConfigs['l5-developer-productivity-5'], [
+    'Support developer portal at Travis CI scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -414,7 +450,13 @@ export const l5DeveloperProductivity6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-6', problemConfigs['l5-developer-productivity-6']),
+  scenarios: generateScenarios('l5-developer-productivity-6', problemConfigs['l5-developer-productivity-6'], [
+    'Support CI/CD pipeline at Jenkins scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -474,7 +516,13 @@ export const l5DeveloperProductivity7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-7', problemConfigs['l5-developer-productivity-7']),
+  scenarios: generateScenarios('l5-developer-productivity-7', problemConfigs['l5-developer-productivity-7'], [
+    'Support code review platform at TeamCity scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -534,7 +582,13 @@ export const l5DeveloperProductivity8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-8', problemConfigs['l5-developer-productivity-8']),
+  scenarios: generateScenarios('l5-developer-productivity-8', problemConfigs['l5-developer-productivity-8'], [
+    'Support testing infrastructure at Bamboo scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -594,7 +648,13 @@ export const l5DeveloperProductivity9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-9', problemConfigs['l5-developer-productivity-9']),
+  scenarios: generateScenarios('l5-developer-productivity-9', problemConfigs['l5-developer-productivity-9'], [
+    'Support deployment automation at CodeShip scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -654,7 +714,13 @@ export const l5DeveloperProductivity10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-10', problemConfigs['l5-developer-productivity-10']),
+  scenarios: generateScenarios('l5-developer-productivity-10', problemConfigs['l5-developer-productivity-10'], [
+    'Support developer portal at Buildkite scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -714,7 +780,13 @@ export const l5DeveloperProductivity11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-11', problemConfigs['l5-developer-productivity-11']),
+  scenarios: generateScenarios('l5-developer-productivity-11', problemConfigs['l5-developer-productivity-11'], [
+    'Support CI/CD pipeline at Codefresh scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -774,7 +846,13 @@ export const l5DeveloperProductivity12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-12', problemConfigs['l5-developer-productivity-12']),
+  scenarios: generateScenarios('l5-developer-productivity-12', problemConfigs['l5-developer-productivity-12'], [
+    'Support code review platform at Harness scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -834,7 +912,13 @@ export const l5DeveloperProductivity13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-13', problemConfigs['l5-developer-productivity-13']),
+  scenarios: generateScenarios('l5-developer-productivity-13', problemConfigs['l5-developer-productivity-13'], [
+    'Support testing infrastructure at Spinnaker scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -894,7 +978,13 @@ export const l5DeveloperProductivity14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-14', problemConfigs['l5-developer-productivity-14']),
+  scenarios: generateScenarios('l5-developer-productivity-14', problemConfigs['l5-developer-productivity-14'], [
+    'Support deployment automation at ArgoCD scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -954,7 +1044,13 @@ export const l5DeveloperProductivity15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-15', problemConfigs['l5-developer-productivity-15']),
+  scenarios: generateScenarios('l5-developer-productivity-15', problemConfigs['l5-developer-productivity-15'], [
+    'Support developer portal at Flux scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -1014,7 +1110,13 @@ export const l5DeveloperProductivity16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-16', problemConfigs['l5-developer-productivity-16']),
+  scenarios: generateScenarios('l5-developer-productivity-16', problemConfigs['l5-developer-productivity-16'], [
+    'Support CI/CD pipeline at Pulumi scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -1074,7 +1176,13 @@ export const l5DeveloperProductivity17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-developer-productivity-17', problemConfigs['l5-developer-productivity-17']),
+  scenarios: generateScenarios('l5-developer-productivity-17', problemConfigs['l5-developer-productivity-17'], [
+    'Support code review platform at Terraform scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {

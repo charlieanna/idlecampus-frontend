@@ -118,7 +118,16 @@ export const tinyurlProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('tinyurl', problemConfigs['tinyurl']),
+  scenarios: generateScenarios('tinyurl', problemConfigs['tinyurl'], [
+    'Shorten long URLs to 7-character unique codes',
+    'Redirect users from short URL to original URL via HTTP 301/302',
+    'Support custom aliases for premium users (optional)',
+    'Provide analytics: click count, referrer, geographic data',
+    'Allow URL expiration after configurable time (30/60/90 days)',
+    'Bulk URL creation via API for enterprise customers',
+    'QR code generation for each short URL',
+    'Blacklist/spam detection for malicious URLs'
+  ]),
 
   validators: [
     {
@@ -244,7 +253,14 @@ export const basicWebCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('basic-web-cache', problemConfigs['basic-web-cache']),
+  scenarios: generateScenarios('basic-web-cache', problemConfigs['basic-web-cache'], [
+    'Serve comment threads at 5M QPS (normal) and 50M QPS (viral)',
+    'Support real-time comment updates and vote counting',
+    'Implement hot-key protection for viral threads',
+    'Handle cache stampede during failures',
+    'Provide consistent view of comment hierarchy',
+    'Support comment collapsing and pagination'
+  ]),
 
   validators: [
     {
@@ -331,7 +347,13 @@ export const staticContentCdnProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('static-content-cdn', problemConfigs['static-content-cdn']),
+  scenarios: generateScenarios('static-content-cdn', problemConfigs['static-content-cdn'], [
+    'Serve static assets (images, CSS, JS) from edge locations',
+    'Configure browser cache headers (Cache-Control, ETag)',
+    'Implement origin shield to reduce origin load',
+    'Support cache purge for updated content',
+    'Monitor CDN hit rate and bandwidth savings'
+  ]),
 
   validators: [
     {
@@ -414,7 +436,13 @@ export const sessionStoreBasicProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('session-store-basic', problemConfigs['session-store-basic']),
+  scenarios: generateScenarios('session-store-basic', problemConfigs['session-store-basic'], [
+    'Store user sessions with 30-minute TTL',
+    'Implement sliding window expiration on activity',
+    'Support session invalidation on logout',
+    'Handle concurrent session updates safely',
+    'Provide session count per user for security'
+  ]),
 
   validators: [
     {
@@ -511,7 +539,13 @@ export const databaseQueryCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('database-query-cache', problemConfigs['database-query-cache']),
+  scenarios: generateScenarios('database-query-cache', problemConfigs['database-query-cache'], [
+    'Cache results of expensive analytical queries',
+    'Implement query fingerprinting for cache keys',
+    'Invalidate cache when source data updates',
+    'Support partial cache invalidation by table',
+    'Monitor cache effectiveness and query patterns'
+  ]),
 
   validators: [
     {
@@ -594,7 +628,13 @@ export const apiRateLimitCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('api-rate-limit-cache', problemConfigs['api-rate-limit-cache']),
+  scenarios: generateScenarios('api-rate-limit-cache', problemConfigs['api-rate-limit-cache'], [
+    'Track API calls per user per hour',
+    'Implement sliding window rate limiting',
+    'Return remaining quota in response headers',
+    'Support different limits for different tiers',
+    'Reset counters at window boundaries'
+  ]),
 
   validators: [
     {
@@ -704,7 +744,13 @@ export const productCatalogCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('product-catalog-cache', problemConfigs['product-catalog-cache']),
+  scenarios: generateScenarios('product-catalog-cache', problemConfigs['product-catalog-cache'], [
+    'Cache product details, prices, and images',
+    'Update inventory counts in near real-time',
+    'Warm cache before sales events',
+    'Prevent thundering herd on popular items',
+    'Support cache invalidation for price changes'
+  ]),
 
   validators: [
     {
@@ -796,7 +842,13 @@ export const gamingLeaderboardCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('gaming-leaderboard-cache', problemConfigs['gaming-leaderboard-cache']),
+  scenarios: generateScenarios('gaming-leaderboard-cache', problemConfigs['gaming-leaderboard-cache'], [
+    'Track player scores in real-time',
+    'Display top 100 global rankings',
+    'Show player rank and nearby players',
+    'Support multiple leaderboards (daily/weekly/all-time)',
+    'Handle concurrent score updates atomically'
+  ]),
 
   validators: [
     {
@@ -893,7 +945,13 @@ export const geoLocationCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('geo-location-cache', problemConfigs['geo-location-cache']),
+  scenarios: generateScenarios('geo-location-cache', problemConfigs['geo-location-cache'], [
+    'Cache search results by geographic area',
+    'Implement geohash-based cache keys',
+    'Support different radius searches (1km, 5km, 10km)',
+    'Invalidate cache when businesses update',
+    'Handle overlapping search areas efficiently'
+  ]),
 
   validators: [
     {
@@ -994,7 +1052,13 @@ export const configCacheBasicProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('config-cache-basic', problemConfigs['config-cache-basic']),
+  scenarios: generateScenarios('config-cache-basic', problemConfigs['config-cache-basic'], [
+    'Cache application configs locally on each server',
+    'Support hot reload without restarts',
+    'Implement version tracking for rollbacks',
+    'Notify services of config changes',
+    'Provide audit log of config changes'
+  ]),
 
   validators: [
     {
@@ -1111,7 +1175,14 @@ export const socialFeedCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('social-feed-cache', problemConfigs['social-feed-cache']),
+  scenarios: generateScenarios('social-feed-cache', problemConfigs['social-feed-cache'], [
+    'Cache home timelines for active users',
+    'Handle celebrity posts with millions of followers',
+    'Support real-time updates for online users',
+    'Implement hybrid push/pull based on follower count',
+    'Cache user timelines and recent posts',
+    'Invalidate stale content after edits/deletes'
+  ]),
 
   validators: [
     {
@@ -1223,7 +1294,16 @@ export const videoStreamingCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('video-streaming-cache', problemConfigs['video-streaming-cache']),
+  scenarios: generateScenarios('video-streaming-cache', problemConfigs['video-streaming-cache'], [
+    'Stream 500M concurrent 4K/8K videos globally',
+    'Support 100M concurrent live viewers (World Cup scale)',
+    'ML-based predictive prefetch with 90% accuracy',
+    'Cache at 10k+ edge POPs worldwide',
+    'Adaptive bitrate from 144p to 8K HDR',
+    'Handle viral videos (10B views/hour)',
+    'Multi-CDN orchestration with failover',
+    'ISP cache cooperation and peering optimization'
+  ]),
 
   validators: [
     {
@@ -1327,7 +1407,16 @@ export const searchSuggestionCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('search-suggestion-cache', problemConfigs['search-suggestion-cache']),
+  scenarios: generateScenarios('search-suggestion-cache', problemConfigs['search-suggestion-cache'], [
+    'Process 10M keystrokes/sec globally',
+    'Return suggestions in <20ms P99 latency',
+    'Support 100+ languages and scripts',
+    'Personalize for 5B+ user profiles',
+    'Update trending topics within 60 seconds',
+    'Distributed trie with 100T+ unique queries',
+    'ML-based ranking and query understanding',
+    'Voice and visual search integration'
+  ]),
 
   validators: [
     {
@@ -1439,7 +1528,14 @@ export const newsAggregatorCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('news-aggregator-cache', problemConfigs['news-aggregator-cache']),
+  scenarios: generateScenarios('news-aggregator-cache', problemConfigs['news-aggregator-cache'], [
+    'Aggregate news from 100+ sources',
+    'Detect and cache trending topics',
+    'Implement time-decay for article relevance',
+    'Deduplicate similar stories across sources',
+    'Personalize cache based on user interests',
+    'Update rankings in real-time'
+  ]),
 
   validators: [
     {
@@ -1541,7 +1637,14 @@ export const graphqlCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('graphql-cache', problemConfigs['graphql-cache']),
+  scenarios: generateScenarios('graphql-cache', problemConfigs['graphql-cache'], [
+    'Cache GraphQL query results by operation',
+    'Support field-level cache invalidation',
+    'Handle nested object dependencies',
+    'Implement cache normalization by ID',
+    'Support subscription-based invalidation',
+    'Merge partial cache hits'
+  ]),
 
   validators: [
     {
@@ -1643,7 +1746,14 @@ export const shoppingCartCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('shopping-cart-cache', problemConfigs['shopping-cart-cache']),
+  scenarios: generateScenarios('shopping-cart-cache', problemConfigs['shopping-cart-cache'], [
+    'Cache active shopping carts in Redis',
+    'Persist cart changes to database asynchronously',
+    'Handle cart merging when users log in',
+    'Implement 30-minute cart expiration with reminders',
+    'Reserve inventory temporarily during checkout',
+    'Sync cart across devices for logged-in users'
+  ]),
 
   validators: [
     {
@@ -1751,7 +1861,14 @@ export const analyticsDashboardCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('analytics-dashboard-cache', problemConfigs['analytics-dashboard-cache']),
+  scenarios: generateScenarios('analytics-dashboard-cache', problemConfigs['analytics-dashboard-cache'], [
+    'Cache pre-computed hourly/daily aggregations',
+    'Layer cache: browser → Redis → materialized views',
+    'Support drill-down queries with partial cache hits',
+    'Real-time metrics bypass cache with 1-min aggregation',
+    'Cache invalidation on data pipeline completion',
+    'Support user-specific dashboard customizations'
+  ]),
 
   validators: [
     {
@@ -1855,7 +1972,16 @@ export const multiTenantSaasCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multi-tenant-saas-cache', problemConfigs['multi-tenant-saas-cache']),
+  scenarios: generateScenarios('multi-tenant-saas-cache', problemConfigs['multi-tenant-saas-cache'], [
+    'Isolate cache for 100M+ tenants globally',
+    'Process 10M cache operations/sec',
+    'Prevent noisy neighbor impact (<1% degradation)',
+    'Hierarchical quotas (org/workspace/user)',
+    'Tenant-specific encryption keys',
+    'GDPR/SOC2 compliant data isolation',
+    'Auto-scale for viral tenant growth (100x)',
+    'Multi-tier caching based on plan level'
+  ]),
 
   validators: [
     {
@@ -1971,7 +2097,14 @@ export const cmsCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('cms-cache', problemConfigs['cms-cache']),
+  scenarios: generateScenarios('cms-cache', problemConfigs['cms-cache'], [
+    'Cache published content at CDN edge',
+    'Implement tag-based cache invalidation',
+    'Handle content dependencies (articles reference authors)',
+    'Support versioned content with preview mode',
+    'Purge related content when parent updates',
+    'Invalidate downstream caches (customer CDNs)'
+  ]),
 
   validators: [
     {
@@ -2083,7 +2216,14 @@ export const authTokenCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('auth-token-cache', problemConfigs['auth-token-cache']),
+  scenarios: generateScenarios('auth-token-cache', problemConfigs['auth-token-cache'], [
+    'Cache decoded JWT claims for fast validation',
+    'Implement token revocation blacklist',
+    'Support refresh token rotation',
+    'Handle token expiration and renewal',
+    'Distribute revocation across all nodes instantly',
+    'Audit log all token operations'
+  ]),
 
   validators: [
     {
@@ -2192,7 +2332,16 @@ export const pricingEngineCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('pricing-engine-cache', problemConfigs['pricing-engine-cache']),
+  scenarios: generateScenarios('pricing-engine-cache', problemConfigs['pricing-engine-cache'], [
+    'Calculate 100M personalized prices/sec',
+    'Support 1B+ SKUs with dynamic pricing',
+    'ML-based price optimization in real-time',
+    'Handle Prime Day surge (10x normal load)',
+    '100k+ concurrent promotions and rules',
+    'Real-time inventory and competitor pricing',
+    'Currency conversion for 200+ countries',
+    'A/B test pricing across 10M+ cohorts'
+  ]),
 
   validators: [
     {
@@ -2308,7 +2457,14 @@ export const recommendationEngineCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('recommendation-engine-cache', problemConfigs['recommendation-engine-cache']),
+  scenarios: generateScenarios('recommendation-engine-cache', problemConfigs['recommendation-engine-cache'], [
+    'Cache top-N recommendations per user segment',
+    'Store user feature vectors for real-time scoring',
+    'Handle cold start with trending item fallback',
+    'Update recommendations hourly from ML pipeline',
+    'Support A/B testing different models',
+    'Blend cached recommendations with real-time signals'
+  ]),
 
   validators: [
     {
@@ -2425,7 +2581,14 @@ export const rtbAdCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('rtb-ad-cache', problemConfigs['rtb-ad-cache']),
+  scenarios: generateScenarios('rtb-ad-cache', problemConfigs['rtb-ad-cache'], [
+    'Cache ad creatives and targeting rules',
+    'Track campaign budgets in real-time (approximate)',
+    'Select top bid ad within latency budget',
+    'Support frequency capping per user',
+    'Implement pacing to spread budget over day',
+    'Handle concurrent bid requests without overspending'
+  ]),
 
   validators: [
     {
@@ -2537,7 +2700,14 @@ export const gamingMatchmakingCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('gaming-matchmaking-cache', problemConfigs['gaming-matchmaking-cache']),
+  scenarios: generateScenarios('gaming-matchmaking-cache', problemConfigs['gaming-matchmaking-cache'], [
+    'Maintain pool of available players by skill tier',
+    'Match players within 200 rating points in <3s',
+    'Support party matchmaking (groups of friends)',
+    'Handle players leaving queue gracefully',
+    'Prevent duplicate matches during reconnection',
+    'Cache recent match history to avoid repeats'
+  ]),
 
   validators: [
     {
@@ -2644,7 +2814,14 @@ export const iotDeviceCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('iot-device-cache', problemConfigs['iot-device-cache']),
+  scenarios: generateScenarios('iot-device-cache', problemConfigs['iot-device-cache'], [
+    'Cache device shadow state (reported and desired)',
+    'Handle offline devices with state deltas on reconnect',
+    'Support bulk queries (all devices in building)',
+    'Implement conflict resolution for concurrent updates',
+    'Expire stale device state after inactivity',
+    'Aggregate device metrics from shadows'
+  ]),
 
   validators: [
     {
@@ -2792,7 +2969,16 @@ export const globalInventoryCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-inventory-cache', problemConfigs['global-inventory-cache']),
+  scenarios: generateScenarios('global-inventory-cache', problemConfigs['global-inventory-cache'], [
+    'Cache inventory across multiple regions',
+    'Prevent overselling with distributed locks',
+    'Support inventory reservations with timeout',
+    'Implement eventual consistency for browsing',
+    'Strong consistency for checkout',
+    'Handle split-brain scenarios',
+    'Support batch inventory updates',
+    'Provide real-time inventory webhooks'
+  ]),
 
   validators: [
     {
@@ -2921,7 +3107,16 @@ export const hybridCdnCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('hybrid-cdn-cache', problemConfigs['hybrid-cdn-cache']),
+  scenarios: generateScenarios('hybrid-cdn-cache', problemConfigs['hybrid-cdn-cache'], [
+    'Deploy cache boxes at ISP locations',
+    'Predictive content placement using ML',
+    'Peer-to-peer assisted delivery',
+    'Adaptive bitrate based on cache availability',
+    'Monitor cache health and failover',
+    'Support live and on-demand content',
+    'Implement cache hierarchy (edge/mid/origin)',
+    'Handle cache misses without buffering'
+  ]),
 
   validators: [
     {
@@ -3083,7 +3278,14 @@ export const globalInventoryMasteryProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-inventory-mastery', problemConfigs['global-inventory-mastery']),
+  scenarios: generateScenarios('global-inventory-mastery', problemConfigs['global-inventory-mastery'], [
+    'Maintain inventory counts across 5 geographic regions',
+    'Prevent overselling with pessimistic or optimistic locking',
+    'Reserve inventory during checkout with timeout',
+    'Handle network partitions gracefully (AP with repair)',
+    'Sync inventory changes globally within 100ms',
+    'Support backorder when stock depleted'
+  ]),
 
   validators: [
     {
@@ -3190,7 +3392,14 @@ export const financialTradingCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('financial-trading-cache', problemConfigs['financial-trading-cache']),
+  scenarios: generateScenarios('financial-trading-cache', problemConfigs['financial-trading-cache'], [
+    'Cache order book snapshots with <100μs updates',
+    'Maintain position and risk limits in local memory',
+    'Replicate critical data to hot standby with RDMA',
+    'Support historical tick data queries (last 1 hour)',
+    'Atomic position updates across multiple instruments',
+    'Audit log all trades to durable storage async'
+  ]),
 
   validators: [
     {
@@ -3326,7 +3535,14 @@ export const gameAssetCdnMasteryProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('game-asset-cdn-mastery', problemConfigs['game-asset-cdn-mastery']),
+  scenarios: generateScenarios('game-asset-cdn-mastery', problemConfigs['game-asset-cdn-mastery'], [
+    'Distribute game assets via CDN + P2P hybrid',
+    'Chunk files into verifiable blocks (4MB each)',
+    'Peer discovery and selection based on bandwidth',
+    'Fallback to CDN if P2P peers unavailable',
+    'Verify chunk integrity with content hashing',
+    'Incentivize seeding with in-game rewards'
+  ]),
 
   validators: [
     {
@@ -3443,7 +3659,14 @@ export const sportsBettingCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('sports-betting-cache', problemConfigs['sports-betting-cache']),
+  scenarios: generateScenarios('sports-betting-cache', problemConfigs['sports-betting-cache'], [
+    'Cache current odds with <100ms staleness guarantee',
+    'Update odds on game events (goals, fouls, etc.)',
+    'Prevent arbitrage from regional odds discrepancies',
+    'Handle bet placement spikes during key moments',
+    'Support rollback to previous odds on disputed calls',
+    'Rate limit suspicious betting patterns'
+  ]),
 
   validators: [
     {
@@ -3584,7 +3807,14 @@ export const autonomousVehicleCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('autonomous-vehicle-cache', problemConfigs['autonomous-vehicle-cache']),
+  scenarios: generateScenarios('autonomous-vehicle-cache', problemConfigs['autonomous-vehicle-cache'], [
+    'Cache HD maps on vehicle (upcoming 50km route)',
+    'Prefetch maps based on predicted route',
+    'Update maps incrementally (road closures, construction)',
+    'Fallback to cached maps if connectivity lost',
+    'Verify map integrity with signatures',
+    'Support multi-vehicle map sharing (V2V)'
+  ]),
 
   validators: [
     {
@@ -3701,7 +3931,14 @@ export const stockMarketDataCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('stock-market-data-cache', problemConfigs['stock-market-data-cache']),
+  scenarios: generateScenarios('stock-market-data-cache', problemConfigs['stock-market-data-cache'], [
+    'Cache last 1 hour of tick data per symbol',
+    'Stream real-time updates with <10ms lag',
+    'Handle burst traffic during market events',
+    'Support historical data queries (1min/5min OHLC)',
+    'Implement backpressure: drop old updates, not new',
+    'Prioritize subscriptions (institutional > retail)'
+  ]),
 
   validators: [
     {
@@ -3863,7 +4100,14 @@ export const multiRegionSocialCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multi-region-social-cache', problemConfigs['multi-region-social-cache']),
+  scenarios: generateScenarios('multi-region-social-cache', problemConfigs['multi-region-social-cache'], [
+    'Cache user feeds in nearest region',
+    'Replicate posts to all regions asynchronously',
+    'Detect concurrent edits (same post, different regions)',
+    'Resolve conflicts with last-write-wins or custom logic',
+    'Provide read-after-write consistency for own posts',
+    'Support post deletions with tombstones'
+  ]),
 
   validators: [
     {
@@ -3975,7 +4219,14 @@ export const healthcareRecordsCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('healthcare-records-cache', problemConfigs['healthcare-records-cache']),
+  scenarios: generateScenarios('healthcare-records-cache', problemConfigs['healthcare-records-cache'], [
+    'Cache patient records encrypted at rest and in transit',
+    'Enforce role-based access control (RBAC) at cache layer',
+    'Log all cache access with user ID, timestamp, and purpose',
+    'Support patient consent-based data sharing',
+    'Implement data retention policies (purge after 7 years)',
+    'Enable emergency access override with post-audit'
+  ]),
 
   validators: [
     {
@@ -4092,7 +4343,14 @@ export const supplyChainCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('supply-chain-cache', problemConfigs['supply-chain-cache']),
+  scenarios: generateScenarios('supply-chain-cache', problemConfigs['supply-chain-cache'], [
+    'Cache shipment status with multi-level hierarchy',
+    'Support supplier, warehouse, and customer views',
+    'Aggregate metrics by region, product category, etc.',
+    'Real-time updates as shipments scan at checkpoints',
+    'Enforce data access rules (supplier A cannot see supplier B)',
+    'Historical trend queries (avg delivery time last 30 days)'
+  ]),
 
   validators: [
     {

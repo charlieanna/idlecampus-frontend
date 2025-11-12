@@ -54,7 +54,13 @@ export const l5SecurityAppleEncryptionProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-security-apple-encryption', problemConfigs['l5-security-apple-encryption']),
+  scenarios: generateScenarios('l5-security-apple-encryption', problemConfigs['l5-security-apple-encryption'], [
+    'Encrypt all user data end-to-end',
+    'Support multi-device synchronization',
+    'Enable account recovery without Apple access',
+    'Provide legal compliance mechanisms',
+    'Support 1B active devices'
+  ]),
 
   validators: [
     {
@@ -114,7 +120,13 @@ export const l5ComplianceSecurity1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-1', problemConfigs['l5-compliance-security-1']),
+  scenarios: generateScenarios('l5-compliance-security-1', problemConfigs['l5-compliance-security-1'], [
+    'Support GDPR compliance at CrowdStrike scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -174,7 +186,13 @@ export const l5ComplianceSecurity2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-2', problemConfigs['l5-compliance-security-2']),
+  scenarios: generateScenarios('l5-compliance-security-2', problemConfigs['l5-compliance-security-2'], [
+    'Support PCI-DSS at Palo Alto scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -234,7 +252,13 @@ export const l5ComplianceSecurity3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-3', problemConfigs['l5-compliance-security-3']),
+  scenarios: generateScenarios('l5-compliance-security-3', problemConfigs['l5-compliance-security-3'], [
+    'Support HIPAA at Fortinet scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -294,7 +318,13 @@ export const l5ComplianceSecurity4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-4', problemConfigs['l5-compliance-security-4']),
+  scenarios: generateScenarios('l5-compliance-security-4', problemConfigs['l5-compliance-security-4'], [
+    'Support zero trust at Check Point scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -354,7 +384,13 @@ export const l5ComplianceSecurity5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-5', problemConfigs['l5-compliance-security-5']),
+  scenarios: generateScenarios('l5-compliance-security-5', problemConfigs['l5-compliance-security-5'], [
+    'Support data encryption at Zscaler scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -414,7 +450,13 @@ export const l5ComplianceSecurity6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-6', problemConfigs['l5-compliance-security-6']),
+  scenarios: generateScenarios('l5-compliance-security-6', problemConfigs['l5-compliance-security-6'], [
+    'Support GDPR compliance at Okta scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -474,7 +516,13 @@ export const l5ComplianceSecurity7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-7', problemConfigs['l5-compliance-security-7']),
+  scenarios: generateScenarios('l5-compliance-security-7', problemConfigs['l5-compliance-security-7'], [
+    'Support PCI-DSS at Auth0 scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -534,7 +582,13 @@ export const l5ComplianceSecurity8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-8', problemConfigs['l5-compliance-security-8']),
+  scenarios: generateScenarios('l5-compliance-security-8', problemConfigs['l5-compliance-security-8'], [
+    'Support HIPAA at Ping Identity scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -594,7 +648,13 @@ export const l5ComplianceSecurity9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-9', problemConfigs['l5-compliance-security-9']),
+  scenarios: generateScenarios('l5-compliance-security-9', problemConfigs['l5-compliance-security-9'], [
+    'Support zero trust at OneLogin scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -654,7 +714,13 @@ export const l5ComplianceSecurity10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-10', problemConfigs['l5-compliance-security-10']),
+  scenarios: generateScenarios('l5-compliance-security-10', problemConfigs['l5-compliance-security-10'], [
+    'Support data encryption at Cyberark scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -714,7 +780,13 @@ export const l5ComplianceSecurity11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-11', problemConfigs['l5-compliance-security-11']),
+  scenarios: generateScenarios('l5-compliance-security-11', problemConfigs['l5-compliance-security-11'], [
+    'Support GDPR compliance at HashiCorp scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -774,7 +846,13 @@ export const l5ComplianceSecurity12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-12', problemConfigs['l5-compliance-security-12']),
+  scenarios: generateScenarios('l5-compliance-security-12', problemConfigs['l5-compliance-security-12'], [
+    'Support PCI-DSS at Beyond Trust scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -834,7 +912,13 @@ export const l5ComplianceSecurity13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-13', problemConfigs['l5-compliance-security-13']),
+  scenarios: generateScenarios('l5-compliance-security-13', problemConfigs['l5-compliance-security-13'], [
+    'Support HIPAA at Sailpoint scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -894,7 +978,13 @@ export const l5ComplianceSecurity14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-14', problemConfigs['l5-compliance-security-14']),
+  scenarios: generateScenarios('l5-compliance-security-14', problemConfigs['l5-compliance-security-14'], [
+    'Support zero trust at Varonis scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -954,7 +1044,13 @@ export const l5ComplianceSecurity15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-15', problemConfigs['l5-compliance-security-15']),
+  scenarios: generateScenarios('l5-compliance-security-15', problemConfigs['l5-compliance-security-15'], [
+    'Support data encryption at Imperva scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -1014,7 +1110,13 @@ export const l5ComplianceSecurity16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-16', problemConfigs['l5-compliance-security-16']),
+  scenarios: generateScenarios('l5-compliance-security-16', problemConfigs['l5-compliance-security-16'], [
+    'Support GDPR compliance at Cloudflare scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -1074,7 +1176,13 @@ export const l5ComplianceSecurity17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-compliance-security-17', problemConfigs['l5-compliance-security-17']),
+  scenarios: generateScenarios('l5-compliance-security-17', problemConfigs['l5-compliance-security-17'], [
+    'Support PCI-DSS at Akamai scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {

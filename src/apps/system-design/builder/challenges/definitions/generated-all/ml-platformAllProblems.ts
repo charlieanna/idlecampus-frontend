@@ -55,7 +55,13 @@ export const l5MlPlatformMetaProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-meta', problemConfigs['l5-ml-platform-meta']),
+  scenarios: generateScenarios('l5-ml-platform-meta', problemConfigs['l5-ml-platform-meta'], [
+    'Train 1000+ models concurrently',
+    'Support distributed training on 10K GPUs',
+    'Enable automatic hyperparameter tuning',
+    'Provide experiment tracking and versioning',
+    'Support online learning pipelines'
+  ]),
 
   validators: [
     {
@@ -115,7 +121,13 @@ export const l5MlPlatform1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-1', problemConfigs['l5-ml-platform-1']),
+  scenarios: generateScenarios('l5-ml-platform-1', problemConfigs['l5-ml-platform-1'], [
+    'Support model training at OpenAI scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -175,7 +187,13 @@ export const l5MlPlatform2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-2', problemConfigs['l5-ml-platform-2']),
+  scenarios: generateScenarios('l5-ml-platform-2', problemConfigs['l5-ml-platform-2'], [
+    'Support model serving at Anthropic scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -235,7 +253,13 @@ export const l5MlPlatform3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-3', problemConfigs['l5-ml-platform-3']),
+  scenarios: generateScenarios('l5-ml-platform-3', problemConfigs['l5-ml-platform-3'], [
+    'Support feature store at Cohere scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -295,7 +319,13 @@ export const l5MlPlatform4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-4', problemConfigs['l5-ml-platform-4']),
+  scenarios: generateScenarios('l5-ml-platform-4', problemConfigs['l5-ml-platform-4'], [
+    'Support experiment tracking at Hugging Face scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -355,7 +385,13 @@ export const l5MlPlatform5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-5', problemConfigs['l5-ml-platform-5']),
+  scenarios: generateScenarios('l5-ml-platform-5', problemConfigs['l5-ml-platform-5'], [
+    'Support MLOps pipeline at Weights & Biases scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -415,7 +451,13 @@ export const l5MlPlatform6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-6', problemConfigs['l5-ml-platform-6']),
+  scenarios: generateScenarios('l5-ml-platform-6', problemConfigs['l5-ml-platform-6'], [
+    'Support model training at MLflow scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -475,7 +517,13 @@ export const l5MlPlatform7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-7', problemConfigs['l5-ml-platform-7']),
+  scenarios: generateScenarios('l5-ml-platform-7', problemConfigs['l5-ml-platform-7'], [
+    'Support model serving at Kubeflow scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -535,7 +583,13 @@ export const l5MlPlatform8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-8', problemConfigs['l5-ml-platform-8']),
+  scenarios: generateScenarios('l5-ml-platform-8', problemConfigs['l5-ml-platform-8'], [
+    'Support feature store at Seldon scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -595,7 +649,13 @@ export const l5MlPlatform9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-9', problemConfigs['l5-ml-platform-9']),
+  scenarios: generateScenarios('l5-ml-platform-9', problemConfigs['l5-ml-platform-9'], [
+    'Support experiment tracking at BentoML scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -655,7 +715,13 @@ export const l5MlPlatform10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-10', problemConfigs['l5-ml-platform-10']),
+  scenarios: generateScenarios('l5-ml-platform-10', problemConfigs['l5-ml-platform-10'], [
+    'Support MLOps pipeline at Cortex scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -715,7 +781,13 @@ export const l5MlPlatform11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-11', problemConfigs['l5-ml-platform-11']),
+  scenarios: generateScenarios('l5-ml-platform-11', problemConfigs['l5-ml-platform-11'], [
+    'Support model training at SageMaker scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -775,7 +847,13 @@ export const l5MlPlatform12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-12', problemConfigs['l5-ml-platform-12']),
+  scenarios: generateScenarios('l5-ml-platform-12', problemConfigs['l5-ml-platform-12'], [
+    'Support model serving at Vertex AI scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -835,7 +913,13 @@ export const l5MlPlatform13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-13', problemConfigs['l5-ml-platform-13']),
+  scenarios: generateScenarios('l5-ml-platform-13', problemConfigs['l5-ml-platform-13'], [
+    'Support feature store at Azure ML scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -895,7 +979,13 @@ export const l5MlPlatform14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-14', problemConfigs['l5-ml-platform-14']),
+  scenarios: generateScenarios('l5-ml-platform-14', problemConfigs['l5-ml-platform-14'], [
+    'Support experiment tracking at DataRobot scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -955,7 +1045,13 @@ export const l5MlPlatform15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-15', problemConfigs['l5-ml-platform-15']),
+  scenarios: generateScenarios('l5-ml-platform-15', problemConfigs['l5-ml-platform-15'], [
+    'Support MLOps pipeline at H2O.ai scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -1015,7 +1111,13 @@ export const l5MlPlatform16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-16', problemConfigs['l5-ml-platform-16']),
+  scenarios: generateScenarios('l5-ml-platform-16', problemConfigs['l5-ml-platform-16'], [
+    'Support model training at Dataiku scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -1075,7 +1177,13 @@ export const l5MlPlatform17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-ml-platform-17', problemConfigs['l5-ml-platform-17']),
+  scenarios: generateScenarios('l5-ml-platform-17', problemConfigs['l5-ml-platform-17'], [
+    'Support model serving at Domino scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {

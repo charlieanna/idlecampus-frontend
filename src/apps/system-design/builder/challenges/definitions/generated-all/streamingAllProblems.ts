@@ -105,7 +105,18 @@ export const chatProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('chat', problemConfigs['chat']),
+  scenarios: generateScenarios('chat', problemConfigs['chat'], [
+    'Send text messages between users in real-time',
+    'Create group chats with up to 100 participants',
+    'Show online/offline/typing presence indicators',
+    'Persist message history (last 30 days minimum)',
+    'Support message delivery receipts (sent/delivered/read)',
+    'Enable message search within conversations',
+    'Share files/images up to 25MB',
+    'Support message reactions/emojis',
+    '@mention notifications in group chats',
+    'End-to-end encryption for private messages'
+  ]),
 
   validators: [
     {
@@ -204,7 +215,13 @@ export const ingestionProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('ingestion', problemConfigs['ingestion']),
+  scenarios: generateScenarios('ingestion', problemConfigs['ingestion'], [
+    'Expose a public ingestion endpoint that accepts JSON event payloads from web, mobile, and server SDKs.',
+    'Partition incoming events by workspace/customer key to preserve ordering guarantees.',
+    'Buffer events in a Kafka/Kinesis topic with configurable retention and replay capabilities.',
+    'Deliver events from the stream to downstream consumers/ETL workers for real-time feature generation.',
+    'Persist processed events to an analytics datastore and archive raw payloads to durable object storage.'
+  ]),
 
   validators: [
     {
@@ -291,7 +308,13 @@ export const basicMessageQueueProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('basic-message-queue', problemConfigs['basic-message-queue']),
+  scenarios: generateScenarios('basic-message-queue', problemConfigs['basic-message-queue'], [
+    'Publish messages to queues',
+    'Subscribe multiple consumers',
+    'Handle message acknowledgments',
+    'Implement retry on failure',
+    'Support message persistence'
+  ]),
 
   validators: [
     {
@@ -377,7 +400,13 @@ export const realtimeNotificationsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('realtime-notifications', problemConfigs['realtime-notifications']),
+  scenarios: generateScenarios('realtime-notifications', problemConfigs['realtime-notifications'], [
+    'Maintain WebSocket connections',
+    'Push notifications instantly',
+    'Handle connection drops/reconnects',
+    'Support topic subscriptions',
+    'Batch notifications for efficiency'
+  ]),
 
   validators: [
     {
@@ -468,7 +497,13 @@ export const basicEventLogProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('basic-event-log', problemConfigs['basic-event-log']),
+  scenarios: generateScenarios('basic-event-log', problemConfigs['basic-event-log'], [
+    'Collect events from multiple sources',
+    'Parse structured log formats',
+    'Store events for querying',
+    'Support real-time monitoring',
+    'Enable basic filtering and search'
+  ]),
 
   validators: [
     {
@@ -555,7 +590,13 @@ export const simplePubsubProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('simple-pubsub', problemConfigs['simple-pubsub']),
+  scenarios: generateScenarios('simple-pubsub', problemConfigs['simple-pubsub'], [
+    'Publish messages to topics',
+    'Subscribe to multiple topics',
+    'Filter by topic patterns',
+    'Support wildcard subscriptions',
+    'Handle subscriber backpressure'
+  ]),
 
   validators: [
     {
@@ -660,7 +701,13 @@ export const realtimeChatMessagesProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('realtime-chat-messages', problemConfigs['realtime-chat-messages']),
+  scenarios: generateScenarios('realtime-chat-messages', problemConfigs['realtime-chat-messages'], [
+    'Send messages in real-time',
+    'Support channels and DMs',
+    'Show online presence',
+    'Persist message history',
+    'Handle message ordering'
+  ]),
 
   validators: [
     {
@@ -760,7 +807,13 @@ export const clickstreamAnalyticsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('clickstream-analytics', problemConfigs['clickstream-analytics']),
+  scenarios: generateScenarios('clickstream-analytics', problemConfigs['clickstream-analytics'], [
+    'Collect click events from web/mobile',
+    'Track page views and interactions',
+    'Sessionize user activity',
+    'Generate real-time metrics',
+    'Support custom event properties'
+  ]),
 
   validators: [
     {
@@ -851,7 +904,13 @@ export const serverLogAggregationProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('server-log-aggregation', problemConfigs['server-log-aggregation']),
+  scenarios: generateScenarios('server-log-aggregation', problemConfigs['server-log-aggregation'], [
+    'Ship logs from many servers',
+    'Parse different log formats',
+    'Index for fast searching',
+    'Alert on error patterns',
+    'Visualize with dashboards'
+  ]),
 
   validators: [
     {
@@ -947,7 +1006,13 @@ export const sensorDataCollectionProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('sensor-data-collection', problemConfigs['sensor-data-collection']),
+  scenarios: generateScenarios('sensor-data-collection', problemConfigs['sensor-data-collection'], [
+    'Ingest from millions of sensors',
+    'Handle intermittent connectivity',
+    'Store time-series data efficiently',
+    'Support data aggregation',
+    'Alert on anomalies'
+  ]),
 
   validators: [
     {
@@ -1048,7 +1113,13 @@ export const emailQueueSystemProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('email-queue-system', problemConfigs['email-queue-system']),
+  scenarios: generateScenarios('email-queue-system', problemConfigs['email-queue-system'], [
+    'Queue emails for delivery',
+    'Rate limit per domain',
+    'Retry failed deliveries',
+    'Handle bounces and complaints',
+    'Track delivery status'
+  ]),
 
   validators: [
     {
@@ -1153,7 +1224,13 @@ export const eventSourcingBasicProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('event-sourcing-basic', problemConfigs['event-sourcing-basic']),
+  scenarios: generateScenarios('event-sourcing-basic', problemConfigs['event-sourcing-basic'], [
+    'Store all state changes as events',
+    'Rebuild state from event log',
+    'Create read projections',
+    'Support event replay',
+    'Handle out-of-order events'
+  ]),
 
   validators: [
     {
@@ -1272,7 +1349,16 @@ export const orderProcessingStreamProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('order-processing-stream', problemConfigs['order-processing-stream']),
+  scenarios: generateScenarios('order-processing-stream', problemConfigs['order-processing-stream'], [
+    'Process 100M orders/day (1B during Prime Day)',
+    'Coordinate inventory across 500+ fulfillment centers',
+    'Distributed saga pattern for multi-step transactions',
+    'Real-time fraud detection on all orders',
+    'Same-day delivery orchestration for 50M+ orders',
+    'Handle 10M concurrent shopping carts',
+    'Support 100+ payment methods globally',
+    'Automatic rollback and compensation for failures'
+  ]),
 
   validators: [
     {
@@ -1376,7 +1462,16 @@ export const paymentTransactionLogProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('payment-transaction-log', problemConfigs['payment-transaction-log']),
+  scenarios: generateScenarios('payment-transaction-log', problemConfigs['payment-transaction-log'], [
+    'Process 50B transactions/day (500B during Black Friday)',
+    'Real-time settlement with 10k+ banks globally',
+    'Immutable audit trail with 10-year retention',
+    'Real-time fraud detection with <10ms latency',
+    'Support 200+ currencies with real-time FX',
+    'Distributed ledger with perfect consistency',
+    'Handle chargebacks and dispute resolution',
+    'Comply with GDPR, PCI-DSS, SOC2, ISO27001'
+  ]),
 
   validators: [
     {
@@ -1477,7 +1572,14 @@ export const stockPriceUpdatesProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('stock-price-updates', problemConfigs['stock-price-updates']),
+  scenarios: generateScenarios('stock-price-updates', problemConfigs['stock-price-updates'], [
+    'Stream tick-by-tick price data',
+    'Support thousands of symbols',
+    'Enable subscription filtering',
+    'Provide historical replay',
+    'Calculate technical indicators',
+    'Handle market data gaps'
+  ]),
 
   validators: [
     {
@@ -1588,7 +1690,14 @@ export const socialMediaFeedProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('social-media-feed', problemConfigs['social-media-feed']),
+  scenarios: generateScenarios('social-media-feed', problemConfigs['social-media-feed'], [
+    'Aggregate posts from followees',
+    'Rank by relevance and recency',
+    'Support real-time updates',
+    'Handle viral content efficiently',
+    'Personalize per user',
+    'Cache popular content'
+  ]),
 
   validators: [
     {
@@ -1706,7 +1815,16 @@ export const videoUploadPipelineProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('video-upload-pipeline', problemConfigs['video-upload-pipeline']),
+  scenarios: generateScenarios('video-upload-pipeline', problemConfigs['video-upload-pipeline'], [
+    'Process 500k hours of video daily (2M during viral events)',
+    'Transcode to 20+ formats in <2min for 4K videos',
+    'Support 100M concurrent live stream viewers',
+    'ML-based content moderation and copyright detection',
+    'Detect copyrighted content against 1B+ references',
+    'Adaptive bitrate streaming based on network',
+    'Generate AI highlights and auto-chapters',
+    'Distributed transcoding across 10k+ GPU nodes'
+  ]),
 
   validators: [
     {
@@ -1809,7 +1927,16 @@ export const fraudDetectionStreamProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('fraud-detection-stream', problemConfigs['fraud-detection-stream']),
+  scenarios: generateScenarios('fraud-detection-stream', problemConfigs['fraud-detection-stream'], [
+    'Process 10M transactions/sec (100M during Black Friday)',
+    'Score with <5ms P99 latency using 1000+ ML models',
+    'Graph analysis for fraud ring detection across 1B+ entities',
+    'Real-time feature computation from 100B+ transaction history',
+    'Support 100+ payment methods and currencies',
+    'Automatic model retraining when drift detected >2%',
+    'Coordinate global blocklists across 50+ countries',
+    'Handle chargebacks and dispute resolution workflows'
+  ]),
 
   validators: [
     {
@@ -1920,7 +2047,14 @@ export const userActivityTrackingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('user-activity-tracking', problemConfigs['user-activity-tracking']),
+  scenarios: generateScenarios('user-activity-tracking', problemConfigs['user-activity-tracking'], [
+    'Track user events across platforms',
+    'Build user profiles',
+    'Calculate funnel metrics',
+    'Segment users into cohorts',
+    'Support A/B test analysis',
+    'Generate behavioral insights'
+  ]),
 
   validators: [
     {
@@ -2029,7 +2163,16 @@ export const iotTelemetryAggregationProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('iot-telemetry-aggregation', problemConfigs['iot-telemetry-aggregation']),
+  scenarios: generateScenarios('iot-telemetry-aggregation', problemConfigs['iot-telemetry-aggregation'], [
+    'Ingest 100M messages/sec from 1B+ devices (1B during OTA)',
+    'Real-time anomaly detection across fleet with ML models',
+    'Edge computing for 100ms decision making in vehicles',
+    'Support OTA updates to entire fleet within 1 hour',
+    'Hierarchical aggregation (device→edge→region→global)',
+    'Process video streams from 10M+ cameras',
+    'Coordinate swarm intelligence for autonomous fleets',
+    'Predictive maintenance using telemetry patterns'
+  ]),
 
   validators: [
     {
@@ -2135,7 +2278,14 @@ export const gameEventProcessingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('game-event-processing', problemConfigs['game-event-processing']),
+  scenarios: generateScenarios('game-event-processing', problemConfigs['game-event-processing'], [
+    'Process player actions in real-time',
+    'Update leaderboards',
+    'Award achievements',
+    'Detect cheating',
+    'Track player progression',
+    'Generate live analytics'
+  ]),
 
   validators: [
     {
@@ -2236,7 +2386,14 @@ export const deliveryTrackingUpdatesProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('delivery-tracking-updates', problemConfigs['delivery-tracking-updates']),
+  scenarios: generateScenarios('delivery-tracking-updates', problemConfigs['delivery-tracking-updates'], [
+    'Track package locations',
+    'Calculate real-time ETAs',
+    'Notify on status changes',
+    'Handle route updates',
+    'Support delivery proof',
+    'Generate delivery analytics'
+  ]),
 
   validators: [
     {
@@ -2349,7 +2506,14 @@ export const notificationFanoutProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('notification-fanout', problemConfigs['notification-fanout']),
+  scenarios: generateScenarios('notification-fanout', problemConfigs['notification-fanout'], [
+    'Support multiple channels',
+    'Respect user preferences',
+    'Batch similar notifications',
+    'Rate limit per channel',
+    'Track delivery status',
+    'Handle failures with retries'
+  ]),
 
   validators: [
     {
@@ -2471,7 +2635,14 @@ export const contentModerationQueueProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('content-moderation-queue', problemConfigs['content-moderation-queue']),
+  scenarios: generateScenarios('content-moderation-queue', problemConfigs['content-moderation-queue'], [
+    'Queue content for review',
+    'Apply automated filters',
+    'Route to human moderators',
+    'Prioritize by urgency',
+    'Track SLA compliance',
+    'Support appeals process'
+  ]),
 
   validators: [
     {
@@ -2568,7 +2739,14 @@ export const searchIndexUpdatesProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('search-index-updates', problemConfigs['search-index-updates']),
+  scenarios: generateScenarios('search-index-updates', problemConfigs['search-index-updates'], [
+    'Stream document changes',
+    'Update indexes incrementally',
+    'Maintain search consistency',
+    'Reindex on schema changes',
+    'Update ranking signals',
+    'Support rollback on errors'
+  ]),
 
   validators: [
     {
@@ -2679,7 +2857,14 @@ export const recommendationPipelineProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('recommendation-pipeline', problemConfigs['recommendation-pipeline']),
+  scenarios: generateScenarios('recommendation-pipeline', problemConfigs['recommendation-pipeline'], [
+    'Track user interactions',
+    'Extract behavioral features',
+    'Serve ML recommendations',
+    'A/B test models',
+    'Update models incrementally',
+    'Cache recommendations'
+  ]),
 
   validators: [
     {
@@ -2782,7 +2967,14 @@ export const auditLogStreamingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('audit-log-streaming', problemConfigs['audit-log-streaming']),
+  scenarios: generateScenarios('audit-log-streaming', problemConfigs['audit-log-streaming'], [
+    'Capture all system actions',
+    'Ensure log immutability',
+    'Encrypt sensitive data',
+    'Support compliance queries',
+    'Archive to cold storage',
+    'Detect security anomalies'
+  ]),
 
   validators: [
     {
@@ -2893,7 +3085,14 @@ export const kafkaStreamingPipelineProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('kafka-streaming-pipeline', problemConfigs['kafka-streaming-pipeline']),
+  scenarios: generateScenarios('kafka-streaming-pipeline', problemConfigs['kafka-streaming-pipeline'], [
+    'Ingest 1B events per day',
+    'Process with exactly-once semantics',
+    'Support stream joins and aggregations',
+    'Handle late-arriving data',
+    'Provide real-time analytics',
+    'Support event replay for reprocessing'
+  ]),
 
   validators: [
     {
@@ -3006,7 +3205,16 @@ export const exactlyOncePaymentProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('exactly-once-payment', problemConfigs['exactly-once-payment']),
+  scenarios: generateScenarios('exactly-once-payment', problemConfigs['exactly-once-payment'], [
+    'Guarantee exactly-once payment execution',
+    'Handle network failures gracefully',
+    'Support distributed transactions',
+    'Maintain strict ordering',
+    'Enable idempotent retries',
+    'Provide strong consistency',
+    'Track transaction state',
+    'Support rollback on failure'
+  ]),
 
   validators: [
     {
@@ -3128,7 +3336,16 @@ export const globalEventSourcingSystemProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-event-sourcing-system', problemConfigs['global-event-sourcing-system']),
+  scenarios: generateScenarios('global-event-sourcing-system', problemConfigs['global-event-sourcing-system'], [
+    'Store events across regions',
+    'Maintain causal ordering',
+    'Replicate events globally',
+    'Resolve conflicts with CRDTs',
+    'Support global queries',
+    'Enable regional projections',
+    'Provide point-in-time recovery',
+    'Handle network partitions'
+  ]),
 
   validators: [
     {
@@ -3246,7 +3463,16 @@ export const multiDcStreamReplicationProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multi-dc-stream-replication', problemConfigs['multi-dc-stream-replication']),
+  scenarios: generateScenarios('multi-dc-stream-replication', problemConfigs['multi-dc-stream-replication'], [
+    'Replicate streams across DCs',
+    'Maintain message ordering',
+    'Handle DC failures',
+    'Support bidirectional replication',
+    'Monitor replication lag',
+    'Enable selective replication',
+    'Provide conflict detection',
+    'Support topic remapping'
+  ]),
 
   validators: [
     {
@@ -3359,7 +3585,16 @@ export const realtimeMlFeatureStoreProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('realtime-ml-feature-store', problemConfigs['realtime-ml-feature-store']),
+  scenarios: generateScenarios('realtime-ml-feature-store', problemConfigs['realtime-ml-feature-store'], [
+    'Compute features from streams',
+    'Serve features with <10ms latency',
+    'Maintain point-in-time correctness',
+    'Support feature versioning',
+    'Enable batch and streaming',
+    'Provide feature lineage',
+    'Handle feature drift',
+    'Support A/B testing'
+  ]),
 
   validators: [
     {
@@ -3477,7 +3712,16 @@ export const gdprCompliantStreamingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('gdpr-compliant-streaming', problemConfigs['gdpr-compliant-streaming']),
+  scenarios: generateScenarios('gdpr-compliant-streaming', problemConfigs['gdpr-compliant-streaming'], [
+    'Support right to be forgotten',
+    'Anonymize PII in streams',
+    'Track consent across events',
+    'Enable data portability',
+    'Audit all data access',
+    'Implement retention policies',
+    'Support data minimization',
+    'Provide transparency reports'
+  ]),
 
   validators: [
     {
@@ -3587,7 +3831,16 @@ export const financialSettlementStreamProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('financial-settlement-stream', problemConfigs['financial-settlement-stream']),
+  scenarios: generateScenarios('financial-settlement-stream', problemConfigs['financial-settlement-stream'], [
+    'Process settlements in real-time',
+    'Maintain double-entry accounting',
+    'Support multi-currency',
+    'Handle dispute resolution',
+    'Enable transaction reconciliation',
+    'Provide regulatory reporting',
+    'Implement circuit breakers',
+    'Support settlement windows'
+  ]),
 
   validators: [
     {
@@ -3710,7 +3963,16 @@ export const autonomousVehicleTelemetryProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('autonomous-vehicle-telemetry', problemConfigs['autonomous-vehicle-telemetry']),
+  scenarios: generateScenarios('autonomous-vehicle-telemetry', problemConfigs['autonomous-vehicle-telemetry'], [
+    'Ingest multi-modal sensor data',
+    'Process video streams',
+    'Log decision traces',
+    'Detect safety events',
+    'Update ML models OTA',
+    'Support fleet analytics',
+    'Enable remote diagnostics',
+    'Compress data efficiently'
+  ]),
 
   validators: [
     {
@@ -3824,7 +4086,16 @@ export const healthcareDataStreamHipaaProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('healthcare-data-stream-hipaa', problemConfigs['healthcare-data-stream-hipaa']),
+  scenarios: generateScenarios('healthcare-data-stream-hipaa', problemConfigs['healthcare-data-stream-hipaa'], [
+    'Stream HL7/FHIR messages',
+    'Encrypt PHI end-to-end',
+    'Enforce access controls',
+    'Audit all data access',
+    'Support clinical workflows',
+    'Enable real-time alerts',
+    'Maintain data lineage',
+    'Provide patient consent'
+  ]),
 
   validators: [
     {
@@ -3947,7 +4218,16 @@ export const globalCdcPipelineProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-cdc-pipeline', problemConfigs['global-cdc-pipeline']),
+  scenarios: generateScenarios('global-cdc-pipeline', problemConfigs['global-cdc-pipeline'], [
+    'Capture changes from multiple databases',
+    'Stream across regions with low latency',
+    'Handle schema evolution gracefully',
+    'Transform data between formats',
+    'Maintain ordering guarantees',
+    'Support filtering and routing',
+    'Enable point-in-time recovery',
+    'Monitor lag and data quality'
+  ]),
 
   validators: [
     {

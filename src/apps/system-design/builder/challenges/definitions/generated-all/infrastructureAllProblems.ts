@@ -54,7 +54,13 @@ export const l5InfraKubernetesPlatformProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infra-kubernetes-platform', problemConfigs['l5-infra-kubernetes-platform']),
+  scenarios: generateScenarios('l5-infra-kubernetes-platform', problemConfigs['l5-infra-kubernetes-platform'], [
+    'Manage 100K Kubernetes clusters',
+    'Support zero-downtime upgrades',
+    'Enable auto-scaling and auto-healing',
+    'Provide multi-tenancy isolation',
+    'Support custom controllers'
+  ]),
 
   validators: [
     {
@@ -114,7 +120,13 @@ export const l5Infrastructure1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-1', problemConfigs['l5-infrastructure-1']),
+  scenarios: generateScenarios('l5-infrastructure-1', problemConfigs['l5-infrastructure-1'], [
+    'Support Kubernetes platform at AWS scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -174,7 +186,13 @@ export const l5Infrastructure2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-2', problemConfigs['l5-infrastructure-2']),
+  scenarios: generateScenarios('l5-infrastructure-2', problemConfigs['l5-infrastructure-2'], [
+    'Support service mesh at GCP scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -234,7 +252,13 @@ export const l5Infrastructure3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-3', problemConfigs['l5-infrastructure-3']),
+  scenarios: generateScenarios('l5-infrastructure-3', problemConfigs['l5-infrastructure-3'], [
+    'Support infrastructure as code at Azure scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -294,7 +318,13 @@ export const l5Infrastructure4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-4', problemConfigs['l5-infrastructure-4']),
+  scenarios: generateScenarios('l5-infrastructure-4', problemConfigs['l5-infrastructure-4'], [
+    'Support hybrid cloud at DigitalOcean scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -354,7 +384,13 @@ export const l5Infrastructure5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-5', problemConfigs['l5-infrastructure-5']),
+  scenarios: generateScenarios('l5-infrastructure-5', problemConfigs['l5-infrastructure-5'], [
+    'Support edge computing at Linode scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -414,7 +450,13 @@ export const l5Infrastructure6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-6', problemConfigs['l5-infrastructure-6']),
+  scenarios: generateScenarios('l5-infrastructure-6', problemConfigs['l5-infrastructure-6'], [
+    'Support Kubernetes platform at Vultr scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -474,7 +516,13 @@ export const l5Infrastructure7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-7', problemConfigs['l5-infrastructure-7']),
+  scenarios: generateScenarios('l5-infrastructure-7', problemConfigs['l5-infrastructure-7'], [
+    'Support service mesh at OVH scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -534,7 +582,13 @@ export const l5Infrastructure8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-8', problemConfigs['l5-infrastructure-8']),
+  scenarios: generateScenarios('l5-infrastructure-8', problemConfigs['l5-infrastructure-8'], [
+    'Support infrastructure as code at Hetzner scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -594,7 +648,13 @@ export const l5Infrastructure9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-9', problemConfigs['l5-infrastructure-9']),
+  scenarios: generateScenarios('l5-infrastructure-9', problemConfigs['l5-infrastructure-9'], [
+    'Support hybrid cloud at Equinix scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -654,7 +714,13 @@ export const l5Infrastructure10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-10', problemConfigs['l5-infrastructure-10']),
+  scenarios: generateScenarios('l5-infrastructure-10', problemConfigs['l5-infrastructure-10'], [
+    'Support edge computing at CoreOS scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -714,7 +780,13 @@ export const l5Infrastructure11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-11', problemConfigs['l5-infrastructure-11']),
+  scenarios: generateScenarios('l5-infrastructure-11', problemConfigs['l5-infrastructure-11'], [
+    'Support Kubernetes platform at Rancher scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -774,7 +846,13 @@ export const l5Infrastructure12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-12', problemConfigs['l5-infrastructure-12']),
+  scenarios: generateScenarios('l5-infrastructure-12', problemConfigs['l5-infrastructure-12'], [
+    'Support service mesh at OpenShift scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -834,7 +912,13 @@ export const l5Infrastructure13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-13', problemConfigs['l5-infrastructure-13']),
+  scenarios: generateScenarios('l5-infrastructure-13', problemConfigs['l5-infrastructure-13'], [
+    'Support infrastructure as code at Tanzu scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -894,7 +978,13 @@ export const l5Infrastructure14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-14', problemConfigs['l5-infrastructure-14']),
+  scenarios: generateScenarios('l5-infrastructure-14', problemConfigs['l5-infrastructure-14'], [
+    'Support hybrid cloud at Anthos scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -954,7 +1044,13 @@ export const l5Infrastructure15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-15', problemConfigs['l5-infrastructure-15']),
+  scenarios: generateScenarios('l5-infrastructure-15', problemConfigs['l5-infrastructure-15'], [
+    'Support edge computing at EKS scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -1014,7 +1110,13 @@ export const l5Infrastructure16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-16', problemConfigs['l5-infrastructure-16']),
+  scenarios: generateScenarios('l5-infrastructure-16', problemConfigs['l5-infrastructure-16'], [
+    'Support Kubernetes platform at GKE scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {
@@ -1074,7 +1176,13 @@ export const l5Infrastructure17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l5-infrastructure-17', problemConfigs['l5-infrastructure-17']),
+  scenarios: generateScenarios('l5-infrastructure-17', problemConfigs['l5-infrastructure-17'], [
+    'Support service mesh at AKS scale',
+    'Enable gradual migration with zero downtime',
+    'Maintain backward compatibility',
+    'Support A/B testing and gradual rollout',
+    'Provide comprehensive monitoring and rollback'
+  ]),
 
   validators: [
     {

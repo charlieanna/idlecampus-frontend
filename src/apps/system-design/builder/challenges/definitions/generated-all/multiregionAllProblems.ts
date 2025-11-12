@@ -114,7 +114,13 @@ export const basicMultiRegionProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('basic-multi-region', problemConfigs['basic-multi-region']),
+  scenarios: generateScenarios('basic-multi-region', problemConfigs['basic-multi-region'], [
+    'Deploy in US and EU regions',
+    'Route users to nearest region',
+    'Replicate data between regions',
+    'Handle region failures',
+    'Monitor cross-region latency'
+  ]),
 
   validators: [
     {
@@ -239,7 +245,13 @@ export const activeActiveRegionsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('active-active-regions', problemConfigs['active-active-regions']),
+  scenarios: generateScenarios('active-active-regions', problemConfigs['active-active-regions'], [
+    'Accept writes in both regions',
+    'Resolve write conflicts',
+    'Maintain eventual consistency',
+    'Handle network partitions',
+    'Support regional preferences'
+  ]),
 
   validators: [
     {
@@ -340,7 +352,13 @@ export const globalCdnProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-cdn', problemConfigs['global-cdn']),
+  scenarios: generateScenarios('global-cdn', problemConfigs['global-cdn'], [
+    'Edge caching in 100+ locations',
+    'Regional origin failover',
+    'Cache invalidation',
+    'Dynamic content bypass',
+    'DDoS protection'
+  ]),
 
   validators: [
     {
@@ -442,7 +460,13 @@ export const globalLoadBalancingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-load-balancing', problemConfigs['global-load-balancing']),
+  scenarios: generateScenarios('global-load-balancing', problemConfigs['global-load-balancing'], [
+    'Anycast IP routing',
+    'Health-based routing',
+    'Latency-based routing',
+    'Traffic distribution',
+    'DDoS mitigation'
+  ]),
 
   validators: [
     {
@@ -534,7 +558,13 @@ export const distributedSessionStoreProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('distributed-session-store', problemConfigs['distributed-session-store']),
+  scenarios: generateScenarios('distributed-session-store', problemConfigs['distributed-session-store'], [
+    'Global session lookup',
+    'Session replication',
+    'TTL-based expiration',
+    'Sticky sessions optional',
+    'Session hijacking protection'
+  ]),
 
   validators: [
     {
@@ -630,7 +660,13 @@ export const multiregionBackupProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multiregion-backup', problemConfigs['multiregion-backup']),
+  scenarios: generateScenarios('multiregion-backup', problemConfigs['multiregion-backup'], [
+    'Automated continuous backup',
+    'Cross-region replication',
+    'Point-in-time recovery (PITR)',
+    'Automated backup testing',
+    'Encryption at rest and in transit'
+  ]),
 
   validators: [
     {
@@ -713,7 +749,13 @@ export const globalDnsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-dns', problemConfigs['global-dns']),
+  scenarios: generateScenarios('global-dns', problemConfigs['global-dns'], [
+    'GeoDNS for latency-based routing',
+    'Health check integration',
+    'Failover to backup regions',
+    'DNSSEC support',
+    'DDoS protection'
+  ]),
 
   validators: [
     {
@@ -796,7 +838,13 @@ export const globalIpAnycastProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-ip-anycast', problemConfigs['global-ip-anycast']),
+  scenarios: generateScenarios('global-ip-anycast', problemConfigs['global-ip-anycast'], [
+    'BGP anycast advertisement',
+    'Health-based route withdrawal',
+    'DDoS mitigation',
+    'Traffic engineering',
+    'Automatic failover'
+  ]),
 
   validators: [
     {
@@ -883,7 +931,13 @@ export const geofencedFeaturesProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('geofenced-features', problemConfigs['geofenced-features']),
+  scenarios: generateScenarios('geofenced-features', problemConfigs['geofenced-features'], [
+    'IP-based geolocation',
+    'Feature flag per region',
+    'Gradual rollout (0% → 100%)',
+    'Rollback capability',
+    'A/B testing per region'
+  ]),
 
   validators: [
     {
@@ -1004,7 +1058,13 @@ export const partialRegionFailureProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('partial-region-failure', problemConfigs['partial-region-failure']),
+  scenarios: generateScenarios('partial-region-failure', problemConfigs['partial-region-failure'], [
+    'AZ-aware deployment',
+    'Health checks per AZ',
+    'Automatic AZ failover',
+    'Degraded mode operation',
+    'Capacity planning for N-1 AZs'
+  ]),
 
   validators: [
     {
@@ -1146,7 +1206,16 @@ export const globalSocialNetworkProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-social-network', problemConfigs['global-social-network']),
+  scenarios: generateScenarios('global-social-network', problemConfigs['global-social-network'], [
+    'Support 3B+ users across 20+ global regions',
+    'Process 100M requests/sec (1B during viral events)',
+    'Deliver 1T+ messages daily with E2E encryption',
+    'Store user data in home region (GDPR/CCPA)',
+    'Handle viral content spreading to 1B users/hour',
+    'Real-time translation for 100+ languages',
+    'Cross-region friend graph with 100B+ edges',
+    'Support Stories/Reels with 10M concurrent uploads'
+  ]),
 
   validators: [
     {
@@ -1243,7 +1312,13 @@ export const crossRegionFailoverProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('cross-region-failover', problemConfigs['cross-region-failover']),
+  scenarios: generateScenarios('cross-region-failover', problemConfigs['cross-region-failover'], [
+    'Health checks per region',
+    'Automatic DNS failover',
+    'Async data replication',
+    'RPO < 5 minutes',
+    'RTO < 10 minutes'
+  ]),
 
   validators: [
     {
@@ -1345,7 +1420,13 @@ export const geoPinningProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('geo-pinning', problemConfigs['geo-pinning']),
+  scenarios: generateScenarios('geo-pinning', problemConfigs['geo-pinning'], [
+    'Geo-fencing per region',
+    'User location detection',
+    'Data residency enforcement',
+    'Audit logging',
+    'Cross-region aggregation for analytics'
+  ]),
 
   validators: [
     {
@@ -1465,7 +1546,16 @@ export const multiregionStreamingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multiregion-streaming', problemConfigs['multiregion-streaming']),
+  scenarios: generateScenarios('multiregion-streaming', problemConfigs['multiregion-streaming'], [
+    'Process 100M events/sec across 50+ regions',
+    'Exactly-once delivery with <100ms replication',
+    'Support 1M+ topics and 10M+ subscriptions',
+    'Maintain ordering per partition globally',
+    'Schema registry with evolution support',
+    'Multi-region disaster recovery',
+    'Real-time stream processing for ML',
+    'Cross-region event replay and time travel'
+  ]),
 
   validators: [
     {
@@ -1567,7 +1657,13 @@ export const latencyBasedRoutingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('latency-based-routing', problemConfigs['latency-based-routing']),
+  scenarios: generateScenarios('latency-based-routing', problemConfigs['latency-based-routing'], [
+    'Real User Monitoring (RUM)',
+    'Latency measurement per region',
+    'Dynamic routing updates',
+    'Fallback to geo-proximity',
+    'A/B testing support'
+  ]),
 
   validators: [
     {
@@ -1684,7 +1780,13 @@ export const multiregionSearchProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multiregion-search', problemConfigs['multiregion-search']),
+  scenarios: generateScenarios('multiregion-search', problemConfigs['multiregion-search'], [
+    'Regional search clusters',
+    'Index replication',
+    'Unified ranking',
+    'Regional relevance tuning',
+    'Real-time indexing'
+  ]),
 
   validators: [
     {
@@ -1799,7 +1901,13 @@ export const crossRegionAnalyticsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('cross-region-analytics', problemConfigs['cross-region-analytics']),
+  scenarios: generateScenarios('cross-region-analytics', problemConfigs['cross-region-analytics'], [
+    'Region-specific raw data storage',
+    'Anonymized cross-region aggregation',
+    'Real-time dashboards',
+    'Historical trend analysis',
+    'Export for data science'
+  ]),
 
   validators: [
     {
@@ -1920,7 +2028,13 @@ export const multiregionCacheProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multiregion-cache', problemConfigs['multiregion-cache']),
+  scenarios: generateScenarios('multiregion-cache', problemConfigs['multiregion-cache'], [
+    'Regional cache clusters',
+    'Invalidation propagation',
+    'Lazy replication',
+    'TTL-based expiry',
+    'Cache warming'
+  ]),
 
   validators: [
     {
@@ -2019,7 +2133,16 @@ export const globalContentDeliveryProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-content-delivery', problemConfigs['global-content-delivery']),
+  scenarios: generateScenarios('global-content-delivery', problemConfigs['global-content-delivery'], [
+    'Stream to 500M concurrent viewers globally',
+    'Support 4K/8K/HDR with adaptive bitrate',
+    'Live streaming for 100M concurrent viewers',
+    'Start playback in <100ms globally',
+    'Offline downloads for 100M+ devices',
+    'Multi-CDN strategy with ISP partnerships',
+    'DRM for 10k+ content providers',
+    'Serve 1 exabit/day of video traffic'
+  ]),
 
   validators: [
     {
@@ -2110,7 +2233,13 @@ export const edgeComputingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('edge-computing', problemConfigs['edge-computing']),
+  scenarios: generateScenarios('edge-computing', problemConfigs['edge-computing'], [
+    'Deploy functions globally',
+    'Request routing to nearest edge',
+    'Edge-to-origin communication',
+    'Edge state management',
+    'A/B testing at edge'
+  ]),
 
   validators: [
     {
@@ -2212,7 +2341,13 @@ export const multiregionQueueProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multiregion-queue', problemConfigs['multiregion-queue']),
+  scenarios: generateScenarios('multiregion-queue', problemConfigs['multiregion-queue'], [
+    'Cross-region queue replication',
+    'Exactly-once delivery',
+    'Message ordering per partition',
+    'Dead letter queues',
+    'Regional consumers'
+  ]),
 
   validators: [
     {
@@ -2313,7 +2448,13 @@ export const regionalShardingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('regional-sharding', problemConfigs['regional-sharding']),
+  scenarios: generateScenarios('regional-sharding', problemConfigs['regional-sharding'], [
+    'Shard by user region',
+    'Local writes, cross-region reads',
+    'Shard rebalancing',
+    'Cross-shard transactions',
+    'Consistent hashing'
+  ]),
 
   validators: [
     {
@@ -2423,7 +2564,13 @@ export const crossRegionObservabilityProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('cross-region-observability', problemConfigs['cross-region-observability']),
+  scenarios: generateScenarios('cross-region-observability', problemConfigs['cross-region-observability'], [
+    'Metrics aggregation',
+    'Distributed tracing',
+    'Log aggregation',
+    'Cross-region correlation',
+    'Alerting'
+  ]),
 
   validators: [
     {
@@ -2528,7 +2675,13 @@ export const regionalQuotaEnforcementProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('regional-quota-enforcement', problemConfigs['regional-quota-enforcement']),
+  scenarios: generateScenarios('regional-quota-enforcement', problemConfigs['regional-quota-enforcement'], [
+    'Per-region usage tracking',
+    'Global quota aggregation',
+    'Real-time quota checks',
+    'Monthly billing rollup',
+    'Usage exports'
+  ]),
 
   validators: [
     {
@@ -2623,7 +2776,13 @@ export const crossRegionSecretsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('cross-region-secrets', problemConfigs['cross-region-secrets']),
+  scenarios: generateScenarios('cross-region-secrets', problemConfigs['cross-region-secrets'], [
+    'Encrypted storage',
+    'Cross-region replication',
+    'Secret rotation',
+    'Access control (IAM)',
+    'Audit logging'
+  ]),
 
   validators: [
     {
@@ -2755,7 +2914,16 @@ export const planetScaleDatabaseProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('planet-scale-database', problemConfigs['planet-scale-database']),
+  scenarios: generateScenarios('planet-scale-database', problemConfigs['planet-scale-database'], [
+    'Support global ACID transactions',
+    'Implement external consistency',
+    'Use synchronized clocks (TrueTime)',
+    'Handle automatic sharding',
+    'Support SQL with joins',
+    'Enable point-in-time recovery',
+    'Provide 5 nines availability',
+    'Scale to thousands of nodes'
+  ]),
 
   validators: [
     {
@@ -2890,7 +3058,16 @@ export const conflictResolutionProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('conflict-resolution', problemConfigs['conflict-resolution']),
+  scenarios: generateScenarios('conflict-resolution', problemConfigs['conflict-resolution'], [
+    'Process 10M concurrent writes/sec globally',
+    'Active-active replication across 100+ regions',
+    'TrueTime/HLC for global ordering',
+    'Support CRDTs for automatic resolution',
+    'Custom merge strategies for business logic',
+    'Detect conflicts within 10ms',
+    'Track lineage for 1B+ objects',
+    'Support financial ACID requirements'
+  ]),
 
   validators: [
     {
@@ -3010,7 +3187,16 @@ export const globalRateLimitingProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-rate-limiting', problemConfigs['global-rate-limiting']),
+  scenarios: generateScenarios('global-rate-limiting', problemConfigs['global-rate-limiting'], [
+    'Process 100M rate limit decisions/sec globally',
+    'Track quotas for 100M+ API keys/users',
+    'Hierarchical limits (user/org/global)',
+    'Sliding window and token bucket algorithms',
+    'Distributed counter sync with <100ms lag',
+    'DDoS protection at 10B req/sec scale',
+    'Graceful degradation during attacks',
+    'Real-time quota adjustment and overrides'
+  ]),
 
   validators: [
     {
@@ -3111,7 +3297,13 @@ export const readYourWritesProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('read-your-writes', problemConfigs['read-your-writes']),
+  scenarios: generateScenarios('read-your-writes', problemConfigs['read-your-writes'], [
+    'Session-based write tracking',
+    'Version vectors',
+    'Stale read detection',
+    'Automatic fallback to primary',
+    'Bounded staleness'
+  ]),
 
   validators: [
     {
@@ -3232,7 +3424,13 @@ export const regionalComplianceProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('regional-compliance', problemConfigs['regional-compliance']),
+  scenarios: generateScenarios('regional-compliance', problemConfigs['regional-compliance'], [
+    'Per-tenant region preference',
+    'Data residency enforcement',
+    'Compliance audit logs',
+    'Cross-tenant isolation',
+    'Regional billing'
+  ]),
 
   validators: [
     {
@@ -3348,7 +3546,13 @@ export const crossRegionMigrationProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('cross-region-migration', problemConfigs['cross-region-migration']),
+  scenarios: generateScenarios('cross-region-migration', problemConfigs['cross-region-migration'], [
+    'Dual-write during migration',
+    'Gradual traffic shift',
+    'Data consistency verification',
+    'Rollback capability',
+    'Migration progress tracking'
+  ]),
 
   validators: [
     {
@@ -3431,7 +3635,13 @@ export const timeSynchronizationProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('time-synchronization', problemConfigs['time-synchronization']),
+  scenarios: generateScenarios('time-synchronization', problemConfigs['time-synchronization'], [
+    'Atomic clock references',
+    'GPS synchronization',
+    'Uncertainty bounds',
+    'Commit wait protocol',
+    'Clock drift monitoring'
+  ]),
 
   validators: [
     {
@@ -3528,7 +3738,13 @@ export const globalLeaderElectionProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-leader-election', problemConfigs['global-leader-election']),
+  scenarios: generateScenarios('global-leader-election', problemConfigs['global-leader-election'], [
+    'Leader election via consensus',
+    'Automatic failover on leader failure',
+    'Split-brain prevention',
+    'Lease-based leadership',
+    'Observer nodes for reads'
+  ]),
 
   validators: [
     {
@@ -3639,7 +3855,13 @@ export const multiregionCrdtProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multiregion-crdt', problemConfigs['multiregion-crdt']),
+  scenarios: generateScenarios('multiregion-crdt', problemConfigs['multiregion-crdt'], [
+    'CRDT counters',
+    'CRDT sets',
+    'CRDT maps',
+    'Operation-based or state-based',
+    'Garbage collection'
+  ]),
 
   validators: [
     {
@@ -3741,7 +3963,13 @@ export const multiregionOrchestrationProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multiregion-orchestration', problemConfigs['multiregion-orchestration']),
+  scenarios: generateScenarios('multiregion-orchestration', problemConfigs['multiregion-orchestration'], [
+    'Multi-cluster management',
+    'Global service discovery',
+    'Cross-region networking',
+    'Health monitoring',
+    'Rolling updates'
+  ]),
 
   validators: [
     {

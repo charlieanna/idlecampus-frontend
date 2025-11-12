@@ -53,7 +53,13 @@ export const l6ProtocolQuantumInternetProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-protocol-quantum-internet', problemConfigs['l6-protocol-quantum-internet']),
+  scenarios: generateScenarios('l6-protocol-quantum-internet', problemConfigs['l6-protocol-quantum-internet'], [
+    'Support quantum entanglement distribution',
+    'Enable quantum teleportation of qubits',
+    'Maintain coherence over 1000km',
+    'Support quantum error correction',
+    'Interface with classical internet'
+  ]),
 
   validators: [
     {
@@ -108,7 +114,13 @@ export const l6ProtocolInterplanetaryProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-protocol-interplanetary', problemConfigs['l6-protocol-interplanetary']),
+  scenarios: generateScenarios('l6-protocol-interplanetary', problemConfigs['l6-protocol-interplanetary'], [
+    'Handle 24-minute round-trip delays',
+    'Support custody transfer',
+    'Enable bundle protocol routing',
+    'Manage solar conjunction blackouts',
+    'Support emergency priority messages'
+  ]),
 
   validators: [
     {
@@ -163,7 +175,13 @@ export const l6Protocol6gArchitectureProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-protocol-6g-architecture', problemConfigs['l6-protocol-6g-architecture']),
+  scenarios: generateScenarios('l6-protocol-6g-architecture', problemConfigs['l6-protocol-6g-architecture'], [
+    'Achieve 1Tbps peak data rates',
+    'Support holographic communication',
+    'Enable AI-native network operations',
+    'Provide ubiquitous coverage including space',
+    'Support 10M devices per km²'
+  ]),
 
   validators: [
     {
@@ -217,7 +235,13 @@ export const l6ProtocolTcpReplacementProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-protocol-tcp-replacement', problemConfigs['l6-protocol-tcp-replacement']),
+  scenarios: generateScenarios('l6-protocol-tcp-replacement', problemConfigs['l6-protocol-tcp-replacement'], [
+    'Support 400Gbps+ per connection',
+    'Enable one-sided RDMA operations',
+    'Handle persistent memory semantics',
+    'Support multipath by default',
+    'Integrate with quantum channels'
+  ]),
 
   validators: [
     {
@@ -272,7 +296,13 @@ export const l6NextGenProtocols1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-1', problemConfigs['l6-next-gen-protocols-1']),
+  scenarios: generateScenarios('l6-next-gen-protocols-1', problemConfigs['l6-next-gen-protocols-1'], [
+    'Implement quantum networking at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -327,7 +357,13 @@ export const l6NextGenProtocols2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-2', problemConfigs['l6-next-gen-protocols-2']),
+  scenarios: generateScenarios('l6-next-gen-protocols-2', problemConfigs['l6-next-gen-protocols-2'], [
+    'Implement interplanetary internet at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -382,7 +418,13 @@ export const l6NextGenProtocols3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-3', problemConfigs['l6-next-gen-protocols-3']),
+  scenarios: generateScenarios('l6-next-gen-protocols-3', problemConfigs['l6-next-gen-protocols-3'], [
+    'Implement 6G/7G networks at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -437,7 +479,13 @@ export const l6NextGenProtocols4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-4', problemConfigs['l6-next-gen-protocols-4']),
+  scenarios: generateScenarios('l6-next-gen-protocols-4', problemConfigs['l6-next-gen-protocols-4'], [
+    'Implement molecular communication at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -492,7 +540,13 @@ export const l6NextGenProtocols5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-5', problemConfigs['l6-next-gen-protocols-5']),
+  scenarios: generateScenarios('l6-next-gen-protocols-5', problemConfigs['l6-next-gen-protocols-5'], [
+    'Implement neuromorphic protocols at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -547,7 +601,13 @@ export const l6NextGenProtocols6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-6', problemConfigs['l6-next-gen-protocols-6']),
+  scenarios: generateScenarios('l6-next-gen-protocols-6', problemConfigs['l6-next-gen-protocols-6'], [
+    'Implement quantum networking at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -602,7 +662,13 @@ export const l6NextGenProtocols7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-7', problemConfigs['l6-next-gen-protocols-7']),
+  scenarios: generateScenarios('l6-next-gen-protocols-7', problemConfigs['l6-next-gen-protocols-7'], [
+    'Implement interplanetary internet at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -657,7 +723,13 @@ export const l6NextGenProtocols8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-8', problemConfigs['l6-next-gen-protocols-8']),
+  scenarios: generateScenarios('l6-next-gen-protocols-8', problemConfigs['l6-next-gen-protocols-8'], [
+    'Implement 6G/7G networks at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -712,7 +784,13 @@ export const l6NextGenProtocols9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-9', problemConfigs['l6-next-gen-protocols-9']),
+  scenarios: generateScenarios('l6-next-gen-protocols-9', problemConfigs['l6-next-gen-protocols-9'], [
+    'Implement molecular communication at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -767,7 +845,13 @@ export const l6NextGenProtocols10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-10', problemConfigs['l6-next-gen-protocols-10']),
+  scenarios: generateScenarios('l6-next-gen-protocols-10', problemConfigs['l6-next-gen-protocols-10'], [
+    'Implement neuromorphic protocols at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -822,7 +906,13 @@ export const l6NextGenProtocols11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-11', problemConfigs['l6-next-gen-protocols-11']),
+  scenarios: generateScenarios('l6-next-gen-protocols-11', problemConfigs['l6-next-gen-protocols-11'], [
+    'Implement quantum networking at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -877,7 +967,13 @@ export const l6NextGenProtocols12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-12', problemConfigs['l6-next-gen-protocols-12']),
+  scenarios: generateScenarios('l6-next-gen-protocols-12', problemConfigs['l6-next-gen-protocols-12'], [
+    'Implement interplanetary internet at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -932,7 +1028,13 @@ export const l6NextGenProtocols13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-13', problemConfigs['l6-next-gen-protocols-13']),
+  scenarios: generateScenarios('l6-next-gen-protocols-13', problemConfigs['l6-next-gen-protocols-13'], [
+    'Implement 6G/7G networks at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -987,7 +1089,13 @@ export const l6NextGenProtocols14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-14', problemConfigs['l6-next-gen-protocols-14']),
+  scenarios: generateScenarios('l6-next-gen-protocols-14', problemConfigs['l6-next-gen-protocols-14'], [
+    'Implement molecular communication at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -1042,7 +1150,13 @@ export const l6NextGenProtocols15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-15', problemConfigs['l6-next-gen-protocols-15']),
+  scenarios: generateScenarios('l6-next-gen-protocols-15', problemConfigs['l6-next-gen-protocols-15'], [
+    'Implement neuromorphic protocols at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -1097,7 +1211,13 @@ export const l6NextGenProtocols16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-16', problemConfigs['l6-next-gen-protocols-16']),
+  scenarios: generateScenarios('l6-next-gen-protocols-16', problemConfigs['l6-next-gen-protocols-16'], [
+    'Implement quantum networking at planetary scale',
+    'Achieve faster-than-light communication breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -1152,7 +1272,13 @@ export const l6NextGenProtocols17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-17', problemConfigs['l6-next-gen-protocols-17']),
+  scenarios: generateScenarios('l6-next-gen-protocols-17', problemConfigs['l6-next-gen-protocols-17'], [
+    'Implement interplanetary internet at planetary scale',
+    'Achieve brain-to-brain networks breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -1207,7 +1333,13 @@ export const l6NextGenProtocols18ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-next-gen-protocols-18', problemConfigs['l6-next-gen-protocols-18']),
+  scenarios: generateScenarios('l6-next-gen-protocols-18', problemConfigs['l6-next-gen-protocols-18'], [
+    'Implement 6G/7G networks at planetary scale',
+    'Achieve holographic data transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {

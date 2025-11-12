@@ -54,7 +54,13 @@ export const l6BioNeuralImplantProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-neural-implant', problemConfigs['l6-bio-neural-implant']),
+  scenarios: generateScenarios('l6-bio-neural-implant', problemConfigs['l6-bio-neural-implant'], [
+    'Process 1M neural streams',
+    'Detect medical events in real-time',
+    'Support remote firmware updates',
+    'Enable neural stimulation control',
+    'Maintain 50-year data history'
+  ]),
 
   validators: [
     {
@@ -108,7 +114,13 @@ export const l6BioDigitalTwinProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-twin', problemConfigs['l6-bio-digital-twin']),
+  scenarios: generateScenarios('l6-bio-digital-twin', problemConfigs['l6-bio-digital-twin'], [
+    'Model all organ systems',
+    'Integrate genomic data',
+    'Simulate drug interactions',
+    'Predict disease progression',
+    'Optimize treatment plans'
+  ]),
 
   validators: [
     {
@@ -163,7 +175,13 @@ export const l6BioDigital1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-1', problemConfigs['l6-bio-digital-1']),
+  scenarios: generateScenarios('l6-bio-digital-1', problemConfigs['l6-bio-digital-1'], [
+    'Implement brain uploads at planetary scale',
+    'Achieve consciousness transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -218,7 +236,13 @@ export const l6BioDigital2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-2', problemConfigs['l6-bio-digital-2']),
+  scenarios: generateScenarios('l6-bio-digital-2', problemConfigs['l6-bio-digital-2'], [
+    'Implement synthetic biology at planetary scale',
+    'Achieve biological internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -273,7 +297,13 @@ export const l6BioDigital3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-3', problemConfigs['l6-bio-digital-3']),
+  scenarios: generateScenarios('l6-bio-digital-3', problemConfigs['l6-bio-digital-3'], [
+    'Implement nano-medicine at planetary scale',
+    'Achieve living computers breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -328,7 +358,13 @@ export const l6BioDigital4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-4', problemConfigs['l6-bio-digital-4']),
+  scenarios: generateScenarios('l6-bio-digital-4', problemConfigs['l6-bio-digital-4'], [
+    'Implement digital twins at planetary scale',
+    'Achieve consciousness transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -383,7 +419,13 @@ export const l6BioDigital5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-5', problemConfigs['l6-bio-digital-5']),
+  scenarios: generateScenarios('l6-bio-digital-5', problemConfigs['l6-bio-digital-5'], [
+    'Implement bio-processors at planetary scale',
+    'Achieve biological internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -438,7 +480,13 @@ export const l6BioDigital6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-6', problemConfigs['l6-bio-digital-6']),
+  scenarios: generateScenarios('l6-bio-digital-6', problemConfigs['l6-bio-digital-6'], [
+    'Implement brain uploads at planetary scale',
+    'Achieve living computers breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -493,7 +541,13 @@ export const l6BioDigital7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-7', problemConfigs['l6-bio-digital-7']),
+  scenarios: generateScenarios('l6-bio-digital-7', problemConfigs['l6-bio-digital-7'], [
+    'Implement synthetic biology at planetary scale',
+    'Achieve consciousness transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -548,7 +602,13 @@ export const l6BioDigital8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-8', problemConfigs['l6-bio-digital-8']),
+  scenarios: generateScenarios('l6-bio-digital-8', problemConfigs['l6-bio-digital-8'], [
+    'Implement nano-medicine at planetary scale',
+    'Achieve biological internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -603,7 +663,13 @@ export const l6BioDigital9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-9', problemConfigs['l6-bio-digital-9']),
+  scenarios: generateScenarios('l6-bio-digital-9', problemConfigs['l6-bio-digital-9'], [
+    'Implement digital twins at planetary scale',
+    'Achieve living computers breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -658,7 +724,13 @@ export const l6BioDigital10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-10', problemConfigs['l6-bio-digital-10']),
+  scenarios: generateScenarios('l6-bio-digital-10', problemConfigs['l6-bio-digital-10'], [
+    'Implement bio-processors at planetary scale',
+    'Achieve consciousness transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -713,7 +785,13 @@ export const l6BioDigital11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-11', problemConfigs['l6-bio-digital-11']),
+  scenarios: generateScenarios('l6-bio-digital-11', problemConfigs['l6-bio-digital-11'], [
+    'Implement brain uploads at planetary scale',
+    'Achieve biological internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -768,7 +846,13 @@ export const l6BioDigital12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-12', problemConfigs['l6-bio-digital-12']),
+  scenarios: generateScenarios('l6-bio-digital-12', problemConfigs['l6-bio-digital-12'], [
+    'Implement synthetic biology at planetary scale',
+    'Achieve living computers breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -823,7 +907,13 @@ export const l6BioDigital13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-13', problemConfigs['l6-bio-digital-13']),
+  scenarios: generateScenarios('l6-bio-digital-13', problemConfigs['l6-bio-digital-13'], [
+    'Implement nano-medicine at planetary scale',
+    'Achieve consciousness transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -878,7 +968,13 @@ export const l6BioDigital14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-14', problemConfigs['l6-bio-digital-14']),
+  scenarios: generateScenarios('l6-bio-digital-14', problemConfigs['l6-bio-digital-14'], [
+    'Implement digital twins at planetary scale',
+    'Achieve biological internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -933,7 +1029,13 @@ export const l6BioDigital15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-15', problemConfigs['l6-bio-digital-15']),
+  scenarios: generateScenarios('l6-bio-digital-15', problemConfigs['l6-bio-digital-15'], [
+    'Implement bio-processors at planetary scale',
+    'Achieve living computers breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -988,7 +1090,13 @@ export const l6BioDigital16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-16', problemConfigs['l6-bio-digital-16']),
+  scenarios: generateScenarios('l6-bio-digital-16', problemConfigs['l6-bio-digital-16'], [
+    'Implement brain uploads at planetary scale',
+    'Achieve consciousness transfer breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -1043,7 +1151,13 @@ export const l6BioDigital17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-bio-digital-17', problemConfigs['l6-bio-digital-17']),
+  scenarios: generateScenarios('l6-bio-digital-17', problemConfigs['l6-bio-digital-17'], [
+    'Implement synthetic biology at planetary scale',
+    'Achieve biological internet breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {

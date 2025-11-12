@@ -95,7 +95,13 @@ export const basicDatabaseDesignProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('basic-database-design', problemConfigs['basic-database-design']),
+  scenarios: generateScenarios('basic-database-design', problemConfigs['basic-database-design'], [
+    'Store users, posts, and comments',
+    'Support tags and categories',
+    'Handle user relationships (followers)',
+    'Enable full-text search on posts',
+    'Track view counts and likes'
+  ]),
 
   validators: [
     {
@@ -187,7 +193,13 @@ export const nosqlBasicsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('nosql-basics', problemConfigs['nosql-basics']),
+  scenarios: generateScenarios('nosql-basics', problemConfigs['nosql-basics'], [
+    'Store flexible user profiles',
+    'Support nested preferences',
+    'Handle varying field types',
+    'Enable complex queries',
+    'Support schema evolution'
+  ]),
 
   validators: [
     {
@@ -293,7 +305,13 @@ export const keyValueStoreProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('key-value-store', problemConfigs['key-value-store']),
+  scenarios: generateScenarios('key-value-store', problemConfigs['key-value-store'], [
+    'Support GET/SET operations',
+    'Implement LRU eviction',
+    'Handle string, list, set, hash types',
+    'Provide pub/sub messaging',
+    'Support TTL expiration'
+  ]),
 
   validators: [
     {
@@ -389,7 +407,13 @@ export const productCatalogProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('product-catalog', problemConfigs['product-catalog']),
+  scenarios: generateScenarios('product-catalog', problemConfigs['product-catalog'], [
+    'Store products with variants (size, color)',
+    'Support category hierarchies',
+    'Track inventory per variant',
+    'Enable faceted search',
+    'Handle product reviews'
+  ]),
 
   validators: [
     {
@@ -476,7 +500,13 @@ export const timeSeriesMetricsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('time-series-metrics', problemConfigs['time-series-metrics']),
+  scenarios: generateScenarios('time-series-metrics', problemConfigs['time-series-metrics'], [
+    'Ingest metrics at high rate',
+    'Store with microsecond precision',
+    'Support aggregation queries',
+    'Implement retention policies',
+    'Enable alerting on thresholds'
+  ]),
 
   validators: [
     {
@@ -562,7 +592,13 @@ export const sessionStoreProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('session-store', problemConfigs['session-store']),
+  scenarios: generateScenarios('session-store', problemConfigs['session-store'], [
+    'Create and validate sessions',
+    'Support session TTL',
+    'Handle concurrent logins',
+    'Enable session revocation',
+    'Store session metadata'
+  ]),
 
   validators: [
     {
@@ -653,7 +689,13 @@ export const fileMetadataStoreProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('file-metadata-store', problemConfigs['file-metadata-store']),
+  scenarios: generateScenarios('file-metadata-store', problemConfigs['file-metadata-store'], [
+    'Store file and directory metadata',
+    'Support hierarchical paths',
+    'Track permissions and ownership',
+    'Enable quick path lookups',
+    'Handle renames efficiently'
+  ]),
 
   validators: [
     {
@@ -753,7 +795,13 @@ export const configManagementProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('config-management', problemConfigs['config-management']),
+  scenarios: generateScenarios('config-management', problemConfigs['config-management'], [
+    'Store key-value configurations',
+    'Support versioning and rollback',
+    'Enable environment-specific configs',
+    'Provide audit trail',
+    'Push config updates to subscribers'
+  ]),
 
   validators: [
     {
@@ -869,7 +917,14 @@ export const ecommerceOrderDbProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('ecommerce-order-db', problemConfigs['ecommerce-order-db']),
+  scenarios: generateScenarios('ecommerce-order-db', problemConfigs['ecommerce-order-db'], [
+    'Store orders with line items',
+    'Support order status tracking',
+    'Handle inventory reservations',
+    'Enable customer order history',
+    'Provide merchant dashboards',
+    'Support refunds and cancellations'
+  ]),
 
   validators: [
     {
@@ -966,7 +1021,14 @@ export const socialGraphDbProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('social-graph-db', problemConfigs['social-graph-db']),
+  scenarios: generateScenarios('social-graph-db', problemConfigs['social-graph-db'], [
+    'Store user profiles and connections',
+    'Support bidirectional friendships',
+    'Generate personalized feeds',
+    'Find mutual friends',
+    'Suggest new connections',
+    'Track engagement metrics'
+  ]),
 
   validators: [
     {
@@ -1058,7 +1120,14 @@ export const analyticsWarehouseProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('analytics-warehouse', problemConfigs['analytics-warehouse']),
+  scenarios: generateScenarios('analytics-warehouse', problemConfigs['analytics-warehouse'], [
+    'Store clickstream and event data',
+    'Support complex aggregations',
+    'Enable dimensional modeling',
+    'Provide fast group-by queries',
+    'Handle late-arriving data',
+    'Support data cubes'
+  ]),
 
   validators: [
     {
@@ -1165,7 +1234,14 @@ export const multiTenantSaasProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multi-tenant-saas', problemConfigs['multi-tenant-saas']),
+  scenarios: generateScenarios('multi-tenant-saas', problemConfigs['multi-tenant-saas'], [
+    'Isolate tenant data',
+    'Support custom schemas per tenant',
+    'Handle varying tenant sizes',
+    'Provide per-tenant backups',
+    'Enable tenant-specific SLAs',
+    'Support data residency requirements'
+  ]),
 
   validators: [
     {
@@ -1268,7 +1344,16 @@ export const inventoryManagementProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('inventory-management', problemConfigs['inventory-management']),
+  scenarios: generateScenarios('inventory-management', problemConfigs['inventory-management'], [
+    'Track 10B SKUs across 5000+ fulfillment centers',
+    'Process 1M reservations/sec (10M Prime Day)',
+    'Distributed locks preventing any overselling',
+    'ML-based predictive restocking across regions',
+    'Real-time cross-warehouse inventory transfers',
+    'Support flash sales with 100x traffic spikes',
+    'Multi-channel inventory (stores, online, partners)',
+    'Complete audit trail for SOX compliance'
+  ]),
 
   validators: [
     {
@@ -1379,7 +1464,14 @@ export const cmsMediaStorageProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('cms-media-storage', problemConfigs['cms-media-storage']),
+  scenarios: generateScenarios('cms-media-storage', problemConfigs['cms-media-storage'], [
+    'Store articles and media metadata',
+    'Handle large media uploads',
+    'Support content versioning',
+    'Enable CDN distribution',
+    'Provide media transformations',
+    'Track usage analytics'
+  ]),
 
   validators: [
     {
@@ -1474,7 +1566,16 @@ export const bankingTransactionDbProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('banking-transaction-db', problemConfigs['banking-transaction-db']),
+  scenarios: generateScenarios('banking-transaction-db', problemConfigs['banking-transaction-db'], [
+    'Process 100M transactions/sec (1B during crises)',
+    'Zero tolerance for data loss or inconsistency',
+    'Real-time fraud detection on every transaction',
+    'Instant cross-border transfers to 200+ countries',
+    'Support 1B+ accounts across all products',
+    'Complete audit trail for 10-year retention',
+    'Meet Basel III, Dodd-Frank, GDPR requirements',
+    'Coordinate with 10k+ partner banks via APIs'
+  ]),
 
   validators: [
     {
@@ -1576,7 +1677,14 @@ export const healthcareRecordsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('healthcare-records', problemConfigs['healthcare-records']),
+  scenarios: generateScenarios('healthcare-records', problemConfigs['healthcare-records'], [
+    'Store patient medical records',
+    'Enforce role-based access control',
+    'Track all data access',
+    'Support data encryption at rest and in transit',
+    'Enable patient consent management',
+    'Provide audit trail for compliance'
+  ]),
 
   validators: [
     {
@@ -1672,7 +1780,14 @@ export const iotTimeSeriesProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('iot-time-series', problemConfigs['iot-time-series']),
+  scenarios: generateScenarios('iot-time-series', problemConfigs['iot-time-series'], [
+    'Ingest sensor data from millions of devices',
+    'Apply delta and run-length compression',
+    'Support time-range queries',
+    'Enable aggregation by device/sensor',
+    'Implement data retention policies',
+    'Provide real-time dashboards'
+  ]),
 
   validators: [
     {
@@ -1774,7 +1889,14 @@ export const gamingLeaderboardProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('gaming-leaderboard', problemConfigs['gaming-leaderboard']),
+  scenarios: generateScenarios('gaming-leaderboard', problemConfigs['gaming-leaderboard'], [
+    'Update player scores in real-time',
+    'Query player rank by score',
+    'Retrieve top N players',
+    'Support multiple leaderboards',
+    'Handle ties in ranking',
+    'Provide historical snapshots'
+  ]),
 
   validators: [
     {
@@ -1875,7 +1997,14 @@ export const bookingReservationProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('booking-reservation', problemConfigs['booking-reservation']),
+  scenarios: generateScenarios('booking-reservation', problemConfigs['booking-reservation'], [
+    'Check availability in real-time',
+    'Reserve resources atomically',
+    'Handle concurrent booking attempts',
+    'Support hold/release of reservations',
+    'Enable waitlists',
+    'Provide booking confirmations'
+  ]),
 
   validators: [
     {
@@ -1972,7 +2101,14 @@ export const auditTrailProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('audit-trail', problemConfigs['audit-trail']),
+  scenarios: generateScenarios('audit-trail', problemConfigs['audit-trail'], [
+    'Log all system events',
+    'Guarantee immutability',
+    'Support time-range queries',
+    'Enable filtering by entity/action',
+    'Provide tamper detection',
+    'Archive old logs'
+  ]),
 
   validators: [
     {
@@ -2078,7 +2214,14 @@ export const searchIndexStorageProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('search-index-storage', problemConfigs['search-index-storage']),
+  scenarios: generateScenarios('search-index-storage', problemConfigs['search-index-storage'], [
+    'Index documents with full-text',
+    'Support boolean queries',
+    'Rank results by relevance',
+    'Handle typos and synonyms',
+    'Enable faceted filtering',
+    'Provide autocomplete'
+  ]),
 
   validators: [
     {
@@ -2179,7 +2322,14 @@ export const mlModelRegistryProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('ml-model-registry', problemConfigs['ml-model-registry']),
+  scenarios: generateScenarios('ml-model-registry', problemConfigs['ml-model-registry'], [
+    'Store model binaries and weights',
+    'Track model versions and lineage',
+    'Store experiment metadata',
+    'Enable model comparison',
+    'Support model rollback',
+    'Provide deployment tracking'
+  ]),
 
   validators: [
     {
@@ -2271,7 +2421,14 @@ export const rateLimitCountersProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('rate-limit-counters', problemConfigs['rate-limit-counters']),
+  scenarios: generateScenarios('rate-limit-counters', problemConfigs['rate-limit-counters'], [
+    'Track requests per time window',
+    'Support multiple rate limit tiers',
+    'Handle burst traffic',
+    'Provide real-time quota checks',
+    'Enable analytics on usage',
+    'Support rate limit headers'
+  ]),
 
   validators: [
     {
@@ -2394,7 +2551,16 @@ export const distributedDatabaseProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('distributed-database', problemConfigs['distributed-database']),
+  scenarios: generateScenarios('distributed-database', problemConfigs['distributed-database'], [
+    'Process 10M transactions/sec globally',
+    'Distribute across 100+ regions with auto-sharding',
+    'TrueTime-based global consistency',
+    'Zero-downtime schema migrations at scale',
+    'Multi-version concurrency control (MVCC)',
+    'Support 1M+ concurrent connections',
+    'Automatic data rebalancing and healing',
+    'Point-in-time recovery to any second in 30 days'
+  ]),
 
   validators: [
     {
@@ -2530,7 +2696,14 @@ export const contentDeliveryStorageProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('content-delivery-storage', problemConfigs['content-delivery-storage']),
+  scenarios: generateScenarios('content-delivery-storage', problemConfigs['content-delivery-storage'], [
+    'Store videos and images',
+    'Auto-migrate to cold storage after 30 days',
+    'Restore from cold storage on demand',
+    'Generate multiple resolutions',
+    'Purge based on retention policy',
+    'Track access patterns for tier decisions'
+  ]),
 
   validators: [
     {
@@ -2658,7 +2831,16 @@ export const multiModelDatabaseProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multi-model-database', problemConfigs['multi-model-database']),
+  scenarios: generateScenarios('multi-model-database', problemConfigs['multi-model-database'], [
+    'Support 100M requests/sec across all models',
+    'Store 10PB+ with automatic sharding',
+    'Global tables with <100ms replication',
+    'Auto-scale from 0 to 10M QPS in 60 seconds',
+    'Stream 100k+ concurrent change streams',
+    'Adaptive capacity for hot partitions',
+    'Point-in-time recovery to any second',
+    'Support ACID transactions across items'
+  ]),
 
   validators: [
     {
@@ -2772,7 +2954,16 @@ export const distributedTransactionsProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('distributed-transactions', problemConfigs['distributed-transactions']),
+  scenarios: generateScenarios('distributed-transactions', problemConfigs['distributed-transactions'], [
+    'Execute 10M cross-shard transactions/sec',
+    'Coordinate across 10k+ database shards globally',
+    'Spanner-style TrueTime for global ordering',
+    'Percolator optimization for 2PC at scale',
+    'Handle transactions spanning 100+ shards',
+    'Automatic deadlock detection and resolution',
+    'Zero-loss coordinator failover in <100ms',
+    'Support snapshot isolation and serializability'
+  ]),
 
   validators: [
     {
@@ -2900,7 +3091,15 @@ export const multiMasterReplicationProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('multi-master-replication', problemConfigs['multi-master-replication']),
+  scenarios: generateScenarios('multi-master-replication', problemConfigs['multi-master-replication'], [
+    'Accept writes at any replica',
+    'Detect and resolve conflicts automatically',
+    'Propagate changes between replicas',
+    'Maintain causal consistency',
+    'Support version vectors',
+    'Handle network partitions gracefully',
+    'Provide conflict-free data types'
+  ]),
 
   validators: [
     {
@@ -3017,7 +3216,15 @@ export const globalInventoryStrongProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('global-inventory-strong', problemConfigs['global-inventory-strong']),
+  scenarios: generateScenarios('global-inventory-strong', problemConfigs['global-inventory-strong'], [
+    'Maintain globally consistent stock counts',
+    'Support atomic cross-region transfers',
+    'Prevent overselling under any partition',
+    'Provide linearizable reads',
+    'Handle regional failures gracefully',
+    'Enable global transactions',
+    'Support multi-datacenter writes'
+  ]),
 
   validators: [
     {
@@ -3131,7 +3338,16 @@ export const financialLedgerProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('financial-ledger', problemConfigs['financial-ledger']),
+  scenarios: generateScenarios('financial-ledger', problemConfigs['financial-ledger'], [
+    'Implement double-entry bookkeeping',
+    'Ensure zero balance drift',
+    'Provide immutable audit trail',
+    'Support complex transaction types',
+    'Enable real-time balance queries',
+    'Handle regulatory reporting',
+    'Prevent any data loss',
+    'Support transaction replay'
+  ]),
 
   validators: [
     {
@@ -3238,7 +3454,15 @@ export const blockchainStateDbProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('blockchain-state-db', problemConfigs['blockchain-state-db']),
+  scenarios: generateScenarios('blockchain-state-db', problemConfigs['blockchain-state-db'], [
+    'Store account balances and smart contract state',
+    'Generate Merkle proofs for state',
+    'Support state snapshots',
+    'Enable fast state root calculation',
+    'Provide historical state queries',
+    'Handle state pruning',
+    'Support light client verification'
+  ]),
 
   validators: [
     {
@@ -3349,7 +3573,15 @@ export const realtimeGamingStateProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('realtime-gaming-state', problemConfigs['realtime-gaming-state']),
+  scenarios: generateScenarios('realtime-gaming-state', problemConfigs['realtime-gaming-state'], [
+    'Sync player positions in real-time',
+    'Handle 100+ players per game session',
+    'Resolve conflicting actions',
+    'Support lag compensation',
+    'Enable spectator mode',
+    'Provide match replay',
+    'Handle player disconnections'
+  ]),
 
   validators: [
     {
@@ -3465,7 +3697,15 @@ export const autonomousVehicleMapProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('autonomous-vehicle-map', problemConfigs['autonomous-vehicle-map']),
+  scenarios: generateScenarios('autonomous-vehicle-map', problemConfigs['autonomous-vehicle-map'], [
+    'Store HD map data with cm precision',
+    'Support spatial queries (nearby objects)',
+    'Handle real-time map updates',
+    'Provide versioned map tiles',
+    'Enable offline map downloads',
+    'Support route planning queries',
+    'Track dynamic obstacles'
+  ]),
 
   validators: [
     {
@@ -3582,7 +3822,15 @@ export const petabyteDataLakeProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('petabyte-data-lake', problemConfigs['petabyte-data-lake']),
+  scenarios: generateScenarios('petabyte-data-lake', problemConfigs['petabyte-data-lake'], [
+    'Ingest data from 1000s of sources',
+    'Store raw, processed, and curated data',
+    'Support multiple file formats (Parquet, ORC, Avro)',
+    'Enable schema evolution',
+    'Provide data catalog and lineage',
+    'Support time travel queries',
+    'Enable data governance and compliance'
+  ]),
 
   validators: [
     {
@@ -3699,7 +3947,14 @@ export const blockStorageProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('block-storage', problemConfigs['block-storage']),
+  scenarios: generateScenarios('block-storage', problemConfigs['block-storage'], [
+    'Attach volumes to compute instances',
+    'Replicate blocks across availability zones',
+    'Create point-in-time snapshots',
+    'Restore volumes from snapshots',
+    'Support volume resizing',
+    'Handle node failures transparently'
+  ]),
 
   validators: [
     {

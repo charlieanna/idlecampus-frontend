@@ -54,7 +54,13 @@ export const l6ConsensusPlanetaryProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-consensus-planetary', problemConfigs['l6-consensus-planetary']),
+  scenarios: generateScenarios('l6-consensus-planetary', problemConfigs['l6-consensus-planetary'], [
+    'Achieve consensus despite 24-min delays',
+    'Handle relativistic time dilation',
+    'Support partition-tolerant operation',
+    'Enable local decision authority',
+    'Provide eventual global consistency'
+  ]),
 
   validators: [
     {
@@ -108,7 +114,13 @@ export const l6ConsensusMillionNodesProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-consensus-million-nodes', problemConfigs['l6-consensus-million-nodes']),
+  scenarios: generateScenarios('l6-consensus-million-nodes', problemConfigs['l6-consensus-million-nodes'], [
+    'Support 1 million validators',
+    'Achieve sub-second finality',
+    'Handle 33% Byzantine nodes',
+    'Support dynamic membership',
+    'Enable sharded validation'
+  ]),
 
   validators: [
     {
@@ -163,7 +175,13 @@ export const l6DistributedConsensus1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-1', problemConfigs['l6-distributed-consensus-1']),
+  scenarios: generateScenarios('l6-distributed-consensus-1', problemConfigs['l6-distributed-consensus-1'], [
+    'Implement quantum consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -218,7 +236,13 @@ export const l6DistributedConsensus2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-2', problemConfigs['l6-distributed-consensus-2']),
+  scenarios: generateScenarios('l6-distributed-consensus-2', problemConfigs['l6-distributed-consensus-2'], [
+    'Implement relativistic consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -273,7 +297,13 @@ export const l6DistributedConsensus3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-3', problemConfigs['l6-distributed-consensus-3']),
+  scenarios: generateScenarios('l6-distributed-consensus-3', problemConfigs['l6-distributed-consensus-3'], [
+    'Implement biological consensus at planetary scale',
+    'Achieve self-organizing protocols breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -328,7 +358,13 @@ export const l6DistributedConsensus4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-4', problemConfigs['l6-distributed-consensus-4']),
+  scenarios: generateScenarios('l6-distributed-consensus-4', problemConfigs['l6-distributed-consensus-4'], [
+    'Implement swarm consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -383,7 +419,13 @@ export const l6DistributedConsensus5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-5', problemConfigs['l6-distributed-consensus-5']),
+  scenarios: generateScenarios('l6-distributed-consensus-5', problemConfigs['l6-distributed-consensus-5'], [
+    'Implement probabilistic consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -438,7 +480,13 @@ export const l6DistributedConsensus6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-6', problemConfigs['l6-distributed-consensus-6']),
+  scenarios: generateScenarios('l6-distributed-consensus-6', problemConfigs['l6-distributed-consensus-6'], [
+    'Implement quantum consensus at planetary scale',
+    'Achieve self-organizing protocols breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -493,7 +541,13 @@ export const l6DistributedConsensus7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-7', problemConfigs['l6-distributed-consensus-7']),
+  scenarios: generateScenarios('l6-distributed-consensus-7', problemConfigs['l6-distributed-consensus-7'], [
+    'Implement relativistic consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -548,7 +602,13 @@ export const l6DistributedConsensus8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-8', problemConfigs['l6-distributed-consensus-8']),
+  scenarios: generateScenarios('l6-distributed-consensus-8', problemConfigs['l6-distributed-consensus-8'], [
+    'Implement biological consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -603,7 +663,13 @@ export const l6DistributedConsensus9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-9', problemConfigs['l6-distributed-consensus-9']),
+  scenarios: generateScenarios('l6-distributed-consensus-9', problemConfigs['l6-distributed-consensus-9'], [
+    'Implement swarm consensus at planetary scale',
+    'Achieve self-organizing protocols breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -658,7 +724,13 @@ export const l6DistributedConsensus10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-10', problemConfigs['l6-distributed-consensus-10']),
+  scenarios: generateScenarios('l6-distributed-consensus-10', problemConfigs['l6-distributed-consensus-10'], [
+    'Implement probabilistic consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -713,7 +785,13 @@ export const l6DistributedConsensus11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-11', problemConfigs['l6-distributed-consensus-11']),
+  scenarios: generateScenarios('l6-distributed-consensus-11', problemConfigs['l6-distributed-consensus-11'], [
+    'Implement quantum consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -768,7 +846,13 @@ export const l6DistributedConsensus12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-12', problemConfigs['l6-distributed-consensus-12']),
+  scenarios: generateScenarios('l6-distributed-consensus-12', problemConfigs['l6-distributed-consensus-12'], [
+    'Implement relativistic consensus at planetary scale',
+    'Achieve self-organizing protocols breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -823,7 +907,13 @@ export const l6DistributedConsensus13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-13', problemConfigs['l6-distributed-consensus-13']),
+  scenarios: generateScenarios('l6-distributed-consensus-13', problemConfigs['l6-distributed-consensus-13'], [
+    'Implement biological consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -878,7 +968,13 @@ export const l6DistributedConsensus14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-14', problemConfigs['l6-distributed-consensus-14']),
+  scenarios: generateScenarios('l6-distributed-consensus-14', problemConfigs['l6-distributed-consensus-14'], [
+    'Implement swarm consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -933,7 +1029,13 @@ export const l6DistributedConsensus15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-15', problemConfigs['l6-distributed-consensus-15']),
+  scenarios: generateScenarios('l6-distributed-consensus-15', problemConfigs['l6-distributed-consensus-15'], [
+    'Implement probabilistic consensus at planetary scale',
+    'Achieve self-organizing protocols breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -988,7 +1090,13 @@ export const l6DistributedConsensus16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-16', problemConfigs['l6-distributed-consensus-16']),
+  scenarios: generateScenarios('l6-distributed-consensus-16', problemConfigs['l6-distributed-consensus-16'], [
+    'Implement quantum consensus at planetary scale',
+    'Achieve faster than Byzantine breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -1043,7 +1151,13 @@ export const l6DistributedConsensus17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-distributed-consensus-17', problemConfigs['l6-distributed-consensus-17']),
+  scenarios: generateScenarios('l6-distributed-consensus-17', problemConfigs['l6-distributed-consensus-17'], [
+    'Implement relativistic consensus at planetary scale',
+    'Achieve zero-knowledge consensus breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {

@@ -53,7 +53,13 @@ export const l6EnergyCarbonNegativeProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-carbon-negative', problemConfigs['l6-energy-carbon-negative']),
+  scenarios: generateScenarios('l6-energy-carbon-negative', problemConfigs['l6-energy-carbon-negative'], [
+    'Capture 1000 tons CO2 per year',
+    'Use 100% renewable energy',
+    'Utilize waste heat for DAC',
+    'Support 100MW compute load',
+    'Enable carbon credit generation'
+  ]),
 
   validators: [
     {
@@ -107,7 +113,13 @@ export const l6EnergyOceanPoweredProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-ocean-powered', problemConfigs['l6-energy-ocean-powered']),
+  scenarios: generateScenarios('l6-energy-ocean-powered', problemConfigs['l6-energy-ocean-powered'], [
+    'Generate 10MW from OTEC',
+    'Cool using deep ocean water',
+    'Withstand 1000m depth pressure',
+    'Support autonomous operation',
+    'Enable underwater maintenance'
+  ]),
 
   validators: [
     {
@@ -162,7 +174,13 @@ export const l6EnergySustainability1ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-1', problemConfigs['l6-energy-sustainability-1']),
+  scenarios: generateScenarios('l6-energy-sustainability-1', problemConfigs['l6-energy-sustainability-1'], [
+    'Implement carbon-negative computing at planetary scale',
+    'Achieve self-powered systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -217,7 +235,13 @@ export const l6EnergySustainability2ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-2', problemConfigs['l6-energy-sustainability-2']),
+  scenarios: generateScenarios('l6-energy-sustainability-2', problemConfigs['l6-energy-sustainability-2'], [
+    'Implement fusion-powered datacenters at planetary scale',
+    'Achieve negative entropy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -272,7 +296,13 @@ export const l6EnergySustainability3ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-3', problemConfigs['l6-energy-sustainability-3']),
+  scenarios: generateScenarios('l6-energy-sustainability-3', problemConfigs['l6-energy-sustainability-3'], [
+    'Implement space solar computing at planetary scale',
+    'Achieve perpetual computation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -327,7 +357,13 @@ export const l6EnergySustainability4ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-4', problemConfigs['l6-energy-sustainability-4']),
+  scenarios: generateScenarios('l6-energy-sustainability-4', problemConfigs['l6-energy-sustainability-4'], [
+    'Implement oceanic cooling at planetary scale',
+    'Achieve self-powered systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -382,7 +418,13 @@ export const l6EnergySustainability5ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-5', problemConfigs['l6-energy-sustainability-5']),
+  scenarios: generateScenarios('l6-energy-sustainability-5', problemConfigs['l6-energy-sustainability-5'], [
+    'Implement atmospheric computing at planetary scale',
+    'Achieve negative entropy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -437,7 +479,13 @@ export const l6EnergySustainability6ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-6', problemConfigs['l6-energy-sustainability-6']),
+  scenarios: generateScenarios('l6-energy-sustainability-6', problemConfigs['l6-energy-sustainability-6'], [
+    'Implement carbon-negative computing at planetary scale',
+    'Achieve perpetual computation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -492,7 +540,13 @@ export const l6EnergySustainability7ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-7', problemConfigs['l6-energy-sustainability-7']),
+  scenarios: generateScenarios('l6-energy-sustainability-7', problemConfigs['l6-energy-sustainability-7'], [
+    'Implement fusion-powered datacenters at planetary scale',
+    'Achieve self-powered systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -547,7 +601,13 @@ export const l6EnergySustainability8ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-8', problemConfigs['l6-energy-sustainability-8']),
+  scenarios: generateScenarios('l6-energy-sustainability-8', problemConfigs['l6-energy-sustainability-8'], [
+    'Implement space solar computing at planetary scale',
+    'Achieve negative entropy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -602,7 +662,13 @@ export const l6EnergySustainability9ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-9', problemConfigs['l6-energy-sustainability-9']),
+  scenarios: generateScenarios('l6-energy-sustainability-9', problemConfigs['l6-energy-sustainability-9'], [
+    'Implement oceanic cooling at planetary scale',
+    'Achieve perpetual computation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -657,7 +723,13 @@ export const l6EnergySustainability10ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-10', problemConfigs['l6-energy-sustainability-10']),
+  scenarios: generateScenarios('l6-energy-sustainability-10', problemConfigs['l6-energy-sustainability-10'], [
+    'Implement atmospheric computing at planetary scale',
+    'Achieve self-powered systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -712,7 +784,13 @@ export const l6EnergySustainability11ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-11', problemConfigs['l6-energy-sustainability-11']),
+  scenarios: generateScenarios('l6-energy-sustainability-11', problemConfigs['l6-energy-sustainability-11'], [
+    'Implement carbon-negative computing at planetary scale',
+    'Achieve negative entropy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -767,7 +845,13 @@ export const l6EnergySustainability12ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-12', problemConfigs['l6-energy-sustainability-12']),
+  scenarios: generateScenarios('l6-energy-sustainability-12', problemConfigs['l6-energy-sustainability-12'], [
+    'Implement fusion-powered datacenters at planetary scale',
+    'Achieve perpetual computation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -822,7 +906,13 @@ export const l6EnergySustainability13ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-13', problemConfigs['l6-energy-sustainability-13']),
+  scenarios: generateScenarios('l6-energy-sustainability-13', problemConfigs['l6-energy-sustainability-13'], [
+    'Implement space solar computing at planetary scale',
+    'Achieve self-powered systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -877,7 +967,13 @@ export const l6EnergySustainability14ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-14', problemConfigs['l6-energy-sustainability-14']),
+  scenarios: generateScenarios('l6-energy-sustainability-14', problemConfigs['l6-energy-sustainability-14'], [
+    'Implement oceanic cooling at planetary scale',
+    'Achieve negative entropy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -932,7 +1028,13 @@ export const l6EnergySustainability15ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-15', problemConfigs['l6-energy-sustainability-15']),
+  scenarios: generateScenarios('l6-energy-sustainability-15', problemConfigs['l6-energy-sustainability-15'], [
+    'Implement atmospheric computing at planetary scale',
+    'Achieve perpetual computation breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -987,7 +1089,13 @@ export const l6EnergySustainability16ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-16', problemConfigs['l6-energy-sustainability-16']),
+  scenarios: generateScenarios('l6-energy-sustainability-16', problemConfigs['l6-energy-sustainability-16'], [
+    'Implement carbon-negative computing at planetary scale',
+    'Achieve self-powered systems breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {
@@ -1042,7 +1150,13 @@ export const l6EnergySustainability17ProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('l6-energy-sustainability-17', problemConfigs['l6-energy-sustainability-17']),
+  scenarios: generateScenarios('l6-energy-sustainability-17', problemConfigs['l6-energy-sustainability-17'], [
+    'Implement fusion-powered datacenters at planetary scale',
+    'Achieve negative entropy computing breakthrough',
+    'Support quantum-resistant security',
+    'Enable autonomous self-healing',
+    'Provide 10x improvement over current systems'
+  ]),
 
   validators: [
     {

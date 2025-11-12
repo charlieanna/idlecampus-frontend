@@ -411,7 +411,9 @@ ${mustConnectStr}
     },
   },
 
-  scenarios: generateScenarios('${problem.id}', problemConfigs['${problem.id}']),
+  scenarios: generateScenarios('${problem.id}', problemConfigs['${problem.id}'], [
+    ${userFacingFRs}
+  ]),
 
   validators: [
     {
