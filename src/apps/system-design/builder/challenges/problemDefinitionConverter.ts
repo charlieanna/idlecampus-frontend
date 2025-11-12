@@ -87,6 +87,7 @@ export function convertProblemDefinitionToChallenge(
       latency: formatLatencyRequirement(def.scenarios[0]),
       availability: formatAvailabilityRequirement(def.scenarios[0]),
       budget: 'Optimize for cost efficiency',
+      nfrs: def.userFacingNFRs, // Pass through user-facing NFRs
     },
     availableComponents,
     testCases,

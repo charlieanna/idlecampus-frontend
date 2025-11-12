@@ -50,24 +50,37 @@ export function ProblemDescriptionPanel({ challenge }: ProblemDescriptionPanelPr
           <div className="pt-2 border-t border-blue-200">
             <div className="text-xs font-medium text-indigo-700 mb-2">Non-Functional Requirements</div>
             <div className="text-sm text-gray-700">
-              <ul className="space-y-1.5 ml-4">
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">📊</span>
-                  <span><strong>Traffic:</strong> {challenge.requirements.traffic}</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">⚡</span>
-                  <span><strong>Latency:</strong> {challenge.requirements.latency}</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">🎯</span>
-                  <span><strong>Availability:</strong> {challenge.requirements.availability}</span>
-                </li>
-                <li className="flex items-start">
-                  <span className="text-blue-500 mr-2">💰</span>
-                  <span><strong>Budget:</strong> {challenge.requirements.budget}</span>
-                </li>
-              </ul>
+              {challenge.requirements.nfrs && challenge.requirements.nfrs.length > 0 ? (
+                // Show detailed user-facing NFRs if available
+                <ul className="space-y-1.5 ml-4">
+                  {challenge.requirements.nfrs.map((nfr, idx) => (
+                    <li key={idx} className="flex items-start">
+                      <span className="text-blue-500 mr-2">✓</span>
+                      <span>{nfr}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                // Fallback to old format if no detailed NFRs
+                <ul className="space-y-1.5 ml-4">
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-2">📊</span>
+                    <span><strong>Traffic:</strong> {challenge.requirements.traffic}</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-2">⚡</span>
+                    <span><strong>Latency:</strong> {challenge.requirements.latency}</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-2">🎯</span>
+                    <span><strong>Availability:</strong> {challenge.requirements.availability}</span>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="text-blue-500 mr-2">💰</span>
+                    <span><strong>Budget:</strong> {challenge.requirements.budget}</span>
+                  </li>
+                </ul>
+              )}
             </div>
           </div>
         </div>

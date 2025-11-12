@@ -101,6 +101,7 @@ export interface Challenge {
     latency: string;
     availability: string;
     budget: string;
+    nfrs?: string[]; // User-facing NFRs (e.g., "Latency: P99 < 200ms", "Dataset Size: 10B URLs")
   };
   availableComponents: string[];
   testCases: TestCase[];
