@@ -10,11 +10,13 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   NodeTypes,
+  EdgeTypes,
   MarkerType,
   ReactFlowInstance,
 } from 'reactflow';
 import { SystemGraph } from '../../types/graph';
 import CustomNode from './CustomNode';
+import CustomEdge from './CustomEdge';
 
 interface DesignCanvasProps {
   systemGraph: SystemGraph;
@@ -30,14 +32,16 @@ const nodeTypes: NodeTypes = {
   custom: CustomNode,
 };
 
-// Default edge style
+// Register custom edge types
+const edgeTypes: EdgeTypes = {
+  custom: CustomEdge,
+};
+
+// Default edge style (for all connections - simple arrow from source to target)
 const defaultEdgeOptions = {
-  animated: true,
+  type: 'custom',
+  animated: false, // Disable animation to avoid confusion with direction
   style: { stroke: '#3b82f6', strokeWidth: 2 },
-  markerEnd: {
-    type: MarkerType.ArrowClosed,
-    color: '#3b82f6',
-  },
 };
 
 export function DesignCanvas({
@@ -112,12 +116,24 @@ export function DesignCanvas({
     });
   }, [systemGraph.components, setNodes]);
 
+  // Sync edges with systemGraph connections
+  useEffect(() => {
+    const newEdges: Edge[] = systemGraph.connections.map((conn) => ({
+      id: `${conn.from}-${conn.to}`,
+      source: conn.from,
+      target: conn.to,
+      ...defaultEdgeOptions,
+      data: { connectionType: conn.type },
+    }));
+    setEdges(newEdges);
+  }, [systemGraph.connections, setEdges]);
+
   // Handle new connections
   const onConnect = useCallback(
     (connection: Connection) => {
-      setEdges((eds) => addEdge({ ...connection, ...defaultEdgeOptions }, eds));
-
-      // Update system graph
+      // Arrow direction follows the drag direction exactly
+      // User drags FROM source TO target → arrow points source → target
+      // Traffic flows in the direction of the arrow
       const newConnection = {
         from: connection.source!,
         to: connection.target!,
@@ -129,7 +145,7 @@ export function DesignCanvas({
         connections: [...systemGraph.connections, newConnection],
       });
     },
-    [systemGraph, onSystemGraphChange, setEdges]
+    [systemGraph, onSystemGraphChange]
   );
 
   // Handle node selection
@@ -235,6 +251,7 @@ export function DesignCanvas({
           onPaneClick={onPaneClick}
           onInit={onInit}
           nodeTypes={nodeTypes}
+          edgeTypes={edgeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
           connectionLineStyle={{ stroke: '#3b82f6', strokeWidth: 2 }}
           fitView

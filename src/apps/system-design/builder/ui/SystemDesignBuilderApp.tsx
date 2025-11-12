@@ -14,6 +14,8 @@ import { InspectorModal } from './components/InspectorModal';
 import { ReferenceSolutionPanel } from './components/ReferenceSolutionPanel';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
+import { allProblemDefinitions } from '../challenges/definitions';
+import { ProblemDefinition } from '../types/problemDefinition';
 import { DetailedAnalysisPanel } from './components/DetailedAnalysisPanel';
 import { DesignAnalysisResult } from '../validation/DesignAnalyzer';
 
@@ -65,19 +67,37 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
 
-  // Map challenge IDs to URL paths
-  const challengeIdToPath: Record<string, string> = {
-    'tiny_url': 'tiny-url',
-    'food_blog': 'food-blog',
-    'todo_app': 'todo-app',
+  // Convert challenge ID to URL-friendly path (replace underscores with hyphens)
+  const challengeIdToPath = (id: string): string => {
+    return id.replace(/_/g, '-');
+  };
+
+  // Get problem definition for a challenge ID
+  const getProblemDefinition = (challengeId: string): ProblemDefinition | null => {
+    // Check manually created challenges first
+    if (challengeId === 'tiny_url') {
+      return tinyUrlProblemDefinition;
+    }
+    // Check generated challenges
+    return allProblemDefinitions.find(def => def.id === challengeId) || null;
   };
 
   // Handle challenge selection - update URL and state
   const handleChallengeSelect = (challenge: Challenge) => {
-    const path = challengeIdToPath[challenge.id] || challenge.id;
+    const path = challengeIdToPath(challenge.id);
     navigate(`/system-design/${path}`);
     setSelectedChallenge(challenge);
   };
+
+  // Sync selectedChallenge with challengeId prop when URL changes
+  useEffect(() => {
+    if (challengeId) {
+      const challenge = challenges.find(c => c.id === challengeId);
+      if (challenge && challenge.id !== selectedChallenge?.id) {
+        setSelectedChallenge(challenge);
+      }
+    }
+  }, [challengeId]);
 
   // Reset graph when challenge changes
   useEffect(() => {
@@ -106,6 +126,13 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const handleSubmit = async () => {
     if (!selectedChallenge) return;
 
+    // Get the problem definition for this challenge
+    const problemDefinition = getProblemDefinition(selectedChallenge.id);
+    if (!problemDefinition) {
+      alert(`Problem definition not found for challenge: ${selectedChallenge.id}`);
+      return;
+    }
+
     // Clear previous results and start fresh
     setTestResults(new Map());
     setCurrentTestIndex(0);
@@ -123,8 +150,8 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
         // Simulate async operation for visual feedback
         await new Promise((resolve) => setTimeout(resolve, 800));
 
-        // Run the test
-        const result = validator.validate(systemGraph, tinyUrlProblemDefinition, i);
+        // Run the test with the correct problem definition
+        const result = validator.validate(systemGraph, problemDefinition, i);
 
         // Store result
         newResults.set(i, result);
