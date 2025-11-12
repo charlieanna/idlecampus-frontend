@@ -4,9 +4,412 @@ import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
- * Storage Problems (Auto-generated)
- * Generated from extracted-problems/system-design/storage.md
+ * Storage Problems - Complete Set
+ * Auto-generated from ALL_PROBLEMS.md
+ * Total: 35 problems
  */
+
+/**
+ * Basic RDBMS Design
+ * From extracted-problems/system-design/storage.md
+ */
+export const basicDatabaseDesignProblemDefinition: ProblemDefinition = {
+  id: 'basic-database-design',
+  title: 'Basic RDBMS Design',
+  description: `Design a relational database for a blog platform. Learn about normalization, primary/foreign keys, indexes, and basic query optimization.
+- Store users, posts, and comments
+- Support tags and categories
+- Handle user relationships (followers)
+- Enable full-text search on posts`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Blog Users (redirect_client) for design tables for a blog system',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Load Balancer (lb) for design tables for a blog system',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Query Cache (cache) for design tables for a blog system',
+      },
+      {
+        type: 'storage',
+        reason: 'Need MySQL Primary (db_primary) for design tables for a blog system',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Blog Users routes to Load Balancer',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Load Balancer routes to Blog API',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Blog API routes to Query Cache',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Blog API routes to MySQL Primary',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Blog API routes to Read Replicas',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('basic-database-design', problemConfigs['basic-database-design']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * NoSQL Document Store
+ * From extracted-problems/system-design/storage.md
+ */
+export const nosqlBasicsProblemDefinition: ProblemDefinition = {
+  id: 'nosql-basics',
+  title: 'NoSQL Document Store',
+  description: `Design a user profile system using MongoDB. Learn about document modeling, embedded vs referenced data, and when to denormalize.
+- Store flexible user profiles
+- Support nested preferences
+- Handle varying field types
+- Enable complex queries`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Profile Service (redirect_client) for flexible schema for user profiles',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Load Balancer (lb) for flexible schema for user profiles',
+      },
+      {
+        type: 'storage',
+        reason: 'Need MongoDB Shard 1 (db_primary) for flexible schema for user profiles',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Profile Service routes to Load Balancer',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Load Balancer routes to Profile API',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Profile API routes to MongoDB Shard 1',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Profile API routes to MongoDB Shard 2',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Profile API routes to Config Servers',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('nosql-basics', problemConfigs['nosql-basics']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Redis-like Key-Value Store
+ * From extracted-problems/system-design/storage.md
+ */
+export const keyValueStoreProblemDefinition: ProblemDefinition = {
+  id: 'key-value-store',
+  title: 'Redis-like Key-Value Store',
+  description: `Design a distributed key-value store like Redis. Learn about data structures, persistence, replication, and cache eviction policies.
+- Support GET/SET operations
+- Implement LRU eviction
+- Handle string, list, set, hash types
+- Provide pub/sub messaging`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need App Servers (redirect_client) for build a distributed cache',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Proxy Layer (lb) for build a distributed cache',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Redis Master 1 (cache) for build a distributed cache',
+      },
+      {
+        type: 'storage',
+        reason: 'Need RDB Snapshots (db_primary) for build a distributed cache',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'App Servers routes to Proxy Layer',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Proxy Layer routes to Redis Master 1',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Proxy Layer routes to Redis Master 2',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Proxy Layer routes to Redis Master 3',
+      },
+      {
+        from: 'cache',
+        to: 'storage',
+        reason: 'Redis Master 1 routes to RDB Snapshots',
+      },
+      {
+        from: 'cache',
+        to: 'storage',
+        reason: 'Redis Master 2 routes to RDB Snapshots',
+      },
+      {
+        from: 'cache',
+        to: 'storage',
+        reason: 'Redis Master 3 routes to RDB Snapshots',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('key-value-store', problemConfigs['key-value-store']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Product Catalog Store
+ * From extracted-problems/system-design/storage.md
+ */
+export const productCatalogProblemDefinition: ProblemDefinition = {
+  id: 'product-catalog',
+  title: 'Product Catalog Store',
+  description: `Design a product catalog for e-commerce. Handle hierarchical categories, variants, inventory, and search.
+- Store products with variants (size, color)
+- Support category hierarchies
+- Track inventory per variant
+- Enable faceted search`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Shoppers (redirect_client) for e-commerce product database',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need LB (lb) for e-commerce product database',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Product Cache (cache) for e-commerce product database',
+      },
+      {
+        type: 'storage',
+        reason: 'Need PostgreSQL (db_primary) for e-commerce product database',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Shoppers routes to LB',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'LB routes to Catalog API',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Catalog API routes to Product Cache',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Catalog API routes to PostgreSQL',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Catalog API routes to Elasticsearch',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('product-catalog', problemConfigs['product-catalog']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Metrics Time-Series DB
+ * From extracted-problems/system-design/storage.md
+ */
+export const timeSeriesMetricsProblemDefinition: ProblemDefinition = {
+  id: 'time-series-metrics',
+  title: 'Metrics Time-Series DB',
+  description: `Design a metrics database for monitoring. Learn about time-series optimization, downsampling, and retention policies.
+- Ingest metrics at high rate
+- Store with microsecond precision
+- Support aggregation queries
+- Implement retention policies`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Services (redirect_client) for store application metrics',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need LB (lb) for store application metrics',
+      },
+      {
+        type: 'storage',
+        reason: 'Need InfluxDB (db_primary) for store application metrics',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Services routes to LB',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'LB routes to Collector',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Collector routes to InfluxDB',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Compaction routes to InfluxDB',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('time-series-metrics', problemConfigs['time-series-metrics']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
 
 /**
  * Session Storage System

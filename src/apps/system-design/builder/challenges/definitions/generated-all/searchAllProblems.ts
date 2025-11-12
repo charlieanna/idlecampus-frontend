@@ -4,9 +4,293 @@ import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
- * Search Problems (Auto-generated)
- * Generated from extracted-problems/system-design/search.md
+ * Search Problems - Complete Set
+ * Auto-generated from ALL_PROBLEMS.md
+ * Total: 35 problems
  */
+
+/**
+ * Basic Full-Text Search
+ * From extracted-problems/system-design/search.md
+ */
+export const basicTextSearchProblemDefinition: ProblemDefinition = {
+  id: 'basic-text-search',
+  title: 'Basic Full-Text Search',
+  description: `Learn search fundamentals by building a basic full-text search system. Understand inverted indexes, relevance scoring, and basic query operators.
+- Index text documents
+- Search by keywords
+- Support AND/OR operators
+- Rank results by relevance`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Search Users (redirect_client) for search documents with keywords',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Load Balancer (lb) for search documents with keywords',
+      },
+      {
+        type: 'storage',
+        reason: 'Need Elasticsearch (search) for search documents with keywords',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Search Users routes to Load Balancer',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Load Balancer routes to Search API',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Search API routes to Elasticsearch',
+      },
+      {
+        from: 'storage',
+        to: 'storage',
+        reason: 'Elasticsearch routes to Document DB',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('basic-text-search', problemConfigs['basic-text-search']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Search Autocomplete
+ * From extracted-problems/system-design/search.md
+ */
+export const autocompleteSearchProblemDefinition: ProblemDefinition = {
+  id: 'autocomplete-search',
+  title: 'Search Autocomplete',
+  description: `Implement search autocomplete using prefix trees (tries). Learn about fuzzy matching, popularity weighting, and personalization.
+- Suggest completions for partial queries
+- Rank by popularity and recency
+- Support fuzzy matching for typos
+- Personalize based on user history`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Search Box (redirect_client) for suggest completions as users type',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Load Balancer (lb) for suggest completions as users type',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Trie Cache (cache) for suggest completions as users type',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Search Box routes to Load Balancer',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Load Balancer routes to Suggest API',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Suggest API routes to Trie Cache',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Suggest API routes to Query Index',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('autocomplete-search', problemConfigs['autocomplete-search']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Faceted Search with Filters
+ * From extracted-problems/system-design/search.md
+ */
+export const facetedSearchProblemDefinition: ProblemDefinition = {
+  id: 'faceted-search',
+  title: 'Faceted Search with Filters',
+  description: `Design a faceted search system that allows users to filter by multiple attributes (price, brand, category, rating). Count documents per facet dynamically.
+- Filter by multiple attributes
+- Show facet counts
+- Support range filters
+- Handle empty results gracefully`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Users (redirect_client) for multi-dimensional filtering ui',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need LB (lb) for multi-dimensional filtering ui',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Facet Cache (cache) for multi-dimensional filtering ui',
+      },
+      {
+        type: 'storage',
+        reason: 'Need Elasticsearch (search) for multi-dimensional filtering ui',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Users routes to LB',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'LB routes to API',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'API routes to Facet Cache',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'API routes to Elasticsearch',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('faceted-search', problemConfigs['faceted-search']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Location-Based Search
+ * From extracted-problems/system-design/search.md
+ */
+export const geoSearchProblemDefinition: ProblemDefinition = {
+  id: 'geo-search',
+  title: 'Location-Based Search',
+  description: `Design a location-based search system for finding nearby restaurants, stores, or services. Support radius search, bounding box, and sorting by distance.
+- Search within radius
+- Bounding box queries
+- Sort by distance
+- Filter by category`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Mobile Users (redirect_client) for find nearby places with geo-queries',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need LB (lb) for find nearby places with geo-queries',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Mobile Users routes to LB',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'LB routes to API',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'API routes to ES Geo',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('geo-search', problemConfigs['geo-search']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
 
 /**
  * Typo-Tolerant Fuzzy Search

@@ -4,9 +4,562 @@ import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
- * Streaming Problems (Auto-generated)
- * Generated from extracted-problems/system-design/streaming.md
+ * Streaming Problems - Complete Set
+ * Auto-generated from ALL_PROBLEMS.md
+ * Total: 37 problems
  */
+
+/**
+ * WhatsApp/Slack Real‑Time Chat
+ * From extracted-problems/system-design/streaming.md
+ */
+export const chatProblemDefinition: ProblemDefinition = {
+  id: 'chat',
+  title: 'WhatsApp/Slack Real‑Time Chat',
+  description: `Build a chat service that supports many rooms with predictable p95 delivery latency. Use a presence cache for online/offline state, a durable store for message history, and (optionally) a stream for fan‑out. Consider ordering per conversation key, backpressure during spikes, and idempotency on retries.
+- Send text messages between users in real-time
+- Create group chats with up to 100 participants
+- Show online/offline/typing presence indicators
+- Persist message history (last 30 days minimum)`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Client (redirect_client) for low‑latency messaging with presence',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Load Balancer (lb) for low‑latency messaging with presence',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Presence Cache (cache) for low‑latency messaging with presence',
+      },
+      {
+        type: 'storage',
+        reason: 'Need Message Store (db_primary) for low‑latency messaging with presence',
+      },
+      {
+        type: 'message_queue',
+        reason: 'Need Fanout Stream (stream) for low‑latency messaging with presence',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Client routes to Load Balancer',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Load Balancer routes to Chat Service',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Chat Service routes to Presence Cache',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Chat Service routes to Message Store',
+      },
+      {
+        from: 'compute',
+        to: 'message_queue',
+        reason: 'Chat Service routes to Fanout Stream',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('chat', problemConfigs['chat']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Segment/Kafka Event Ingestion
+ * From extracted-problems/system-design/streaming.md
+ */
+export const ingestionProblemDefinition: ProblemDefinition = {
+  id: 'ingestion',
+  title: 'Segment/Kafka Event Ingestion',
+  description: `Create a resilient ingestion pipeline. Producers write to a partitioned stream and consumers process events without exceeding lag SLAs. Size partitions and consumer groups appropriately, plan for bursts and drain time, and decide where to land data (DB or object storage). Address ordering by key and at‑least‑once vs exactly‑once delivery.
+- Expose a public ingestion endpoint that accepts JSON event payloads from web, mobile, and server SDKs.
+- Partition incoming events by workspace/customer key to preserve ordering guarantees.
+- Buffer events in a Kafka/Kinesis topic with configurable retention and replay capabilities.
+- Deliver events from the stream to downstream consumers/ETL workers for real-time feature generation.`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need SDK Clients (redirect_client) for kafka/kinesis partitions, consumer groups, lag/drain',
+      },
+      {
+        type: 'message_queue',
+        reason: 'Need Stream (stream) for kafka/kinesis partitions, consumer groups, lag/drain',
+      },
+      {
+        type: 'storage',
+        reason: 'Need Landing DB (db_primary) for kafka/kinesis partitions, consumer groups, lag/drain',
+      },
+      {
+        type: 'object_storage',
+        reason: 'Need Archive (object_store) for kafka/kinesis partitions, consumer groups, lag/drain',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need LB for high availability and traffic distribution',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'SDK Clients routes to Producers',
+      },
+      {
+        from: 'compute',
+        to: 'message_queue',
+        reason: 'Producers routes to Stream',
+      },
+      {
+        from: 'message_queue',
+        to: 'compute',
+        reason: 'Stream routes to Consumers',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Consumers routes to Landing DB',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Consumers routes to Archive',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('ingestion', problemConfigs['ingestion']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Basic Message Queue
+ * From extracted-problems/system-design/streaming.md
+ */
+export const basicMessageQueueProblemDefinition: ProblemDefinition = {
+  id: 'basic-message-queue',
+  title: 'Basic Message Queue',
+  description: `Learn message queue fundamentals with a simple publisher-subscriber system. Understand message acknowledgment, durability, and basic queue patterns for decoupling services.
+- Publish messages to queues
+- Subscribe multiple consumers
+- Handle message acknowledgments
+- Implement retry on failure`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Producers (redirect_client) for learn pub/sub with rabbitmq',
+      },
+      {
+        type: 'message_queue',
+        reason: 'Need RabbitMQ (queue) for learn pub/sub with rabbitmq',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need LB for high availability and traffic distribution',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Producers routes to Publisher API',
+      },
+      {
+        from: 'compute',
+        to: 'message_queue',
+        reason: 'Publisher API routes to RabbitMQ',
+      },
+      {
+        from: 'message_queue',
+        to: 'compute',
+        reason: 'RabbitMQ routes to Consumer A',
+      },
+      {
+        from: 'message_queue',
+        to: 'compute',
+        reason: 'RabbitMQ routes to Consumer B',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('basic-message-queue', problemConfigs['basic-message-queue']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Real-time Push Notifications
+ * From extracted-problems/system-design/streaming.md
+ */
+export const realtimeNotificationsProblemDefinition: ProblemDefinition = {
+  id: 'realtime-notifications',
+  title: 'Real-time Push Notifications',
+  description: `Build a real-time notification system using WebSockets. Learn about connection management, fan-out patterns, and handling millions of persistent connections.
+- Maintain WebSocket connections
+- Push notifications instantly
+- Handle connection drops/reconnects
+- Support topic subscriptions`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Connected Users (redirect_client) for websocket delivery for live updates',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Sticky LB (lb) for websocket delivery for live updates',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Redis Pub/Sub (stream) for websocket delivery for live updates',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Connected Users routes to Sticky LB',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Sticky LB routes to WebSocket Server',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'WebSocket Server routes to Redis Pub/Sub',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'WebSocket Server routes to Connection Registry',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('realtime-notifications', problemConfigs['realtime-notifications']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Basic Event Log Streaming
+ * From extracted-problems/system-design/streaming.md
+ */
+export const basicEventLogProblemDefinition: ProblemDefinition = {
+  id: 'basic-event-log',
+  title: 'Basic Event Log Streaming',
+  description: `Create a basic event log streaming system that collects application events from multiple services. Learn about log aggregation, structured logging, and basic analytics.
+- Collect events from multiple sources
+- Parse structured log formats
+- Store events for querying
+- Support real-time monitoring`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need App Services (redirect_client) for stream application events',
+      },
+      {
+        type: 'message_queue',
+        reason: 'Need Kafka Stream (stream) for stream application events',
+      },
+      {
+        type: 'storage',
+        reason: 'Need Elasticsearch (search) for stream application events',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need LB for high availability and traffic distribution',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'App Services routes to Log Collector',
+      },
+      {
+        from: 'compute',
+        to: 'message_queue',
+        reason: 'Log Collector routes to Kafka Stream',
+      },
+      {
+        from: 'message_queue',
+        to: 'compute',
+        reason: 'Kafka Stream routes to Log Processor',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Log Processor routes to Elasticsearch',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('basic-event-log', problemConfigs['basic-event-log']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Simple Pub/Sub Notification
+ * From extracted-problems/system-design/streaming.md
+ */
+export const simplePubsubProblemDefinition: ProblemDefinition = {
+  id: 'simple-pubsub',
+  title: 'Simple Pub/Sub Notification',
+  description: `Implement a topic-based pub/sub system using Redis or RabbitMQ. Learn about topic filtering, fanout patterns, and subscription management.
+- Publish messages to topics
+- Subscribe to multiple topics
+- Filter by topic patterns
+- Support wildcard subscriptions`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Publishers (redirect_client) for topic-based message routing',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Redis Pub/Sub (stream) for topic-based message routing',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need LB for high availability and traffic distribution',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Publishers routes to Pub API',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Pub API routes to Redis Pub/Sub',
+      },
+      {
+        from: 'cache',
+        to: 'compute',
+        reason: 'Redis Pub/Sub routes to Subscribers',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Pub API routes to Subscription Cache',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('simple-pubsub', problemConfigs['simple-pubsub']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Real-time Chat Messages
+ * From extracted-problems/system-design/streaming.md
+ */
+export const realtimeChatMessagesProblemDefinition: ProblemDefinition = {
+  id: 'realtime-chat-messages',
+  title: 'Real-time Chat Messages',
+  description: `Design a real-time chat messaging system with channels and direct messages. Learn about message ordering, online presence, and message persistence.
+- Send messages in real-time
+- Support channels and DMs
+- Show online presence
+- Persist message history`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Chat Users (redirect_client) for instant messaging system',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need WebSocket LB (lb) for instant messaging system',
+      },
+      {
+        type: 'message_queue',
+        reason: 'Need Message Bus (stream) for instant messaging system',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Presence Cache (cache) for instant messaging system',
+      },
+      {
+        type: 'storage',
+        reason: 'Need Message DB (db_primary) for instant messaging system',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Chat Users routes to WebSocket LB',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'WebSocket LB routes to Chat Server',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Chat Server routes to Message Bus',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Chat Server routes to Presence Cache',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Chat Server routes to Message DB',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Message Bus routes to Message DB',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('realtime-chat-messages', problemConfigs['realtime-chat-messages']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
 
 /**
  * Click Stream Analytics

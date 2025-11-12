@@ -4,9 +4,395 @@ import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
- * Multiregion Problems (Auto-generated)
- * Generated from extracted-problems/system-design/multiregion.md
+ * Multiregion Problems - Complete Set
+ * Auto-generated from ALL_PROBLEMS.md
+ * Total: 35 problems
  */
+
+/**
+ * Basic Multi-Region Setup
+ * From extracted-problems/system-design/multiregion.md
+ */
+export const basicMultiRegionProblemDefinition: ProblemDefinition = {
+  id: 'basic-multi-region',
+  title: 'Basic Multi-Region Setup',
+  description: `Deploy a simple web application across two regions with basic failover. Learn about DNS routing, health checks, and data replication fundamentals.
+- Deploy in US and EU regions
+- Route users to nearest region
+- Replicate data between regions
+- Handle region failures`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need US Users (redirect_client) for deploy app in two regions',
+      },
+      {
+        type: 'cdn',
+        reason: 'Need GeoDNS (cdn) for deploy app in two regions',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need US LB (lb) for deploy app in two regions',
+      },
+      {
+        type: 'storage',
+        reason: 'Need US DB (db_primary) for deploy app in two regions',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'US Users routes to GeoDNS',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'EU Users routes to GeoDNS',
+      },
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'GeoDNS routes to US LB',
+      },
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'GeoDNS routes to EU LB',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'US LB routes to US App',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'EU LB routes to EU App',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'US App routes to US DB',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'EU App routes to EU DB',
+      },
+      {
+        from: 'storage',
+        to: 'storage',
+        reason: 'US DB routes to EU DB',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('basic-multi-region', problemConfigs['basic-multi-region']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Active-Active Multi-Region
+ * From extracted-problems/system-design/multiregion.md
+ */
+export const activeActiveRegionsProblemDefinition: ProblemDefinition = {
+  id: 'active-active-regions',
+  title: 'Active-Active Multi-Region',
+  description: `Build an active-active setup where both regions can handle writes. Learn about conflict resolution, vector clocks, and eventual consistency.
+- Accept writes in both regions
+- Resolve write conflicts
+- Maintain eventual consistency
+- Handle network partitions`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Region A Users (redirect_client) for both regions handle writes',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Region A LB (lb) for both regions handle writes',
+      },
+      {
+        type: 'storage',
+        reason: 'Need Region A DB (db_primary) for both regions handle writes',
+      },
+      {
+        type: 'message_queue',
+        reason: 'Need Replication Stream (stream) for both regions handle writes',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Region A Users routes to Region A LB',
+      },
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Region B Users routes to Region B LB',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Region A LB routes to Region A App',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Region B LB routes to Region B App',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Region A App routes to Region A DB',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Region B App routes to Region B DB',
+      },
+      {
+        from: 'storage',
+        to: 'message_queue',
+        reason: 'Region A DB routes to Replication Stream',
+      },
+      {
+        from: 'storage',
+        to: 'message_queue',
+        reason: 'Region B DB routes to Replication Stream',
+      },
+      {
+        from: 'message_queue',
+        to: 'compute',
+        reason: 'Replication Stream routes to Conflict Resolver',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Conflict Resolver routes to Region A DB',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Conflict Resolver routes to Region B DB',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('active-active-regions', problemConfigs['active-active-regions']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Global CDN with Regional Origins
+ * From extracted-problems/system-design/multiregion.md
+ */
+export const globalCdnProblemDefinition: ProblemDefinition = {
+  id: 'global-cdn',
+  title: 'Global CDN with Regional Origins',
+  description: `Design a global CDN architecture with regional origin servers, cache invalidation, and edge optimization.
+- Edge caching in 100+ locations
+- Regional origin failover
+- Cache invalidation
+- Dynamic content bypass`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Users (redirect_client) for serve static assets globally',
+      },
+      {
+        type: 'cdn',
+        reason: 'Need CDN (cdn) for serve static assets globally',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Origin LB (lb) for serve static assets globally',
+      },
+      {
+        type: 'object_storage',
+        reason: 'Need S3 (object_store) for serve static assets globally',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'cdn',
+        reason: 'Users routes to CDN',
+      },
+      {
+        from: 'cdn',
+        to: 'load_balancer',
+        reason: 'CDN routes to Origin LB',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Origin LB routes to US Origin',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Origin LB routes to EU Origin',
+      },
+      {
+        from: 'compute',
+        to: 'object_storage',
+        reason: 'US Origin routes to S3',
+      },
+      {
+        from: 'compute',
+        to: 'object_storage',
+        reason: 'EU Origin routes to S3',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('global-cdn', problemConfigs['global-cdn']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Anycast Global Load Balancing
+ * From extracted-problems/system-design/multiregion.md
+ */
+export const globalLoadBalancingProblemDefinition: ProblemDefinition = {
+  id: 'global-load-balancing',
+  title: 'Anycast Global Load Balancing',
+  description: `Design an anycast-based global load balancing system that routes users to the geographically nearest healthy region.
+- Anycast IP routing
+- Health-based routing
+- Latency-based routing
+- Traffic distribution`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Users (redirect_client) for route users to nearest healthy region',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Anycast LB (lb) for route users to nearest healthy region',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Global Cache (cache) for route users to nearest healthy region',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Users routes to Anycast LB',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Anycast LB routes to US-East',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Anycast LB routes to EU-West',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Anycast LB routes to AP-South',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'US-East routes to Global Cache',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'EU-West routes to Global Cache',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'AP-South routes to Global Cache',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('global-load-balancing', problemConfigs['global-load-balancing']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
 
 /**
  * Global Session Store with Sticky Sessions

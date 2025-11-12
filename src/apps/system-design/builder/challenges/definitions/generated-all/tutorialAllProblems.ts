@@ -4,8 +4,9 @@ import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
- * Tutorial Problems (Auto-generated)
- * Generated from extracted-problems/system-design/tutorial.md
+ * Tutorial Problems - Complete Set
+ * Auto-generated from ALL_PROBLEMS.md
+ * Total: 4 problems
  */
 
 /**

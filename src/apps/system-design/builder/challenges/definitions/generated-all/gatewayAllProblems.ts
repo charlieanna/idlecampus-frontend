@@ -4,9 +4,380 @@ import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
- * Gateway Problems (Auto-generated)
- * Generated from extracted-problems/system-design/gateway.md
+ * Gateway Problems - Complete Set
+ * Auto-generated from ALL_PROBLEMS.md
+ * Total: 36 problems
  */
+
+/**
+ * GitHub/Stripe API Rate Limiter
+ * From extracted-problems/system-design/gateway.md
+ */
+export const rateLimiterProblemDefinition: ProblemDefinition = {
+  id: 'rate-limiter',
+  title: 'GitHub/Stripe API Rate Limiter',
+  description: `Design an API gateway that enforces both per‑user and global request limits while keeping latency low. Your design should handle short bursts without overloading backends by using counters in a fast data store and smoothing traffic with queues or buckets. Address hot‑key risk, multi‑region counter correctness, and provide a clear path for retries and error budgets.`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Client (redirect_client) for per-user and global caps with burst handling',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Load Balancer (lb) for per-user and global caps with burst handling',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Redis (cache) for per-user and global caps with burst handling',
+      },
+      {
+        type: 'storage',
+        reason: 'Need Counter DB (db_primary) for per-user and global caps with burst handling',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Client routes to Load Balancer',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Load Balancer routes to Gateway',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Gateway routes to Redis',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Gateway routes to Counter DB',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('rate-limiter', problemConfigs['rate-limiter']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Basic API Gateway
+ * From extracted-problems/system-design/gateway.md
+ */
+export const basicApiGatewayProblemDefinition: ProblemDefinition = {
+  id: 'basic-api-gateway',
+  title: 'Basic API Gateway',
+  description: `Learn API gateway fundamentals by building a basic router that directs requests to appropriate microservices. Understand path-!based routing, header manipulation, and basic request/response transformation.
+- Route requests based on URL path
+- Add authentication headers
+- Transform request/response formats
+- Handle service discovery`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need API Clients (redirect_client) for route requests to microservices',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Load Balancer (lb) for route requests to microservices',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'API Clients routes to Load Balancer',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Load Balancer routes to API Gateway',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'API Gateway routes to User Service',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'API Gateway routes to Product Service',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'API Gateway routes to Order Service',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('basic-api-gateway', problemConfigs['basic-api-gateway']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Simple Rate Limiter
+ * From extracted-problems/system-design/gateway.md
+ */
+export const simpleRateLimiterProblemDefinition: ProblemDefinition = {
+  id: 'simple-rate-limiter',
+  title: 'Simple Rate Limiter',
+  description: `Build a rate limiter using the token bucket algorithm. Learn about rate limiting strategies, handling burst traffic, and returning proper HTTP status codes (429 Too Many Requests).
+- Limit requests per user per minute
+- Support burst allowance
+- Return 429 with retry-after header
+- Track usage per API key`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need API Clients (redirect_client) for protect apis with request limits',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Load Balancer (lb) for protect apis with request limits',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Redis Counters (cache) for protect apis with request limits',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'API Clients routes to Load Balancer',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Load Balancer routes to Rate Limiter',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Rate Limiter routes to Redis Counters',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Rate Limiter routes to Backend API',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('simple-rate-limiter', problemConfigs['simple-rate-limiter']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Authentication Gateway
+ * From extracted-problems/system-design/gateway.md
+ */
+export const authenticationGatewayProblemDefinition: ProblemDefinition = {
+  id: 'authentication-gateway',
+  title: 'Authentication Gateway',
+  description: `Implement JWT token validation at the API gateway. Learn about token verification, public key caching, token refresh flows, and how to minimize auth overhead on backend services.
+- Validate JWT tokens on every request
+- Cache public keys for verification
+- Extract user context from tokens
+- Support token refresh flow`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Mobile Apps (redirect_client) for validate jwt tokens at edge',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Load Balancer (lb) for validate jwt tokens at edge',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Key Cache (cache) for validate jwt tokens at edge',
+      },
+      {
+        type: 'storage',
+        reason: 'Need User DB (db_primary) for validate jwt tokens at edge',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Mobile Apps routes to Load Balancer',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Load Balancer routes to Auth Gateway',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Auth Gateway routes to Key Cache',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Auth Gateway routes to User DB',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Auth Gateway routes to Backend Services',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('authentication-gateway', problemConfigs['authentication-gateway']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Load Balancing Gateway
+ * From extracted-problems/system-design/gateway.md
+ */
+export const loadBalancingGatewayProblemDefinition: ProblemDefinition = {
+  id: 'load-balancing-gateway',
+  title: 'Load Balancing Gateway',
+  description: `Build a gateway that implements various load balancing algorithms. Learn about round-robin, weighted distribution, least connections, and how to handle unhealthy instances.
+- Implement round-robin load balancing
+- Support weighted distribution
+- Health check backend services
+- Remove unhealthy instances`,
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need Clients (redirect_client) for distribute load across services',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need Load Balancer (lb) for distribute load across services',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Session Cache (cache) for distribute load across services',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'Clients routes to Load Balancer',
+      },
+      {
+        from: 'load_balancer',
+        to: 'load_balancer',
+        reason: 'Load Balancer routes to LB Gateway',
+      },
+      {
+        from: 'load_balancer',
+        to: 'cache',
+        reason: 'LB Gateway routes to Session Cache',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'LB Gateway routes to Backend Pool',
+      }
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('load-balancing-gateway', problemConfigs['load-balancing-gateway']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
 
 /**
  * Request Transformation Gateway
