@@ -129,17 +129,32 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const handleSubmit = async () => {
     if (!selectedChallenge) return;
 
-    // Validate that all non-client components have justifications
-    const componentsWithoutJustification = systemGraph.components.filter(
-      comp => comp.type !== 'client' && !comp.config?.justification?.trim()
-    );
+    // Validate that all non-client components have complete justifications
+    const componentsWithIncompleteJustification = systemGraph.components.filter(comp => {
+      if (comp.type === 'client') return false;
 
-    if (componentsWithoutJustification.length > 0) {
-      const componentNames = componentsWithoutJustification
+      const justificationStr = comp.config?.justification?.trim();
+      if (!justificationStr) return true;
+
+      try {
+        const justification = JSON.parse(justificationStr);
+        // Check all fields are present and have minimum length
+        return !justification.why?.trim() || justification.why.trim().length < 20 ||
+               !justification.benefits?.trim() || justification.benefits.trim().length < 20 ||
+               !justification.alternatives?.trim() || justification.alternatives.trim().length < 20 ||
+               !justification.tradeoffs?.trim() || justification.tradeoffs.trim().length < 20;
+      } catch {
+        // Legacy format or invalid JSON
+        return true;
+      }
+    });
+
+    if (componentsWithIncompleteJustification.length > 0) {
+      const componentNames = componentsWithIncompleteJustification
         .map(comp => comp.config?.displayName || comp.type)
         .join(', ');
       alert(
-        `⚠️ Missing Justifications\n\nPlease provide justifications for the following components before submitting:\n\n${componentNames}\n\nClick on each component to add a justification explaining why you added it.`
+        `⚠️ Incomplete Justifications\n\nPlease complete all justification fields for the following components before submitting:\n\n${componentNames}\n\nClick on each component to provide:\n• Why you chose it\n• Key benefits\n• Alternatives considered\n• Trade-offs\n\nEach field requires at least 20 characters.`
       );
       return;
     }
