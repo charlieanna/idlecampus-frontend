@@ -131,12 +131,6 @@ export function DesignCanvas({
   // Handle new connections
   const onConnect = useCallback(
     (connection: Connection) => {
-      console.log('[DesignCanvas] onConnect', {
-        source: connection.source,
-        target: connection.target,
-        sourceHandle: connection.sourceHandle,
-        targetHandle: connection.targetHandle,
-      });
       // Arrow direction follows the drag direction exactly
       // User drags FROM source TO target → arrow points source → target
       // Traffic flows in the direction of the arrow
@@ -251,11 +245,11 @@ export function DesignCanvas({
         <div className="font-semibold text-slate-700 mb-1">Canvas Tips</div>
         <div className="flex items-center gap-1">
           <span className="inline-block h-2 w-2 rounded-full border border-white bg-green-500 shadow-sm" />
-          <span>Start connections here — source/outgoing handle</span>
+          <span>Start connections here — source handle</span>
         </div>
         <div className="mt-1 flex items-center gap-1">
           <span className="inline-block h-2 w-2 rounded-full border border-white bg-blue-500 shadow-sm" />
-          <span>Finish connections here — target/incoming handle</span>
+          <span>Finish connections here — target handle</span>
         </div>
         <div className="mt-2 text-[10px] text-slate-500">
           Drag from a green dot to a blue dot. The arrow shows the flow direction (source → target).

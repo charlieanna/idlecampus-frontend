@@ -659,44 +659,21 @@ def expand(code: str, store: dict) -> str:
           if (activeTab !== component.id) return null;
 
           return (
-            <div key={component.id} className="flex-1 flex flex-col bg-white">
-              {/* Database Configuration Header */}
-              <div className="border-b border-gray-200 px-6 py-4 bg-gray-50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-xl font-bold text-gray-900">
-                      {getComponentTabLabel(component)}
-                    </h2>
-                    <p className="text-sm text-gray-500 mt-1">
-                      Configure data model and infrastructure
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteComponent(component.id)}
-                    className="px-3 py-2 text-sm text-red-600 hover:bg-red-50 border border-red-300 rounded transition-colors"
-                  >
-                    🗑️ Delete Component
-                  </button>
-                </div>
-              </div>
-
-              {/* Database Configuration Content using EnhancedInspector */}
-              <div className="flex-1 overflow-y-auto">
-                <EnhancedInspector
-                  node={{
-                    id: component.id,
-                    type: component.type,
-                    position: { x: 0, y: 0 },
-                    data: {
-                      label: getComponentTabLabel(component),
-                      componentType: component.type,
-                    },
-                  }}
-                  systemGraph={systemGraph}
-                  onUpdateConfig={handleUpdateConfig}
-                  isModal={false}
-                />
-              </div>
+            <div key={component.id} className="flex-1 flex flex-col bg-white overflow-hidden">
+              <EnhancedInspector
+                node={{
+                  id: component.id,
+                  type: component.type,
+                  position: { x: 0, y: 0 },
+                  data: {
+                    label: getComponentTabLabel(component),
+                    componentType: component.type,
+                  },
+                }}
+                systemGraph={systemGraph}
+                onUpdateConfig={handleUpdateConfig}
+                isModal={false}
+              />
             </div>
           );
         })}

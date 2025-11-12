@@ -123,15 +123,6 @@ export function EnhancedInspector({
             </div>
           </div>
 
-          {/* Back button - only when not in modal */}
-          {onBack && (
-            <button
-              onClick={onBack}
-              className="mt-4 text-sm text-gray-600 hover:text-gray-900 flex items-center gap-1"
-            >
-              ← Back to Palette
-            </button>
-          )}
         </div>
       )}
 
@@ -712,7 +703,7 @@ function PostgreSQLConfig({ config, onChange, onApplyPreset }: ConfigProps) {
         <input
           type="range"
           min="20"
-          max="1000"
+          max="2000"
           step="10"
           value={storageSizeGB}
           onChange={(e) => onChange('storageSizeGB', parseInt(e.target.value))}
@@ -720,7 +711,7 @@ function PostgreSQLConfig({ config, onChange, onApplyPreset }: ConfigProps) {
         />
         <div className="flex justify-between text-xs text-gray-500 mt-1">
           <span>20 GB</span>
-          <span>1000 GB</span>
+          <span>2000 GB (2 TB)</span>
         </div>
       </div>
 
