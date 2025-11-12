@@ -153,6 +153,12 @@ export default function SystemDesignBuilderApp() {
   };
 
   const handleLoadSolution = (solution: Solution) => {
+    // Safety check
+    if (!solution || !solution.components || !solution.connections) {
+      console.error('Invalid solution structure:', solution);
+      return;
+    }
+
     // Convert solution to SystemGraph
     const components = solution.components.map((comp, index) => ({
       id: `${comp.type}_${Date.now()}_${index}`,
