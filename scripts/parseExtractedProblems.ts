@@ -324,6 +324,35 @@ function inferMustConnect(problem: ParsedProblem): Array<{ from: string; to: str
 }
 
 /**
+ * Get validator entries for a problem based on its ID
+ * Returns the appropriate feature-specific validators as formatted string
+ */
+function getFeatureValidatorEntries(problemId: string): string {
+  // Map of problem IDs to their feature validator names
+  const validatorMap: Record<string, Array<{ name: string, funcName: string }>> = {
+    'tinyurl': [
+      { name: 'FR-1: URL Shortening', funcName: 'urlShorteningValidator' },
+      { name: 'FR-2: URL Redirect', funcName: 'urlRedirectValidator' },
+      { name: 'FR-4: Analytics Tracking', funcName: 'analyticsTrackingValidator' },
+    ],
+    'instagram': [
+      { name: 'FR-1: Photo Upload', funcName: 'photoUploadValidator' },
+      { name: 'FR-2: Feed View', funcName: 'feedViewValidator' },
+    ],
+  };
+
+  const validators = validatorMap[problemId];
+  if (!validators || validators.length === 0) {
+    // Fallback to basic functional validator
+    return `    { name: 'Basic Functionality', validate: basicFunctionalValidator },`;
+  }
+
+  return validators
+    .map(v => `    { name: '${v.name}', validate: ${v.funcName} }`)
+    .join(',\n') + ',';
+}
+
+/**
  * Generate TypeScript problem definition code
  */
 function generateProblemDefinition(problem: ParsedProblem): string {
@@ -416,6 +445,9 @@ ${mustConnectStr}
   ]),
 
   validators: [
+    // Feature-specific validators for each FR
+${getFeatureValidatorEntries(problem.id)}
+    // Generic validators
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
