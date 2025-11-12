@@ -110,4 +110,8 @@ export interface Challenge {
     message: string;
   }[];
   codeChallenges?: CodeChallenge[]; // Optional code implementation challenges
+  referenceLinks?: {
+    label: string;
+    url: string;
+  }[];
 }

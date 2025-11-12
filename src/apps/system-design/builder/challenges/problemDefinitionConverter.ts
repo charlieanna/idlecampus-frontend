@@ -68,6 +68,7 @@ export function convertProblemDefinitionToChallenge(
     availableComponents,
     testCases,
     learningObjectives,
+    referenceLinks: getReferenceLinks(def.id),
   };
 }
 
@@ -200,4 +201,198 @@ function formatAvailabilityRequirement(scenario: any): string {
   if (!availability) return 'Best effort availability';
   const percent = (availability * 100).toFixed(1);
   return `${percent}% uptime`;
+}
+
+function getReferenceLinks(challengeId: string): { label: string; url: string }[] {
+  const linksMap: { [key: string]: { label: string; url: string }[] } = {
+    instagram: [
+      { label: 'Instagram Engineering Blog', url: 'https://instagram-engineering.com/' },
+      { label: 'Official Site', url: 'https://www.instagram.com/' },
+      { label: 'System Design: Instagram', url: 'https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers/design-of-instagram' },
+    ],
+    twitter: [
+      { label: 'Twitter Engineering Blog', url: 'https://blog.twitter.com/engineering/en_us' },
+      { label: 'Official Site', url: 'https://twitter.com/' },
+      { label: 'System Design: Twitter', url: 'https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers/design-of-twitter' },
+    ],
+    reddit: [
+      { label: 'Reddit Blog', url: 'https://www.redditinc.com/blog' },
+      { label: 'Official Site', url: 'https://www.reddit.com/' },
+      { label: 'Reddit Architecture', url: 'https://github.com/reddit-archive/reddit/wiki/Architecture' },
+    ],
+    linkedin: [
+      { label: 'LinkedIn Engineering Blog', url: 'https://engineering.linkedin.com/' },
+      { label: 'Official Site', url: 'https://www.linkedin.com/' },
+    ],
+    facebook: [
+      { label: 'Meta Engineering Blog', url: 'https://engineering.fb.com/' },
+      { label: 'Official Site', url: 'https://www.facebook.com/' },
+      { label: 'Facebook TAO: The Graph Store', url: 'https://www.usenix.org/system/files/conference/atc13/atc13-bronson.pdf' },
+    ],
+    tiktok: [
+      { label: 'TikTok Engineering Blog', url: 'https://newsroom.tiktok.com/en-us/topics/engineering' },
+      { label: 'Official Site', url: 'https://www.tiktok.com/' },
+    ],
+    pinterest: [
+      { label: 'Pinterest Engineering Blog', url: 'https://medium.com/pinterest-engineering' },
+      { label: 'Official Site', url: 'https://www.pinterest.com/' },
+      { label: 'Pinterest Architecture', url: 'https://medium.com/pinterest-engineering/sharding-pinterest-how-we-scaled-our-mysql-fleet-3f341e96ca6f' },
+    ],
+    snapchat: [
+      { label: 'Snap Engineering Blog', url: 'https://eng.snap.com/blog' },
+      { label: 'Official Site', url: 'https://www.snapchat.com/' },
+    ],
+    discord: [
+      { label: 'Discord Engineering Blog', url: 'https://discord.com/category/engineering' },
+      { label: 'Official Site', url: 'https://discord.com/' },
+      { label: 'How Discord Stores Billions of Messages', url: 'https://discord.com/blog/how-discord-stores-billions-of-messages' },
+    ],
+    medium: [
+      { label: 'Medium Engineering Blog', url: 'https://medium.engineering/' },
+      { label: 'Official Site', url: 'https://medium.com/' },
+    ],
+    amazon: [
+      { label: 'AWS Architecture Blog', url: 'https://aws.amazon.com/blogs/architecture/' },
+      { label: 'Official Site', url: 'https://www.amazon.com/' },
+      { label: 'Amazon Dynamo Paper', url: 'https://www.allthingsdistributed.com/files/amazon-dynamo-sosp2007.pdf' },
+    ],
+    shopify: [
+      { label: 'Shopify Engineering Blog', url: 'https://shopify.engineering/' },
+      { label: 'Official Site', url: 'https://www.shopify.com/' },
+      { label: 'Shopify Architecture', url: 'https://shopify.engineering/e-commerce-at-scale-inside-shopifys-tech-stack' },
+    ],
+    stripe: [
+      { label: 'Stripe Engineering Blog', url: 'https://stripe.com/blog/engineering' },
+      { label: 'Official Site', url: 'https://stripe.com/' },
+      { label: 'Stripe API Design', url: 'https://stripe.com/blog/payment-api-design' },
+    ],
+    uber: [
+      { label: 'Uber Engineering Blog', url: 'https://www.uber.com/blog/engineering/' },
+      { label: 'Official Site', url: 'https://www.uber.com/' },
+      { label: 'System Design: Uber', url: 'https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers/design-of-uber' },
+    ],
+    airbnb: [
+      { label: 'Airbnb Tech Blog', url: 'https://medium.com/airbnb-engineering' },
+      { label: 'Official Site', url: 'https://www.airbnb.com/' },
+      { label: 'Airbnb Architecture', url: 'https://medium.com/airbnb-engineering/building-services-at-airbnb-part-1-c4c1d8fa811b' },
+    ],
+    netflix: [
+      { label: 'Netflix Tech Blog', url: 'https://netflixtechblog.com/' },
+      { label: 'Official Site', url: 'https://www.netflix.com/' },
+      { label: 'System Design: Netflix', url: 'https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers/design-of-netflix' },
+    ],
+    spotify: [
+      { label: 'Spotify Engineering Blog', url: 'https://engineering.atspotify.com/' },
+      { label: 'Official Site', url: 'https://www.spotify.com/' },
+      { label: 'Spotify Architecture', url: 'https://engineering.atspotify.com/2023/03/spotify-backstage-architecture/' },
+    ],
+    youtube: [
+      { label: 'YouTube Engineering Blog', url: 'https://blog.youtube/inside-youtube/topic/engineering/' },
+      { label: 'Official Site', url: 'https://www.youtube.com/' },
+      { label: 'System Design: YouTube', url: 'https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers/design-of-youtube' },
+    ],
+    twitch: [
+      { label: 'Twitch Engineering Blog', url: 'https://blog.twitch.tv/en/tags/engineering/' },
+      { label: 'Official Site', url: 'https://www.twitch.tv/' },
+      { label: 'Twitch Architecture', url: 'https://blog.twitch.tv/en/2022/04/26/breaking-down-twitchs-video-infrastructure/' },
+    ],
+    hulu: [
+      { label: 'Hulu Tech Blog', url: 'https://medium.com/hulu-tech-blog' },
+      { label: 'Official Site', url: 'https://www.hulu.com/' },
+    ],
+    whatsapp: [
+      { label: 'WhatsApp Engineering', url: 'https://engineering.fb.com/category/whatsapp/' },
+      { label: 'Official Site', url: 'https://www.whatsapp.com/' },
+      { label: 'WhatsApp System Design', url: 'https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers/design-of-whatsapp' },
+    ],
+    slack: [
+      { label: 'Slack Engineering Blog', url: 'https://slack.engineering/' },
+      { label: 'Official Site', url: 'https://slack.com/' },
+      { label: 'Slack Architecture', url: 'https://slack.engineering/scaling-slacks-job-queue/' },
+    ],
+    telegram: [
+      { label: 'Telegram FAQ', url: 'https://telegram.org/faq' },
+      { label: 'Official Site', url: 'https://telegram.org/' },
+    ],
+    messenger: [
+      { label: 'Messenger Engineering', url: 'https://engineering.fb.com/category/messenger/' },
+      { label: 'Official Site', url: 'https://www.messenger.com/' },
+    ],
+    pastebin: [
+      { label: 'Official Site', url: 'https://pastebin.com/' },
+      { label: 'System Design: Pastebin', url: 'https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers/design-of-pastebin' },
+    ],
+    dropbox: [
+      { label: 'Dropbox Tech Blog', url: 'https://dropbox.tech/' },
+      { label: 'Official Site', url: 'https://www.dropbox.com/' },
+      { label: 'System Design: Dropbox', url: 'https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers/design-of-dropbox' },
+    ],
+    googledrive: [
+      { label: 'Google Developers Blog', url: 'https://developers.googleblog.com/' },
+      { label: 'Official Site', url: 'https://drive.google.com/' },
+      { label: 'Google Drive API', url: 'https://developers.google.com/drive' },
+    ],
+    github: [
+      { label: 'GitHub Engineering Blog', url: 'https://github.blog/category/engineering/' },
+      { label: 'Official Site', url: 'https://github.com/' },
+      { label: 'GitHub Architecture', url: 'https://github.blog/2023-10-30-the-architecture-of-githubs-code-search/' },
+    ],
+    stackoverflow: [
+      { label: 'Stack Overflow Blog', url: 'https://stackoverflow.blog/engineering/' },
+      { label: 'Official Site', url: 'https://stackoverflow.com/' },
+      { label: 'Stack Overflow Architecture', url: 'https://stackexchange.com/performance' },
+    ],
+    doordash: [
+      { label: 'DoorDash Engineering Blog', url: 'https://doordash.engineering/' },
+      { label: 'Official Site', url: 'https://www.doordash.com/' },
+      { label: 'DoorDash Architecture', url: 'https://doordash.engineering/category/architecture/' },
+    ],
+    instacart: [
+      { label: 'Instacart Tech Blog', url: 'https://tech.instacart.com/' },
+      { label: 'Official Site', url: 'https://www.instacart.com/' },
+    ],
+    yelp: [
+      { label: 'Yelp Engineering Blog', url: 'https://engineeringblog.yelp.com/' },
+      { label: 'Official Site', url: 'https://www.yelp.com/' },
+      { label: 'System Design: Yelp', url: 'https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers/design-of-yelp' },
+    ],
+    notion: [
+      { label: 'Notion Blog', url: 'https://www.notion.so/blog/topic/tech' },
+      { label: 'Official Site', url: 'https://www.notion.so/' },
+      { label: 'Notion Architecture', url: 'https://www.notion.so/blog/sharding-postgres-at-notion' },
+    ],
+    trello: [
+      { label: 'Trello Engineering Blog', url: 'https://tech.trello.com/' },
+      { label: 'Official Site', url: 'https://trello.com/' },
+    ],
+    googlecalendar: [
+      { label: 'Google Developers Blog', url: 'https://developers.googleblog.com/' },
+      { label: 'Official Site', url: 'https://calendar.google.com/' },
+      { label: 'Google Calendar API', url: 'https://developers.google.com/calendar' },
+    ],
+    zoom: [
+      { label: 'Zoom Blog', url: 'https://blog.zoom.us/' },
+      { label: 'Official Site', url: 'https://zoom.us/' },
+      { label: 'Zoom Architecture', url: 'https://blog.zoom.us/zoom-scalable-video-conferencing-platform/' },
+    ],
+    steam: [
+      { label: 'Steam Blog', url: 'https://store.steampowered.com/news/' },
+      { label: 'Official Site', url: 'https://store.steampowered.com/' },
+    ],
+    ticketmaster: [
+      { label: 'Ticketmaster Tech Blog', url: 'https://tech.ticketmaster.com/' },
+      { label: 'Official Site', url: 'https://www.ticketmaster.com/' },
+      { label: 'System Design: Ticketmaster', url: 'https://www.educative.io/courses/grokking-modern-system-design-interview-for-engineers-managers/design-of-ticketmaster' },
+    ],
+    bookingcom: [
+      { label: 'Booking.com Tech Blog', url: 'https://blog.booking.com/' },
+      { label: 'Official Site', url: 'https://www.booking.com/' },
+    ],
+    weatherapi: [
+      { label: 'OpenWeatherMap', url: 'https://openweathermap.org/' },
+      { label: 'Weather API Documentation', url: 'https://openweathermap.org/api' },
+    ],
+  };
+
+  return linksMap[challengeId] || [];
 }
