@@ -31,14 +31,7 @@ function generateCategoryFile(problems: ParsedProblem[], category: string): stri
 
   return `import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
-import {
-  urlShorteningValidator,
-  urlRedirectValidator,
-  analyticsTrackingValidator,
-  photoUploadValidator,
-  feedViewValidator,
-  basicFunctionalValidator,
-} from '../../validation/validators/featureValidators';
+import { basicFunctionalValidator } from '../../validation/validators/featureValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
