@@ -11,7 +11,15 @@ export function convertProblemDefinitionToChallenge(
   const difficulty = determineDifficulty(def);
 
   // Convert scenarios to test cases
-  const testCases: TestCase[] = def.scenarios.map((scenario, index) => {
+  const testCases: TestCase[] = def.scenarios.map((scenario) => {
+    // Parse requirement type from scenario name (e.g., "FR-1: Basic Connectivity" => { type: 'functional', req: 'FR-1' })
+    const reqMatch = scenario.name.match(/^(FR|NFR-P|NFR-S|NFR-R|NFR-C)-(\d+)/);
+    const requirement = reqMatch ? `${reqMatch[1]}-${reqMatch[2]}` : 'FR-1';
+    const testType = getTestType(requirement);
+
+    // Extract clean name (remove requirement prefix)
+    const cleanName = scenario.name.replace(/^(FR|NFR-[PSRC])-\d+:\s*/, '');
+
     const isReadHeavy = (scenario.traffic.readWriteRatio || 0.5) >= 0.7;
     const trafficType =
       !scenario.traffic.readWriteRatio || scenario.traffic.readWriteRatio === 0.5
@@ -20,18 +28,22 @@ export function convertProblemDefinitionToChallenge(
         ? 'read'
         : 'write';
 
-    return {
-      name: scenario.name,
-      type: 'functional',
-      requirement: `FR-${index + 1}`,
-      description: scenario.description || scenario.name,
+    // Set duration based on test type
+    const duration = testType === 'functional' ? 10 :
+                     testType === 'reliability' ? 120 : 60;
+
+    const testCase: TestCase = {
+      name: cleanName,
+      type: testType,
+      requirement,
+      description: scenario.description || cleanName,
       traffic: {
         type: trafficType as 'read' | 'write' | 'mixed',
         rps: scenario.traffic.rps,
         readRatio: scenario.traffic.readWriteRatio || 0.5,
         avgResponseSizeMB: scenario.traffic.avgFileSize,
       },
-      duration: 10,
+      duration,
       passCriteria: {
         maxP99Latency: scenario.passCriteria.maxLatency,
         maxErrorRate: scenario.passCriteria.maxErrorRate,
@@ -40,6 +52,17 @@ export function convertProblemDefinitionToChallenge(
         maxDowntime: scenario.passCriteria.maxDowntime,
       },
     };
+
+    // Add failure injection if present
+    if (scenario.failureInjection) {
+      testCase.failureInjection = {
+        type: mapFailureType(scenario.failureInjection.component),
+        atSecond: scenario.failureInjection.at,
+        recoverySecond: scenario.failureInjection.recoveryAt,
+      };
+    }
+
+    return testCase;
   });
 
   // Extract functional requirements as strings
@@ -395,4 +418,19 @@ function getReferenceLinks(challengeId: string): { label: string; url: string }[
   };
 
   return linksMap[challengeId] || [];
+}
+
+function getTestType(requirement: string): 'functional' | 'performance' | 'scalability' | 'reliability' | 'cost' {
+  if (requirement.startsWith('FR')) return 'functional';
+  if (requirement.startsWith('NFR-P')) return 'performance';
+  if (requirement.startsWith('NFR-S')) return 'scalability';
+  if (requirement.startsWith('NFR-R')) return 'reliability';
+  if (requirement.startsWith('NFR-C')) return 'cost';
+  return 'functional';
+}
+
+function mapFailureType(component: string): 'db_crash' | 'cache_flush' | 'network_partition' {
+  if (component === 'database' || component === 'db') return 'db_crash';
+  if (component === 'cache' || component === 'redis') return 'cache_flush';
+  return 'network_partition';
 }
