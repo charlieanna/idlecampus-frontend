@@ -11,7 +11,8 @@ import { ProgressiveGuidancePanel } from './components/ProgressiveGuidancePanel'
 import { ComponentPalette } from './components/ComponentPalette';
 import { EnhancedInspector } from './components/EnhancedInspector';
 import { ReferenceSolutionPanel } from './components/ReferenceSolutionPanel';
-import { TestRunner } from '../simulation/testRunner';
+import { SystemDesignValidator } from '../validation/SystemDesignValidator';
+import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 
 // Initial graph with Client component
 const getInitialGraph = (): SystemGraph => ({
@@ -55,9 +56,14 @@ export default function SystemDesignBuilderApp() {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     try {
-      const runner = new TestRunner();
-      const testCase = selectedChallenge.testCases[testIndex];
-      const result = runner.runTestCase(systemGraph, testCase);
+      // Use new validation engine
+      const validator = new SystemDesignValidator();
+      const result = validator.validate(systemGraph, tinyUrlProblemDefinition, testIndex);
+
+      // Show architecture feedback if any
+      if (result.architectureFeedback && result.architectureFeedback.length > 0) {
+        console.log('Architecture feedback:', result.architectureFeedback);
+      }
 
       // Update results map
       const newResults = new Map(testResults);
