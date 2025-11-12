@@ -11,7 +11,6 @@ interface ComponentJustificationModalProps {
 
 interface JustificationData {
   why: string;
-  benefits: string;
   alternatives: string;
   tradeoffs: string; // Trade-offs identified by user
   tradeoffExplanation: string; // How/why these trade-offs matter
@@ -57,7 +56,7 @@ export function ComponentJustificationModal({
   // Parse initial justification if it exists
   const parseInitialJustification = (initial: string): JustificationData => {
     if (!initial) {
-      return { why: '', benefits: '', alternatives: '', tradeoffs: '', tradeoffExplanation: '' };
+      return { why: '', alternatives: '', tradeoffs: '', tradeoffExplanation: '' };
     }
 
     try {
@@ -65,7 +64,6 @@ export function ComponentJustificationModal({
       if (parsed.why !== undefined) {
         return {
           why: parsed.why || '',
-          benefits: parsed.benefits || '',
           alternatives: parsed.alternatives || '',
           tradeoffs: parsed.tradeoffs || parsed.tradeoffsCustom || '',
           tradeoffExplanation: parsed.tradeoffExplanation || '',
@@ -73,10 +71,10 @@ export function ComponentJustificationModal({
       }
     } catch {
       // Legacy format - single string
-      return { why: initial, benefits: '', alternatives: '', tradeoffs: '', tradeoffExplanation: '' };
+      return { why: initial, alternatives: '', tradeoffs: '', tradeoffExplanation: '' };
     }
 
-    return { why: '', benefits: '', alternatives: '', tradeoffs: '', tradeoffExplanation: '' };
+    return { why: '', alternatives: '', tradeoffs: '', tradeoffExplanation: '' };
   };
 
   const [justification, setJustification] = useState<JustificationData>(
@@ -106,7 +104,6 @@ export function ComponentJustificationModal({
   };
 
   const whyValidation = validateText(justification.why);
-  const benefitsValidation = validateText(justification.benefits);
   const alternativesValidation = validateText(justification.alternatives);
   const tradeoffsValidation = validateText(justification.tradeoffs);
   const tradeoffExplanationValidation = validateText(justification.tradeoffExplanation);
@@ -156,7 +153,7 @@ export function ComponentJustificationModal({
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-900">
-                <strong>📝 Note:</strong> Fields are optional. Provide meaningful explanations to help you think critically about your design choices.
+                <strong>📝 Note:</strong> All fields are optional for testing purposes.
               </p>
             </div>
 
@@ -183,32 +180,10 @@ export function ComponentJustificationModal({
               </div>
             </div>
 
-            {/* Benefits Section */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-2">
-                2. What are the key benefits?
-              </label>
-              <p className="text-xs text-gray-500 mb-2">
-                List the advantages this component brings (performance, scalability, reliability, etc.).
-              </p>
-              <textarea
-                value={justification.benefits}
-                onChange={(e) => updateField('benefits', e.target.value)}
-                className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
-                  justification.benefits && !benefitsValidation.valid ? 'border-red-300' : 'border-gray-300'
-                }`}
-              />
-              <div className="flex justify-between items-center mt-1">
-                <span className={`text-xs ${benefitsValidation.valid ? 'text-green-600' : 'text-gray-400'}`}>
-                  {benefitsValidation.valid ? '✓ Valid' : benefitsValidation.error || `${justification.benefits.split(/\s+/).filter(w => w).length}/15 words`}
-                </span>
-              </div>
-            </div>
-
             {/* Alternatives Section */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
-                3. What alternatives did you consider?
+                2. What alternatives did you consider?
               </label>
               <p className="text-xs text-gray-500 mb-2">
                 Mention other options you thought about and why you didn't choose them.
@@ -230,7 +205,7 @@ export function ComponentJustificationModal({
             {/* Trade-offs Section - Text Fields Only */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
-                4. What are the trade-offs?
+                3. What are the trade-offs?
               </label>
               <p className="text-xs text-gray-500 mb-2">
                 List the trade-offs (downsides, costs, limitations, complexity):
