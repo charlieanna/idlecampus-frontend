@@ -38,10 +38,18 @@ export interface Solution {
 }
 
 /**
+ * Test case types
+ */
+export type TestCaseType = 'functional' | 'performance' | 'scalability' | 'reliability' | 'cost';
+
+/**
  * Test case definition
  */
 export interface TestCase {
   name: string;
+  type: TestCaseType; // FR or NFR category
+  requirement: string; // FR-1, NFR-P1, etc.
+  description: string; // Natural language explanation of what's being tested
   traffic: {
     type: 'read' | 'write' | 'mixed';
     rps: number;

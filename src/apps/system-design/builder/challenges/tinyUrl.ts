@@ -38,12 +38,75 @@ Example:
   ],
 
   testCases: [
+    // ========== FUNCTIONAL REQUIREMENTS (FR) ==========
+    {
+      name: 'Basic Connectivity',
+      type: 'functional',
+      requirement: 'FR-1',
+      description: 'Users can create short URLs and access them for redirects. The system must accept requests and return responses.',
+      traffic: {
+        type: 'mixed',
+        rps: 10, // Very low traffic, just testing basic functionality
+        readRps: 5,
+        writeRps: 5,
+      },
+      duration: 10,
+      passCriteria: {
+        maxErrorRate: 0, // Must work perfectly
+      },
+      solution: {
+        components: [
+          { type: 'client', config: {} },
+          { type: 'app_server', config: { instances: 1 } },
+          { type: 'postgresql', config: { readCapacity: 100, writeCapacity: 100 } },
+        ],
+        connections: [
+          { from: 'client', to: 'app_server' },
+          { from: 'app_server', to: 'postgresql' },
+        ],
+        explanation: `Minimal viable system - just app server + database.`,
+      },
+    },
+    {
+      name: 'URL Uniqueness',
+      type: 'functional',
+      requirement: 'FR-2',
+      description: 'Each short code must be unique. Two different long URLs cannot get the same short code.',
+      traffic: {
+        type: 'write',
+        rps: 10,
+      },
+      duration: 10,
+      passCriteria: {
+        maxErrorRate: 0,
+      },
+    },
+    {
+      name: 'Correct Redirects',
+      type: 'functional',
+      requirement: 'FR-3',
+      description: 'Accessing a short code must redirect to the correct original URL. No mix-ups allowed.',
+      traffic: {
+        type: 'read',
+        rps: 20,
+      },
+      duration: 10,
+      passCriteria: {
+        maxErrorRate: 0,
+      },
+    },
+
+    // ========== PERFORMANCE REQUIREMENTS (NFR-P) ==========
     {
       name: 'Normal Load',
+      type: 'performance',
+      requirement: 'NFR-P1',
+      description: 'System handles typical daily traffic (1000 reads/sec, 100 writes/sec) with low latency.',
       traffic: {
         type: 'mixed',
         rps: 1100,
-        readRatio: 0.91, // 1000 reads, 100 writes
+        readRps: 1000,
+        writeRps: 100,
       },
       duration: 60,
       passCriteria: {
@@ -87,6 +150,9 @@ Example:
     },
     {
       name: 'Read Spike (5x)',
+      type: 'scalability',
+      requirement: 'NFR-S1',
+      description: 'During a viral event, your URL shortening service receives 5x normal traffic. The system must handle 5000 reads/sec and 100 writes/sec without significant performance degradation.',
       traffic: {
         type: 'mixed',
         rps: 5100,
@@ -136,6 +202,9 @@ Example:
     },
     {
       name: 'Cache Flush',
+      type: 'reliability',
+      requirement: 'NFR-R1',
+      description: 'Your Redis cache suddenly crashes and loses all cached data at second 15 during normal traffic. The system must handle the sudden load increase on the database while the cache rebuilds without significant downtime.',
       traffic: {
         type: 'mixed',
         rps: 1100,
@@ -186,6 +255,122 @@ Example:
 - Over-provision DB read capacity for cache failure scenarios
 - Replication provides additional read capacity
 - Cost slightly higher but handles failures gracefully`,
+      },
+    },
+    {
+      name: 'Write Spike (10x)',
+      type: 'scalability',
+      requirement: 'NFR-S2',
+      description: 'A marketing campaign causes 10x increase in URL creation requests. System must handle 1000 writes/sec while maintaining 1000 reads/sec without data loss or significant latency.',
+      traffic: {
+        type: 'mixed',
+        rps: 2000,
+        readRps: 1000,
+        writeRps: 1000,
+      },
+      duration: 60,
+      passCriteria: {
+        maxP99Latency: 200,
+        maxErrorRate: 0.05,
+      },
+    },
+    {
+      name: 'Database Failure',
+      type: 'reliability',
+      requirement: 'NFR-R2',
+      description: 'The primary database crashes at second 20. System must failover to replica within 5 seconds and continue serving requests with minimal errors.',
+      traffic: {
+        type: 'mixed',
+        rps: 1100,
+        readRps: 1000,
+        writeRps: 100,
+      },
+      duration: 60,
+      failureInjection: {
+        type: 'db_crash',
+        atSecond: 20,
+      },
+      passCriteria: {
+        maxP99Latency: 200,
+        maxErrorRate: 0.1,
+        minAvailability: 0.95,
+      },
+    },
+    {
+      name: 'Cost Optimization',
+      type: 'cost',
+      requirement: 'NFR-C1',
+      description: 'Reduce monthly infrastructure costs to under $300 while maintaining 500 RPS (450 reads, 50 writes) and 99% availability.',
+      traffic: {
+        type: 'mixed',
+        rps: 500,
+        readRps: 450,
+        writeRps: 50,
+      },
+      duration: 60,
+      passCriteria: {
+        maxP99Latency: 150,
+        maxErrorRate: 0.01,
+        maxMonthlyCost: 300,
+        minAvailability: 0.99,
+      },
+    },
+    {
+      name: 'Peak Hour Load',
+      type: 'performance',
+      requirement: 'NFR-P2',
+      description: 'During peak hours (9am-5pm), traffic increases to 2000 reads/sec and 200 writes/sec. System must maintain low latency and stay within budget.',
+      traffic: {
+        type: 'mixed',
+        rps: 2200,
+        readRps: 2000,
+        writeRps: 200,
+      },
+      duration: 60,
+      passCriteria: {
+        maxP99Latency: 100,
+        maxErrorRate: 0.01,
+        maxMonthlyCost: 600,
+      },
+    },
+    {
+      name: 'Network Partition',
+      type: 'reliability',
+      requirement: 'NFR-R3',
+      description: 'A network partition isolates half the app servers from the database at second 25. System must detect the partition and route traffic to healthy servers.',
+      traffic: {
+        type: 'mixed',
+        rps: 1100,
+        readRps: 1000,
+        writeRps: 100,
+      },
+      duration: 60,
+      failureInjection: {
+        type: 'network_partition',
+        atSecond: 25,
+      },
+      passCriteria: {
+        maxP99Latency: 200,
+        maxErrorRate: 0.05,
+        minAvailability: 0.98,
+      },
+    },
+    {
+      name: 'Sustained High Load',
+      type: 'scalability',
+      requirement: 'NFR-S3',
+      description: 'System experiences sustained high traffic of 3000 reads/sec and 300 writes/sec for 5 minutes without degradation or crashes.',
+      traffic: {
+        type: 'mixed',
+        rps: 3300,
+        readRps: 3000,
+        writeRps: 300,
+      },
+      duration: 300,
+      passCriteria: {
+        maxP99Latency: 150,
+        maxErrorRate: 0.02,
+        minAvailability: 0.995,
       },
     },
   ],

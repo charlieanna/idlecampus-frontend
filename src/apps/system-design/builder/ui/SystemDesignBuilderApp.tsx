@@ -6,8 +6,8 @@ import { SystemGraph } from '../types/graph';
 import { challenges } from '../challenges';
 import { ChallengeSelector } from './components/ChallengeSelector';
 import { DesignCanvas, getComponentInfo, getDefaultConfig } from './components/DesignCanvas';
-import { ProgressiveTestSidebar } from './components/ProgressiveTestSidebar';
-import { ProgressiveGuidancePanel } from './components/ProgressiveGuidancePanel';
+import { ProblemDescriptionPanel } from './components/ProblemDescriptionPanel';
+import { SubmissionResultsPanel } from './components/SubmissionResultsPanel';
 import { ComponentPalette } from './components/ComponentPalette';
 import { InspectorModal } from './components/InspectorModal';
 import { ReferenceSolutionPanel } from './components/ReferenceSolutionPanel';
@@ -16,13 +16,24 @@ import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition
 import { DetailedAnalysisPanel } from './components/DetailedAnalysisPanel';
 import { DesignAnalysisResult } from '../validation/DesignAnalyzer';
 
-// Initial graph with Client component
+// Initial graph with two Client components (Write and Read)
 const getInitialGraph = (): SystemGraph => ({
   components: [
     {
-      id: 'client_1',
+      id: 'write_client',
       type: 'client',
-      config: {},
+      config: {
+        displayName: 'Write Client',
+        subtitle: 'Creates short URLs',
+      },
+    },
+    {
+      id: 'read_client',
+      type: 'client',
+      config: {
+        displayName: 'Read Client',
+        subtitle: 'Accesses short URLs',
+      },
     },
   ],
   connections: [],
@@ -33,9 +44,10 @@ export default function SystemDesignBuilderApp() {
     challenges[0] // Start with Tiny URL
   );
   const [systemGraph, setSystemGraph] = useState<SystemGraph>(getInitialGraph());
-  const [activeTestIndex, setActiveTestIndex] = useState(0); // Current level
+  const [currentTestIndex, setCurrentTestIndex] = useState(0); // Current test being run
   const [testResults, setTestResults] = useState<Map<number, TestResult>>(new Map()); // Per-level results
   const [isRunning, setIsRunning] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false); // Track if user has submitted
   const [selectedNode, setSelectedNode] = useState<Node | null>(null);
   const [showSolutionPanel, setShowSolutionPanel] = useState(false);
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
@@ -45,7 +57,8 @@ export default function SystemDesignBuilderApp() {
   useEffect(() => {
     setSystemGraph(getInitialGraph());
     setTestResults(new Map());
-    setActiveTestIndex(0);
+    setCurrentTestIndex(0);
+    setHasSubmitted(false);
     setSelectedNode(null);
     setShowSolutionPanel(false);
   }, [selectedChallenge?.id]);
@@ -63,34 +76,57 @@ export default function SystemDesignBuilderApp() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedNode]);
 
-  const handleRunTest = async (testIndex: number) => {
+  // Submit solution - runs all tests sequentially
+  const handleSubmit = async () => {
     if (!selectedChallenge) return;
 
+    // Clear previous results and start fresh
+    setTestResults(new Map());
+    setCurrentTestIndex(0);
     setIsRunning(true);
-
-    // Simulate async operation
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    setHasSubmitted(true);
 
     try {
-      // Use new validation engine
       const validator = new SystemDesignValidator();
-      const result = validator.validate(systemGraph, tinyUrlProblemDefinition, testIndex);
+      const newResults = new Map<number, TestResult>();
 
-      // Show architecture feedback if any
-      if (result.architectureFeedback && result.architectureFeedback.length > 0) {
-        console.log('Architecture feedback:', result.architectureFeedback);
+      // Run tests sequentially, stop on first failure
+      for (let i = 0; i < selectedChallenge.testCases.length; i++) {
+        setCurrentTestIndex(i);
+
+        // Simulate async operation for visual feedback
+        await new Promise((resolve) => setTimeout(resolve, 800));
+
+        // Run the test
+        const result = validator.validate(systemGraph, tinyUrlProblemDefinition, i);
+
+        // Store result
+        newResults.set(i, result);
+        setTestResults(new Map(newResults));
+
+        // Stop on first failure
+        if (!result.passed) {
+          break;
+        }
       }
-
-      // Update results map
-      const newResults = new Map(testResults);
-      newResults.set(testIndex, result);
-      setTestResults(newResults);
     } catch (error) {
-      console.error('Simulation error:', error);
-      alert('Error running simulation. Check console for details.');
+      console.error('Submission error:', error);
+      alert('Error running tests. Check console for details.');
     } finally {
       setIsRunning(false);
     }
+  };
+
+  // Handle edit design - goes back to canvas
+  const handleEditDesign = () => {
+    setHasSubmitted(false);
+    setTestResults(new Map());
+    setCurrentTestIndex(0);
+  };
+
+  // Handle try again - reruns all tests
+  const handleTryAgain = () => {
+    handleSubmit();
   };
 
   const handleAddComponent = (componentType: string) => {
@@ -183,9 +219,6 @@ export default function SystemDesignBuilderApp() {
     setShowSolutionPanel(false);
   };
 
-  const currentTestCase = selectedChallenge?.testCases[activeTestIndex];
-  const currentTestResult = currentTestCase ? testResults.get(activeTestIndex) : undefined;
-
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
       {/* Top Bar */}
@@ -204,16 +237,21 @@ export default function SystemDesignBuilderApp() {
 
       {/* Main Content - Three Panel Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Progressive Test Sidebar */}
+        {/* Left Panel - Problem Description OR Submission Results */}
         {selectedChallenge && (
-          <ProgressiveTestSidebar
-            challenge={selectedChallenge}
-            testCases={selectedChallenge.testCases}
-            activeTestIndex={activeTestIndex}
-            testResults={testResults}
-            onSelectTest={setActiveTestIndex}
-            onRunTest={handleRunTest}
-          />
+          hasSubmitted ? (
+            <SubmissionResultsPanel
+              testCases={selectedChallenge.testCases}
+              testResults={testResults}
+              isRunning={isRunning}
+              currentTestIndex={currentTestIndex}
+              onEditDesign={handleEditDesign}
+              onShowSolution={() => setShowSolutionPanel(true)}
+              onTryAgain={handleTryAgain}
+            />
+          ) : (
+            <ProblemDescriptionPanel challenge={selectedChallenge} />
+          )
         )}
 
         {/* Center Panel - Collapsible Design Canvas */}
@@ -259,31 +297,31 @@ export default function SystemDesignBuilderApp() {
           </div>
         )}
 
-        {/* Right Panel - Progressive Guidance + Palette (Always Visible) */}
-        <div className={`flex flex-col bg-white border-l border-gray-200 transition-all ${
-          canvasCollapsed ? 'flex-1' : 'w-80'
-        }`}>
-          {/* Top: Progressive Guidance Panel */}
-          {currentTestCase && (
-            <div className="flex-shrink-0">
-              <ProgressiveGuidancePanel
-                testCase={currentTestCase}
-                testResult={currentTestResult}
-                currentComponentCount={systemGraph.components.length}
-                onShowSolution={() => setShowSolutionPanel(true)}
-                onShowDetailedAnalysis={() => setShowAnalysisPanel(true)}
+        {/* Right Panel - Component Palette with Submit Button */}
+        {!hasSubmitted && (
+          <div className={`flex flex-col bg-white border-l border-gray-200 transition-all ${
+            canvasCollapsed ? 'flex-1' : 'w-80'
+          }`}>
+            {/* Component Palette */}
+            <div className="flex-1 overflow-y-auto">
+              <ComponentPalette
+                availableComponents={selectedChallenge?.availableComponents || []}
+                onAddComponent={handleAddComponent}
               />
             </div>
-          )}
 
-          {/* Bottom: Component Palette (Always Visible) */}
-          <div className="flex-1 overflow-y-auto border-t border-gray-200">
-            <ComponentPalette
-              availableComponents={selectedChallenge?.availableComponents || []}
-              onAddComponent={handleAddComponent}
-            />
+            {/* Submit Button */}
+            <div className="p-4 border-t border-gray-200 bg-gray-50">
+              <button
+                onClick={handleSubmit}
+                disabled={isRunning}
+                className="w-full px-6 py-3 text-base font-semibold text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors shadow-md hover:shadow-lg"
+              >
+                {isRunning ? '⏳ Running Tests...' : '▶️ Submit Solution'}
+              </button>
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
       {/* Inspector Modal */}
@@ -298,19 +336,11 @@ export default function SystemDesignBuilderApp() {
       )}
 
       {/* Reference Solution Modal */}
-      {showSolutionPanel && currentTestCase?.solution && (
+      {showSolutionPanel && selectedChallenge?.testCases[0]?.solution && (
         <ReferenceSolutionPanel
-          testCase={currentTestCase}
+          testCase={selectedChallenge.testCases[0]}
           onClose={() => setShowSolutionPanel(false)}
           onApplySolution={handleLoadSolution}
-        />
-      )}
-
-      {/* Detailed Analysis Modal */}
-      {showAnalysisPanel && currentTestResult?.detailedAnalysis && (
-        <DetailedAnalysisPanel
-          analysis={currentTestResult.detailedAnalysis}
-          onClose={() => setShowAnalysisPanel(false)}
         />
       )}
     </div>

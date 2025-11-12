@@ -69,11 +69,20 @@ export function DesignCanvas({
       const newNodes: Node[] = newComponents.map((comp, index) => {
         const componentInfo = getComponentInfo(comp.type);
         const isClient = comp.type === 'client';
+
+        // Count total number of clients in the entire system (including existing ones)
+        const totalClientsBeforeThis = systemGraph.components
+          .filter(c => c.type === 'client' && systemGraph.components.indexOf(c) < systemGraph.components.indexOf(comp))
+          .length;
+
         return {
           id: comp.id,
           type: 'custom',
           position: isClient
-            ? { x: 50, y: 250 } // Fixed position for client on the left, vertically centered
+            ? {
+                x: 50,
+                y: 150 + (totalClientsBeforeThis * 120) // Stack clients vertically with 120px spacing
+              }
             : {
                 x: 300 + (currentNodes.length + index) * 40,
                 y: 100 + (currentNodes.length + index) * 25,
@@ -82,8 +91,8 @@ export function DesignCanvas({
           selectable: isClient, // Client is selectable (for info, but locked position)
           data: {
             label: componentInfo.label,
-            displayName: componentInfo.displayName,
-            subtitle: isClient ? 'User Traffic Source' : componentInfo.subtitle,
+            displayName: comp.config?.displayName || componentInfo.displayName,
+            subtitle: comp.config?.subtitle || componentInfo.subtitle,
             componentType: comp.type,
           },
         };
