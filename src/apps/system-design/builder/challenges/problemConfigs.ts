@@ -437,4 +437,426 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasCache: true,
     hasObjectStorage: false,
   },
+
+  // ========== EXTRACTED PROBLEMS (from extracted-problems/) ==========
+
+  // TUTORIALS (3)
+  'tutorial-simple-blog': {
+    baseRps: 1000, // Scale 100 -> 1000
+    readRatio: 0.9, // 90% reads
+    maxLatency: 200,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'tutorial-intermediate-images': {
+    baseRps: 10000, // 10k requests/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 100,
+    availability: 0.9999,
+    avgFileSize: 5, // 5MB images
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: true,
+  },
+
+  'tutorial-advanced-chat': {
+    baseRps: 50000, // 50k messages/sec
+    readRatio: 0.8, // 80% reads
+    maxLatency: 500,
+    availability: 0.9999,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: true,
+  },
+
+  // CACHING (6)
+  'reddit-comment-system': {
+    baseRps: 5000000, // 5M reads/sec normal
+    readRatio: 0.99, // 99% reads (viewing comments)
+    maxLatency: 100,
+    availability: 0.9999,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'static-content-cdn': {
+    baseRps: 20000, // 20k requests/sec
+    readRatio: 1.0, // 100% reads (static assets)
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: true,
+    hasCache: false,
+    hasObjectStorage: true,
+  },
+
+  'session-store-basic': {
+    baseRps: 10000, // 9k reads + 1k writes
+    readRatio: 0.9, // 90% reads
+    maxLatency: 10,
+    availability: 0.9999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'database-query-cache': {
+    baseRps: 10000, // 10k queries/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'api-rate-limit-cache': {
+    baseRps: 50000, // 50k validations/sec
+    readRatio: 0.5, // Read/write balanced
+    maxLatency: 5,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'product-catalog-cache': {
+    baseRps: 100000, // 100k req/sec (Black Friday)
+    readRatio: 0.98, // 98% reads
+    maxLatency: 100,
+    availability: 0.9995,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  // STREAMING (5)
+  'basic-message-queue': {
+    baseRps: 5000, // 5k messages/sec
+    readRatio: 0.5, // Balanced read/write (pub/sub)
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'realtime-notifications': {
+    baseRps: 100000, // 100k notifications/sec
+    readRatio: 0.8, // 80% reads (connection tracking)
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'basic-event-log': {
+    baseRps: 50000, // 50k events/sec
+    readRatio: 0.3, // 30% reads (mostly writes)
+    maxLatency: 200,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'simple-pubsub': {
+    baseRps: 10000, // 10k messages/sec
+    readRatio: 0.5, // Balanced pub/sub
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'realtime-chat-messages': {
+    baseRps: 20000, // 20k messages/sec
+    readRatio: 0.6, // 60% reads (viewing history)
+    maxLatency: 100,
+    availability: 0.9995,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  // STORAGE (5)
+  'basic-database-design': {
+    baseRps: 11000, // 10k reads + 1k writes
+    readRatio: 0.91, // 91% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'nosql-basics': {
+    baseRps: 20000, // 20k ops/sec
+    readRatio: 0.8, // 80% reads
+    maxLatency: 30,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'key-value-store': {
+    baseRps: 100000, // 100k ops/sec
+    readRatio: 0.7, // 70% reads
+    maxLatency: 1,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'product-catalog': {
+    baseRps: 5500, // 5k reads + 500 writes
+    readRatio: 0.91, // 91% reads
+    maxLatency: 100,
+    availability: 0.9995,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'object-storage-system': {
+    baseRps: 10000, // 10k file ops/sec
+    readRatio: 0.7, // 70% reads
+    maxLatency: 200,
+    availability: 0.9999,
+    avgFileSize: 10, // 10MB average
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: true,
+  },
+
+  // GATEWAY (4)
+  'basic-api-gateway': {
+    baseRps: 10000, // 10k requests/sec
+    readRatio: 0.9, // 90% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'simple-rate-limiter': {
+    baseRps: 20000, // 20k validations/sec
+    readRatio: 0.5, // Balanced
+    maxLatency: 10,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'authentication-gateway': {
+    baseRps: 30000, // 30k auth requests/sec
+    readRatio: 1.0, // 100% reads (validation)
+    maxLatency: 20,
+    availability: 0.9999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'graphql-gateway': {
+    baseRps: 5000, // 5k complex queries/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 200,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  // SEARCH (4)
+  'basic-text-search': {
+    baseRps: 1000, // 1k searches/sec
+    readRatio: 0.99, // 99% reads
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'autocomplete-search': {
+    baseRps: 50000, // 50k keystrokes/sec
+    readRatio: 1.0, // 100% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'faceted-search': {
+    baseRps: 5000, // 5k filtered searches/sec
+    readRatio: 0.99, // 99% reads
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'geo-search': {
+    baseRps: 20000, // 20k location queries/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 50,
+    availability: 0.9995,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  // MULTIREGION (4)
+  'basic-multi-region': {
+    baseRps: 10000, // 10k per region
+    readRatio: 0.9, // 90% reads
+    maxLatency: 100,
+    availability: 0.9995,
+    hasCdn: true,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'active-active-regions': {
+    baseRps: 5000, // 5k writes/sec per region
+    readRatio: 0.7, // 70% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'global-cdn': {
+    baseRps: 10000000, // 10M requests/sec
+    readRatio: 1.0, // 100% reads (static)
+    maxLatency: 50,
+    availability: 0.9999,
+    hasCdn: true,
+    hasCache: false,
+    hasObjectStorage: true,
+  },
+
+  'cross-region-dr': {
+    baseRps: 10000, // 10k requests/sec
+    readRatio: 0.9, // 90% reads
+    maxLatency: 100,
+    availability: 0.9999,
+    hasCdn: true,
+    hasCache: false,
+    hasObjectStorage: true,
+  },
+
+  // Caching Problems (Extended - Automated)
+  'gaming-leaderboard-cache': {
+    baseRps: 70000, // 20k updates + 50k queries
+    readRatio: 0.7, // 70% reads (queries), 30% writes (updates)
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'geo-location-cache': {
+    baseRps: 100000, // 100k lookups/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 10,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'config-cache-basic': {
+    baseRps: 50000, // 50k config reads/sec
+    readRatio: 0.99, // 99% reads
+    maxLatency: 5,
+    availability: 0.9999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'social-feed-cache': {
+    baseRps: 100000, // 100k feed requests/sec
+    readRatio: 0.9, // 90% reads
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'video-streaming-cache': {
+    baseRps: 50000, // 50k chunk requests/sec
+    readRatio: 0.99, // 99% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: true,
+  },
+
+  'search-suggestion-cache': {
+    baseRps: 100000, // 100k queries/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 20,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'news-aggregator-cache': {
+    baseRps: 50000, // 50k requests/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 100,
+    availability: 0.999,
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'graphql-cache': {
+    baseRps: 20000, // 20k queries/sec
+    readRatio: 0.9, // 90% reads
+    maxLatency: 50,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'shopping-cart-cache': {
+    baseRps: 30000, // 30k cart operations/sec
+    readRatio: 0.7, // 70% reads, 30% writes
+    maxLatency: 20,
+    availability: 0.9999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
+
+  'analytics-dashboard-cache': {
+    baseRps: 10000, // 10k dashboard requests/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 200,
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true,
+    hasObjectStorage: false,
+  },
 };

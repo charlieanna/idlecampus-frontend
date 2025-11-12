@@ -1,0 +1,809 @@
+import { ProblemDefinition } from '../../types/problemDefinition';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
+
+/**
+ * Bio-digital Problems - Complete Set
+ * Auto-generated from ALL_PROBLEMS.md
+ * Total: 19 problems
+ */
+
+/**
+ * Neural Implant Data Platform
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioNeuralImplantProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-neural-implant',
+  title: 'Neural Implant Data Platform',
+  description: `Design infrastructure for Neuralink-style brain implants managing neural data from 1M patients, enabling real-time processing and medical interventions.
+- Process 1M neural streams
+- Detect medical events in real-time
+- Support remote firmware updates
+- Enable neural stimulation control`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-neural-implant', problemConfigs['l6-bio-neural-implant']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Human Digital Twin Platform
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigitalTwinProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-twin',
+  title: 'Human Digital Twin Platform',
+  description: `Design platform creating comprehensive digital twins of humans, simulating organ systems, predicting disease, and optimizing treatments in real-time.
+- Model all organ systems
+- Integrate genomic data
+- Simulate drug interactions
+- Predict disease progression`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-twin', problemConfigs['l6-bio-digital-twin']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Brain Uploads Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital1ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-1',
+  title: 'Brain Uploads Infrastructure',
+  description: `Create revolutionary brain uploads infrastructure leveraging consciousness transfer. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement brain uploads at planetary scale
+- Achieve consciousness transfer breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-1', problemConfigs['l6-bio-digital-1']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Synthetic Biology Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital2ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-2',
+  title: 'Synthetic Biology Infrastructure',
+  description: `Create revolutionary synthetic biology infrastructure leveraging biological internet. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement synthetic biology at planetary scale
+- Achieve biological internet breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-2', problemConfigs['l6-bio-digital-2']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Nano-Medicine Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital3ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-3',
+  title: 'Nano-Medicine Infrastructure',
+  description: `Create revolutionary nano-medicine infrastructure leveraging living computers. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement nano-medicine at planetary scale
+- Achieve living computers breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-3', problemConfigs['l6-bio-digital-3']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Digital Twins Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital4ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-4',
+  title: 'Digital Twins Infrastructure',
+  description: `Create revolutionary digital twins infrastructure leveraging consciousness transfer. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement digital twins at planetary scale
+- Achieve consciousness transfer breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-4', problemConfigs['l6-bio-digital-4']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Bio-Processors Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital5ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-5',
+  title: 'Bio-Processors Infrastructure',
+  description: `Create revolutionary bio-processors infrastructure leveraging biological internet. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement bio-processors at planetary scale
+- Achieve biological internet breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-5', problemConfigs['l6-bio-digital-5']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Brain Uploads Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital6ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-6',
+  title: 'Brain Uploads Infrastructure',
+  description: `Create revolutionary brain uploads infrastructure leveraging living computers. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement brain uploads at planetary scale
+- Achieve living computers breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-6', problemConfigs['l6-bio-digital-6']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Synthetic Biology Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital7ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-7',
+  title: 'Synthetic Biology Infrastructure',
+  description: `Create revolutionary synthetic biology infrastructure leveraging consciousness transfer. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement synthetic biology at planetary scale
+- Achieve consciousness transfer breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-7', problemConfigs['l6-bio-digital-7']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Nano-Medicine Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital8ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-8',
+  title: 'Nano-Medicine Infrastructure',
+  description: `Create revolutionary nano-medicine infrastructure leveraging biological internet. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement nano-medicine at planetary scale
+- Achieve biological internet breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-8', problemConfigs['l6-bio-digital-8']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Digital Twins Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital9ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-9',
+  title: 'Digital Twins Infrastructure',
+  description: `Create revolutionary digital twins infrastructure leveraging living computers. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement digital twins at planetary scale
+- Achieve living computers breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-9', problemConfigs['l6-bio-digital-9']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Bio-Processors Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital10ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-10',
+  title: 'Bio-Processors Infrastructure',
+  description: `Create revolutionary bio-processors infrastructure leveraging consciousness transfer. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement bio-processors at planetary scale
+- Achieve consciousness transfer breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-10', problemConfigs['l6-bio-digital-10']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Brain Uploads Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital11ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-11',
+  title: 'Brain Uploads Infrastructure',
+  description: `Create revolutionary brain uploads infrastructure leveraging biological internet. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement brain uploads at planetary scale
+- Achieve biological internet breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-11', problemConfigs['l6-bio-digital-11']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Synthetic Biology Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital12ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-12',
+  title: 'Synthetic Biology Infrastructure',
+  description: `Create revolutionary synthetic biology infrastructure leveraging living computers. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement synthetic biology at planetary scale
+- Achieve living computers breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-12', problemConfigs['l6-bio-digital-12']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Nano-Medicine Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital13ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-13',
+  title: 'Nano-Medicine Infrastructure',
+  description: `Create revolutionary nano-medicine infrastructure leveraging consciousness transfer. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement nano-medicine at planetary scale
+- Achieve consciousness transfer breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-13', problemConfigs['l6-bio-digital-13']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Digital Twins Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital14ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-14',
+  title: 'Digital Twins Infrastructure',
+  description: `Create revolutionary digital twins infrastructure leveraging biological internet. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement digital twins at planetary scale
+- Achieve biological internet breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-14', problemConfigs['l6-bio-digital-14']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Bio-Processors Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital15ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-15',
+  title: 'Bio-Processors Infrastructure',
+  description: `Create revolutionary bio-processors infrastructure leveraging living computers. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement bio-processors at planetary scale
+- Achieve living computers breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-15', problemConfigs['l6-bio-digital-15']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Brain Uploads Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital16ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-16',
+  title: 'Brain Uploads Infrastructure',
+  description: `Create revolutionary brain uploads infrastructure leveraging consciousness transfer. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement brain uploads at planetary scale
+- Achieve consciousness transfer breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-16', problemConfigs['l6-bio-digital-16']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
+/**
+ * Synthetic Biology Infrastructure
+ * From extracted-problems/system-design/bio-digital.md
+ */
+export const l6BioDigital17ProblemDefinition: ProblemDefinition = {
+  id: 'l6-bio-digital-17',
+  title: 'Synthetic Biology Infrastructure',
+  description: `Create revolutionary synthetic biology infrastructure leveraging biological internet. This system will transform how we think about computing and set new industry standards for the next decade.
+- Implement synthetic biology at planetary scale
+- Achieve biological internet breakthrough
+- Support quantum-resistant security
+- Enable autonomous self-healing`,
+
+  functionalRequirements: {
+    mustHave: [
+
+    ],
+    mustConnect: [
+
+    ],
+    dataModel: {
+      entities: ['data'],
+      fields: {
+        data: ['id', 'value', 'created_at'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },
+        { type: 'write', frequency: 'medium' },
+      ],
+    },
+  },
+
+  scenarios: generateScenarios('l6-bio-digital-17', problemConfigs['l6-bio-digital-17']),
+
+  validators: [
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+};
+
