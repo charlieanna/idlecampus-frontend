@@ -5,7 +5,7 @@ import { problemConfigs } from '../problemConfigs';
 
 /**
  * Amazon - E-commerce Marketplace
- * Level 1 ONLY: Brute force connectivity test
+ * Comprehensive FR and NFR scenarios
  */
 export const amazonProblemDefinition: ProblemDefinition = {
   id: 'amazon',
@@ -57,20 +57,7 @@ export const amazonProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: [
-    {
-      name: 'Level 1: The Brute Force Test - Does It Even Work?',
-      description: 'Like algorithm brute force: ignore performance, just verify connectivity. Client → App → Database path exists. No optimization needed.',
-      traffic: {
-        rps: 0.1,
-        readWriteRatio: 0.5,
-      },
-      passCriteria: {
-        maxLatency: 30000,
-        maxErrorRate: 0.99,
-      },
-    },
-  ],
+  scenarios: generateScenarios('amazon', problemConfigs.amazon),
 
   validators: [
     {

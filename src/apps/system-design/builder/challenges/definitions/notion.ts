@@ -5,7 +5,7 @@ import { problemConfigs } from '../problemConfigs';
 
 /**
  * Notion - Collaborative Workspace
- * Level 1 ONLY: Brute force connectivity test
+ * Comprehensive FR and NFR scenarios
  */
 export const notionProblemDefinition: ProblemDefinition = {
   id: 'notion',
@@ -64,20 +64,7 @@ export const notionProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: [
-    {
-      name: 'Level 1: The Brute Force Test - Does It Even Work?',
-      description: 'Like algorithm brute force: ignore performance, just verify connectivity. Client → App → Database → WebSocket path exists. No optimization needed.',
-      traffic: {
-        rps: 0.1,
-        readWriteRatio: 0.5,
-      },
-      passCriteria: {
-        maxLatency: 30000,
-        maxErrorRate: 0.99,
-      },
-    },
-  ],
+  scenarios: generateScenarios('notion', problemConfigs.notion),
 
   validators: [
     {

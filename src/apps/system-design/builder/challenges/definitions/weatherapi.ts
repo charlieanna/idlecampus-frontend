@@ -5,7 +5,7 @@ import { problemConfigs } from '../problemConfigs';
 
 /**
  * Weather API - Weather Data Service
- * Level 1 ONLY: Brute force connectivity test
+ * Comprehensive FR and NFR scenarios
  */
 export const weatherapiProblemDefinition: ProblemDefinition = {
   id: 'weatherapi',
@@ -55,21 +55,7 @@ export const weatherapiProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: [
-    {
-      name: 'Level 1: The Brute Force Test - Does It Even Work?',
-      description: 'Like algorithm brute force: ignore performance, just verify connectivity. Client → App → Database path exists. No optimization needed.',
-      traffic: {
-        rps: 0.1,
-        readWriteRatio: 0.9, // Very read-heavy
-        geospatialQueries: true,
-      },
-      passCriteria: {
-        maxLatency: 30000,
-        maxErrorRate: 0.99,
-      },
-    },
-  ],
+  scenarios: generateScenarios('weatherapi', problemConfigs.weatherapi),
 
   validators: [
     {
