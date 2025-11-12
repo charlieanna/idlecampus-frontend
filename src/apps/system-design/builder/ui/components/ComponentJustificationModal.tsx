@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Node } from 'reactflow';
-import { getTradeoffsForComponent, ComponentTradeoff } from '../../data/componentTradeoffs';
 
 interface ComponentJustificationModalProps {
   node: Node;
@@ -14,7 +13,7 @@ interface JustificationData {
   why: string;
   benefits: string;
   alternatives: string;
-  tradeoffIds: string[]; // Selected trade-off checkboxes
+  tradeoffs: string; // Trade-offs identified by user
   tradeoffExplanation: string; // How/why these trade-offs matter
 }
 
@@ -62,7 +61,7 @@ export function ComponentJustificationModal({
   // Parse initial justification if it exists
   const parseInitialJustification = (initial: string): JustificationData => {
     if (!initial) {
-      return { why: '', benefits: '', alternatives: '', tradeoffIds: [], tradeoffExplanation: '' };
+      return { why: '', benefits: '', alternatives: '', tradeoffs: '', tradeoffExplanation: '' };
     }
 
     try {
@@ -72,24 +71,21 @@ export function ComponentJustificationModal({
           why: parsed.why || '',
           benefits: parsed.benefits || '',
           alternatives: parsed.alternatives || '',
-          tradeoffIds: parsed.tradeoffIds || parsed.tradeoffs || [], // Handle both formats
+          tradeoffs: parsed.tradeoffs || parsed.tradeoffsCustom || '',
           tradeoffExplanation: parsed.tradeoffExplanation || '',
         };
       }
     } catch {
       // Legacy format - single string
-      return { why: initial, benefits: '', alternatives: '', tradeoffIds: [], tradeoffExplanation: '' };
+      return { why: initial, benefits: '', alternatives: '', tradeoffs: '', tradeoffExplanation: '' };
     }
 
-    return { why: '', benefits: '', alternatives: '', tradeoffIds: [], tradeoffExplanation: '' };
+    return { why: '', benefits: '', alternatives: '', tradeoffs: '', tradeoffExplanation: '' };
   };
 
   const [justification, setJustification] = useState<JustificationData>(
     parseInitialJustification(initialJustification)
   );
-
-  const componentType = node.data.componentType;
-  const availableTradeoffs = getTradeoffsForComponent(componentType);
 
   const handleSave = () => {
     // Save as JSON string
@@ -108,48 +104,20 @@ export function ComponentJustificationModal({
     setJustification(prev => ({ ...prev, [field]: value }));
   };
 
-  const toggleTradeoff = (tradeoffId: string) => {
-    setJustification(prev => {
-      const currentIds = prev.tradeoffIds;
-      if (currentIds.includes(tradeoffId)) {
-        return { ...prev, tradeoffIds: currentIds.filter(id => id !== tradeoffId) };
-      } else {
-        return { ...prev, tradeoffIds: [...currentIds, tradeoffId] };
-      }
-    });
-  };
-
   const isFormValid = () => {
     const whyValid = validateText(justification.why, 15).valid;
     const benefitsValid = validateText(justification.benefits, 15).valid;
     const alternativesValid = validateText(justification.alternatives, 15).valid;
-    const tradeoffsSelected = justification.tradeoffIds.length >= 2; // At least 2 trade-offs
+    const tradeoffsValid = validateText(justification.tradeoffs, 15).valid;
     const tradeoffExplanationValid = validateText(justification.tradeoffExplanation, 15).valid;
 
-    return whyValid && benefitsValid && alternativesValid && tradeoffsSelected && tradeoffExplanationValid;
-  };
-
-  // Group trade-offs by category
-  const groupedTradeoffs = availableTradeoffs.reduce((acc, tradeoff) => {
-    if (!acc[tradeoff.category]) {
-      acc[tradeoff.category] = [];
-    }
-    acc[tradeoff.category].push(tradeoff);
-    return acc;
-  }, {} as Record<string, ComponentTradeoff[]>);
-
-  const categoryLabels: Record<string, string> = {
-    cost: '💰 Cost',
-    complexity: '🔧 Complexity',
-    performance: '⚡ Performance',
-    reliability: '🛡️ Reliability',
-    scalability: '📈 Scalability',
-    maintenance: '🔨 Maintenance',
+    return whyValid && benefitsValid && alternativesValid && tradeoffsValid && tradeoffExplanationValid;
   };
 
   const whyValidation = validateText(justification.why, 15);
   const benefitsValidation = validateText(justification.benefits, 15);
   const alternativesValidation = validateText(justification.alternatives, 15);
+  const tradeoffsValidation = validateText(justification.tradeoffs, 15);
   const tradeoffExplanationValidation = validateText(justification.tradeoffExplanation, 15);
 
   return (
@@ -197,8 +165,8 @@ export function ComponentJustificationModal({
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
               <p className="text-sm text-blue-900">
-                <strong>📝 Note:</strong> All fields are required. Provide meaningful explanations (min 15 words each).
-                For trade-offs, select at least 2 that apply, then explain how/why they impact your design.
+                <strong>📝 Note:</strong> All 5 fields are required. Provide meaningful explanations (min 15 words each).
+                Think critically about your design choices.
               </p>
             </div>
 
@@ -272,52 +240,25 @@ export function ComponentJustificationModal({
               </div>
             </div>
 
-            {/* Trade-offs Section - Checkboxes + Explanation */}
+            {/* Trade-offs Section - Text Fields Only */}
             <div>
               <label className="block text-sm font-semibold text-gray-900 mb-2">
                 4. What are the trade-offs? <span className="text-red-500">*</span>
               </label>
-              <p className="text-xs text-gray-500 mb-3">
-                First, select at least 2 trade-offs that apply to your use case:
+              <p className="text-xs text-gray-500 mb-2">
+                List the trade-offs (downsides, costs, limitations, complexity):
               </p>
-
-              {availableTradeoffs.length === 0 ? (
-                <div className="bg-gray-100 border border-gray-300 rounded-lg p-4 text-sm text-gray-600">
-                  No predefined trade-offs for this component type.
-                </div>
-              ) : (
-                <div className="space-y-4 bg-gray-50 border border-gray-200 rounded-lg p-4 max-h-64 overflow-y-auto">
-                  {Object.entries(groupedTradeoffs).map(([category, tradeoffs]) => (
-                    <div key={category}>
-                      <div className="text-xs font-semibold text-gray-700 mb-2">
-                        {categoryLabels[category] || category}
-                      </div>
-                      <div className="space-y-2 ml-2">
-                        {tradeoffs.map(tradeoff => (
-                          <label
-                            key={tradeoff.id}
-                            className="flex items-start gap-2 cursor-pointer hover:bg-white p-2 rounded transition-colors"
-                          >
-                            <input
-                              type="checkbox"
-                              checked={justification.tradeoffIds.includes(tradeoff.id)}
-                              onChange={() => toggleTradeoff(tradeoff.id)}
-                              className="mt-1 w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-                            />
-                            <span className="text-sm text-gray-700">{tradeoff.text}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <div className="flex justify-between items-center mt-2">
-                <span className={`text-xs ${justification.tradeoffIds.length >= 2 ? 'text-green-600' : 'text-gray-400'}`}>
-                  {justification.tradeoffIds.length >= 2
-                    ? `✓ ${justification.tradeoffIds.length} selected`
-                    : `${justification.tradeoffIds.length}/2 minimum`}
+              <textarea
+                value={justification.tradeoffs}
+                onChange={(e) => updateField('tradeoffs', e.target.value)}
+                placeholder="E.g., 'Additional infrastructure cost (~$200/month), Cache invalidation complexity, Possible stale data if TTL is too long, Need monitoring for cache health, Single point of failure without replication...'"
+                className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
+                  justification.tradeoffs && !tradeoffsValidation.valid ? 'border-red-300' : 'border-gray-300'
+                }`}
+              />
+              <div className="flex justify-between items-center mt-1">
+                <span className={`text-xs ${tradeoffsValidation.valid ? 'text-green-600' : 'text-gray-400'}`}>
+                  {tradeoffsValidation.valid ? '✓ Valid' : tradeoffsValidation.error || `${justification.tradeoffs.split(/\s+/).filter(w => w).length}/15 words`}
                 </span>
               </div>
 
@@ -329,7 +270,7 @@ export function ComponentJustificationModal({
                 <textarea
                   value={justification.tradeoffExplanation}
                   onChange={(e) => updateField('tradeoffExplanation', e.target.value)}
-                  placeholder="E.g., 'The $200/month Redis cost is justified because it prevents thousands in database scaling costs. Cache stampede risk is mitigated by using probabilistic early expiration. Stale data for 1-2 seconds is acceptable for our read-heavy URL redirection use case...'"
+                  placeholder="E.g., 'The $200/month cost is justified because it prevents thousands in database scaling costs. Cache invalidation is acceptable since URLs rarely change. Stale data for 1-2 seconds is fine for our read-heavy use case...'"
                   className={`w-full h-24 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-sm ${
                     justification.tradeoffExplanation && !tradeoffExplanationValidation.valid ? 'border-red-300' : 'border-gray-300'
                   }`}
