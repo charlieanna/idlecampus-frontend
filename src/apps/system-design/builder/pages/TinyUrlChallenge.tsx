@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Play, CheckCircle, XCircle, AlertCircle, Database, X, Download, Code } from 'lucide-react';
+import { Play, CheckCircle, XCircle, AlertCircle, Database, X, Download, Code, Settings } from 'lucide-react';
 import { SchemaEditor } from '../ui/components/SchemaEditor';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
 import { SystemGraph } from '../types/graph';
 import { RDS_INSTANCES, EC2_INSTANCES, REDIS_INSTANCES } from '../types/instanceTypes';
+import { getMinimalComponentConfig, getConfigDescription } from '../services/componentDefaults';
 
 type ComponentType = 'app_server' | 'postgresql' | 'redis' | 'load_balancer';
 
@@ -32,11 +33,9 @@ export function TinyUrlChallenge() {
   const [activeTab, setActiveTab] = useState<'canvas' | 'python'>('canvas');
 
   const handleAddComponent = (type: ComponentType) => {
-    setCurrentComponentType(type);
-    // Set default config based on type
-    const defaultConfig = getDefaultConfig(type);
-    setCurrentConfig(defaultConfig);
-    setShowConfigModal(true);
+    // NEW: Instantly add component with minimal config - no modal!
+    const minimalConfig = getMinimalComponentConfig(type, tinyUrlProblemDefinition);
+    setComponents([...components, { type, config: minimalConfig }]);
   };
 
   const handleConfigComplete = () => {
@@ -248,7 +247,7 @@ export function TinyUrlChallenge() {
                 Build Your Architecture
               </h2>
               <p className="text-sm text-gray-600 mb-4">
-                Add components and answer questions about your design decisions
+                Click to add components with minimal config. Connect them first, optimize later!
               </p>
 
               <div className="grid grid-cols-2 gap-3">
@@ -304,21 +303,41 @@ export function TinyUrlChallenge() {
                   {components.map((comp, i) => (
                     <div
                       key={i}
-                      className="flex items-start justify-between p-3 bg-gray-50 rounded-lg"
+                      className="p-3 bg-gray-50 rounded-lg border border-gray-200"
                     >
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900 mb-1">
-                          {getComponentName(comp.type)}
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">
+                            {getComponentName(comp.type)}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {getConfigDescription(comp.type)}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-600 space-y-0.5">
-                          {renderComponentConfig(comp)}
-                        </div>
+                        <button
+                          onClick={() => handleRemoveComponent(i)}
+                          className="text-gray-400 hover:text-red-600 ml-2"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
+
+                      {/* Minimal config preview */}
+                      <div className="text-xs text-gray-600 space-y-0.5 mt-2 pl-3 border-l-2 border-gray-300">
+                        {renderComponentConfig(comp)}
+                      </div>
+
+                      {/* Optimize button */}
                       <button
-                        onClick={() => handleRemoveComponent(i)}
-                        className="text-red-500 hover:text-red-700 text-sm"
+                        onClick={() => {
+                          setCurrentComponentType(comp.type);
+                          setCurrentConfig(comp.config);
+                          setShowConfigModal(true);
+                        }}
+                        className="mt-2 w-full px-3 py-1.5 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-center gap-1.5"
                       >
-                        Remove
+                        <Settings className="w-3 h-3" />
+                        Optimize Configuration
                       </button>
                     </div>
                   ))}
