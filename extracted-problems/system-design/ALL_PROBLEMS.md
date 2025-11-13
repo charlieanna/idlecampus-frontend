@@ -1453,7 +1453,7 @@ Shorten URLs and serve redirects at massive read volume. Use a CDN and app‑lev
 
 ### Functional Requirements
 
-- Shorten long URLs to 7-character unique codes
+- Given a long URL, generate a short URL
 - Redirect users from short URL to original URL via HTTP 301/302
 - Support custom aliases for premium users (optional)
 - Provide analytics: click count, referrer, geographic data
