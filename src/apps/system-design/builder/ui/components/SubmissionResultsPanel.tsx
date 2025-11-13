@@ -223,29 +223,6 @@ export function SubmissionResultsPanel({
                         </div>
                       )}
                     </div>
-
-                    {/* Bottlenecks - Only show for failed tests */}
-                    {!result.passed && result.bottlenecks.length > 0 && (
-                      <div className="mt-3 pt-3 border-t border-red-200">
-                        <div className="text-xs font-medium text-red-700 mb-2">
-                          🔍 Issues Detected:
-                        </div>
-                        <ul className="space-y-1">
-                          {result.bottlenecks.slice(0, 2).map((bottleneck, idx) => (
-                            <li key={idx} className="text-xs text-red-700">
-                              • {bottleneck.component}: {bottleneck.reason}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Explanation */}
-                    {result.explanation && (
-                      <div className="mt-2 text-xs text-gray-600 italic">
-                        {result.explanation}
-                      </div>
-                    )}
                   </div>
                 )}
               </motion.div>

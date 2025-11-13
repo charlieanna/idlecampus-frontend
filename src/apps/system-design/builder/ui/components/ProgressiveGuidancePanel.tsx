@@ -216,17 +216,6 @@ export function ProgressiveGuidancePanel({
             </div>
           ) : (
             <div className="space-y-2">
-              {testResult.bottlenecks && testResult.bottlenecks.length > 0 && (
-                <div>
-                  <div className="text-xs font-semibold text-red-900 mb-1">Bottlenecks:</div>
-                  {testResult.bottlenecks.map((bottleneck, i) => (
-                    <div key={i} className="text-xs text-red-800 ml-2">
-                      • {bottleneck.componentId}: {bottleneck.reason}
-                    </div>
-                  ))}
-                </div>
-              )}
-
               {!showHint && (
                 <button
                   onClick={() => setShowHint(true)}
