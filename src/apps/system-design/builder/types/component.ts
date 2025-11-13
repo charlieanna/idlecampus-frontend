@@ -57,7 +57,7 @@ export type CacheType =
   | 'elasticache';
 
 /**
- * Database categories
+ * Database categories (legacy - kept for backward compatibility)
  */
 export type DatabaseCategory =
   | 'sql'
@@ -65,6 +65,16 @@ export type DatabaseCategory =
   | 'nosql_columnar'
   | 'nosql_search'
   | 'nosql_keyvalue';
+
+/**
+ * Data model types (DDIA-aligned)
+ */
+export type DataModel =
+  | 'relational'
+  | 'document'
+  | 'wide-column'
+  | 'graph'
+  | 'key-value';
 
 /**
  * Component types

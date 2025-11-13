@@ -359,12 +359,17 @@ export function getDefaultConfig(type: string): Record<string, any> {
     load_balancer: {},
     app_server: { instances: 1 },
     database: {
+      dataModel: 'relational',  // Default to relational model
+      // Auto-configured settings for relational
+      replication: 'single-leader',
+      replicas: 2,
+      isolation: 'read-committed',
+      sharding: false,
+      consistency: 'strong',
+      indexType: 'b-tree',
+      // Legacy fields for backward compatibility
       databaseType: 'postgresql',
       dbCategory: 'sql',
-      readCapacity: 1000,
-      writeCapacity: 1000,
-      replication: { enabled: false, replicas: 0 },
-      storageSizeGB: 50,
     },
     cache: {
       cacheType: 'redis',

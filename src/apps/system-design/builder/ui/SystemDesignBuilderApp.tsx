@@ -99,6 +99,7 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('canvas'); // 'canvas', 'python', or component ID
 
+
   // Load test state
   const [loadTestRunning, setLoadTestRunning] = useState(false);
   const [loadTestProgress, setLoadTestProgress] = useState<LoadTestProgress | null>(null);
@@ -243,13 +244,16 @@ def expand(code: str, store: dict) -> str:
     handleSubmit();
   };
 
-  const handleAddComponent = (componentType: string) => {
+  const handleAddComponent = (componentType: string, additionalConfig?: any) => {
     const id = `${componentType}_${Date.now()}`;
+
+    const defaultConfig = getDefaultConfig(componentType);
+    const config = additionalConfig ? { ...defaultConfig, ...additionalConfig } : defaultConfig;
 
     const newComponent = {
       id,
       type: componentType as any,
-      config: getDefaultConfig(componentType),
+      config,
     };
 
     setSystemGraph({
@@ -257,6 +261,7 @@ def expand(code: str, store: dict) -> str:
       components: [...systemGraph.components, newComponent],
     });
   };
+
 
   const handleUpdateConfig = (nodeId: string, config: Record<string, any>) => {
     const updatedComponents = systemGraph.components.map((comp) =>
@@ -360,22 +365,24 @@ def expand(code: str, store: dict) -> str:
   const getComponentTabLabel = (component: any) => {
     // For database component, show the configured type
     if (isDatabaseComponentType(component.type)) {
-      const dbType = component.config?.databaseType || inferDatabaseType(component);
-      const dbIcons: Record<string, string> = {
-        postgresql: '🐘',
-        mysql: '🐬',
-        mongodb: '🍃',
-        couchdb: '🛋️',
-        cassandra: '📊',
-        hbase: '📊',
-        elasticsearch: '🔍',
-        solr: '🔍',
-        dynamodb: '⚡',
-        keydb: '🗝️',
+      const dataModel = component.config?.dataModel || 'relational';
+      const modelIcons: Record<string, string> = {
+        'relational': '💾',
+        'document': '📄',
+        'wide-column': '📊',
+        'graph': '🔗',
+        'key-value': '🔑',
       };
-      const icon = dbIcons[dbType] || '💾';
-      const dbName = dbType.charAt(0).toUpperCase() + dbType.slice(1);
-      return `${icon} ${dbName}`;
+      const modelLabels: Record<string, string> = {
+        'relational': 'Relational DB',
+        'document': 'Document DB',
+        'wide-column': 'Wide-Column DB',
+        'graph': 'Graph DB',
+        'key-value': 'Key-Value Store',
+      };
+      const icon = modelIcons[dataModel] || '💾';
+      const label = modelLabels[dataModel] || 'Database';
+      return `${icon} ${label}`;
     }
 
     // For cache component, show the configured type
@@ -779,6 +786,7 @@ def expand(code: str, store: dict) -> str:
           onApplySolution={handleLoadSolution}
         />
       )}
+
     </div>
   );
 }

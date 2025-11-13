@@ -135,13 +135,13 @@ export function EnhancedInspector({
         )}
 
         {/* Database Config */}
-        {databaseComponent && defaultDatabaseType && defaultDbCategory && (
+        {databaseComponent && (
           <DatabaseConfig
             config={component.config}
             onChange={handleChange}
             onApplyPreset={applyPreset}
-            defaultDatabaseType={defaultDatabaseType}
-            defaultDbCategory={defaultDbCategory}
+            defaultDatabaseType={defaultDatabaseType || 'postgresql'}
+            defaultDbCategory={defaultDbCategory || 'sql'}
           />
         )}
 
@@ -342,309 +342,593 @@ function DatabaseConfig({
   defaultDatabaseType,
   defaultDbCategory,
 }: DatabaseConfigProps) {
-  const databaseType = config.databaseType || defaultDatabaseType;
-  const dbCategory = config.dbCategory || defaultDbCategory;
+  const dataModel = config.dataModel || 'relational';
+  const [activeSection, setActiveSection] = React.useState<'schema' | 'model' | 'replication'>('schema');
 
-  // Database type options grouped by category
-  const dbTypesByCategory = {
-    sql: [
-      { value: 'postgresql', label: 'PostgreSQL', icon: '🐘' },
-      { value: 'mysql', label: 'MySQL', icon: '🐬' },
-    ],
-    nosql_keyvalue: [
-      { value: 'dynamodb', label: 'DynamoDB', icon: '⚡' },
-      { value: 'keydb', label: 'KeyDB', icon: '🗝️' },
-    ],
-    nosql_document: [
-      { value: 'mongodb', label: 'MongoDB', icon: '🍃' },
-      { value: 'couchdb', label: 'CouchDB', icon: '🛋️' },
-    ],
-    nosql_columnar: [
-      { value: 'cassandra', label: 'Cassandra', icon: '📊' },
-      { value: 'hbase', label: 'HBase', icon: '📊' },
-    ],
-    nosql_search: [
-      { value: 'elasticsearch', label: 'Elasticsearch', icon: '🔍' },
-      { value: 'solr', label: 'Solr', icon: '🔍' },
-    ],
+  // Schema state
+  const [tables, setTables] = React.useState<any[]>(config.schema || []);
+  const [foreignKeys, setForeignKeys] = React.useState<any[]>(config.foreignKeys || []);
+
+  // Auto-configuration for each data model
+  const autoConfigurations: Record<string, any> = {
+    relational: {
+      replication: 'single-leader',
+      replicas: 2,
+      isolation: 'read-committed',
+      sharding: false,
+      consistency: 'strong',
+      indexType: 'b-tree',
+    },
+    document: {
+      sharding: true,
+      shards: 3,
+      replicationFactor: 3,
+      consistency: 'eventual',
+      indexes: 'auto',
+      writeQuorum: 'majority',
+    },
+    'wide-column': {
+      nodes: 3,
+      replicationFactor: 3,
+      consistency: 'eventual',
+      compaction: 'size-tiered',
+      writeConsistency: 'quorum',
+    },
+    graph: {
+      sharding: 'by-vertex',
+      replicas: 2,
+      traversalDepth: 3,
+      indexStrategy: 'node-properties',
+      consistency: 'eventual',
+    },
+    'key-value': {
+      memorySizeGB: 8,
+      replicationFactor: 3,
+      consistency: 'eventual',
+      evictionPolicy: 'lru',
+      persistence: true,
+    },
   };
 
-  const handleCategoryChange = (category: string) => {
-    onChange('dbCategory', category);
-    // Set default database type for the category
-    const defaultTypes: Record<string, string> = {
-      sql: 'postgresql',
-      nosql_keyvalue: 'dynamodb',
-      nosql_document: 'mongodb',
-      nosql_columnar: 'cassandra',
-      nosql_search: 'elasticsearch',
+  const updateConfig = (key: string, value: any) => {
+    onChange(key, value);
+  };
+
+  const handleDataModelChange = (model: string) => {
+    onChange('dataModel', model);
+    // Apply auto-configuration for the selected model
+    const autoConfig = autoConfigurations[model];
+    Object.entries(autoConfig).forEach(([key, value]) => {
+      onChange(key, value);
+    });
+  };
+
+  // Schema management functions
+  const handleAddTable = () => {
+    const newTable = {
+      name: `table_${tables.length + 1}`,
+      columns: [
+        { name: 'id', type: 'integer', primaryKey: true, nullable: false }
+      ]
     };
-    onChange('databaseType', defaultTypes[category]);
+    const updatedTables = [...tables, newTable];
+    setTables(updatedTables);
+    updateConfig('schema', updatedTables);
+  };
+
+  const handleRemoveTable = (index: number) => {
+    const updatedTables = tables.filter((_, i) => i !== index);
+    setTables(updatedTables);
+    updateConfig('schema', updatedTables);
+    // Also remove any foreign keys referencing this table
+    const tableName = tables[index].name;
+    const updatedFks = foreignKeys.filter(
+      fk => fk.fromTable !== tableName && fk.toTable !== tableName
+    );
+    setForeignKeys(updatedFks);
+    updateConfig('foreignKeys', updatedFks);
+  };
+
+  const handleAddColumn = (tableIndex: number) => {
+    const newColumn = {
+      name: `column_${tables[tableIndex].columns.length + 1}`,
+      type: 'string',
+      nullable: true
+    };
+    const updatedTables = [...tables];
+    updatedTables[tableIndex].columns.push(newColumn);
+    setTables(updatedTables);
+    updateConfig('schema', updatedTables);
+  };
+
+  const handleRemoveColumn = (tableIndex: number, columnIndex: number) => {
+    const updatedTables = [...tables];
+    updatedTables[tableIndex].columns.splice(columnIndex, 1);
+    setTables(updatedTables);
+    updateConfig('schema', updatedTables);
+  };
+
+  const handleAddForeignKey = () => {
+    const newFk = { fromTable: '', toTable: '' };
+    const updatedFks = [...foreignKeys, newFk];
+    setForeignKeys(updatedFks);
+    updateConfig('foreignKeys', updatedFks);
+  };
+
+  const handleRemoveForeignKey = (index: number) => {
+    const updatedFks = foreignKeys.filter((_, i) => i !== index);
+    setForeignKeys(updatedFks);
+    updateConfig('foreignKeys', updatedFks);
   };
 
   return (
-    <div className="space-y-4">
-      <h3 className="font-semibold text-sm text-gray-900">Database Configuration</h3>
+    <div className="h-full flex flex-col">
+      {/* Section Tabs */}
+      <div className="border-b border-gray-200">
+        <div className="flex space-x-1 p-2">
+          <button
+            onClick={() => setActiveSection('schema')}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              activeSection === 'schema'
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+            }`}
+          >
+            📊 Schema
+          </button>
+          <button
+            onClick={() => setActiveSection('model')}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              activeSection === 'model'
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+            }`}
+          >
+            💾 Data Model
+          </button>
+          <button
+            onClick={() => setActiveSection('replication')}
+            className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+              activeSection === 'replication'
+                ? 'bg-blue-100 text-blue-700'
+                : 'text-gray-600 hover:text-gray-800 hover:bg-gray-100'
+            }`}
+          >
+            🔄 Replication & Scaling
+          </button>
+        </div>
+      </div>
 
-      {/* Database Category Selector */}
-      <div>
-        <label className="block text-xs font-medium text-gray-700 mb-2">
-          Database Category
-        </label>
-        <div className="space-y-2">
-          {[
-            { value: 'sql', label: 'SQL (ACID)', desc: 'Relational, transactions', icon: '💾' },
-            { value: 'nosql_keyvalue', label: 'NoSQL Key-Value', desc: 'Low-latency KV access', icon: '⚡' },
-            { value: 'nosql_document', label: 'NoSQL Document', desc: 'JSON-like documents', icon: '📄' },
-            { value: 'nosql_columnar', label: 'NoSQL Columnar', desc: 'Wide-column store', icon: '📊' },
-            { value: 'nosql_search', label: 'NoSQL Search', desc: 'Full-text search', icon: '🔍' },
-          ].map((cat) => (
-            <button
-              key={cat.value}
-              onClick={() => handleCategoryChange(cat.value)}
-              className={`w-full p-3 text-left border-2 rounded-lg transition-colors ${
-                dbCategory === cat.value
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{cat.icon}</span>
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">{cat.label}</div>
-                  <div className="text-xs text-gray-500">{cat.desc}</div>
+      {/* Section Content */}
+      <div className="flex-1 overflow-y-auto p-4">
+        {activeSection === 'schema' && (
+          <div className="space-y-4">
+            {/* Schema Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Database Schema</h3>
+              <button
+                onClick={handleAddTable}
+                className="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                + Add Table
+              </button>
+            </div>
+
+            {/* Tables List */}
+            {tables.length === 0 ? (
+              <div className="text-center py-8 bg-gray-50 rounded-lg">
+                <p className="text-gray-500 mb-2">No tables defined yet</p>
+                <p className="text-sm text-gray-400">Click "Add Table" to create your first table</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {tables.map((table, tableIndex) => (
+                  <div key={tableIndex} className="border border-gray-200 rounded-lg">
+                    {/* Table Header */}
+                    <div className="bg-gray-50 px-4 py-3 flex items-center justify-between">
+                      <input
+                        type="text"
+                        value={table.name}
+                        onChange={(e) => {
+                          const newTables = [...tables];
+                          newTables[tableIndex].name = e.target.value;
+                          setTables(newTables);
+                          updateConfig('schema', newTables);
+                        }}
+                        className="text-sm font-medium bg-transparent border-b border-transparent hover:border-gray-400 focus:border-blue-500 focus:outline-none"
+                        placeholder="Table name"
+                      />
+                      <button
+                        onClick={() => handleRemoveTable(tableIndex)}
+                        className="text-red-500 hover:text-red-700 text-sm"
+                      >
+                        Remove
+                      </button>
+                    </div>
+
+                    {/* Table Columns */}
+                    <div className="p-4">
+                      <div className="space-y-2">
+                        {table.columns.map((column: any, columnIndex: number) => (
+                          <div key={columnIndex} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                            <input
+                              type="text"
+                              value={column.name}
+                              onChange={(e) => {
+                                const newTables = [...tables];
+                                newTables[tableIndex].columns[columnIndex].name = e.target.value;
+                                setTables(newTables);
+                                updateConfig('schema', newTables);
+                              }}
+                              className="flex-1 text-sm px-2 py-1 border border-gray-300 rounded"
+                              placeholder="Column name"
+                            />
+                            <select
+                              value={column.type}
+                              onChange={(e) => {
+                                const newTables = [...tables];
+                                newTables[tableIndex].columns[columnIndex].type = e.target.value;
+                                setTables(newTables);
+                                updateConfig('schema', newTables);
+                              }}
+                              className="text-sm px-2 py-1 border border-gray-300 rounded"
+                            >
+                              <option value="string">String</option>
+                              <option value="integer">Integer</option>
+                              <option value="bigint">BigInt</option>
+                              <option value="decimal">Decimal</option>
+                              <option value="boolean">Boolean</option>
+                              <option value="timestamp">Timestamp</option>
+                              <option value="json">JSON</option>
+                              <option value="text">Text</option>
+                            </select>
+                            <label className="flex items-center gap-1 text-xs">
+                              <input
+                                type="checkbox"
+                                checked={column.primaryKey || false}
+                                onChange={(e) => {
+                                  const newTables = [...tables];
+                                  newTables[tableIndex].columns[columnIndex].primaryKey = e.target.checked;
+                                  setTables(newTables);
+                                  updateConfig('schema', newTables);
+                                }}
+                              />
+                              PK
+                            </label>
+                            <label className="flex items-center gap-1 text-xs">
+                              <input
+                                type="checkbox"
+                                checked={column.nullable !== false}
+                                onChange={(e) => {
+                                  const newTables = [...tables];
+                                  newTables[tableIndex].columns[columnIndex].nullable = e.target.checked;
+                                  setTables(newTables);
+                                  updateConfig('schema', newTables);
+                                }}
+                              />
+                              Nullable
+                            </label>
+                            <button
+                              onClick={() => handleRemoveColumn(tableIndex, columnIndex)}
+                              className="text-red-500 hover:text-red-700 text-xs"
+                            >
+                              ✕
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <button
+                        onClick={() => handleAddColumn(tableIndex)}
+                        className="mt-2 text-sm text-blue-600 hover:text-blue-700"
+                      >
+                        + Add Column
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Foreign Keys Section */}
+            {tables.length > 1 && (
+              <div className="mt-6">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">Foreign Keys</h4>
+                <div className="space-y-2">
+                  {foreignKeys.map((fk, index) => (
+                    <div key={index} className="flex items-center gap-2 p-2 bg-gray-50 rounded">
+                      <select
+                        value={fk.fromTable}
+                        onChange={(e) => {
+                          const newFks = [...foreignKeys];
+                          newFks[index].fromTable = e.target.value;
+                          setForeignKeys(newFks);
+                          updateConfig('foreignKeys', newFks);
+                        }}
+                        className="text-sm px-2 py-1 border border-gray-300 rounded"
+                      >
+                        <option value="">From Table</option>
+                        {tables.map((t: any) => (
+                          <option key={t.name} value={t.name}>{t.name}</option>
+                        ))}
+                      </select>
+                      <span className="text-xs text-gray-500">→</span>
+                      <select
+                        value={fk.toTable}
+                        onChange={(e) => {
+                          const newFks = [...foreignKeys];
+                          newFks[index].toTable = e.target.value;
+                          setForeignKeys(newFks);
+                          updateConfig('foreignKeys', newFks);
+                        }}
+                        className="text-sm px-2 py-1 border border-gray-300 rounded"
+                      >
+                        <option value="">To Table</option>
+                        {tables.map((t: any) => (
+                          <option key={t.name} value={t.name}>{t.name}</option>
+                        ))}
+                      </select>
+                      <button
+                        onClick={() => handleRemoveForeignKey(index)}
+                        className="text-red-500 hover:text-red-700 text-xs"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  <button
+                    onClick={handleAddForeignKey}
+                    className="text-sm text-blue-600 hover:text-blue-700"
+                  >
+                    + Add Foreign Key
+                  </button>
                 </div>
               </div>
-            </button>
-          ))}
-        </div>
-      </div>
+            )}
+          </div>
+        )}
 
-      {/* Database Type Selector (based on category) */}
-      <div>
-        <label className="block text-xs font-medium text-gray-700 mb-2">
-          Specific Database
-        </label>
-        <div className="grid grid-cols-2 gap-2">
-          {dbTypesByCategory[dbCategory as keyof typeof dbTypesByCategory]?.map((db) => (
-            <button
-              key={db.value}
-              onClick={() => onChange('databaseType', db.value)}
-              className={`p-3 text-left border-2 rounded-lg transition-colors ${
-                databaseType === db.value
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex flex-col items-center gap-1">
-                <span className="text-2xl">{db.icon}</span>
-                <span className="text-xs font-medium text-gray-900">{db.label}</span>
+        {activeSection === 'model' && (
+          <div className="space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Data Model Selection</h3>
+            <div className="space-y-3">
+              {[
+                { value: 'relational', label: 'Relational', icon: '💾', desc: 'ACID, JOINs, complex queries' },
+                { value: 'document', label: 'Document', icon: '📄', desc: 'Flexible schema, JSON-like' },
+                { value: 'wide-column', label: 'Wide-Column', icon: '📊', desc: 'Column families, write-heavy' },
+                { value: 'graph', label: 'Graph', icon: '🔗', desc: 'Nodes & edges, traversals' },
+                { value: 'key-value', label: 'Key-Value', icon: '🔑', desc: 'Simple lookups, caching' }
+              ].map((model) => (
+                <label
+                  key={model.value}
+                  className={`flex items-start gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all ${
+                    dataModel === model.value
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="dataModel"
+                    value={model.value}
+                    checked={dataModel === model.value}
+                    onChange={(e) => handleDataModelChange(e.target.value)}
+                    className="mt-1"
+                  />
+                  <span className="text-2xl">{model.icon}</span>
+                  <div className="flex-1">
+                    <div className="font-medium">{model.label}</div>
+                    <div className="text-sm text-gray-600">{model.desc}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {activeSection === 'replication' && (
+          <div className="space-y-6">
+            {/* Replication Strategy Section */}
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Replication Strategy</h3>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    How should data be replicated?
+                  </label>
+                  <select
+                    value={config.replication || 'single-leader'}
+                    onChange={(e) => updateConfig('replication', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="single-leader">Single Leader (Master-Slave)</option>
+                    <option value="multi-leader">Multi Leader (Master-Master)</option>
+                    <option value="leaderless">Leaderless (Dynamo-style)</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {config.replication === 'single-leader' && 'One node handles writes, replicas handle reads'}
+                    {config.replication === 'multi-leader' && 'Multiple nodes can accept writes, complex conflict resolution'}
+                    {config.replication === 'leaderless' && 'No designated leader, quorum-based reads/writes'}
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Number of Replicas
+                  </label>
+                  <input
+                    type="number"
+                    value={config.replicas || 2}
+                    onChange={(e) => updateConfig('replicas', parseInt(e.target.value))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                    min="0"
+                    max="10"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">
+                    More replicas = better availability, higher cost
+                  </p>
+                </div>
               </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Configuration based on selected database type */}
-      <div className="pt-4 border-t border-gray-200">
-        {/* SQL Databases */}
-        {(databaseType === 'postgresql' || databaseType === 'mysql') && (
-          <div className="space-y-3">
-            <h4 className="text-xs font-medium text-gray-700">SQL Database Settings</h4>
-
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Read Capacity (RPS)</label>
-              <input
-                type="number"
-                value={config.readCapacity || 1000}
-                onChange={(e) => onChange('readCapacity', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              />
             </div>
 
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Write Capacity (RPS)</label>
-              <input
-                type="number"
-                value={config.writeCapacity || 1000}
-                onChange={(e) => onChange('writeCapacity', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              />
+            {/* Partitioning Strategy Section */}
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Partitioning Strategy</h3>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="flex items-center gap-2 mb-3">
+                    <input
+                      type="checkbox"
+                      checked={config.sharding || false}
+                      onChange={(e) => updateConfig('sharding', e.target.checked)}
+                    />
+                    <span className="text-sm font-medium text-gray-700">Enable Partitioning/Sharding</span>
+                  </label>
+                </div>
+
+                {config.sharding && (
+                  <>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        How should data be partitioned?
+                      </label>
+                      <select
+                        value={config.partitionStrategy || 'hash'}
+                        onChange={(e) => updateConfig('partitionStrategy', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                      >
+                        <option value="range">By Key Range</option>
+                        <option value="hash">By Hash of Key</option>
+                        <option value="list">By List/Directory</option>
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {config.partitionStrategy === 'range' && 'Good for range queries, risk of hotspots'}
+                        {config.partitionStrategy === 'hash' && 'Even distribution, no range queries'}
+                        {config.partitionStrategy === 'list' && 'Explicit control over data placement'}
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Number of Partitions
+                      </label>
+                      <input
+                        type="number"
+                        value={config.shards || 3}
+                        onChange={(e) => updateConfig('shards', parseInt(e.target.value))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                        min="1"
+                        max="100"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        More partitions = better parallelism, more complexity
+                      </p>
+                    </div>
+                  </>
+                )}
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={config.replication?.enabled || false}
-                onChange={(e) => onChange('replication', { ...config.replication, enabled: e.target.checked })}
-                className="rounded"
-              />
-              <label className="text-xs text-gray-700">Enable Replication</label>
+            {/* Transaction Strategy Section */}
+            <div className="border-b border-gray-200 pb-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Transaction Strategy</h3>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Transaction Isolation Level
+                  </label>
+                  <select
+                    value={config.isolation || 'read-committed'}
+                    onChange={(e) => updateConfig('isolation', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="read-uncommitted">Read Uncommitted</option>
+                    <option value="read-committed">Read Committed</option>
+                    <option value="repeatable-read">Repeatable Read</option>
+                    <option value="serializable">Serializable</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {config.isolation === 'read-uncommitted' && 'Fastest, allows dirty reads'}
+                    {config.isolation === 'read-committed' && 'Prevents dirty reads, good default'}
+                    {config.isolation === 'repeatable-read' && 'Prevents non-repeatable reads'}
+                    {config.isolation === 'serializable' && 'Strongest guarantees, slowest performance'}
+                  </p>
+                </div>
+
+                {config.sharding && (
+                  <div>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={config.distributedTransactions || false}
+                        onChange={(e) => updateConfig('distributedTransactions', e.target.checked)}
+                      />
+                      <span className="text-sm font-medium text-gray-700">Enable Distributed Transactions (2PC)</span>
+                    </label>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Required for ACID across partitions, significant performance impact
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Consistency Strategy Section */}
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">Consistency Strategy</h3>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Consistency Model
+                  </label>
+                  <select
+                    value={config.consistency || 'strong'}
+                    onChange={(e) => updateConfig('consistency', e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg"
+                  >
+                    <option value="strong">Strong Consistency</option>
+                    <option value="eventual">Eventual Consistency</option>
+                    <option value="causal">Causal Consistency</option>
+                    <option value="bounded-staleness">Bounded Staleness</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    {config.consistency === 'strong' && 'All nodes see same data immediately'}
+                    {config.consistency === 'eventual' && 'Nodes converge over time'}
+                    {config.consistency === 'causal' && 'Preserves cause-and-effect relationships'}
+                    {config.consistency === 'bounded-staleness' && 'Maximum lag between nodes'}
+                  </p>
+                </div>
+
+                {(config.replication === 'leaderless' || config.consistency === 'eventual') && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Read/Write Quorum
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={config.readQuorum || 'majority'}
+                        onChange={(e) => updateConfig('readQuorum', e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg"
+                        placeholder="Read quorum"
+                      />
+                      <input
+                        type="text"
+                        value={config.writeQuorum || 'majority'}
+                        onChange={(e) => updateConfig('writeQuorum', e.target.value)}
+                        className="px-3 py-2 border border-gray-300 rounded-lg"
+                        placeholder="Write quorum"
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}
-
-        {/* NoSQL Document */}
-        {(databaseType === 'mongodb' || databaseType === 'couchdb') && (
-          <div className="space-y-3">
-            <h4 className="text-xs font-medium text-gray-700">Document Database Settings</h4>
-
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Number of Shards</label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={config.numShards || 1}
-                onChange={(e) => onChange('numShards', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Replication Factor</label>
-              <input
-                type="number"
-                min="1"
-                max="5"
-                value={config.replicationFactor || 3}
-                onChange={(e) => onChange('replicationFactor', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* NoSQL Key-Value */}
-        {(databaseType === 'dynamodb' || databaseType === 'keydb') && (
-          <div className="space-y-3">
-            <h4 className="text-xs font-medium text-gray-700">Key-Value Store Settings</h4>
-
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Memory Size (GB)</label>
-              <input
-                type="number"
-                min="1"
-                max="128"
-                value={config.memorySizeGB || 4}
-                onChange={(e) => onChange('memorySizeGB', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Write Capacity Units</label>
-              <input
-                type="number"
-                min="1"
-                max="20000"
-                value={config.writeCapacityUnits || 100}
-                onChange={(e) => onChange('writeCapacityUnits', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Read Capacity Units</label>
-              <input
-                type="number"
-                min="1"
-                max="20000"
-                value={config.readCapacityUnits || 100}
-                onChange={(e) => onChange('readCapacityUnits', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Consistency</label>
-              <select
-                value={config.consistency || 'eventual'}
-                onChange={(e) => onChange('consistency', e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              >
-                <option value="eventual">Eventual</option>
-                <option value="strong">Strong</option>
-              </select>
-            </div>
-          </div>
-        )}
-
-        {/* NoSQL Columnar */}
-        {(databaseType === 'cassandra' || databaseType === 'hbase') && (
-          <div className="space-y-3">
-            <h4 className="text-xs font-medium text-gray-700">Columnar Store Settings</h4>
-
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Number of Nodes</label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={config.numNodes || 3}
-                onChange={(e) => onChange('numNodes', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Replication Factor</label>
-              <input
-                type="number"
-                min="1"
-                max="5"
-                value={config.replicationFactor || 3}
-                onChange={(e) => onChange('replicationFactor', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              />
-            </div>
-          </div>
-        )}
-
-        {/* NoSQL Search */}
-        {(databaseType === 'elasticsearch' || databaseType === 'solr') && (
-          <div className="space-y-3">
-            <h4 className="text-xs font-medium text-gray-700">Search Engine Settings</h4>
-
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Number of Shards</label>
-              <input
-                type="number"
-                min="1"
-                max="20"
-                value={config.numShards || 5}
-                onChange={(e) => onChange('numShards', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs text-gray-600 mb-1">Replicas per Shard</label>
-              <input
-                type="number"
-                min="0"
-                max="3"
-                value={config.replicasPerShard || 1}
-                onChange={(e) => onChange('replicasPerShard', parseInt(e.target.value))}
-                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Info Box */}
-      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-        <div className="text-xs font-medium text-blue-900 mb-1">
-          💡 Database Selection Tips
-        </div>
-        <p className="text-xs text-blue-800">
-          {dbCategory === 'sql' && 'SQL databases provide ACID guarantees, perfect for transactions and complex queries.'}
-          {dbCategory === 'nosql_document' && 'Document databases are great for flexible schemas and JSON-like data.'}
-          {dbCategory === 'nosql_keyvalue' && 'Key-value stores offer extremely fast lookups and simple data models.'}
-          {dbCategory === 'nosql_columnar' && 'Columnar stores excel at high write throughput and time-series data.'}
-          {dbCategory === 'nosql_search' && 'Search engines provide full-text search with relevance scoring.'}
-        </p>
       </div>
     </div>
   );
