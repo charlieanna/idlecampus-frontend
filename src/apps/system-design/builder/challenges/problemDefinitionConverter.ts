@@ -117,9 +117,7 @@ function determineAvailableComponents(def: ProblemDefinition): string[] {
   const baseComponents = [
     'load_balancer',
     'app_server',
-    'postgresql',
-    'mongodb',
-    'cassandra',
+    'database',
     'redis',
     'message_queue',
     'cdn',
@@ -134,7 +132,7 @@ function determineAvailableComponents(def: ProblemDefinition): string[] {
         required.push('app_server');
         break;
       case 'storage':
-        required.push('postgresql', 'mongodb', 'cassandra');
+        required.push('database');
         break;
       case 'cache':
         required.push('redis');

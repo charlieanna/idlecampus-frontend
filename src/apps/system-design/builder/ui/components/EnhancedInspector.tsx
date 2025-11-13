@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Node } from 'reactflow';
 import { SystemGraph } from '../../types/graph';
+import { DatabaseCategory } from '../../types/component';
+import { isDatabaseComponentType, inferDatabaseCategory, inferDatabaseType } from '../../utils/database';
 
 interface InspectorProps {
   node?: Node | null;
@@ -50,6 +52,12 @@ export function EnhancedInspector({
   const component = systemGraph.components.find((c) => c.id === activeNode.id);
   if (!component) return null;
 
+  const databaseComponent = isDatabaseComponentType(component.type);
+  const defaultDatabaseType = databaseComponent ? inferDatabaseType(component) : undefined;
+  const defaultDbCategory = databaseComponent
+    ? inferDatabaseCategory(component)
+    : undefined;
+
   const handleChange = (key: string, value: any) => {
     onUpdateConfig(activeNode.id, { ...component.config, [key]: value });
   };
@@ -60,32 +68,21 @@ export function EnhancedInspector({
 
   // Calculate estimated cost for current config
   const calculateCost = (): number => {
+    if (databaseComponent) {
+      const readCapacity = component.config.readCapacity || 500;
+      const writeCapacity = component.config.writeCapacity || 200;
+      const baseUnits = Math.ceil((readCapacity + writeCapacity) / 1000) || 1;
+      const storageCost = (component.config.storageSizeGB || 50) * 0.1;
+      const replication = component.config.replication;
+      const replicas = replication?.enabled ? replication.replicas || 1 : 0;
+      return baseUnits * 80 * (1 + replicas) + storageCost;
+    }
+
     switch (component.type) {
       case 'app_server':
         return (component.config.instances || 1) * 100;
       case 'redis':
         return (component.config.memorySizeGB || 4) * 50;
-      case 'postgresql':
-        const instanceCosts: Record<string, number> = {
-          'db.t3.micro': 13,
-          'db.t3.small': 26,
-          'db.t3.medium': 53,
-          'db.m5.large': 133,
-          'db.m5.xlarge': 266,
-          'db.m5.2xlarge': 532,
-        };
-        const instanceType = component.config.instanceType || 'db.t3.medium';
-        const baseCost = instanceCosts[instanceType] || 100;
-        const replication = component.config.replication || { enabled: false, replicas: 0 };
-        const replicationCost = replication.enabled ? baseCost * replication.replicas : 0;
-        const storageCost = (component.config.storageSizeGB || 100) * 0.115;
-        return baseCost + replicationCost + storageCost;
-      case 'mongodb':
-        const mongoNodes = component.config.numShards || 3;
-        return mongoNodes * 100;
-      case 'cassandra':
-        const cassandraNodes = component.config.numNodes || 3;
-        return 200 + (cassandraNodes - 1) * 150;
       case 'message_queue':
         return (component.config.numBrokers || 3) * 100;
       case 'load_balancer':
@@ -137,36 +134,20 @@ export function EnhancedInspector({
           />
         )}
 
-        {/* PostgreSQL Config */}
-        {component.type === 'postgresql' && (
-          <PostgreSQLConfig
+        {/* Database Config */}
+        {databaseComponent && defaultDatabaseType && defaultDbCategory && (
+          <DatabaseConfig
             config={component.config}
             onChange={handleChange}
             onApplyPreset={applyPreset}
+            defaultDatabaseType={defaultDatabaseType}
+            defaultDbCategory={defaultDbCategory}
           />
         )}
 
-        {/* Redis Config */}
-        {component.type === 'redis' && (
-          <RedisConfig
-            config={component.config}
-            onChange={handleChange}
-            onApplyPreset={applyPreset}
-          />
-        )}
-
-        {/* MongoDB Config */}
-        {component.type === 'mongodb' && (
-          <MongoDBConfig
-            config={component.config}
-            onChange={handleChange}
-            onApplyPreset={applyPreset}
-          />
-        )}
-
-        {/* Cassandra Config */}
-        {component.type === 'cassandra' && (
-          <CassandraConfig
+        {/* Cache Config */}
+        {component.type === 'cache' && (
+          <CacheConfig
             config={component.config}
             onChange={handleChange}
             onApplyPreset={applyPreset}
@@ -229,6 +210,11 @@ interface ConfigProps {
   config: Record<string, any>;
   onChange: (key: string, value: any) => void;
   onApplyPreset?: (preset: Record<string, any>) => void;
+}
+
+interface DatabaseConfigProps extends ConfigProps {
+  defaultDatabaseType: string;
+  defaultDbCategory: DatabaseCategory;
 }
 
 function AppServerConfig({ config, onChange, onApplyPreset }: ConfigProps) {
@@ -341,6 +327,462 @@ function AppServerConfig({ config, onChange, onApplyPreset }: ConfigProps) {
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+// ============================================================================
+// Generic Database Configuration with Type Selector
+// ============================================================================
+
+function DatabaseConfig({
+  config,
+  onChange,
+  onApplyPreset,
+  defaultDatabaseType,
+  defaultDbCategory,
+}: DatabaseConfigProps) {
+  const databaseType = config.databaseType || defaultDatabaseType;
+  const dbCategory = config.dbCategory || defaultDbCategory;
+
+  // Database type options grouped by category
+  const dbTypesByCategory = {
+    sql: [
+      { value: 'postgresql', label: 'PostgreSQL', icon: '🐘' },
+      { value: 'mysql', label: 'MySQL', icon: '🐬' },
+    ],
+    nosql_keyvalue: [
+      { value: 'dynamodb', label: 'DynamoDB', icon: '⚡' },
+      { value: 'keydb', label: 'KeyDB', icon: '🗝️' },
+    ],
+    nosql_document: [
+      { value: 'mongodb', label: 'MongoDB', icon: '🍃' },
+      { value: 'couchdb', label: 'CouchDB', icon: '🛋️' },
+    ],
+    nosql_columnar: [
+      { value: 'cassandra', label: 'Cassandra', icon: '📊' },
+      { value: 'hbase', label: 'HBase', icon: '📊' },
+    ],
+    nosql_search: [
+      { value: 'elasticsearch', label: 'Elasticsearch', icon: '🔍' },
+      { value: 'solr', label: 'Solr', icon: '🔍' },
+    ],
+  };
+
+  const handleCategoryChange = (category: string) => {
+    onChange('dbCategory', category);
+    // Set default database type for the category
+    const defaultTypes: Record<string, string> = {
+      sql: 'postgresql',
+      nosql_keyvalue: 'dynamodb',
+      nosql_document: 'mongodb',
+      nosql_columnar: 'cassandra',
+      nosql_search: 'elasticsearch',
+    };
+    onChange('databaseType', defaultTypes[category]);
+  };
+
+  return (
+    <div className="space-y-4">
+      <h3 className="font-semibold text-sm text-gray-900">Database Configuration</h3>
+
+      {/* Database Category Selector */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-2">
+          Database Category
+        </label>
+        <div className="space-y-2">
+          {[
+            { value: 'sql', label: 'SQL (ACID)', desc: 'Relational, transactions', icon: '💾' },
+            { value: 'nosql_keyvalue', label: 'NoSQL Key-Value', desc: 'Low-latency KV access', icon: '⚡' },
+            { value: 'nosql_document', label: 'NoSQL Document', desc: 'JSON-like documents', icon: '📄' },
+            { value: 'nosql_columnar', label: 'NoSQL Columnar', desc: 'Wide-column store', icon: '📊' },
+            { value: 'nosql_search', label: 'NoSQL Search', desc: 'Full-text search', icon: '🔍' },
+          ].map((cat) => (
+            <button
+              key={cat.value}
+              onClick={() => handleCategoryChange(cat.value)}
+              className={`w-full p-3 text-left border-2 rounded-lg transition-colors ${
+                dbCategory === cat.value
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{cat.icon}</span>
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-900">{cat.label}</div>
+                  <div className="text-xs text-gray-500">{cat.desc}</div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Database Type Selector (based on category) */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-2">
+          Specific Database
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          {dbTypesByCategory[dbCategory as keyof typeof dbTypesByCategory]?.map((db) => (
+            <button
+              key={db.value}
+              onClick={() => onChange('databaseType', db.value)}
+              className={`p-3 text-left border-2 rounded-lg transition-colors ${
+                databaseType === db.value
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-2xl">{db.icon}</span>
+                <span className="text-xs font-medium text-gray-900">{db.label}</span>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Configuration based on selected database type */}
+      <div className="pt-4 border-t border-gray-200">
+        {/* SQL Databases */}
+        {(databaseType === 'postgresql' || databaseType === 'mysql') && (
+          <div className="space-y-3">
+            <h4 className="text-xs font-medium text-gray-700">SQL Database Settings</h4>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Read Capacity (RPS)</label>
+              <input
+                type="number"
+                value={config.readCapacity || 1000}
+                onChange={(e) => onChange('readCapacity', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Write Capacity (RPS)</label>
+              <input
+                type="number"
+                value={config.writeCapacity || 1000}
+                onChange={(e) => onChange('writeCapacity', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={config.replication?.enabled || false}
+                onChange={(e) => onChange('replication', { ...config.replication, enabled: e.target.checked })}
+                className="rounded"
+              />
+              <label className="text-xs text-gray-700">Enable Replication</label>
+            </div>
+          </div>
+        )}
+
+        {/* NoSQL Document */}
+        {(databaseType === 'mongodb' || databaseType === 'couchdb') && (
+          <div className="space-y-3">
+            <h4 className="text-xs font-medium text-gray-700">Document Database Settings</h4>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Number of Shards</label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={config.numShards || 1}
+                onChange={(e) => onChange('numShards', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Replication Factor</label>
+              <input
+                type="number"
+                min="1"
+                max="5"
+                value={config.replicationFactor || 3}
+                onChange={(e) => onChange('replicationFactor', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* NoSQL Key-Value */}
+        {(databaseType === 'dynamodb' || databaseType === 'keydb') && (
+          <div className="space-y-3">
+            <h4 className="text-xs font-medium text-gray-700">Key-Value Store Settings</h4>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Memory Size (GB)</label>
+              <input
+                type="number"
+                min="1"
+                max="128"
+                value={config.memorySizeGB || 4}
+                onChange={(e) => onChange('memorySizeGB', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Write Capacity Units</label>
+              <input
+                type="number"
+                min="1"
+                max="20000"
+                value={config.writeCapacityUnits || 100}
+                onChange={(e) => onChange('writeCapacityUnits', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Read Capacity Units</label>
+              <input
+                type="number"
+                min="1"
+                max="20000"
+                value={config.readCapacityUnits || 100}
+                onChange={(e) => onChange('readCapacityUnits', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Consistency</label>
+              <select
+                value={config.consistency || 'eventual'}
+                onChange={(e) => onChange('consistency', e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              >
+                <option value="eventual">Eventual</option>
+                <option value="strong">Strong</option>
+              </select>
+            </div>
+          </div>
+        )}
+
+        {/* NoSQL Columnar */}
+        {(databaseType === 'cassandra' || databaseType === 'hbase') && (
+          <div className="space-y-3">
+            <h4 className="text-xs font-medium text-gray-700">Columnar Store Settings</h4>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Number of Nodes</label>
+              <input
+                type="number"
+                min="1"
+                max="10"
+                value={config.numNodes || 3}
+                onChange={(e) => onChange('numNodes', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Replication Factor</label>
+              <input
+                type="number"
+                min="1"
+                max="5"
+                value={config.replicationFactor || 3}
+                onChange={(e) => onChange('replicationFactor', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+          </div>
+        )}
+
+        {/* NoSQL Search */}
+        {(databaseType === 'elasticsearch' || databaseType === 'solr') && (
+          <div className="space-y-3">
+            <h4 className="text-xs font-medium text-gray-700">Search Engine Settings</h4>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Number of Shards</label>
+              <input
+                type="number"
+                min="1"
+                max="20"
+                value={config.numShards || 5}
+                onChange={(e) => onChange('numShards', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs text-gray-600 mb-1">Replicas per Shard</label>
+              <input
+                type="number"
+                min="0"
+                max="3"
+                value={config.replicasPerShard || 1}
+                onChange={(e) => onChange('replicasPerShard', parseInt(e.target.value))}
+                className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Info Box */}
+      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="text-xs font-medium text-blue-900 mb-1">
+          💡 Database Selection Tips
+        </div>
+        <p className="text-xs text-blue-800">
+          {dbCategory === 'sql' && 'SQL databases provide ACID guarantees, perfect for transactions and complex queries.'}
+          {dbCategory === 'nosql_document' && 'Document databases are great for flexible schemas and JSON-like data.'}
+          {dbCategory === 'nosql_keyvalue' && 'Key-value stores offer extremely fast lookups and simple data models.'}
+          {dbCategory === 'nosql_columnar' && 'Columnar stores excel at high write throughput and time-series data.'}
+          {dbCategory === 'nosql_search' && 'Search engines provide full-text search with relevance scoring.'}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================================
+// Cache Configuration with Type Selector
+// ============================================================================
+
+function CacheConfig({ config, onChange, onApplyPreset }: ConfigProps) {
+  const cacheType = config.cacheType || 'redis';
+  const memorySizeGB = config.memorySizeGB || 4;
+  const ttl = config.ttl || 3600;
+
+  const cacheTypes = [
+    { value: 'redis', label: 'Redis', desc: 'In-memory key-value store', icon: '🔴' },
+    { value: 'memcached', label: 'Memcached', desc: 'Simple distributed cache', icon: '⚡' },
+    { value: 'elasticache', label: 'ElastiCache', desc: 'AWS managed cache', icon: '☁️' },
+  ];
+
+  return (
+    <div className="space-y-4">
+      <h3 className="font-semibold text-sm text-gray-900">Cache Configuration</h3>
+
+      {/* Cache Type Selector */}
+      <div>
+        <label className="block text-xs font-medium text-gray-700 mb-2">
+          Cache Type
+        </label>
+        <div className="space-y-2">
+          {cacheTypes.map((cache) => (
+            <button
+              key={cache.value}
+              onClick={() => onChange('cacheType', cache.value)}
+              className={`w-full p-3 text-left border-2 rounded-lg transition-colors ${
+                cacheType === cache.value
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{cache.icon}</span>
+                <div className="flex-1">
+                  <div className="text-sm font-medium text-gray-900">{cache.label}</div>
+                  <div className="text-xs text-gray-500">{cache.desc}</div>
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Memory Size */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Memory Size (GB)
+        </label>
+        <input
+          type="range"
+          min="1"
+          max="128"
+          value={memorySizeGB}
+          onChange={(e) => onChange('memorySizeGB', parseInt(e.target.value))}
+          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        />
+        <div className="flex justify-between items-center mt-2">
+          <span className="text-2xl font-bold text-blue-600">{memorySizeGB} GB</span>
+          <span className="text-xs text-gray-500">
+            ~${(memorySizeGB * 50).toLocaleString()}/mo
+          </span>
+        </div>
+      </div>
+
+      {/* TTL */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Default TTL (Time To Live)
+        </label>
+        <select
+          value={ttl}
+          onChange={(e) => onChange('ttl', parseInt(e.target.value))}
+          className="w-full px-3 py-2 border border-gray-300 rounded text-sm"
+        >
+          <option value={60}>1 minute</option>
+          <option value={300}>5 minutes</option>
+          <option value={900}>15 minutes</option>
+          <option value={1800}>30 minutes</option>
+          <option value={3600}>1 hour</option>
+          <option value={7200}>2 hours</option>
+          <option value={21600}>6 hours</option>
+          <option value={86400}>24 hours</option>
+        </select>
+      </div>
+
+      {/* Caching Strategy */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Caching Strategy
+        </label>
+        <div className="space-y-2">
+          {[
+            { value: 'cache_aside', label: 'Cache-Aside (Lazy Loading)', icon: '📥' },
+            { value: 'write_through', label: 'Write-Through', icon: '✍️' },
+            { value: 'write_behind', label: 'Write-Behind (Async)', icon: '⏱️' },
+          ].map((strategy) => (
+            <label
+              key={strategy.value}
+              className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+                config.strategy === strategy.value
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-gray-200 hover:border-gray-300'
+              }`}
+            >
+              <input
+                type="radio"
+                name="strategy"
+                value={strategy.value}
+                checked={config.strategy === strategy.value}
+                onChange={(e) => onChange('strategy', e.target.value)}
+                className="mr-3"
+              />
+              <span className="text-lg mr-2">{strategy.icon}</span>
+              <span className="text-sm text-gray-900">{strategy.label}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      {/* Info Box */}
+      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="text-xs font-medium text-blue-900 mb-1">
+          💡 Cache Tips
+        </div>
+        <p className="text-xs text-blue-800">
+          Caches reduce database load and improve response times. Redis supports complex data structures,
+          while Memcached is simpler but faster for basic key-value operations.
+        </p>
+      </div>
     </div>
   );
 }

@@ -79,4 +79,97 @@ export const pinterestProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict
+
+# In-memory storage (naive implementation)
+users = {}
+boards = {}
+pins = {}
+follows = {}
+
+def create_board(board_id: str, user_id: str, name: str, description: str = None) -> Dict:
+    """
+    FR-1: Users can create boards
+    Naive implementation - stores board in memory
+    """
+    boards[board_id] = {
+        'id': board_id,
+        'user_id': user_id,
+        'name': name,
+        'description': description,
+        'created_at': datetime.now()
+    }
+    return boards[board_id]
+
+def pin_image(pin_id: str, board_id: str, user_id: str, image_url: str,
+              title: str = None, description: str = None) -> Dict:
+    """
+    FR-1: Users can pin images
+    Naive implementation - stores pin in memory
+    """
+    pins[pin_id] = {
+        'id': pin_id,
+        'board_id': board_id,
+        'user_id': user_id,
+        'image_url': image_url,
+        'title': title,
+        'description': description,
+        'created_at': datetime.now()
+    }
+    return pins[pin_id]
+
+def browse_pins() -> List[Dict]:
+    """
+    FR-2: Users can browse pins
+    Naive implementation - returns all pins, no ranking
+    """
+    all_pins = list(pins.values())
+    # Sort by created_at (most recent first)
+    all_pins.sort(key=lambda x: x['created_at'], reverse=True)
+    return all_pins
+
+def search_pins(query: str) -> List[Dict]:
+    """
+    FR-2: Users can search for pins
+    Naive implementation - simple text search in title/description
+    """
+    results = []
+    query_lower = query.lower()
+    for pin in pins.values():
+        title_match = pin.get('title') and query_lower in pin['title'].lower()
+        desc_match = pin.get('description') and query_lower in pin['description'].lower()
+        if title_match or desc_match:
+            results.append(pin)
+    return results
+
+def follow_board(follower_id: str, board_id: str) -> Dict:
+    """
+    FR-3: Users can follow boards
+    Naive implementation - stores follow relationship
+    """
+    follow_id = f"{follower_id}_board_{board_id}"
+    follows[follow_id] = {
+        'follower_id': follower_id,
+        'target_type': 'board',
+        'target_id': board_id,
+        'created_at': datetime.now()
+    }
+    return follows[follow_id]
+
+def follow_user(follower_id: str, following_id: str) -> Dict:
+    """
+    FR-3: Users can follow users
+    Naive implementation - stores follow relationship
+    """
+    follow_id = f"{follower_id}_user_{following_id}"
+    follows[follow_id] = {
+        'follower_id': follower_id,
+        'target_type': 'user',
+        'target_id': following_id,
+        'created_at': datetime.now()
+    }
+    return follows[follow_id]
+`,
 };

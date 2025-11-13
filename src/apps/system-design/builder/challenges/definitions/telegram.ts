@@ -88,4 +88,95 @@ export const telegramProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional
+
+# In-memory storage (naive implementation)
+users = {}
+chats = {}
+messages = {}
+channels = {}
+bots = {}
+
+def send_message(message_id: str, chat_id: str, sender_id: str, content: str,
+                 media_url: str = None) -> Dict:
+    """
+    FR-1: Users can send messages, photos, and videos
+    Naive implementation - stores message in cloud
+    """
+    messages[message_id] = {
+        'id': message_id,
+        'chat_id': chat_id,
+        'sender_id': sender_id,
+        'content': content,
+        'media_url': media_url,
+        'created_at': datetime.now()
+    }
+    return messages[message_id]
+
+def get_chat_messages(chat_id: str, limit: int = 50) -> List[Dict]:
+    """
+    FR-1: Messages stored in cloud (accessible from any device)
+    Naive implementation - returns messages from any device
+    """
+    chat_messages = []
+    for message in messages.values():
+        if message['chat_id'] == chat_id:
+            chat_messages.append(message)
+
+    # Sort by created_at
+    chat_messages.sort(key=lambda x: x['created_at'])
+    return chat_messages[-limit:]
+
+def create_channel(channel_id: str, chat_id: str, name: str, description: str = None) -> Dict:
+    """
+    FR-2: Users can create channels for broadcasting
+    Naive implementation - creates channel
+    """
+    # First create the chat
+    chats[chat_id] = {
+        'id': chat_id,
+        'type': 'channel',
+        'title': name,
+        'created_at': datetime.now()
+    }
+
+    channels[channel_id] = {
+        'chat_id': chat_id,
+        'name': name,
+        'description': description,
+        'subscribers': 0,
+        'created_at': datetime.now()
+    }
+    return channels[channel_id]
+
+def subscribe_to_channel(user_id: str, channel_id: str) -> Dict:
+    """
+    FR-2: Subscribe to channel
+    Naive implementation - increments subscriber count
+    """
+    channel = channels.get(channel_id)
+    if not channel:
+        raise ValueError("Channel not found")
+
+    channel['subscribers'] += 1
+    return {
+        'user_id': user_id,
+        'channel_id': channel_id,
+        'subscribed_at': datetime.now()
+    }
+
+def broadcast_to_channel(message_id: str, channel_id: str, content: str) -> Dict:
+    """
+    FR-2: Broadcast message to all channel subscribers
+    Naive implementation - sends message to channel chat
+    """
+    channel = channels.get(channel_id)
+    if not channel:
+        raise ValueError("Channel not found")
+
+    message = send_message(message_id, channel['chat_id'], 'channel', content)
+    return message
+`,
 };

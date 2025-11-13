@@ -1,5 +1,6 @@
 import { SystemGraph } from '../types/graph';
 import { Scenario } from '../types/problemDefinition';
+import { isDatabaseComponentType } from '../utils/database';
 
 /**
  * Deep analysis of system design
@@ -107,14 +108,13 @@ export class DesignAnalyzer {
         recommendations: [],
       };
 
-      // Calculate based on component type
+      if (isDatabaseComponentType(component.type)) {
+        return this.analyzeDatabase(component, scenario, analysis);
+      }
+
       switch (component.type) {
         case 'app_server':
           return this.analyzeAppServer(component, scenario, analysis);
-        case 'postgresql':
-        case 'mongodb':
-        case 'cassandra':
-          return this.analyzeDatabase(component, scenario, analysis);
         case 'redis':
           return this.analyzeCache(component, scenario, analysis);
         case 'load_balancer':
@@ -187,7 +187,10 @@ export class DesignAnalyzer {
 
     // Cost breakdown
     const baseCost = 100;
-    const replicationCost = component.config.replication ? 100 : 0;
+    const replicationEnabled = typeof component.config.replication === 'boolean'
+      ? component.config.replication
+      : component.config.replication?.enabled || false;
+    const replicationCost = replicationEnabled ? 100 : 0;
     analysis.cost = {
       monthly: baseCost + replicationCost,
       breakdown: [
@@ -329,9 +332,7 @@ export class DesignAnalyzer {
 
     // 3-tier architecture
     const hasAppServer = graph.components.some(c => c.type === 'app_server');
-    const hasDB = graph.components.some(c =>
-      c.type === 'postgresql' || c.type === 'mongodb' || c.type === 'cassandra'
-    );
+    const hasDB = graph.components.some(c => isDatabaseComponentType(c.type));
     if (hasAppServer && hasDB) {
       patterns.push({
         name: '3-Tier Architecture',
@@ -409,9 +410,7 @@ export class DesignAnalyzer {
 
     // Add cache if read-heavy without cache
     const hasCache = graph.components.some(c => c.type === 'redis');
-    const dbAnalysis = componentAnalysis.find(c =>
-      c.type === 'postgresql' || c.type === 'mongodb'
-    );
+    const dbAnalysis = componentAnalysis.find(c => isDatabaseComponentType(c.type));
     if (!hasCache && dbAnalysis && dbAnalysis.utilization > 0.7) {
       optimizations.push({
         potential: 'Add Redis cache to reduce database load',
@@ -459,9 +458,7 @@ export class DesignAnalyzer {
     }
 
     // Single database without replication
-    const databases = graph.components.filter(c =>
-      c.type === 'postgresql' || c.type === 'mongodb' || c.type === 'cassandra'
-    );
+    const databases = graph.components.filter(c => isDatabaseComponentType(c.type));
     const hasReplication = databases.some(db => db.config.replication);
 
     if (databases.length > 0 && !hasReplication) {

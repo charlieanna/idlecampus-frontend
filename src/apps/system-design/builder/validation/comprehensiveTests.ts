@@ -1,6 +1,7 @@
 import { SystemDesignValidator } from './SystemDesignValidator';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 import { SystemGraph } from '../types/graph';
+import { isDatabaseComponentType } from '../utils/database';
 
 /**
  * Comprehensive Test Suite: Analyze ANY System Design
@@ -111,7 +112,7 @@ for (const rps of stressLevels) {
 
   const result = validator.validate(underProvisionedDB, tinyUrlProblemDefinition, 1);
 
-  const dbComponent = result.detailedAnalysis?.componentAnalysis.find(c => c.type === 'postgresql');
+  const dbComponent = result.detailedAnalysis?.componentAnalysis.find(c => isDatabaseComponentType(c.type));
   const dbUtil = dbComponent ? (dbComponent.utilization * 100).toFixed(0) : 'N/A';
 
   console.log(`${rps.toString().padStart(4)} RPS → ${result.passed ? '✅' : '❌'} | DB: ${dbUtil}% | Latency: ${result.metrics.p99Latency.toFixed(0)}ms`);

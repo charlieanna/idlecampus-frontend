@@ -72,6 +72,54 @@ export const l6BioNeuralImplantProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+events = {}
+items = {}
+memory = {}
+real = {}
+
+def process_1m_neural_streams(**kwargs) -> Dict:
+    """
+    FR-1: Process 1M neural streams
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def detect_medical_events_in_real_time(**kwargs) -> Dict:
+    """
+    FR-2: Detect medical events in real-time
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def update_item(item_id: str, **kwargs) -> Dict:
+    """
+    FR-3: Support remote firmware updates
+    Naive implementation - updates item in memory
+    """
+    if item_id in items:
+        items[item_id].update(kwargs)
+        items[item_id]['updated_at'] = datetime.now()
+        return items[item_id]
+    return None
+
+def enable_neural_stimulation_control(**kwargs) -> Dict:
+    """
+    FR-4: Enable neural stimulation control
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_50_year_data_history(**kwargs) -> Dict:
+    """
+    FR-5: Maintain 50-year data history
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -140,6 +188,48 @@ export const l6BioDigitalTwinProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def model_all_organ_systems(**kwargs) -> Dict:
+    """
+    FR-1: Model all organ systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def integrate_genomic_data(**kwargs) -> Dict:
+    """
+    FR-2: Integrate genomic data
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def simulate_drug_interactions(**kwargs) -> Dict:
+    """
+    FR-3: Simulate drug interactions
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def predict_disease_progression(**kwargs) -> Dict:
+    """
+    FR-4: Predict disease progression
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def optimize_treatment_plans(**kwargs) -> Dict:
+    """
+    FR-5: Optimize treatment plans
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -204,6 +294,54 @@ export const l6BioDigital1ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+memory = {}
+
+def create_item(item_id: str, **kwargs) -> Dict:
+    """
+    FR-1: Implement brain uploads at planetary scale
+    Naive implementation - stores item in memory
+    """
+    items[item_id] = {
+        'id': item_id,
+        'created_at': datetime.now(),
+        **kwargs
+    }
+    return items[item_id]
+
+def achieve_consciousness_transfer_breakthro(**kwargs) -> Dict:
+    """
+    FR-2: Achieve consciousness transfer breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -268,6 +406,48 @@ export const l6BioDigital2ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_synthetic_biology_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement synthetic biology at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_biological_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve biological internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -332,6 +512,48 @@ export const l6BioDigital3ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_nano_medicine_at_planetary_sca(**kwargs) -> Dict:
+    """
+    FR-1: Implement nano-medicine at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_living_computers_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve living computers breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -396,6 +618,48 @@ export const l6BioDigital4ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_digital_twins_at_planetary_sca(**kwargs) -> Dict:
+    """
+    FR-1: Implement digital twins at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_consciousness_transfer_breakthro(**kwargs) -> Dict:
+    """
+    FR-2: Achieve consciousness transfer breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -460,6 +724,48 @@ export const l6BioDigital5ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_bio_processors_at_planetary_sc(**kwargs) -> Dict:
+    """
+    FR-1: Implement bio-processors at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_biological_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve biological internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -524,6 +830,54 @@ export const l6BioDigital6ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+memory = {}
+
+def create_item(item_id: str, **kwargs) -> Dict:
+    """
+    FR-1: Implement brain uploads at planetary scale
+    Naive implementation - stores item in memory
+    """
+    items[item_id] = {
+        'id': item_id,
+        'created_at': datetime.now(),
+        **kwargs
+    }
+    return items[item_id]
+
+def achieve_living_computers_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve living computers breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -588,6 +942,48 @@ export const l6BioDigital7ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_synthetic_biology_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement synthetic biology at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_consciousness_transfer_breakthro(**kwargs) -> Dict:
+    """
+    FR-2: Achieve consciousness transfer breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -652,6 +1048,48 @@ export const l6BioDigital8ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_nano_medicine_at_planetary_sca(**kwargs) -> Dict:
+    """
+    FR-1: Implement nano-medicine at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_biological_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve biological internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -716,6 +1154,48 @@ export const l6BioDigital9ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_digital_twins_at_planetary_sca(**kwargs) -> Dict:
+    """
+    FR-1: Implement digital twins at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_living_computers_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve living computers breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -780,6 +1260,48 @@ export const l6BioDigital10ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_bio_processors_at_planetary_sc(**kwargs) -> Dict:
+    """
+    FR-1: Implement bio-processors at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_consciousness_transfer_breakthro(**kwargs) -> Dict:
+    """
+    FR-2: Achieve consciousness transfer breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -844,6 +1366,54 @@ export const l6BioDigital11ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+memory = {}
+
+def create_item(item_id: str, **kwargs) -> Dict:
+    """
+    FR-1: Implement brain uploads at planetary scale
+    Naive implementation - stores item in memory
+    """
+    items[item_id] = {
+        'id': item_id,
+        'created_at': datetime.now(),
+        **kwargs
+    }
+    return items[item_id]
+
+def achieve_biological_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve biological internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -908,6 +1478,48 @@ export const l6BioDigital12ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_synthetic_biology_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement synthetic biology at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_living_computers_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve living computers breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -972,6 +1584,48 @@ export const l6BioDigital13ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_nano_medicine_at_planetary_sca(**kwargs) -> Dict:
+    """
+    FR-1: Implement nano-medicine at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_consciousness_transfer_breakthro(**kwargs) -> Dict:
+    """
+    FR-2: Achieve consciousness transfer breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1036,6 +1690,48 @@ export const l6BioDigital14ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_digital_twins_at_planetary_sca(**kwargs) -> Dict:
+    """
+    FR-1: Implement digital twins at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_biological_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve biological internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1100,6 +1796,48 @@ export const l6BioDigital15ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_bio_processors_at_planetary_sc(**kwargs) -> Dict:
+    """
+    FR-1: Implement bio-processors at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_living_computers_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve living computers breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1164,6 +1902,54 @@ export const l6BioDigital16ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+memory = {}
+
+def create_item(item_id: str, **kwargs) -> Dict:
+    """
+    FR-1: Implement brain uploads at planetary scale
+    Naive implementation - stores item in memory
+    """
+    items[item_id] = {
+        'id': item_id,
+        'created_at': datetime.now(),
+        **kwargs
+    }
+    return items[item_id]
+
+def achieve_consciousness_transfer_breakthro(**kwargs) -> Dict:
+    """
+    FR-2: Achieve consciousness transfer breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1228,5 +2014,47 @@ export const l6BioDigital17ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_synthetic_biology_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement synthetic biology at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_biological_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve biological internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 

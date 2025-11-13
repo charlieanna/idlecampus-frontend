@@ -21,6 +21,21 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
 - Redirects short codes to original URLs
 - Ensures short codes are unique`,
 
+  // User-facing functional requirements and problem-specific clients
+  userFacingFRs: [
+    'Users can create short URLs',
+    'Users can redirect to original URLs using short codes',
+  ],
+
+  // Single locked client (compact canvas)
+  clientDescriptions: [
+    {
+      name: 'URL Client',
+      subtitle: 'Creates and redirects short URLs',
+      id: 'url_client',
+    },
+  ],
+
   // What architecture is required?
   functionalRequirements: {
     mustHave: [

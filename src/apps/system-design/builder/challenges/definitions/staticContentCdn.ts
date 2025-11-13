@@ -67,4 +67,108 @@ export const staticContentCdnProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import Dict, Optional
+
+# In-memory storage (naive implementation)
+assets = {}
+cdn_cache = {}  # Simulates CDN edge cache
+origin_storage = {}  # Simulates S3
+
+def upload_asset(asset_id: str, filename: str, content_type: str,
+                 size_bytes: int, s3_key: str) -> Dict:
+    """
+    Upload asset to origin storage (S3)
+    Naive implementation - stores asset metadata
+    """
+    assets[asset_id] = {
+        'id': asset_id,
+        'filename': filename,
+        's3_key': s3_key,
+        'content_type': content_type,
+        'size_bytes': size_bytes,
+        'version': 1,
+        'created_at': datetime.now()
+    }
+
+    origin_storage[s3_key] = {
+        'asset_id': asset_id,
+        'data': f'<binary data for {filename}>',
+        'uploaded_at': datetime.now()
+    }
+
+    return assets[asset_id]
+
+def serve_asset(filename: str) -> Optional[Dict]:
+    """
+    Serve asset from CDN (95% cache hit rate)
+    Naive implementation - checks CDN cache first, then origin
+    """
+    # Check CDN cache
+    if filename in cdn_cache:
+        cdn_cache[filename]['hits'] += 1
+        return {
+            'source': 'cdn_cache',
+            'filename': filename,
+            'data': cdn_cache[filename]['data'],
+            'content_type': cdn_cache[filename]['content_type'],
+            'latency_ms': 10  # <50ms from edge
+        }
+
+    # Cache miss - fetch from origin
+    asset = None
+    for a in assets.values():
+        if a['filename'] == filename:
+            asset = a
+            break
+
+    if not asset:
+        return None
+
+    # Fetch from S3
+    s3_data = origin_storage.get(asset['s3_key'])
+    if not s3_data:
+        return None
+
+    # Cache at CDN edge
+    cdn_cache[filename] = {
+        'data': s3_data['data'],
+        'content_type': asset['content_type'],
+        'cached_at': datetime.now(),
+        'hits': 1
+    }
+
+    return {
+        'source': 'origin',
+        'filename': filename,
+        'data': s3_data['data'],
+        'content_type': asset['content_type'],
+        'latency_ms': 150  # Higher latency from origin
+    }
+
+def invalidate_cdn_cache(filename: str) -> bool:
+    """
+    Invalidate CDN cache for asset
+    Naive implementation - removes from cache
+    """
+    if filename in cdn_cache:
+        del cdn_cache[filename]
+        return True
+    return False
+
+def get_cdn_stats() -> Dict:
+    """
+    Get CDN cache statistics
+    Naive implementation - calculates hit rate
+    """
+    total_hits = sum(item['hits'] for item in cdn_cache.values())
+    cached_items = len(cdn_cache)
+
+    return {
+        'cached_items': cached_items,
+        'total_hits': total_hits,
+        'estimated_hit_rate': 0.95 if cached_items > 0 else 0.0
+    }
+`,
 };

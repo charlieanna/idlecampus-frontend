@@ -72,6 +72,48 @@ export const l6EconomicCbdcProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def process_150b_transactions_year(**kwargs) -> Dict:
+    """
+    FR-1: Process 150B transactions/year
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_programmable_money(**kwargs) -> Dict:
+    """
+    FR-2: Support programmable money
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_instant_settlement(**kwargs) -> Dict:
+    """
+    FR-3: Enable instant settlement
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_offline_transactions(**kwargs) -> Dict:
+    """
+    FR-4: Provide offline transactions
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def integrate_with_existing_banks(**kwargs) -> Dict:
+    """
+    FR-5: Integrate with existing banks
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -135,6 +177,53 @@ export const l6EconomicInterplanetaryProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+memory = {}
+
+def handle_24_minute_transaction_delays(**kwargs) -> Dict:
+    """
+    FR-1: Handle 24-minute transaction delays
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_resource_futures_trading(**kwargs) -> Dict:
+    """
+    FR-2: Support resource futures trading
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def update_item(item_id: str, **kwargs) -> Dict:
+    """
+    FR-3: Enable currency exchange
+    Naive implementation - updates item in memory
+    """
+    if item_id in items:
+        items[item_id].update(kwargs)
+        items[item_id]['updated_at'] = datetime.now()
+        return items[item_id]
+    return None
+
+def manage_supply_chain_financing(**kwargs) -> Dict:
+    """
+    FR-4: Manage supply chain financing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_dispute_resolution(**kwargs) -> Dict:
+    """
+    FR-5: Provide dispute resolution
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -199,6 +288,47 @@ export const l6EconomicSystems1ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+posts = {}
+
+def implement_post_scarcity_economics_at_pla(**kwargs) -> Dict:
+    """
+    FR-1: Implement post-scarcity economics at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_self_balancing_economies_breakth(**kwargs) -> Dict:
+    """
+    FR-2: Achieve self-balancing economies breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -263,6 +393,48 @@ export const l6EconomicSystems2ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_interplanetary_commerce_at_pla(**kwargs) -> Dict:
+    """
+    FR-1: Implement interplanetary commerce at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_infinite_liquidity_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve infinite liquidity breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -327,6 +499,48 @@ export const l6EconomicSystems3ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_ai_governance_tokens_at_planet(**kwargs) -> Dict:
+    """
+    FR-1: Implement AI governance tokens at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_predictive_markets_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve predictive markets breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -391,6 +605,48 @@ export const l6EconomicSystems4ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_quantum_finance_at_planetary_s(**kwargs) -> Dict:
+    """
+    FR-1: Implement quantum finance at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_self_balancing_economies_breakth(**kwargs) -> Dict:
+    """
+    FR-2: Achieve self-balancing economies breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -455,6 +711,48 @@ export const l6EconomicSystems5ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_biological_assets_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement biological assets at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_infinite_liquidity_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve infinite liquidity breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -519,6 +817,47 @@ export const l6EconomicSystems6ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+posts = {}
+
+def implement_post_scarcity_economics_at_pla(**kwargs) -> Dict:
+    """
+    FR-1: Implement post-scarcity economics at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_predictive_markets_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve predictive markets breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -583,6 +922,48 @@ export const l6EconomicSystems7ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_interplanetary_commerce_at_pla(**kwargs) -> Dict:
+    """
+    FR-1: Implement interplanetary commerce at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_self_balancing_economies_breakth(**kwargs) -> Dict:
+    """
+    FR-2: Achieve self-balancing economies breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -647,6 +1028,48 @@ export const l6EconomicSystems8ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_ai_governance_tokens_at_planet(**kwargs) -> Dict:
+    """
+    FR-1: Implement AI governance tokens at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_infinite_liquidity_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve infinite liquidity breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -711,6 +1134,48 @@ export const l6EconomicSystems9ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_quantum_finance_at_planetary_s(**kwargs) -> Dict:
+    """
+    FR-1: Implement quantum finance at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_predictive_markets_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve predictive markets breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -775,6 +1240,48 @@ export const l6EconomicSystems10ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_biological_assets_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement biological assets at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_self_balancing_economies_breakth(**kwargs) -> Dict:
+    """
+    FR-2: Achieve self-balancing economies breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -839,6 +1346,47 @@ export const l6EconomicSystems11ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+posts = {}
+
+def implement_post_scarcity_economics_at_pla(**kwargs) -> Dict:
+    """
+    FR-1: Implement post-scarcity economics at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_infinite_liquidity_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve infinite liquidity breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -903,6 +1451,48 @@ export const l6EconomicSystems12ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_interplanetary_commerce_at_pla(**kwargs) -> Dict:
+    """
+    FR-1: Implement interplanetary commerce at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_predictive_markets_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve predictive markets breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -967,6 +1557,48 @@ export const l6EconomicSystems13ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_ai_governance_tokens_at_planet(**kwargs) -> Dict:
+    """
+    FR-1: Implement AI governance tokens at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_self_balancing_economies_breakth(**kwargs) -> Dict:
+    """
+    FR-2: Achieve self-balancing economies breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1031,6 +1663,48 @@ export const l6EconomicSystems14ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_quantum_finance_at_planetary_s(**kwargs) -> Dict:
+    """
+    FR-1: Implement quantum finance at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_infinite_liquidity_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve infinite liquidity breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1095,6 +1769,48 @@ export const l6EconomicSystems15ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_biological_assets_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement biological assets at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_predictive_markets_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve predictive markets breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1159,6 +1875,47 @@ export const l6EconomicSystems16ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+posts = {}
+
+def implement_post_scarcity_economics_at_pla(**kwargs) -> Dict:
+    """
+    FR-1: Implement post-scarcity economics at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_self_balancing_economies_breakth(**kwargs) -> Dict:
+    """
+    FR-2: Achieve self-balancing economies breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1223,5 +1980,47 @@ export const l6EconomicSystems17ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_interplanetary_commerce_at_pla(**kwargs) -> Dict:
+    """
+    FR-1: Implement interplanetary commerce at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_infinite_liquidity_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve infinite liquidity breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 

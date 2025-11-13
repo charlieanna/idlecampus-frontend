@@ -74,6 +74,13 @@ export interface ValidationResult {
 // Validator function type
 export type ValidatorFunction = (graph: SystemGraph, scenario: Scenario) => ValidationResult;
 
+// Client description for initial canvas
+export interface ClientDescription {
+  name: string;        // e.g., "Tweet Client", "Timeline Client"
+  subtitle: string;    // e.g., "Posts tweets", "Reads timeline"
+  id?: string;         // Optional custom ID (defaults to snake_case of name)
+}
+
 // Complete problem definition
 export interface ProblemDefinition {
   id: string;
@@ -83,6 +90,9 @@ export interface ProblemDefinition {
   // User-facing requirements (interview-style)
   userFacingFRs?: string[]; // e.g., "Users can upload photos", "Users can view feed"
   userFacingNFRs?: string[]; // e.g., "Latency: P99 < 200ms", "Availability: 99.9% uptime"
+
+  // Client descriptions for initial canvas (optional - will be auto-generated if not provided)
+  clientDescriptions?: ClientDescription[];
 
   // Architectural requirements (for validation)
   functionalRequirements: {

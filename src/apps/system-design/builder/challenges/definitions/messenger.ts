@@ -87,4 +87,110 @@ export const messengerProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional
+
+# In-memory storage (naive implementation)
+users = {}
+conversations = {}
+messages = {}
+participants = {}
+media = {}
+
+def send_text_message(message_id: str, conversation_id: str, sender_id: str,
+                      content: str) -> Dict:
+    """
+    FR-1: Users can send text messages
+    Naive implementation - stores message in memory
+    """
+    messages[message_id] = {
+        'id': message_id,
+        'conversation_id': conversation_id,
+        'sender_id': sender_id,
+        'content': content,
+        'type': 'text',
+        'created_at': datetime.now()
+    }
+    return messages[message_id]
+
+def send_media_message(message_id: str, conversation_id: str, sender_id: str,
+                       media_url: str, media_type: str) -> Dict:
+    """
+    FR-1: Users can send media
+    Naive implementation - stores message with media reference
+    """
+    # Store media
+    media_id = f"media_{message_id}"
+    media[media_id] = {
+        'id': media_id,
+        'message_id': message_id,
+        'url': media_url,
+        'type': media_type,
+        'created_at': datetime.now()
+    }
+
+    messages[message_id] = {
+        'id': message_id,
+        'conversation_id': conversation_id,
+        'sender_id': sender_id,
+        'content': '',
+        'type': 'media',
+        'media_id': media_id,
+        'created_at': datetime.now()
+    }
+    return messages[message_id]
+
+def initiate_call(conversation_id: str, caller_id: str, call_type: str) -> Dict:
+    """
+    FR-2: Users can make voice and video calls
+    Naive implementation - returns call initiation data
+    """
+    call_id = f"call_{conversation_id}_{datetime.now().timestamp()}"
+    return {
+        'call_id': call_id,
+        'conversation_id': conversation_id,
+        'caller_id': caller_id,
+        'type': call_type,  # 'voice' or 'video'
+        'status': 'ringing',
+        'started_at': datetime.now()
+    }
+
+def get_conversation_messages(conversation_id: str, limit: int = 50) -> List[Dict]:
+    """
+    Helper: Get messages from a conversation
+    Naive implementation - returns recent messages
+    """
+    conv_messages = []
+    for message in messages.values():
+        if message['conversation_id'] == conversation_id:
+            conv_messages.append(message)
+
+    # Sort by created_at (most recent last)
+    conv_messages.sort(key=lambda x: x['created_at'])
+    return conv_messages[-limit:]
+
+def create_conversation(conversation_id: str, participant_ids: List[str],
+                        conv_type: str = 'direct') -> Dict:
+    """
+    Helper: Create a conversation
+    Naive implementation - stores conversation and participants
+    """
+    conversations[conversation_id] = {
+        'id': conversation_id,
+        'type': conv_type,  # 'direct' or 'group'
+        'created_at': datetime.now()
+    }
+
+    # Add participants
+    for user_id in participant_ids:
+        participant_id = f"{conversation_id}_{user_id}"
+        participants[participant_id] = {
+            'conversation_id': conversation_id,
+            'user_id': user_id,
+            'joined_at': datetime.now()
+        }
+
+    return conversations[conversation_id]
+`,
 };

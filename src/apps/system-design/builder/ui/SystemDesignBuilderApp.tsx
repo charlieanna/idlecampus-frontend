@@ -25,33 +25,50 @@ import { LoadTestResults } from './components/LoadTestResults';
 import { BottleneckAnalysis } from './components/BottleneckAnalysis';
 import { loadTestService } from '../services/loadTestService';
 import type { LoadTestProgress, LoadTestResults as LoadTestResultsType } from '../types/loadTest';
+import { generateClientNodes } from '../challenges/generateClients';
+import { isDatabaseComponentType, inferDatabaseType } from '../utils/database';
 
-// Initial graph with two Client components (Write and Read)
-const getInitialGraph = (): SystemGraph => ({
-  components: [
-    {
-      id: 'write_client',
-      type: 'client',
-      config: {
-        displayName: 'Write Client',
-        subtitle: 'Creates short URLs',
-      },
-    },
-    {
-      id: 'read_client',
-      type: 'client',
-      config: {
-        displayName: 'Read Client',
-        subtitle: 'Accesses short URLs',
-      },
-    },
-  ],
-  connections: [],
-});
+// Initial graph with client components based on problem definition
+const getInitialGraph = (problemDef?: ProblemDefinition | null): SystemGraph => {
+  if (!problemDef) {
+    // Fallback to default client if no problem definition
+    return {
+      components: [
+        {
+          id: 'client',
+          type: 'client',
+          config: {
+            displayName: 'Client',
+            subtitle: 'User requests',
+          },
+        },
+      ],
+      connections: [],
+    };
+  }
+
+  // Generate clients dynamically from problem definition
+  const clientComponents = generateClientNodes(problemDef);
+
+  return {
+    components: clientComponents,
+    connections: [],
+  };
+};
 
 interface SystemDesignBuilderAppProps {
   challengeId?: string;
 }
+
+// Get problem definition for a challenge ID
+const getProblemDefinition = (challengeId: string): ProblemDefinition | null => {
+  // Check manually created challenges first
+  if (challengeId === 'tiny_url') {
+    return tinyUrlProblemDefinition;
+  }
+  // Check generated challenges
+  return allProblemDefinitions.find(def => def.id === challengeId) || null;
+};
 
 export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuilderAppProps) {
   const navigate = useNavigate();
@@ -69,7 +86,9 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(
     initialChallenge
   );
-  const [systemGraph, setSystemGraph] = useState<SystemGraph>(getInitialGraph());
+
+  // Initialize empty; seed after problem definition resolves to avoid incorrect default clients
+  const [systemGraph, setSystemGraph] = useState<SystemGraph>({ components: [], connections: [] });
   const [currentTestIndex, setCurrentTestIndex] = useState(0); // Current test being run
   const [testResults, setTestResults] = useState<Map<number, TestResult>>(new Map()); // Per-level results
   const [isRunning, setIsRunning] = useState(false);
@@ -114,16 +133,6 @@ def expand(code: str, store: dict) -> str:
     return id.replace(/_/g, '-');
   };
 
-  // Get problem definition for a challenge ID
-  const getProblemDefinition = (challengeId: string): ProblemDefinition | null => {
-    // Check manually created challenges first
-    if (challengeId === 'tiny_url') {
-      return tinyUrlProblemDefinition;
-    }
-    // Check generated challenges
-    return allProblemDefinitions.find(def => def.id === challengeId) || null;
-  };
-
   // Handle challenge selection - update URL and state
   const handleChallengeSelect = (challenge: Challenge) => {
     const path = challengeIdToPath(challenge.id);
@@ -143,7 +152,8 @@ def expand(code: str, store: dict) -> str:
 
   // Reset graph when challenge changes
   useEffect(() => {
-    setSystemGraph(getInitialGraph());
+    const problemDef = selectedChallenge ? getProblemDefinition(selectedChallenge.id) : null;
+    setSystemGraph(getInitialGraph(problemDef));
     setTestResults(new Map());
     setCurrentTestIndex(0);
     setHasSubmitted(false);
@@ -339,21 +349,50 @@ def expand(code: str, store: dict) -> str:
     setShowSolutionPanel(false);
   };
 
-  // Get database components for tabs (postgresql, mongodb, cassandra, redis, etc.)
+  // Get configurable components for tabs (database, cache, message_queue)
   const getDatabaseComponents = () => {
     return systemGraph.components.filter(comp =>
-      ['postgresql', 'mongodb', 'cassandra', 'redis', 'dynamodb'].includes(comp.type)
+      isDatabaseComponentType(comp.type) || ['cache', 'message_queue'].includes(comp.type)
     );
   };
 
   // Get component display name for tab
   const getComponentTabLabel = (component: any) => {
+    // For database component, show the configured type
+    if (isDatabaseComponentType(component.type)) {
+      const dbType = component.config?.databaseType || inferDatabaseType(component);
+      const dbIcons: Record<string, string> = {
+        postgresql: '🐘',
+        mysql: '🐬',
+        mongodb: '🍃',
+        couchdb: '🛋️',
+        cassandra: '📊',
+        hbase: '📊',
+        elasticsearch: '🔍',
+        solr: '🔍',
+        dynamodb: '⚡',
+        keydb: '🗝️',
+      };
+      const icon = dbIcons[dbType] || '💾';
+      const dbName = dbType.charAt(0).toUpperCase() + dbType.slice(1);
+      return `${icon} ${dbName}`;
+    }
+
+    // For cache component, show the configured type
+    if (component.type === 'cache') {
+      const cacheType = component.config?.cacheType || 'redis';
+      const cacheIcons: Record<string, string> = {
+        redis: '🔴',
+        memcached: '⚡',
+        elasticache: '☁️',
+      };
+      const icon = cacheIcons[cacheType] || '⚡';
+      const cacheName = cacheType.charAt(0).toUpperCase() + cacheType.slice(1);
+      return `${icon} ${cacheName}`;
+    }
+
     const typeLabels: Record<string, string> = {
-      postgresql: '🐘 PostgreSQL',
-      mongodb: '🍃 MongoDB',
-      cassandra: '📊 Cassandra',
-      redis: '🔴 Redis',
-      dynamodb: '⚡ DynamoDB',
+      message_queue: '📮 Message Queue',
     };
     return typeLabels[component.type] || component.type;
   };

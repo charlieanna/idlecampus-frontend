@@ -78,4 +78,101 @@ export const huluProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional
+
+# In-memory storage (naive implementation)
+users = {}
+shows = {}
+episodes = {}
+watch_history = {}
+dvr_recordings = {}
+
+def watch_content(episode_id: str, user_id: str) -> Dict:
+    """
+    FR-1: Users can watch TV shows and movies
+    Naive implementation - returns episode URL for streaming
+    """
+    episode = episodes.get(episode_id)
+    if not episode:
+        raise ValueError("Episode not found")
+
+    # Record watch history
+    history_id = f"{user_id}_{episode_id}_{datetime.now().timestamp()}"
+    watch_history[history_id] = {
+        'user_id': user_id,
+        'episode_id': episode_id,
+        'progress': 0,
+        'watched_at': datetime.now()
+    }
+
+    return {
+        'episode': episode,
+        'video_url': episode['video_url'],
+        'duration': episode['duration']
+    }
+
+def update_watch_progress(user_id: str, episode_id: str, progress: int) -> Dict:
+    """
+    FR-1: Track watch progress
+    Naive implementation - updates most recent watch history entry
+    """
+    # Find most recent watch history entry
+    for history in watch_history.values():
+        if history['user_id'] == user_id and history['episode_id'] == episode_id:
+            history['progress'] = progress
+            history['watched_at'] = datetime.now()
+            return history
+
+    # Create new if not found
+    history_id = f"{user_id}_{episode_id}_{datetime.now().timestamp()}"
+    watch_history[history_id] = {
+        'user_id': user_id,
+        'episode_id': episode_id,
+        'progress': progress,
+        'watched_at': datetime.now()
+    }
+    return watch_history[history_id]
+
+def record_show(recording_id: str, user_id: str, episode_id: str,
+                expiration_days: int = 30) -> Dict:
+    """
+    FR-2: Users can record shows to watch later (DVR)
+    Naive implementation - stores recording metadata
+    """
+    from datetime import timedelta
+
+    dvr_recordings[recording_id] = {
+        'id': recording_id,
+        'user_id': user_id,
+        'episode_id': episode_id,
+        'expires_at': datetime.now() + timedelta(days=expiration_days),
+        'created_at': datetime.now()
+    }
+    return dvr_recordings[recording_id]
+
+def get_dvr_recordings(user_id: str) -> List[Dict]:
+    """
+    FR-2: View DVR recordings
+    Naive implementation - returns all recordings for user
+    """
+    user_recordings = []
+    for recording in dvr_recordings.values():
+        if recording['user_id'] == user_id:
+            # Check if not expired
+            if recording['expires_at'] > datetime.now():
+                user_recordings.append(recording)
+    return user_recordings
+
+def delete_recording(recording_id: str) -> bool:
+    """
+    FR-2: Delete DVR recording
+    Naive implementation - removes recording from memory
+    """
+    if recording_id in dvr_recordings:
+        del dvr_recordings[recording_id]
+        return True
+    return False
+`,
 };

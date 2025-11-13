@@ -30,18 +30,15 @@ export function getMinimalComponentConfig(
         apiFiles: problem ? getAPIFiles(problem) : [],
       };
 
+    case 'database':
     case 'postgresql':
       return {
-        // Cheapest DB instance
-        instanceType: 'db.t3.micro',
-        instances: 1,
-        engine: 'postgresql',
-
-        // Minimal config - user optimizes later
-        storageType: 'gp3',
+        databaseType: 'postgresql',
+        dbCategory: 'sql',
+        readCapacity: 500,
+        writeCapacity: 200,
         storageSizeGB: 20,
-
-        // Reference to schema file (defined, but user can modify)
+        replication: { enabled: false, replicas: 0 },
         schemaFile: problem ? getSchemaFile(problem) : null,
       };
 
@@ -161,6 +158,7 @@ export function getConfigDescription(componentType: ComponentType): string {
   switch (componentType) {
     case 'app_server':
       return 'Bare minimum app server (t3.micro). Will likely fail under load. You can optimize later.';
+    case 'database':
     case 'postgresql':
       return 'Cheapest PostgreSQL instance (db.t3.micro). No replication, minimal storage. Connect and test first!';
     case 'redis':
@@ -188,7 +186,7 @@ export function getOptimizationHints(
     hints.push('3. Add caching to reduce compute load');
   }
 
-  if (componentType === 'postgresql' && utilization > 0.8) {
+  if ((componentType === 'database' || componentType === 'postgresql') && utilization > 0.8) {
     hints.push('Database saturated! Options:');
     hints.push('1. Upgrade instance (db.t3.micro → db.m5.large)');
     hints.push('2. Add indexes to speed up queries');

@@ -1,6 +1,7 @@
 import { SystemDesignValidator } from './SystemDesignValidator';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 import { SystemGraph } from '../types/graph';
+import { isDatabaseComponentType } from '../utils/database';
 import { EC2_INSTANCES, RDS_INSTANCES, REDIS_INSTANCES } from '../types/instanceTypes';
 
 /**
@@ -302,7 +303,7 @@ for (const repl of replicationModes) {
   console.log(`   Cost: $${result.metrics.totalCost.toFixed(0)}/mo`);
 
   if (result.detailedAnalysis) {
-    const db = result.detailedAnalysis.componentAnalysis.find(c => c.type === 'postgresql');
+    const db = result.detailedAnalysis.componentAnalysis.find(c => isDatabaseComponentType(c.type));
     if (db) {
       console.log(`   DB Status: ${db.status}`);
 
@@ -480,7 +481,7 @@ for (const rps of stressLevels) {
   // Use level 1 (100 RPS baseline) but interpret results for different traffic
   const result = validator.validate(t3MediumSystem, tinyUrlProblemDefinition, 1);
 
-  const dbComponent = result.detailedAnalysis?.componentAnalysis.find(c => c.type === 'postgresql');
+  const dbComponent = result.detailedAnalysis?.componentAnalysis.find(c => isDatabaseComponentType(c.type));
   const dbUtil = dbComponent ? (dbComponent.utilization * 100).toFixed(0) : 'N/A';
   const status = result.passed ? '✅' : '❌';
   const notes = result.passed ? '' : '💥 BREAKING POINT';

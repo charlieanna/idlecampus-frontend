@@ -19,9 +19,19 @@ export const twitterProblemDefinition: ProblemDefinition = {
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can post short messages (tweets) up to 280 characters',
-    'Users can follow other users and see their tweets in a timeline',
-    'Users can like and retweet posts',
+    'Users can follow or unfollow other users',
+    'Users can view personalized timelines from followed accounts',
+    'Users can like or retweet posts',
     'Users can search for tweets and users'
+  ],
+
+  // Single locked client for compact canvas
+  clientDescriptions: [
+    {
+      name: 'Twitter Client',
+      subtitle: 'Posts, follows, reads timelines, engages, searches',
+      id: 'twitter_client'
+    }
   ],
 
   functionalRequirements: {

@@ -1,5 +1,6 @@
 import { SystemGraph } from '../../types/graph';
 import { Scenario, ValidationResult, ValidatorFunction } from '../../types/problemDefinition';
+import { isDatabaseComponentType } from '../../utils/database';
 
 /**
  * Common validators that can be reused across problems
@@ -35,9 +36,7 @@ export const databaseWriteCapacityValidator: ValidatorFunction = (graph, scenari
   const writeRPS = scenario.traffic.rps * writeRatio;
 
   // Find database
-  const database = graph.components.find(c =>
-    c.type === 'postgresql' || c.type === 'mongodb' || c.type === 'cassandra'
-  );
+  const database = graph.components.find(c => isDatabaseComponentType(c.type));
 
   if (!database) {
     return { valid: true }; // Will be caught by architecture validation
@@ -149,17 +148,17 @@ export const costOptimizationValidator: ValidatorFunction = (graph, scenario) =>
   for (const component of graph.components) {
     const instances = component.config.instances || 1;
 
+    if (isDatabaseComponentType(component.type)) {
+      const replication = component.config.replication;
+      const replicas = replication?.enabled ? replication.replicas || 1 : 0;
+      const storageCost = (component.config.storageSizeGB || 50) * 0.1;
+      totalCost += 120 * (1 + replicas) + storageCost;
+      continue;
+    }
+
     switch (component.type) {
       case 'app_server':
         totalCost += 50 * instances; // $50/instance/month
-        break;
-      case 'postgresql':
-      case 'mongodb':
-      case 'cassandra':
-        totalCost += 100; // Base DB cost
-        if (component.config.replication) {
-          totalCost += 100; // Replication cost
-        }
         break;
       case 'redis':
         const memorySizeGB = component.config.memorySizeGB || 1;
@@ -198,8 +197,7 @@ export const validConnectionFlowValidator: ValidatorFunction = (graph, scenario)
     const fromComp = graph.components.find(c => c.id === conn.from);
     const toComp = graph.components.find(c => c.id === conn.to);
 
-    return fromComp?.type === 'client' &&
-      (toComp?.type === 'postgresql' || toComp?.type === 'mongodb' || toComp?.type === 'cassandra');
+    return fromComp?.type === 'client' && toComp && isDatabaseComponentType(toComp.type);
   });
 
   if (clientToDbConnection) {
@@ -219,8 +217,7 @@ export const validConnectionFlowValidator: ValidatorFunction = (graph, scenario)
 
     const hasCacheToDb = graph.connections.some(conn => {
       const toComp = graph.components.find(c => c.id === conn.to);
-      return conn.from === cache.id &&
-        (toComp?.type === 'postgresql' || toComp?.type === 'mongodb' || toComp?.type === 'cassandra');
+      return conn.from === cache.id && toComp && isDatabaseComponentType(toComp.type);
     });
 
     if (!hasAppToCache || !hasCacheToDb) {

@@ -28,10 +28,8 @@ Example:
   availableComponents: [
     'load_balancer',
     'app_server',
+    'database',
     'redis',
-    'postgresql',
-    'mongodb',
-    'cassandra',
     'message_queue',
     'cdn',
     's3',

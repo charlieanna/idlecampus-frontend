@@ -4,6 +4,7 @@ import { TestResult } from '../types/testCase';
 import { TestRunner } from '../simulation/testRunner';
 import { DesignAnalyzer, DesignAnalysisResult } from './DesignAnalyzer';
 import { getAPIFiles, getSchemaFile } from '../services/componentDefaults';
+import { isDatabaseComponentType } from '../utils/database';
 
 /**
  * SystemDesignValidator - Generic validation engine for any system design problem
@@ -129,9 +130,12 @@ export class SystemDesignValidator {
    */
   private hasComponentOfType(graph: SystemGraph, type: string): boolean {
     // Map component types to actual component names
+    if (type === 'storage') {
+      return graph.components.some(c => isDatabaseComponentType(c.type));
+    }
+
     const typeMapping: Record<string, string[]> = {
       'compute': ['app_server'],
-      'storage': ['postgresql', 'mongodb', 'cassandra'],
       'cache': ['redis'],
       'load_balancer': ['load_balancer'],
       'message_queue': ['message_queue'],

@@ -87,4 +87,113 @@ export const basicDatabaseDesignProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict
+
+# In-memory storage (naive implementation)
+users = {}
+posts = {}
+comments = {}
+tags = {}
+followers = {}
+post_tags = {}
+
+def create_user(user_id: str, username: str, email: str) -> Dict:
+    """
+    Create user - Basic CRUD operation
+    Naive implementation - stores user in memory
+    """
+    users[user_id] = {
+        'id': user_id,
+        'username': username,
+        'email': email,
+        'created_at': datetime.now()
+    }
+    return users[user_id]
+
+def create_post(post_id: str, user_id: str, title: str, content: str,
+                tag_names: List[str] = None) -> Dict:
+    """
+    Create blog post with tags
+    Naive implementation - stores post and tag relationships
+    """
+    posts[post_id] = {
+        'id': post_id,
+        'user_id': user_id,
+        'title': title,
+        'content': content,
+        'view_count': 0,
+        'created_at': datetime.now()
+    }
+
+    # Add tags
+    if tag_names:
+        for tag_name in tag_names:
+            # Create tag if doesn't exist
+            tag_id = tag_name.lower()
+            if tag_id not in tags:
+                tags[tag_id] = {'id': tag_id, 'name': tag_name}
+
+            # Link post to tag
+            post_tags[f"{post_id}_{tag_id}"] = {
+                'post_id': post_id,
+                'tag_id': tag_id
+            }
+
+    return posts[post_id]
+
+def add_comment(comment_id: str, post_id: str, user_id: str, text: str) -> Dict:
+    """
+    Add comment to post
+    Naive implementation - stores comment
+    """
+    comments[comment_id] = {
+        'id': comment_id,
+        'post_id': post_id,
+        'user_id': user_id,
+        'text': text,
+        'created_at': datetime.now()
+    }
+    return comments[comment_id]
+
+def follow_user(follower_id: str, following_id: str) -> Dict:
+    """
+    Follow another user
+    Naive implementation - stores follow relationship
+    """
+    follow_id = f"{follower_id}_{following_id}"
+    followers[follow_id] = {
+        'follower_id': follower_id,
+        'following_id': following_id,
+        'created_at': datetime.now()
+    }
+    return followers[follow_id]
+
+def search_posts(query: str) -> List[Dict]:
+    """
+    Full-text search on posts
+    Naive implementation - simple text matching in title/content
+    """
+    results = []
+    query_lower = query.lower()
+    for post in posts.values():
+        if query_lower in post['title'].lower() or query_lower in post['content'].lower():
+            results.append(post)
+    return results
+
+def get_posts_by_tag(tag_name: str) -> List[Dict]:
+    """
+    Get posts by tag
+    Naive implementation - iterates through post_tags
+    """
+    tag_id = tag_name.lower()
+    tagged_posts = []
+    for pt in post_tags.values():
+        if pt['tag_id'] == tag_id:
+            post = posts.get(pt['post_id'])
+            if post:
+                tagged_posts.append(post)
+    return tagged_posts
+`,
 };

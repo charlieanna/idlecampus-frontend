@@ -66,4 +66,82 @@ export const pastebinProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime, timedelta
+from typing import Dict, Optional
+import hashlib
+import random
+import string
+
+# In-memory storage (naive implementation)
+pastes = {}
+users = {}
+
+def generate_short_url() -> str:
+    """Generate a random short URL key"""
+    return ''.join(random.choices(string.ascii_letters + string.digits, k=8))
+
+def create_paste(user_id: str, title: str, content: str, language: str = 'text',
+                 visibility: str = 'public', expires_hours: Optional[int] = None) -> Dict:
+    """
+    FR-1: Users can paste text and get a shareable URL
+    Naive implementation - generates short URL and stores paste
+    """
+    paste_id = generate_short_url()
+    expires_at = None
+    if expires_hours:
+        expires_at = datetime.now() + timedelta(hours=expires_hours)
+
+    pastes[paste_id] = {
+        'id': paste_id,
+        'user_id': user_id,
+        'title': title,
+        'content': content,
+        'language': language,
+        'visibility': visibility,
+        'expires_at': expires_at,
+        'url': f'https://pastebin.com/{paste_id}',
+        'created_at': datetime.now()
+    }
+    return pastes[paste_id]
+
+def get_paste(paste_id: str) -> Optional[Dict]:
+    """
+    FR-2: Users can view paste with syntax highlighting
+    Naive implementation - returns paste if not expired
+    """
+    paste = pastes.get(paste_id)
+    if not paste:
+        return None
+
+    # Check if expired
+    if paste['expires_at'] and paste['expires_at'] < datetime.now():
+        return None
+
+    # Return paste with syntax highlighting info
+    return {
+        'id': paste['id'],
+        'title': paste['title'],
+        'content': paste['content'],
+        'language': paste['language'],
+        'syntax_highlighted': True,
+        'created_at': paste['created_at']
+    }
+
+def delete_expired_pastes() -> int:
+    """
+    Helper: Clean up expired pastes
+    Naive implementation - removes expired pastes
+    """
+    now = datetime.now()
+    expired = []
+    for paste_id, paste in pastes.items():
+        if paste['expires_at'] and paste['expires_at'] < now:
+            expired.append(paste_id)
+
+    for paste_id in expired:
+        del pastes[paste_id]
+
+    return len(expired)
+`,
 };

@@ -86,4 +86,85 @@ export const twitchProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional
+
+# In-memory storage (naive implementation)
+users = {}
+streams = {}
+chat_messages = {}
+follows = {}
+subscriptions = {}
+
+def send_chat_message(message_id: str, stream_id: str, user_id: str,
+                      message: str) -> Dict:
+    """
+    FR-1: Users can chat in real-time during streams
+    Naive implementation - stores chat message
+    """
+    chat_messages[message_id] = {
+        'id': message_id,
+        'stream_id': stream_id,
+        'user_id': user_id,
+        'message': message,
+        'created_at': datetime.now()
+    }
+    return chat_messages[message_id]
+
+def get_stream_chat(stream_id: str, limit: int = 100) -> List[Dict]:
+    """
+    FR-1: Get recent chat messages for a stream
+    Naive implementation - returns recent messages
+    """
+    stream_chat = []
+    for message in chat_messages.values():
+        if message['stream_id'] == stream_id:
+            stream_chat.append(message)
+
+    # Sort by created_at (most recent last)
+    stream_chat.sort(key=lambda x: x['created_at'])
+    return stream_chat[-limit:]
+
+def start_stream(stream_id: str, streamer_id: str, title: str, category: str) -> Dict:
+    """
+    Helper: Streamer starts broadcasting
+    Naive implementation - creates stream record
+    """
+    streams[stream_id] = {
+        'id': stream_id,
+        'streamer_id': streamer_id,
+        'title': title,
+        'category': category,
+        'is_live': True,
+        'viewers': 0,
+        'started_at': datetime.now()
+    }
+    return streams[stream_id]
+
+def watch_stream(stream_id: str) -> Optional[Dict]:
+    """
+    Helper: User watches a stream
+    Naive implementation - returns stream info, increments viewer count
+    """
+    stream = streams.get(stream_id)
+    if not stream or not stream['is_live']:
+        return None
+
+    stream['viewers'] += 1
+    return stream
+
+def follow_streamer(follower_id: str, streamer_id: str) -> Dict:
+    """
+    Helper: Follow a streamer
+    Naive implementation - stores follow relationship
+    """
+    follow_id = f"{follower_id}_{streamer_id}"
+    follows[follow_id] = {
+        'follower_id': follower_id,
+        'streamer_id': streamer_id,
+        'created_at': datetime.now()
+    }
+    return follows[follow_id]
+`,
 };

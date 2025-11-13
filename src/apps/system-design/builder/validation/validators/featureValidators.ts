@@ -1,5 +1,6 @@
 import { SystemGraph } from '../../types/graph';
 import { Scenario, ValidationResult, ValidatorFunction } from '../../types/problemDefinition';
+import { isDatabaseComponentType } from '../../utils/database';
 
 /**
  * Feature-specific validators that test each FR end-to-end
@@ -80,10 +81,7 @@ export const urlShorteningValidator: ValidatorFunction = (graph, scenario) => {
   }
 
   // 3. Must have database to store URL mappings
-  const hasDB = hasComponent(graph, 'postgresql') ||
-                hasComponent(graph, 'mongodb') ||
-                hasComponent(graph, 'cassandra') ||
-                hasComponent(graph, 'dynamodb');
+  const hasDB = graph.components.some(c => isDatabaseComponentType(c.type));
   if (!hasDB) {
     return {
       valid: false,
@@ -93,9 +91,7 @@ export const urlShorteningValidator: ValidatorFunction = (graph, scenario) => {
 
   // 4. Trace path: Client → Compute → Database
   const appServer = graph.components.find(c => c.type === 'app_server' || c.type === 'lambda');
-  const database = graph.components.find(c =>
-    c.type === 'postgresql' || c.type === 'mongodb' || c.type === 'cassandra' || c.type === 'dynamodb'
-  );
+  const database = graph.components.find(c => isDatabaseComponentType(c.type));
 
   if (!appServer || !database) {
     return { valid: true }; // Already caught above
@@ -150,9 +146,7 @@ export const urlRedirectValidator: ValidatorFunction = (graph, scenario) => {
     // Cache should be between app and database
     const cache = graph.components.find(c => c.type === 'redis' || c.type === 'memcached');
     const appServer = graph.components.find(c => c.type === 'app_server');
-    const database = graph.components.find(c =>
-      c.type === 'postgresql' || c.type === 'mongodb' || c.type === 'cassandra'
-    );
+    const database = graph.components.find(c => isDatabaseComponentType(c.type));
 
     if (cache && appServer && database) {
       const hasAppToCache = hasConnection(graph, 'app_server', 'redis') ||
@@ -236,7 +230,7 @@ export const photoUploadValidator: ValidatorFunction = (graph, scenario) => {
   }
 
   // Should have database to store metadata
-  const hasDB = hasComponent(graph, 'postgresql') || hasComponent(graph, 'mongodb');
+  const hasDB = graph.components.some(c => isDatabaseComponentType(c.type));
   if (!hasDB) {
     return {
       valid: false,
@@ -325,9 +319,7 @@ export const basicFunctionalValidator: ValidatorFunction = (graph, scenario) => 
   }
 
   // 3. Must have data persistence
-  const hasStorage = hasComponent(graph, 'postgresql') ||
-                    hasComponent(graph, 'mongodb') ||
-                    hasComponent(graph, 'dynamodb') ||
+  const hasStorage = graph.components.some(c => isDatabaseComponentType(c.type)) ||
                     hasComponent(graph, 's3');
   if (!hasStorage) {
     return {

@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { isDatabaseComponentType } from '../../utils/database';
 
 interface ComponentPaletteProps {
   availableComponents: string[];
@@ -10,22 +11,16 @@ const COMPONENT_INFO: Record<string, { icon: string; label: string; category: st
   load_balancer: { icon: '🌐', label: 'Load Balancer', category: 'Network' },
   app_server: { icon: '📦', label: 'App Server', category: 'Compute' },
 
-  // SQL Databases
-  postgresql: { icon: '💾', label: 'PostgreSQL', category: 'SQL Database' },
-
-  // NoSQL Databases
-  mongodb: { icon: '🍃', label: 'MongoDB', category: 'NoSQL Database' },
-  cassandra: { icon: '💿', label: 'Cassandra', category: 'NoSQL Database' },
-
-  // Cache
-  redis: { icon: '⚡', label: 'Redis Cache', category: 'Cache' },
+  // Data Layer
+  database: { icon: '💾', label: 'Database', category: 'Data Storage' },
+  cache: { icon: '⚡', label: 'Cache', category: 'Data Storage' },
 
   // Message Queue
   message_queue: { icon: '📮', label: 'Message Queue', category: 'Queue' },
 
   // CDN & Storage
   cdn: { icon: '🌍', label: 'CDN', category: 'Content Delivery' },
-  s3: { icon: '☁️', label: 'S3 Storage', category: 'Object Storage' },
+  s3: { icon: '☁️', label: 'Object Storage', category: 'File Storage' },
 };
 
 export function ComponentPalette({
@@ -34,8 +29,15 @@ export function ComponentPalette({
 }: ComponentPaletteProps) {
   const [draggingComponent, setDraggingComponent] = useState<string | null>(null);
 
+  const normalizedComponents = useMemo(() => {
+    const normalized = availableComponents.map((comp) =>
+      isDatabaseComponentType(comp) ? 'database' : comp
+    );
+    return Array.from(new Set(normalized));
+  }, [availableComponents]);
+
   // Group components by category
-  const componentsByCategory = availableComponents.reduce((acc, comp) => {
+  const componentsByCategory = normalizedComponents.reduce((acc, comp) => {
     const category = COMPONENT_INFO[comp]?.category || 'Other';
     if (!acc[category]) acc[category] = [];
     acc[category].push(comp);
@@ -64,7 +66,14 @@ export function ComponentPalette({
             <h3 className="text-xs font-medium text-gray-500 mb-2">{category}</h3>
             <div className="space-y-1">
               {components.map((comp) => {
-                const info = COMPONENT_INFO[comp];
+                const info = COMPONENT_INFO[comp] || {
+                  icon: '🧩',
+                  label: comp
+                    .replace(/_/g, ' ')
+                    .replace(/-/g, ' ')
+                    .replace(/\b\w/g, (c) => c.toUpperCase()),
+                  category,
+                };
                 const isDragging = draggingComponent === comp;
                 return (
                   <button
@@ -88,7 +97,7 @@ export function ComponentPalette({
         ))}
       </div>
 
-      {availableComponents.length === 0 && (
+      {normalizedComponents.length === 0 && (
         <div className="text-sm text-gray-400 text-center py-8">
           Select a challenge to see available components
         </div>

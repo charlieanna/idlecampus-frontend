@@ -3,6 +3,7 @@ import { ComponentMetrics, SimulationContext } from '../types/component';
 import { TestCase, TestMetrics } from '../types/testCase';
 import { FlowVisualization } from '../types/request';
 import { TrafficFlowEngine } from './trafficFlowEngine';
+import { isDatabaseComponentType } from '../utils/database';
 import {
   Component,
   Client,
@@ -46,6 +47,7 @@ export class SimulationEngine {
         case 'app_server':
           component = new AppServer(node.id, node.config);
           break;
+        case 'database':
         case 'postgresql':
           component = new PostgreSQL(node.id, node.config);
           break;
@@ -223,10 +225,13 @@ export class SimulationEngine {
       this.findNodeIdByType('app_server');
 
     const appId = this.findNodeIdByType('app_server');
-    const dbId = this.findNodeIdByType('postgresql');
+    const dbId = this.findNodeIdByType('database') ||
+      this.findNodeIdByType('postgresql') ||
+      this.findNodeIdByType('mongodb') ||
+      this.findNodeIdByType('cassandra');
 
     const appServer = appId ? (this.components.get(appId) as AppServer) : undefined;
-    const db = dbId ? (this.components.get(dbId) as PostgreSQL) : undefined;
+    const db = dbId ? (this.components.get(dbId) as PostgreSQL | MongoDB | Cassandra) : undefined;
 
     // Find paths based on connections
     let toAppPath: string[] | null = null;
@@ -273,7 +278,7 @@ export class SimulationEngine {
     for (const nodeId of toAppPath) {
       const comp = this.components.get(nodeId)!;
       // Skip duplicating DB/Cache here; handled later
-      if (comp.type === 'redis' || comp.type === 'postgresql' || comp.type === 'cdn' || comp.type === 's3') continue;
+      if (comp.type === 'redis' || isDatabaseComponentType(comp.type) || comp.type === 'cdn' || comp.type === 's3') continue;
       pathToAppComponents.push(comp);
     }
 

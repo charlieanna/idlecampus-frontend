@@ -72,6 +72,48 @@ export const l5InfraKubernetesPlatformProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def manage_100k_kubernetes_clusters(**kwargs) -> Dict:
+    """
+    FR-1: Manage 100K Kubernetes clusters
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_zero_downtime_upgrades(**kwargs) -> Dict:
+    """
+    FR-2: Support zero-downtime upgrades
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_auto_scaling_and_auto_healing(**kwargs) -> Dict:
+    """
+    FR-3: Enable auto-scaling and auto-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_multi_tenancy_isolation(**kwargs) -> Dict:
+    """
+    FR-4: Provide multi-tenancy isolation
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_custom_controllers(**kwargs) -> Dict:
+    """
+    FR-5: Support custom controllers
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -141,6 +183,58 @@ export const l5Infrastructure1ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_kubernetes_platform_at_aws_scale(**kwargs) -> Dict:
+    """
+    FR-1: Support Kubernetes platform at AWS scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -210,6 +304,58 @@ export const l5Infrastructure2ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_service_mesh_at_gcp_scale(**kwargs) -> Dict:
+    """
+    FR-1: Support service mesh at GCP scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -279,6 +425,58 @@ export const l5Infrastructure3ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_infrastructure_as_code_at_azure(**kwargs) -> Dict:
+    """
+    FR-1: Support infrastructure as code at Azure scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -348,6 +546,58 @@ export const l5Infrastructure4ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_hybrid_cloud_at_digitalocean_sca(**kwargs) -> Dict:
+    """
+    FR-1: Support hybrid cloud at DigitalOcean scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -417,6 +667,76 @@ export const l5Infrastructure5ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+cache = {}
+events = {}
+item = {}
+memory = {}
+
+def cache_item(key: str, value: any, ttl: int = 3600) -> bool:
+    """
+    FR-1: Support edge computing at Linode scale
+    Naive implementation - simple in-memory cache with TTL
+    """
+    cache[key] = {
+        'value': value,
+        'expires_at': datetime.now().timestamp() + ttl
+    }
+    return True
+
+def get_from_cache(key: str) -> any:
+    """
+    FR-1: Support edge computing at Linode scale
+    Naive implementation - retrieves from cache if not expired
+    """
+    if key in cache:
+        item = cache[key]
+        if datetime.now().timestamp() < item['expires_at']:
+            return item['value']
+        del cache[key]
+    return None
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -486,6 +806,58 @@ export const l5Infrastructure6ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_kubernetes_platform_at_vultr_sca(**kwargs) -> Dict:
+    """
+    FR-1: Support Kubernetes platform at Vultr scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -555,6 +927,58 @@ export const l5Infrastructure7ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_service_mesh_at_ovh_scale(**kwargs) -> Dict:
+    """
+    FR-1: Support service mesh at OVH scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -624,6 +1048,58 @@ export const l5Infrastructure8ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_infrastructure_as_code_at_hetzne(**kwargs) -> Dict:
+    """
+    FR-1: Support infrastructure as code at Hetzner scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -693,6 +1169,58 @@ export const l5Infrastructure9ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_hybrid_cloud_at_equinix_scale(**kwargs) -> Dict:
+    """
+    FR-1: Support hybrid cloud at Equinix scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -762,6 +1290,76 @@ export const l5Infrastructure10ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+cache = {}
+events = {}
+item = {}
+memory = {}
+
+def cache_item(key: str, value: any, ttl: int = 3600) -> bool:
+    """
+    FR-1: Support edge computing at CoreOS scale
+    Naive implementation - simple in-memory cache with TTL
+    """
+    cache[key] = {
+        'value': value,
+        'expires_at': datetime.now().timestamp() + ttl
+    }
+    return True
+
+def get_from_cache(key: str) -> any:
+    """
+    FR-1: Support edge computing at CoreOS scale
+    Naive implementation - retrieves from cache if not expired
+    """
+    if key in cache:
+        item = cache[key]
+        if datetime.now().timestamp() < item['expires_at']:
+            return item['value']
+        del cache[key]
+    return None
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -831,6 +1429,58 @@ export const l5Infrastructure11ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_kubernetes_platform_at_rancher_s(**kwargs) -> Dict:
+    """
+    FR-1: Support Kubernetes platform at Rancher scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -900,6 +1550,58 @@ export const l5Infrastructure12ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_service_mesh_at_openshift_scale(**kwargs) -> Dict:
+    """
+    FR-1: Support service mesh at OpenShift scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -969,6 +1671,58 @@ export const l5Infrastructure13ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_infrastructure_as_code_at_tanzu(**kwargs) -> Dict:
+    """
+    FR-1: Support infrastructure as code at Tanzu scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -1038,6 +1792,58 @@ export const l5Infrastructure14ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_hybrid_cloud_at_anthos_scale(**kwargs) -> Dict:
+    """
+    FR-1: Support hybrid cloud at Anthos scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -1107,6 +1913,76 @@ export const l5Infrastructure15ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+cache = {}
+events = {}
+item = {}
+memory = {}
+
+def cache_item(key: str, value: any, ttl: int = 3600) -> bool:
+    """
+    FR-1: Support edge computing at EKS scale
+    Naive implementation - simple in-memory cache with TTL
+    """
+    cache[key] = {
+        'value': value,
+        'expires_at': datetime.now().timestamp() + ttl
+    }
+    return True
+
+def get_from_cache(key: str) -> any:
+    """
+    FR-1: Support edge computing at EKS scale
+    Naive implementation - retrieves from cache if not expired
+    """
+    if key in cache:
+        item = cache[key]
+        if datetime.now().timestamp() < item['expires_at']:
+            return item['value']
+        del cache[key]
+    return None
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -1176,6 +2052,58 @@ export const l5Infrastructure16ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_kubernetes_platform_at_gke_scale(**kwargs) -> Dict:
+    """
+    FR-1: Support Kubernetes platform at GKE scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 
 /**
@@ -1245,5 +2173,57 @@ export const l5Infrastructure17ProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+events = {}
+memory = {}
+
+def support_service_mesh_at_aks_scale(**kwargs) -> Dict:
+    """
+    FR-1: Support service mesh at AKS scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_gradual_migration_with_zero_downt(**kwargs) -> Dict:
+    """
+    FR-2: Enable gradual migration with zero downtime
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def maintain_backward_compatibility(**kwargs) -> Dict:
+    """
+    FR-3: Maintain backward compatibility
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_a_b_testing_and_gradual_rollout(**kwargs) -> Dict:
+    """
+    FR-4: Support A/B testing and gradual rollout
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-5: Provide comprehensive monitoring and rollback
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]`,
 };
 

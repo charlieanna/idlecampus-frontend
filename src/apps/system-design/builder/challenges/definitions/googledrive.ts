@@ -79,4 +79,101 @@ export const googledriveProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional
+
+# In-memory storage (naive implementation)
+users = {}
+files = {}
+folders = {}
+permissions = {}
+activities = {}
+
+def upload_file(file_id: str, owner_id: str, name: str, file_type: str,
+                size: int, folder_id: str = None) -> Dict:
+    """
+    FR-1: Users can upload files
+    Naive implementation - stores file metadata in memory
+    """
+    files[file_id] = {
+        'id': file_id,
+        'owner_id': owner_id,
+        'folder_id': folder_id,
+        'name': name,
+        'type': file_type,
+        'size': size,
+        'url': f'https://storage.example.com/{file_id}',
+        'created_at': datetime.now()
+    }
+    return files[file_id]
+
+def create_folder(folder_id: str, owner_id: str, name: str,
+                  parent_id: str = None) -> Dict:
+    """
+    FR-1: Users can organize files (create folders)
+    Naive implementation - stores folder in memory
+    """
+    folders[folder_id] = {
+        'id': folder_id,
+        'owner_id': owner_id,
+        'parent_id': parent_id,
+        'name': name,
+        'created_at': datetime.now()
+    }
+    return folders[folder_id]
+
+def get_files_in_folder(folder_id: str = None) -> List[Dict]:
+    """
+    FR-1: Users can view files in folders
+    Naive implementation - returns all files in a folder
+    """
+    folder_files = []
+    for file in files.values():
+        if file['folder_id'] == folder_id:
+            folder_files.append(file)
+    return folder_files
+
+def collaborate_on_file(file_id: str, user_id: str, content_changes: str) -> Dict:
+    """
+    FR-2: Users can collaborate on documents in real-time
+    Naive implementation - records activity, doesn't actually edit file
+    """
+    activity_id = f"{file_id}_{user_id}_{datetime.now().timestamp()}"
+    activities[activity_id] = {
+        'id': activity_id,
+        'file_id': file_id,
+        'user_id': user_id,
+        'action': 'edit',
+        'changes': content_changes,
+        'created_at': datetime.now()
+    }
+    return activities[activity_id]
+
+def get_file_activities(file_id: str) -> List[Dict]:
+    """
+    FR-2: View collaboration history
+    Naive implementation - returns all activities for a file
+    """
+    file_activities = []
+    for activity in activities.values():
+        if activity['file_id'] == file_id:
+            file_activities.append(activity)
+    return file_activities
+
+def share_file(permission_id: str, file_id: str, user_id: str,
+               role: str = 'viewer') -> Dict:
+    """
+    Helper: Share file with specific permissions
+    Naive implementation - stores permission in memory
+    """
+    permissions[permission_id] = {
+        'id': permission_id,
+        'file_id': file_id,
+        'user_id': user_id,
+        'role': role,
+        'created_at': datetime.now()
+    }
+    return permissions[permission_id]
+`,
 };

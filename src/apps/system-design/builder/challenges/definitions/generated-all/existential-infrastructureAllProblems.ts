@@ -72,6 +72,49 @@ export const l6ExistentialNuclearResilientProblemDefinition: ProblemDefinition =
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+radiation = {}
+
+def survive_emp_attacks(**kwargs) -> Dict:
+    """
+    FR-1: Survive EMP attacks
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def operate_in_radiation(**kwargs) -> Dict:
+    """
+    FR-2: Operate in radiation
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def handle_90_node_failure(**kwargs) -> Dict:
+    """
+    FR-3: Handle 90% node failure
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_emergency_broadcast(**kwargs) -> Dict:
+    """
+    FR-4: Support emergency broadcast
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_survivor_coordination(**kwargs) -> Dict:
+    """
+    FR-5: Enable survivor coordination
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -135,6 +178,48 @@ export const l6ExistentialClimateAdaptationProblemDefinition: ProblemDefinition 
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def operate_at_60_c_ambient(**kwargs) -> Dict:
+    """
+    FR-1: Operate at 60°C ambient
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def survive_category_6_hurricanes(**kwargs) -> Dict:
+    """
+    FR-2: Survive category 6 hurricanes
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def handle_mass_migration_logistics(**kwargs) -> Dict:
+    """
+    FR-3: Handle mass migration logistics
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def coordinate_disaster_response(**kwargs) -> Dict:
+    """
+    FR-4: Coordinate disaster response
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def manage_resource_allocation(**kwargs) -> Dict:
+    """
+    FR-5: Manage resource allocation
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -199,6 +284,57 @@ export const l6ExistentialPandemicResponseProblemDefinition: ProblemDefinition =
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+events = {}
+posts = {}
+memory = {}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-1: Track 8B people health status
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]
+
+def coordinate_vaccine_distribution(**kwargs) -> Dict:
+    """
+    FR-2: Coordinate vaccine distribution
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def manage_quarantine_zones(**kwargs) -> Dict:
+    """
+    FR-3: Manage quarantine zones
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def allocate_critical_resources(**kwargs) -> Dict:
+    """
+    FR-4: Allocate critical resources
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def predict_outbreak_patterns(**kwargs) -> Dict:
+    """
+    FR-5: Predict outbreak patterns
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -263,6 +399,56 @@ export const l6ExistentialAsteroidDefenseProblemDefinition: ProblemDefinition = 
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+events = {}
+memory = {}
+
+def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
+    """
+    FR-1: Track 1M asteroids
+    Naive implementation - stores event in memory
+    """
+    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
+    events[event_id] = {
+        'id': event_id,
+        'type': event_type,
+        'item_id': item_id,
+        'metadata': metadata or {},
+        'created_at': datetime.now()
+    }
+    return events[event_id]
+
+def calculate_trajectories_for_100_years(**kwargs) -> Dict:
+    """
+    FR-2: Calculate trajectories for 100 years
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def coordinate_deflection_missions(**kwargs) -> Dict:
+    """
+    FR-3: Coordinate deflection missions
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def simulate_intervention_outcomes(**kwargs) -> Dict:
+    """
+    FR-4: Simulate intervention outcomes
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def manage_global_resources(**kwargs) -> Dict:
+    """
+    FR-5: Manage global resources
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -327,6 +513,48 @@ export const l6ExistentialInfrastructure1ProblemDefinition: ProblemDefinition = 
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_planetary_defense_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement planetary defense at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_galactic_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve galactic internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -391,6 +619,48 @@ export const l6ExistentialInfrastructure2ProblemDefinition: ProblemDefinition = 
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_asteroid_mining_at_planetary_s(**kwargs) -> Dict:
+    """
+    FR-1: Implement asteroid mining at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_stellar_engineering_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve stellar engineering breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -455,6 +725,48 @@ export const l6ExistentialInfrastructure3ProblemDefinition: ProblemDefinition = 
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_dyson_spheres_at_planetary_sca(**kwargs) -> Dict:
+    """
+    FR-1: Implement dyson spheres at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_multiverse_computing_breakthroug(**kwargs) -> Dict:
+    """
+    FR-2: Achieve multiverse computing breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -519,6 +831,48 @@ export const l6ExistentialInfrastructure4ProblemDefinition: ProblemDefinition = 
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_generation_ships_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement generation ships at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_galactic_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve galactic internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -583,6 +937,48 @@ export const l6ExistentialInfrastructure5ProblemDefinition: ProblemDefinition = 
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_terraforming_at_planetary_scal(**kwargs) -> Dict:
+    """
+    FR-1: Implement terraforming at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_stellar_engineering_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve stellar engineering breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -647,6 +1043,48 @@ export const l6ExistentialInfrastructure6ProblemDefinition: ProblemDefinition = 
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_planetary_defense_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement planetary defense at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_multiverse_computing_breakthroug(**kwargs) -> Dict:
+    """
+    FR-2: Achieve multiverse computing breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -711,6 +1149,48 @@ export const l6ExistentialInfrastructure7ProblemDefinition: ProblemDefinition = 
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_asteroid_mining_at_planetary_s(**kwargs) -> Dict:
+    """
+    FR-1: Implement asteroid mining at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_galactic_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve galactic internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -775,6 +1255,48 @@ export const l6ExistentialInfrastructure8ProblemDefinition: ProblemDefinition = 
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_dyson_spheres_at_planetary_sca(**kwargs) -> Dict:
+    """
+    FR-1: Implement dyson spheres at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_stellar_engineering_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve stellar engineering breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -839,6 +1361,48 @@ export const l6ExistentialInfrastructure9ProblemDefinition: ProblemDefinition = 
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_generation_ships_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement generation ships at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_multiverse_computing_breakthroug(**kwargs) -> Dict:
+    """
+    FR-2: Achieve multiverse computing breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -903,6 +1467,48 @@ export const l6ExistentialInfrastructure10ProblemDefinition: ProblemDefinition =
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_terraforming_at_planetary_scal(**kwargs) -> Dict:
+    """
+    FR-1: Implement terraforming at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_galactic_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve galactic internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -967,6 +1573,48 @@ export const l6ExistentialInfrastructure11ProblemDefinition: ProblemDefinition =
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_planetary_defense_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement planetary defense at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_stellar_engineering_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve stellar engineering breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1031,6 +1679,48 @@ export const l6ExistentialInfrastructure12ProblemDefinition: ProblemDefinition =
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_asteroid_mining_at_planetary_s(**kwargs) -> Dict:
+    """
+    FR-1: Implement asteroid mining at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_multiverse_computing_breakthroug(**kwargs) -> Dict:
+    """
+    FR-2: Achieve multiverse computing breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1095,6 +1785,48 @@ export const l6ExistentialInfrastructure13ProblemDefinition: ProblemDefinition =
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_dyson_spheres_at_planetary_sca(**kwargs) -> Dict:
+    """
+    FR-1: Implement dyson spheres at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_galactic_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve galactic internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1159,6 +1891,48 @@ export const l6ExistentialInfrastructure14ProblemDefinition: ProblemDefinition =
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_generation_ships_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement generation ships at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_stellar_engineering_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve stellar engineering breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1223,6 +1997,48 @@ export const l6ExistentialInfrastructure15ProblemDefinition: ProblemDefinition =
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_terraforming_at_planetary_scal(**kwargs) -> Dict:
+    """
+    FR-1: Implement terraforming at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_multiverse_computing_breakthroug(**kwargs) -> Dict:
+    """
+    FR-2: Achieve multiverse computing breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1287,6 +2103,48 @@ export const l6ExistentialInfrastructure16ProblemDefinition: ProblemDefinition =
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_planetary_defense_at_planetary(**kwargs) -> Dict:
+    """
+    FR-1: Implement planetary defense at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_galactic_internet_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve galactic internet breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 
 /**
@@ -1351,5 +2209,47 @@ export const l6ExistentialInfrastructure17ProblemDefinition: ProblemDefinition =
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict, Optional, Any
+
+# In-memory storage (naive implementation)
+data = {}
+items = {}
+
+def implement_asteroid_mining_at_planetary_s(**kwargs) -> Dict:
+    """
+    FR-1: Implement asteroid mining at planetary scale
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def achieve_stellar_engineering_breakthrough(**kwargs) -> Dict:
+    """
+    FR-2: Achieve stellar engineering breakthrough
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def support_quantum_resistant_security(**kwargs) -> Dict:
+    """
+    FR-3: Support quantum-resistant security
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def enable_autonomous_self_healing(**kwargs) -> Dict:
+    """
+    FR-4: Enable autonomous self-healing
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}
+
+def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
+    """
+    FR-5: Provide 10x improvement over current systems
+    Naive implementation - placeholder function
+    """
+    return {'status': 'success', 'data': kwargs}`,
 };
 

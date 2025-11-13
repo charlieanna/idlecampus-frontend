@@ -324,25 +324,15 @@ export function getComponentInfo(type: string): { label: string; displayName: st
       displayName: 'App Server',
       subtitle: 'Handles requests',
     },
-    postgresql: {
-      label: '💾 PostgreSQL',
-      displayName: 'PostgreSQL',
-      subtitle: 'SQL Database (ACID)',
+    database: {
+      label: '💾 Database',
+      displayName: 'Database',
+      subtitle: 'SQL or NoSQL data store',
     },
-    mongodb: {
-      label: '🍃 MongoDB',
-      displayName: 'MongoDB',
-      subtitle: 'Document Database (NoSQL)',
-    },
-    cassandra: {
-      label: '💿 Cassandra',
-      displayName: 'Cassandra',
-      subtitle: 'Wide-Column Store (AP)',
-    },
-    redis: {
-      label: '⚡ Redis',
-      displayName: 'Redis Cache',
-      subtitle: 'In-memory cache',
+    cache: {
+      label: '⚡ Cache',
+      displayName: 'Cache',
+      subtitle: 'In-memory cache layer',
     },
     message_queue: {
       label: '📮 Queue',
@@ -368,27 +358,21 @@ export function getDefaultConfig(type: string): Record<string, any> {
     client: {},
     load_balancer: {},
     app_server: { instances: 1 },
-    postgresql: { readCapacity: 1000, writeCapacity: 1000, replication: false },
-    mongodb: {
+    database: {
+      databaseType: 'postgresql',
+      dbCategory: 'sql',
       readCapacity: 1000,
-      writeCapacity: 500,
-      consistencyLevel: 'eventual',
-      sharded: false,
-      numShards: 1,
-      replicationFactor: 3,
-      indexingEnabled: true,
+      writeCapacity: 1000,
+      replication: { enabled: false, replicas: 0 },
+      storageSizeGB: 50,
     },
-    cassandra: {
-      readCapacity: 5000,
-      writeCapacity: 10000,
-      replicationFactor: 3,
-      readQuorum: 2,
-      writeQuorum: 2,
-      numNodes: 3,
-      compactionEnabled: true,
-      bloomFilterEnabled: true,
+    cache: {
+      cacheType: 'redis',
+      memorySizeGB: 4,
+      ttl: 3600,
+      hitRatio: 0.9,
+      strategy: 'cache_aside',
     },
-    redis: { memorySizeGB: 4, ttl: 3600, hitRatio: 0.9, strategy: 'cache_aside' },
     message_queue: {
       numBrokers: 3,
       numPartitions: 10,

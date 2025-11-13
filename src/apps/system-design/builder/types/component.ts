@@ -34,16 +34,58 @@ export interface SimulationContext {
 }
 
 /**
+ * Database types available
+ */
+export type DatabaseType =
+  | 'postgresql'
+  | 'mysql'
+  | 'mongodb'
+  | 'couchdb'
+  | 'cassandra'
+  | 'hbase'
+  | 'elasticsearch'
+  | 'solr'
+  | 'dynamodb'
+  | 'keydb';
+
+/**
+ * Cache types available
+ */
+export type CacheType =
+  | 'redis'
+  | 'memcached'
+  | 'elasticache';
+
+/**
+ * Database categories
+ */
+export type DatabaseCategory =
+  | 'sql'
+  | 'nosql_document'
+  | 'nosql_columnar'
+  | 'nosql_search'
+  | 'nosql_keyvalue';
+
+/**
  * Component types
  */
 export type ComponentType =
   | 'client'
   | 'load_balancer'
   | 'app_server'
+  | 'database'
   | 'postgresql'
+  | 'mysql'
   | 'mongodb'
+  | 'couchdb'
   | 'cassandra'
+  | 'hbase'
+  | 'elasticsearch'
+  | 'solr'
+  | 'dynamodb'
+  | 'keydb'
   | 'redis'
+  | 'cache'
   | 'message_queue'
   | 'cdn'
   | 's3';
