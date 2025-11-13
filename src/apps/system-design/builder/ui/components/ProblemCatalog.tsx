@@ -105,74 +105,97 @@ function CompanyBadge({ company }: { company: string }) {
   );
 }
 
+// Problem card component
+function ProblemCard({ challenge, onClick }: { challenge: Challenge; onClick: () => void }) {
+  return (
+    <div
+      onClick={onClick}
+      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer p-4 border border-gray-200 hover:border-blue-400 mb-3"
+    >
+      {/* Title */}
+      <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">
+        {challenge.title}
+      </h3>
+
+      {/* Description */}
+      <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+        {challenge.description}
+      </p>
+
+      {/* Requirements Preview */}
+      <div className="space-y-1 mb-3">
+        <div className="flex items-center text-xs text-gray-500">
+          <span className="font-medium mr-2">📊</span>
+          <span className="truncate">{challenge.requirements.traffic}</span>
+        </div>
+        <div className="flex items-center text-xs text-gray-500">
+          <span className="font-medium mr-2">⚡</span>
+          <span>{challenge.requirements.latency}</span>
+        </div>
+      </div>
+
+      {/* Badges */}
+      <div className="flex flex-wrap gap-2">
+        {challenge.company && <CompanyBadge company={challenge.company} />}
+      </div>
+    </div>
+  );
+}
+
 export function ProblemCatalog() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('all');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [selectedCompany, setSelectedCompany] = useState<string>('all');
-  const [sortBy, setSortBy] = useState<'title' | 'difficulty'>('title');
+  const [viewMode, setViewMode] = useState<'difficulty' | 'category'>('difficulty');
 
-  // Enrich challenges with metadata
+  // Enrich challenges with metadata and filter out tutorials
   const enrichedChallenges = useMemo(() => {
-    return generatedChallenges.map(challenge => ({
-      ...challenge,
-      category: extractCategory(challenge.id),
-      company: extractCompany(challenge),
-    }));
+    return generatedChallenges
+      .filter(challenge => !challenge.id.includes('tutorial') && !challenge.id.includes('boe-walkthrough'))
+      .map(challenge => ({
+        ...challenge,
+        category: extractCategory(challenge.id),
+        company: extractCompany(challenge),
+      }));
   }, []);
 
-  // Get unique values for filters
+  // Get unique values for categories
   const categories = useMemo(() => {
     const cats = new Set(enrichedChallenges.map(c => c.category));
-    return ['all', ...Array.from(cats).sort()];
+    return Array.from(cats).sort();
   }, [enrichedChallenges]);
 
-  const companies = useMemo(() => {
-    const comps = new Set(enrichedChallenges.map(c => c.company).filter(Boolean) as string[]);
-    return ['all', ...Array.from(comps).sort()];
-  }, [enrichedChallenges]);
-
-  // Filter and sort challenges
+  // Filter challenges
   const filteredChallenges = useMemo(() => {
-    let filtered = enrichedChallenges;
+    if (!searchTerm) return enrichedChallenges;
 
-    // Search filter
-    if (searchTerm) {
-      const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(c =>
-        c.title.toLowerCase().includes(term) ||
-        c.description.toLowerCase().includes(term) ||
-        c.category.toLowerCase().includes(term)
-      );
-    }
+    const term = searchTerm.toLowerCase();
+    return enrichedChallenges.filter(c =>
+      c.title.toLowerCase().includes(term) ||
+      c.description.toLowerCase().includes(term) ||
+      c.category.toLowerCase().includes(term)
+    );
+  }, [enrichedChallenges, searchTerm]);
 
-    // Difficulty filter
-    if (selectedDifficulty !== 'all') {
-      filtered = filtered.filter(c => c.difficulty === selectedDifficulty);
-    }
+  // Group by difficulty
+  const byDifficulty = useMemo(() => {
+    return {
+      beginner: filteredChallenges.filter(c => c.difficulty === 'beginner'),
+      intermediate: filteredChallenges.filter(c => c.difficulty === 'intermediate'),
+      advanced: filteredChallenges.filter(c => c.difficulty === 'advanced'),
+    };
+  }, [filteredChallenges]);
 
-    // Category filter
-    if (selectedCategory !== 'all') {
-      filtered = filtered.filter(c => c.category === selectedCategory);
-    }
-
-    // Company filter
-    if (selectedCompany !== 'all') {
-      filtered = filtered.filter(c => c.company === selectedCompany);
-    }
-
-    // Sort
-    filtered.sort((a, b) => {
-      if (sortBy === 'difficulty') {
-        const difficultyOrder = { beginner: 1, intermediate: 2, advanced: 3 };
-        return (difficultyOrder[a.difficulty] || 0) - (difficultyOrder[b.difficulty] || 0);
+  // Group by category
+  const byCategory = useMemo(() => {
+    const grouped: Record<string, typeof enrichedChallenges> = {};
+    filteredChallenges.forEach(challenge => {
+      if (!grouped[challenge.category]) {
+        grouped[challenge.category] = [];
       }
-      return a.title.localeCompare(b.title);
+      grouped[challenge.category].push(challenge);
     });
-
-    return filtered;
-  }, [enrichedChallenges, searchTerm, selectedDifficulty, selectedCategory, selectedCompany, sortBy]);
+    return grouped;
+  }, [filteredChallenges]);
 
   const handleSelectChallenge = (challengeId: string) => {
     // Convert challenge ID to URL format (replace _ with -)
@@ -181,196 +204,156 @@ export function ProblemCatalog() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">System Design Problems</h1>
-          <p className="text-lg text-gray-600">
-            {enrichedChallenges.length} problems to master system design • From basic caching to interplanetary protocols
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-3xl font-bold text-blue-600">{enrichedChallenges.length}</div>
-            <div className="text-sm text-gray-600">Total Problems</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-3xl font-bold text-green-600">
-              {enrichedChallenges.filter(c => c.difficulty === 'beginner').length}
-            </div>
-            <div className="text-sm text-gray-600">Beginner</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-3xl font-bold text-yellow-600">
-              {enrichedChallenges.filter(c => c.difficulty === 'intermediate').length}
-            </div>
-            <div className="text-sm text-gray-600">Intermediate</div>
-          </div>
-          <div className="bg-white rounded-lg shadow p-4">
-            <div className="text-3xl font-bold text-red-600">
-              {enrichedChallenges.filter(c => c.difficulty === 'advanced').length}
-            </div>
-            <div className="text-sm text-gray-600">Advanced</div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {/* Search */}
-            <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
-              <input
-                type="text"
-                placeholder="Search problems..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              />
-            </div>
-
-            {/* Difficulty */}
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
+        <div className="max-w-[1800px] mx-auto p-6">
+          <div className="flex items-center justify-between mb-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Difficulty</label>
-              <select
-                value={selectedDifficulty}
-                onChange={(e) => setSelectedDifficulty(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Levels</option>
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
+              <h1 className="text-3xl font-bold text-gray-900">System Design Problems</h1>
+              <p className="text-sm text-gray-600 mt-1">
+                {enrichedChallenges.length} problems • {filteredChallenges.length} filtered
+              </p>
             </div>
 
-            {/* Category */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-              <select
-                value={selectedCategory}
-                onChange={(e) => setSelectedCategory(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Categories</option>
-                {categories.filter(c => c !== 'all').map(cat => (
-                  <option key={cat} value={cat}>{cat}</option>
-                ))}
-              </select>
-            </div>
-
-            {/* Company */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Company</label>
-              <select
-                value={selectedCompany}
-                onChange={(e) => setSelectedCompany(e.target.value)}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-              >
-                <option value="all">All Companies</option>
-                {companies.filter(c => c !== 'all').map(comp => (
-                  <option key={comp} value={comp}>{comp}</option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Sort and Results */}
-          <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-200">
+            {/* View Mode Toggle */}
             <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Sort by:</span>
+              <span className="text-sm text-gray-600">View by:</span>
               <button
-                onClick={() => setSortBy('title')}
-                className={`px-3 py-1 text-sm rounded ${sortBy === 'title' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
-              >
-                Title
-              </button>
-              <button
-                onClick={() => setSortBy('difficulty')}
-                className={`px-3 py-1 text-sm rounded ${sortBy === 'difficulty' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}
+                onClick={() => setViewMode('difficulty')}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  viewMode === 'difficulty'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
               >
                 Difficulty
               </button>
-            </div>
-            <div className="text-sm text-gray-600">
-              Showing {filteredChallenges.length} of {enrichedChallenges.length} problems
+              <button
+                onClick={() => setViewMode('category')}
+                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                  viewMode === 'category'
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                Category
+              </button>
             </div>
           </div>
+
+          {/* Search */}
+          <input
+            type="text"
+            placeholder="Search problems..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          />
         </div>
+      </div>
 
-        {/* Problem Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredChallenges.map((challenge) => (
-            <div
-              key={challenge.id}
-              onClick={() => handleSelectChallenge(challenge.id)}
-              className="bg-white rounded-lg shadow hover:shadow-xl transition-shadow cursor-pointer p-6 border border-gray-200 hover:border-blue-500"
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="text-lg font-semibold text-gray-900 flex-1">
-                  {challenge.title}
-                </h3>
-                <DifficultyBadge difficulty={challenge.difficulty} />
+      {/* Board View */}
+      <div className="max-w-[1800px] mx-auto p-6">
+        {viewMode === 'difficulty' ? (
+          // Difficulty Columns
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Beginner Column */}
+            <div className="flex flex-col">
+              <div className="bg-green-100 rounded-t-lg p-4 border-b-4 border-green-600">
+                <h2 className="text-lg font-bold text-green-900 flex items-center justify-between">
+                  <span>🟢 Beginner</span>
+                  <span className="text-sm bg-green-200 px-2 py-1 rounded-full">{byDifficulty.beginner.length}</span>
+                </h2>
               </div>
-
-              {/* Description */}
-              <p className="text-sm text-gray-600 mb-4 line-clamp-3">
-                {challenge.description}
-              </p>
-
-              {/* Badges */}
-              <div className="flex flex-wrap gap-2 mb-4">
-                <CategoryBadge category={challenge.category} />
-                {challenge.company && <CompanyBadge company={challenge.company} />}
-              </div>
-
-              {/* Requirements Preview */}
-              <div className="border-t border-gray-200 pt-4 space-y-2">
-                <div className="flex items-center text-xs text-gray-500">
-                  <span className="font-medium mr-2">📊 Traffic:</span>
-                  <span className="truncate">{challenge.requirements.traffic}</span>
-                </div>
-                <div className="flex items-center text-xs text-gray-500">
-                  <span className="font-medium mr-2">⚡ Latency:</span>
-                  <span>{challenge.requirements.latency}</span>
-                </div>
-                <div className="flex items-center text-xs text-gray-500">
-                  <span className="font-medium mr-2">✅ Availability:</span>
-                  <span>{challenge.requirements.availability}</span>
-                </div>
-              </div>
-
-              {/* CTA */}
-              <div className="mt-4 pt-4 border-t border-gray-200">
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors">
-                  Start Challenge →
-                </button>
+              <div className="bg-gray-100 rounded-b-lg p-4 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+                {byDifficulty.beginner.map((challenge) => (
+                  <ProblemCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    onClick={() => handleSelectChallenge(challenge.id)}
+                  />
+                ))}
+                {byDifficulty.beginner.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-8">No problems found</p>
+                )}
               </div>
             </div>
-          ))}
-        </div>
 
-        {/* Empty State */}
-        {filteredChallenges.length === 0 && (
-          <div className="bg-white rounded-lg shadow p-12 text-center">
-            <div className="text-gray-400 text-6xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No problems found</h3>
-            <p className="text-gray-600">Try adjusting your filters or search term</p>
-            <button
-              onClick={() => {
-                setSearchTerm('');
-                setSelectedDifficulty('all');
-                setSelectedCategory('all');
-                setSelectedCompany('all');
-              }}
-              className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              Clear Filters
-            </button>
+            {/* Intermediate Column */}
+            <div className="flex flex-col">
+              <div className="bg-yellow-100 rounded-t-lg p-4 border-b-4 border-yellow-600">
+                <h2 className="text-lg font-bold text-yellow-900 flex items-center justify-between">
+                  <span>🟡 Intermediate</span>
+                  <span className="text-sm bg-yellow-200 px-2 py-1 rounded-full">{byDifficulty.intermediate.length}</span>
+                </h2>
+              </div>
+              <div className="bg-gray-100 rounded-b-lg p-4 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+                {byDifficulty.intermediate.map((challenge) => (
+                  <ProblemCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    onClick={() => handleSelectChallenge(challenge.id)}
+                  />
+                ))}
+                {byDifficulty.intermediate.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-8">No problems found</p>
+                )}
+              </div>
+            </div>
+
+            {/* Advanced Column */}
+            <div className="flex flex-col">
+              <div className="bg-red-100 rounded-t-lg p-4 border-b-4 border-red-600">
+                <h2 className="text-lg font-bold text-red-900 flex items-center justify-between">
+                  <span>🔴 Advanced</span>
+                  <span className="text-sm bg-red-200 px-2 py-1 rounded-full">{byDifficulty.advanced.length}</span>
+                </h2>
+              </div>
+              <div className="bg-gray-100 rounded-b-lg p-4 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+                {byDifficulty.advanced.map((challenge) => (
+                  <ProblemCard
+                    key={challenge.id}
+                    challenge={challenge}
+                    onClick={() => handleSelectChallenge(challenge.id)}
+                  />
+                ))}
+                {byDifficulty.advanced.length === 0 && (
+                  <p className="text-sm text-gray-500 text-center py-8">No problems found</p>
+                )}
+              </div>
+            </div>
+          </div>
+        ) : (
+          // Category Columns (horizontal scroll)
+          <div className="overflow-x-auto pb-4">
+            <div className="flex gap-6" style={{ minWidth: 'min-content' }}>
+              {categories.map((category) => {
+                const problems = byCategory[category] || [];
+                return (
+                  <div key={category} className="flex flex-col w-80 flex-shrink-0">
+                    <div className="bg-blue-100 rounded-t-lg p-4 border-b-4 border-blue-600">
+                      <h2 className="text-lg font-bold text-blue-900 flex items-center justify-between">
+                        <span className="truncate">{category}</span>
+                        <span className="text-sm bg-blue-200 px-2 py-1 rounded-full">{problems.length}</span>
+                      </h2>
+                    </div>
+                    <div className="bg-gray-100 rounded-b-lg p-4 flex-1 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 280px)' }}>
+                      {problems.map((challenge) => (
+                        <ProblemCard
+                          key={challenge.id}
+                          challenge={challenge}
+                          onClick={() => handleSelectChallenge(challenge.id)}
+                        />
+                      ))}
+                      {problems.length === 0 && (
+                        <p className="text-sm text-gray-500 text-center py-8">No problems found</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
