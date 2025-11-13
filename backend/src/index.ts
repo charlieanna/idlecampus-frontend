@@ -8,6 +8,7 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 import { pythonExecutor } from './services/pythonExecutor.js';
 import codeLabsRouter from './routes/codeLabs.js';
+import systemDesignRouter from './routes/systemDesign.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -49,6 +50,7 @@ app.get('/health', async (req: Request, res: Response) => {
 
 // API routes
 app.use('/api/v1/code_labs', codeLabsRouter);
+app.use('/api/v1/system-design', systemDesignRouter);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -104,7 +106,10 @@ async function startServer() {
       console.log('   POST /api/v1/code_labs/:id/validate');
       console.log('   POST /api/v1/code_labs/:id/submit');
       console.log('   GET  /api/v1/code_labs/:id/hint');
-      console.log('   GET  /api/v1/code_labs/:id/solution\n');
+      console.log('   GET  /api/v1/code_labs/:id/solution');
+      console.log('   GET  /api/v1/system-design/health');
+      console.log('   POST /api/v1/system-design/:problemId/validate');
+      console.log('   POST /api/v1/system-design/:problemId/quick-validate\n');
     });
   } catch (error) {
     console.error('Failed to start server:', error);

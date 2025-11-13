@@ -104,7 +104,7 @@ export function getMinimalComponentConfig(
  * Get API file references for problem's functional requirements
  * Each FR maps to a separate Python file
  */
-function getAPIFiles(problem: ProblemDefinition): string[] {
+export function getAPIFiles(problem: ProblemDefinition): string[] {
   const files: string[] = [];
 
   // TinyURL: URL shortening service
@@ -133,7 +133,7 @@ function getAPIFiles(problem: ProblemDefinition): string[] {
 /**
  * Get schema file reference for problem's data model
  */
-function getSchemaFile(problem: ProblemDefinition): string | null {
+export function getSchemaFile(problem: ProblemDefinition): string | null {
   // TinyURL
   if (problem.id === 'tiny_url') {
     return '/tinyurl_schema.sql';
