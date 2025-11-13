@@ -140,15 +140,7 @@ export class TestRunner {
       }
     } else {
       explanation = `❌ Test FAILED: ${testCase.name}\n\n`;
-
-      // Detect empty/incomplete design and provide educational guidance
-      const isEmptyDesign = this.detectEmptyDesign(graph, metrics);
-
-      if (isEmptyDesign) {
-        explanation += this.generateEmptyDesignGuidance(testCase, graph);
-      } else {
-        explanation += `The system is not functional. Please review your design.\n`;
-      }
+      explanation += `${testCase.requirement} failed. Please review your design.\n`;
     }
 
     return explanation;
@@ -185,11 +177,6 @@ export class TestRunner {
    * Generate educational guidance for empty/incomplete designs
    */
   private generateEmptyDesignGuidance(testCase: TestCase, graph: SystemGraph): string {
-    let guidance = '';
-
-    // Check what's missing
-    guidance += `The system is not functional. Please review your design.\n`;
-
-    return guidance;
+    return `${testCase.requirement} failed. Please review your design.\n`;
   }
 }
