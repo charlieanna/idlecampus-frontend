@@ -1,15 +1,8 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import {
-  urlShorteningValidator,
-  urlRedirectValidator,
-  analyticsTrackingValidator,
-  photoUploadValidator,
-  feedViewValidator,
-  basicFunctionalValidator,
-} from '../../../validation/validators/featureValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import { basicFunctionalValidator } from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Caching Problems - Complete Set
@@ -139,9 +132,7 @@ export const tinyurlProblemDefinition: ProblemDefinition = {
 
   validators: [
     // Feature-specific validators for each FR
-    { name: 'FR-1: URL Shortening', validate: urlShorteningValidator },
-    { name: 'FR-2: URL Redirect', validate: urlRedirectValidator },
-    { name: 'FR-4: Analytics Tracking', validate: analyticsTrackingValidator },
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
     // Generic validators
     {
       name: 'Valid Connection Flow',

@@ -1,15 +1,8 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import {
-  urlShorteningValidator,
-  urlRedirectValidator,
-  analyticsTrackingValidator,
-  photoUploadValidator,
-  feedViewValidator,
-  basicFunctionalValidator,
-} from '../../../validation/validators/featureValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import { basicFunctionalValidator } from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Privacy-innovation Problems - Complete Set
@@ -39,12 +32,17 @@ export const l6PrivacyHomomorphicScaleProblemDefinition: ProblemDefinition = {
     'Provide verifiable computation'
   ],
   userFacingNFRs: [
-    
+    'Latency: P99 < 25ms',
+    'Request Rate: 100000k requests/sec',
+    'Availability: 99.99% uptime'
   ],
 
   functionalRequirements: {
     mustHave: [
-
+      {
+        type: 'load_balancer',
+        reason: 'Need LB for high availability and traffic distribution',
+      }
     ],
     mustConnect: [
 
@@ -102,12 +100,17 @@ export const l6PrivacyZkpInternetProblemDefinition: ProblemDefinition = {
     'Maintain auditability'
   ],
   userFacingNFRs: [
-    
+    'Latency: P99 < 25ms',
+    'Request Rate: 100000k requests/sec',
+    'Availability: 99.99% uptime'
   ],
 
   functionalRequirements: {
     mustHave: [
-
+      {
+        type: 'load_balancer',
+        reason: 'Need LB for high availability and traffic distribution',
+      }
     ],
     mustConnect: [
 
