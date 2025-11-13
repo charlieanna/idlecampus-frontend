@@ -103,12 +103,17 @@ function determineDifficulty(
   const componentCount = def.functionalRequirements.mustHave.length;
   const connectionCount = def.functionalRequirements.mustConnect.length;
 
-  // Simple heuristic based on complexity
-  if (componentCount <= 2 && connectionCount <= 2) {
+  // Balanced heuristic for better problem distribution
+  // Beginner: Simple connectivity (2-3 components)
+  if (componentCount <= 3 && connectionCount <= 4) {
     return 'beginner';
-  } else if (componentCount <= 3 && connectionCount <= 4) {
+  }
+  // Intermediate: Typical interview problems (4-5 components)
+  else if (componentCount <= 5 && connectionCount <= 8) {
     return 'intermediate';
-  } else {
+  }
+  // Advanced: Complex enterprise systems (6+ components)
+  else {
     return 'advanced';
   }
 }
