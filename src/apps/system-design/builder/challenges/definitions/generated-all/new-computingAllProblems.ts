@@ -1,15 +1,8 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import {
-  urlShorteningValidator,
-  urlRedirectValidator,
-  analyticsTrackingValidator,
-  photoUploadValidator,
-  feedViewValidator,
-  basicFunctionalValidator,
-} from '../../../validation/validators/featureValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import { basicFunctionalValidator } from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * New-computing Problems - Complete Set
@@ -103,12 +96,17 @@ export const l6ComputeBiologicalProblemDefinition: ProblemDefinition = {
     'Interface with silicon computers'
   ],
   userFacingNFRs: [
-    
+    'Latency: P99 < 25ms',
+    'Request Rate: 100000k requests/sec',
+    'Availability: 99.99% uptime'
   ],
 
   functionalRequirements: {
     mustHave: [
-
+      {
+        type: 'load_balancer',
+        reason: 'Need LB for high availability and traffic distribution',
+      }
     ],
     mustConnect: [
 

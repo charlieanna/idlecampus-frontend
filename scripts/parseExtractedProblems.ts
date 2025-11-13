@@ -110,6 +110,96 @@ function extractNFR(content: string): ParsedProblem['nonFunctionalRequirements']
 }
 
 /**
+ * Derive FRs from description when explicit FR section is missing
+ * Looks for bullet points or action-oriented sentences in the description
+ */
+function deriveFRsFromDescription(description: string, goal: string): string[] {
+  const frs: string[] = [];
+
+  // Extract bullet points from description
+  const bulletPoints = extractList(description);
+  if (bulletPoints.length > 0) {
+    frs.push(...bulletPoints);
+  }
+
+  // Extract sentences that contain action verbs (implement, support, handle, etc.)
+  const actionVerbs = /\b(implement|support|handle|enforce|track|provide|return|persist|shard|validate|cache|store|process|manage|ensure|enable)\b/gi;
+  const sentences = description.split(/[.!?]+/).filter(s => s.trim().length > 0);
+
+  for (const sentence of sentences) {
+    const trimmed = sentence.trim();
+    if (actionVerbs.test(trimmed) && !frs.some(fr => fr.includes(trimmed))) {
+      // Clean up and extract the action item
+      const cleaned = trimmed.replace(/^(should|must|needs to|your design should)\s+/i, '');
+      if (cleaned.length > 10 && cleaned.length < 150) {
+        frs.push(cleaned.charAt(0).toUpperCase() + cleaned.slice(1));
+      }
+    }
+  }
+
+  // If still no FRs found, use the goal as a fallback
+  if (frs.length === 0 && goal) {
+    frs.push(goal);
+  }
+
+  return frs.slice(0, 10); // Limit to 10 FRs
+}
+
+/**
+ * Derive NFRs from constants and solution analysis when explicit NFR section is missing
+ */
+function deriveNFRsFromConstants(content: string, constants: Record<string, any>): ParsedProblem['nonFunctionalRequirements'] {
+  const nfr: ParsedProblem['nonFunctionalRequirements'] = {};
+  const solutionAnalysis = extractSection(content, 'Solution Analysis');
+
+  // Try to derive latency from constants
+  if (constants.target_latency_ms) {
+    nfr.latency = `P99 < ${constants.target_latency_ms}ms`;
+  } else if (constants.max_latency_ms) {
+    nfr.latency = `P99 < ${constants.max_latency_ms}ms`;
+  } else if (constants.latency_target) {
+    nfr.latency = `${constants.latency_target}`;
+  }
+
+  // Try to derive request rate from constants
+  if (constants.qps || constants.requests_per_second) {
+    const qps = constants.qps || constants.requests_per_second;
+    nfr.requestRate = qps >= 1000 ? `${qps / 1000}k requests/sec` : `${qps} requests/sec`;
+  } else if (constants.base_qps) {
+    const qps = constants.base_qps;
+    nfr.requestRate = qps >= 1000 ? `${qps / 1000}k requests/sec` : `${qps} requests/sec`;
+  }
+
+  // Try to derive from solution analysis
+  const throughputMatch = solutionAnalysis.match(/(?:Throughput|Request Rate):\s*([\d,]+)\s*(?:requests?\/sec|QPS)/i);
+  if (throughputMatch && !nfr.requestRate) {
+    const throughput = throughputMatch[1].replace(/,/g, '');
+    const qps = parseInt(throughput);
+    nfr.requestRate = qps >= 1000 ? `${qps / 1000}k requests/sec` : `${qps} requests/sec`;
+  }
+
+  const latencyMatch = solutionAnalysis.match(/Latency:\s*P\d+:\s*([\d.]+)ms/i);
+  if (latencyMatch && !nfr.latency) {
+    nfr.latency = `P99 < ${latencyMatch[1]}ms`;
+  }
+
+  const availabilityMatch = solutionAnalysis.match(/Availability:\s*([\d.]+)%/i);
+  if (availabilityMatch) {
+    nfr.availability = `${availabilityMatch[1]}% uptime`;
+  }
+
+  // Dataset size from constants
+  if (constants.total_users || constants.active_users) {
+    const users = constants.total_users || constants.active_users;
+    nfr.datasetSize = users >= 1000000 ? `${users / 1000000}M users` : `${users / 1000}k users`;
+  } else if (constants.dataset_size) {
+    nfr.datasetSize = `${constants.dataset_size}`;
+  }
+
+  return nfr;
+}
+
+/**
  * Extract constants/assumptions
  */
 function extractConstants(content: string): Record<string, any> {
@@ -175,11 +265,24 @@ function parseProblem(section: string, sectionNumber: number): ParsedProblem | n
     const goal = extractSection(section, 'Goal').split('\n')[0].trim();
     const description = extractSection(section, 'Description').trim();
 
-    const frSection = extractSection(section, 'Functional Requirements');
-    const functionalRequirements = extractList(frSection);
-
-    const nonFunctionalRequirements = extractNFR(section);
     const constants = extractConstants(section);
+
+    // Try to extract FRs from explicit section first, then derive from description
+    const frSection = extractSection(section, 'Functional Requirements');
+    let functionalRequirements = extractList(frSection);
+
+    if (functionalRequirements.length === 0) {
+      console.warn(`Problem ${sectionNumber} (${id}): No explicit FR section found, deriving from description`);
+      functionalRequirements = deriveFRsFromDescription(description, goal);
+    }
+
+    // Try to extract NFRs from explicit section first, then derive from constants/analysis
+    let nonFunctionalRequirements = extractNFR(section);
+
+    if (Object.keys(nonFunctionalRequirements).length === 0) {
+      console.warn(`Problem ${sectionNumber} (${id}): No explicit NFR section found, deriving from constants/analysis`);
+      nonFunctionalRequirements = deriveNFRsFromConstants(section, constants);
+    }
 
     const componentsSection = extractSection(section, 'Available Components');
     const availableComponents = extractList(componentsSection);

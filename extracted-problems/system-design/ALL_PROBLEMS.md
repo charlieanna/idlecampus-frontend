@@ -1625,6 +1625,26 @@ Protect backend services with fair use limits and handle bursts gracefully.
 
 Design an API gateway that enforces both per‑user and global request limits while keeping latency low. Your design should handle short bursts without overloading backends by using counters in a fast data store and smoothing traffic with queues or buckets. Address hot‑key risk, multi‑region counter correctness, and provide a clear path for retries and error budgets.
 
+### Functional Requirements
+
+- Enforce per-user request limits (100 requests per minute)
+- Enforce global request limits across all users
+- Handle burst traffic gracefully within time window
+- Implement token bucket or leaky bucket algorithm
+- Return 429 status code with retry-after header when limit exceeded
+- Track request counters in fast data store for low-latency checks
+- Persist counter state durably to prevent loss
+- Shard counters by user ID to avoid hot key contention
+- Support atomic counter increment operations
+- Provide accurate rate limit headers in responses
+
+### Non-Functional Requirements
+
+- **Latency:** P99 < 15ms for rate limit checks
+- **Request Rate:** 10k requests/sec normal load, 100k requests/sec peak
+- **Availability:** 99.9% uptime with automatic failover
+- **Consistency:** Strong consistency for counter updates (no lost limits)
+
 ### Constants/Assumptions
 
 - **per_user_limit:** 100

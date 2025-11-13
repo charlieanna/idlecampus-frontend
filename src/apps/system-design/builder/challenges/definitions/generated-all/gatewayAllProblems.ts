@@ -1,15 +1,8 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
-import {
-  urlShorteningValidator,
-  urlRedirectValidator,
-  analyticsTrackingValidator,
-  photoUploadValidator,
-  feedViewValidator,
-  basicFunctionalValidator,
-} from '../../../validation/validators/featureValidators';
-import { generateScenarios } from '../../scenarioGenerator';
-import { problemConfigs } from '../../problemConfigs';
+import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import { basicFunctionalValidator } from '../../validation/validators/featureValidators';
+import { generateScenarios } from '../scenarioGenerator';
+import { problemConfigs } from '../problemConfigs';
 
 /**
  * Gateway Problems - Complete Set
@@ -24,14 +17,29 @@ import { problemConfigs } from '../../problemConfigs';
 export const rateLimiterProblemDefinition: ProblemDefinition = {
   id: 'rate-limiter',
   title: 'GitHub/Stripe API Rate Limiter',
-  description: `Design an API gateway that enforces both per‑user and global request limits while keeping latency low. Your design should handle short bursts without overloading backends by using counters in a fast data store and smoothing traffic with queues or buckets. Address hot‑key risk, multi‑region counter correctness, and provide a clear path for retries and error budgets.`,
+  description: `Design an API gateway that enforces both per‑user and global request limits while keeping latency low. Your design should handle short bursts without overloading backends by using counters in a fast data store and smoothing traffic with queues or buckets. Address hot‑key risk, multi‑region counter correctness, and provide a clear path for retries and error budgets.
+- Enforce per-user request limits (100 requests per minute)
+- Enforce global request limits across all users
+- Handle burst traffic gracefully within time window
+- Implement token bucket or leaky bucket algorithm`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
-    
+    'Enforce per-user request limits (100 requests per minute)',
+    'Enforce global request limits across all users',
+    'Handle burst traffic gracefully within time window',
+    'Implement token bucket or leaky bucket algorithm',
+    'Return 429 status code with retry-after header when limit exceeded',
+    'Track request counters in fast data store for low-latency checks',
+    'Persist counter state durably to prevent loss',
+    'Shard counters by user ID to avoid hot key contention',
+    'Support atomic counter increment operations',
+    'Provide accurate rate limit headers in responses'
   ],
   userFacingNFRs: [
-    
+    'Latency: P99 < 15ms for rate limit checks',
+    'Request Rate: 10k requests/sec normal load, 100k requests/sec peak',
+    'Availability: 99.9% uptime with automatic failover'
   ],
 
   functionalRequirements: {
@@ -88,7 +96,16 @@ export const rateLimiterProblemDefinition: ProblemDefinition = {
   },
 
   scenarios: generateScenarios('rate-limiter', problemConfigs['rate-limiter'], [
-    
+    'Enforce per-user request limits (100 requests per minute)',
+    'Enforce global request limits across all users',
+    'Handle burst traffic gracefully within time window',
+    'Implement token bucket or leaky bucket algorithm',
+    'Return 429 status code with retry-after header when limit exceeded',
+    'Track request counters in fast data store for low-latency checks',
+    'Persist counter state durably to prevent loss',
+    'Shard counters by user ID to avoid hot key contention',
+    'Support atomic counter increment operations',
+    'Provide accurate rate limit headers in responses'
   ]),
 
   validators: [
