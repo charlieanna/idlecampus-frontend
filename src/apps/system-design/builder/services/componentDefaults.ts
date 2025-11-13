@@ -107,10 +107,22 @@ export function getMinimalComponentConfig(
 function getAPIFiles(problem: ProblemDefinition): string[] {
   const files: string[] = [];
 
-  // For TinyURL specifically
+  // TinyURL: URL shortening service
   if (problem.id === 'tiny_url') {
-    files.push('/tinyurl_create_short_url.py');  // FR1: Create short URL
-    files.push('/tinyurl_redirect.py');          // FR2: Redirect
+    files.push('/tinyurl_create_short_url.py');  // FR: Given long URL, generate short URL
+    files.push('/tinyurl_redirect.py');          // FR: Redirect from short URL
+  }
+
+  // Basic Full-Text Search: Search engine
+  if (problem.id === 'basic-text-search') {
+    files.push('/search_index_document.py');     // FR: Index text documents
+    files.push('/search_query.py');              // FR: Search by keywords with ranking
+  }
+
+  // Web Crawler: Crawl and index web pages
+  if (problem.id === 'web-crawler') {
+    files.push('/webcrawler_crawl_page.py');     // FR: Crawl web pages
+    files.push('/webcrawler_url_frontier.py');   // FR: Manage URL queue
   }
 
   // TODO: Add mappings for other problems (Instagram, Twitter, etc.)
@@ -122,9 +134,19 @@ function getAPIFiles(problem: ProblemDefinition): string[] {
  * Get schema file reference for problem's data model
  */
 function getSchemaFile(problem: ProblemDefinition): string | null {
-  // For TinyURL
+  // TinyURL
   if (problem.id === 'tiny_url') {
     return '/tinyurl_schema.sql';
+  }
+
+  // Basic Full-Text Search
+  if (problem.id === 'basic-text-search') {
+    return '/search_schema.sql';
+  }
+
+  // Web Crawler
+  if (problem.id === 'web-crawler') {
+    return '/webcrawler_schema.sql';
   }
 
   // TODO: Add mappings for other problems
