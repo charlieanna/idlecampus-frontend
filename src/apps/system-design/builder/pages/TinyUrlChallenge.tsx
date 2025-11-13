@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Play, CheckCircle, XCircle, AlertCircle, Database, X, Download, Code } from 'lucide-react';
+import { Play, CheckCircle, XCircle, AlertCircle, Database, X, Download, Code, Settings } from 'lucide-react';
 import { SchemaEditor } from '../ui/components/SchemaEditor';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
 import { SystemGraph } from '../types/graph';
 import { RDS_INSTANCES, EC2_INSTANCES, REDIS_INSTANCES } from '../types/instanceTypes';
+import { getMinimalComponentConfig, getConfigDescription } from '../services/componentDefaults';
 
 type ComponentType = 'app_server' | 'postgresql' | 'redis' | 'load_balancer';
 
@@ -32,11 +33,9 @@ export function TinyUrlChallenge() {
   const [activeTab, setActiveTab] = useState<'canvas' | 'python'>('canvas');
 
   const handleAddComponent = (type: ComponentType) => {
-    setCurrentComponentType(type);
-    // Set default config based on type
-    const defaultConfig = getDefaultConfig(type);
-    setCurrentConfig(defaultConfig);
-    setShowConfigModal(true);
+    // NEW: Instantly add component with minimal config - no modal!
+    const minimalConfig = getMinimalComponentConfig(type, tinyUrlProblemDefinition);
+    setComponents([...components, { type, config: minimalConfig }]);
   };
 
   const handleConfigComplete = () => {
@@ -104,6 +103,67 @@ export function TinyUrlChallenge() {
     const result = validator.validate(graph, tinyUrlProblemDefinition, currentLevel);
 
     setTestResults(result);
+  };
+
+  const handleRunRealExecution = async () => {
+    // Build SystemGraph from components
+    const graph: SystemGraph = {
+      components: [
+        { id: 'client', type: 'client', config: {} },
+        ...components.map((comp, i) => ({
+          id: `${comp.type}_${i}`,
+          type: comp.type,
+          config: comp.config,
+        })),
+      ],
+      connections: buildConnections(components),
+    };
+
+    // Run validation with real execution
+    const validator = new SystemDesignValidator();
+    setTestResults({ loading: true });
+
+    try {
+      const result = await validator.validateWithRealExecution(
+        graph,
+        tinyUrlProblemDefinition,
+        currentLevel
+      );
+
+      if (result.success && result.result) {
+        // Convert backend result format to TestResult format
+        setTestResults({
+          passed: result.result.passed,
+          executionMode: 'real',
+          metrics: {
+            totalRequests: result.result.metrics.totalRequests,
+            successfulRequests: result.result.metrics.successfulRequests,
+            failedRequests: result.result.metrics.failedRequests,
+            avgLatency: result.result.metrics.averageLatency,
+            p50Latency: result.result.metrics.p50Latency,
+            p95Latency: result.result.metrics.p95Latency,
+            p99Latency: result.result.metrics.p99Latency,
+            errorRate: result.result.metrics.errorRate,
+          },
+          errors: result.result.errors || [],
+          databaseAvailable: result.result.databaseAvailable,
+        });
+      } else {
+        setTestResults({
+          passed: false,
+          executionMode: 'real',
+          error: result.error || 'Validation failed',
+          details: result.details,
+        });
+      }
+    } catch (error) {
+      setTestResults({
+        passed: false,
+        executionMode: 'real',
+        error: 'Failed to execute validation',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
   };
 
   const handleDownloadPython = () => {
@@ -248,7 +308,7 @@ export function TinyUrlChallenge() {
                 Build Your Architecture
               </h2>
               <p className="text-sm text-gray-600 mb-4">
-                Add components and answer questions about your design decisions
+                Click to add components with minimal config. Connect them first, optimize later!
               </p>
 
               <div className="grid grid-cols-2 gap-3">
@@ -304,33 +364,64 @@ export function TinyUrlChallenge() {
                   {components.map((comp, i) => (
                     <div
                       key={i}
-                      className="flex items-start justify-between p-3 bg-gray-50 rounded-lg"
+                      className="p-3 bg-gray-50 rounded-lg border border-gray-200"
                     >
-                      <div className="flex-1">
-                        <div className="font-medium text-gray-900 mb-1">
-                          {getComponentName(comp.type)}
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex-1">
+                          <div className="font-medium text-gray-900">
+                            {getComponentName(comp.type)}
+                          </div>
+                          <div className="text-xs text-gray-500 mt-1">
+                            {getConfigDescription(comp.type)}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-600 space-y-0.5">
-                          {renderComponentConfig(comp)}
-                        </div>
+                        <button
+                          onClick={() => handleRemoveComponent(i)}
+                          className="text-gray-400 hover:text-red-600 ml-2"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
                       </div>
+
+                      {/* Minimal config preview */}
+                      <div className="text-xs text-gray-600 space-y-0.5 mt-2 pl-3 border-l-2 border-gray-300">
+                        {renderComponentConfig(comp)}
+                      </div>
+
+                      {/* Optimize button */}
                       <button
-                        onClick={() => handleRemoveComponent(i)}
-                        className="text-red-500 hover:text-red-700 text-sm"
+                        onClick={() => {
+                          setCurrentComponentType(comp.type);
+                          setCurrentConfig(comp.config);
+                          setShowConfigModal(true);
+                        }}
+                        className="mt-2 w-full px-3 py-1.5 text-xs bg-white border border-gray-300 rounded hover:bg-gray-50 flex items-center justify-center gap-1.5"
                       >
-                        Remove
+                        <Settings className="w-3 h-3" />
+                        Optimize Configuration
                       </button>
                     </div>
                   ))}
                 </div>
 
-                <button
-                  onClick={handleRunTests}
-                  className="mt-4 w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 font-medium"
-                >
-                  <Play className="w-5 h-5" />
-                  Run Validation Tests
-                </button>
+                <div className="mt-4 space-y-2">
+                  <button
+                    onClick={handleRunTests}
+                    className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 font-medium"
+                  >
+                    <Play className="w-5 h-5" />
+                    Run Simulation Test
+                  </button>
+
+                  <button
+                    onClick={handleRunRealExecution}
+                    className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 font-medium"
+                    disabled={testResults?.loading}
+                  >
+                    <Code className="w-5 h-5" />
+                    {testResults?.loading ? 'Running Real Execution...' : 'Run with Real Python + DB'}
+                  </button>
+                </div>
               </div>
             )}
           </div>
@@ -339,58 +430,157 @@ export function TinyUrlChallenge() {
           <div className="space-y-6">
             {testResults ? (
               <>
-                {/* Overall Result */}
-                <div
-                  className={`rounded-lg shadow-sm border-2 p-6 ${
-                    testResults.passed
-                      ? 'bg-green-50 border-green-500'
-                      : 'bg-red-50 border-red-500'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 mb-4">
-                    {testResults.passed ? (
-                      <CheckCircle className="w-8 h-8 text-green-600" />
-                    ) : (
-                      <XCircle className="w-8 h-8 text-red-600" />
-                    )}
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900">
-                        {testResults.passed ? 'Test Passed!' : 'Test Failed'}
-                      </h2>
-                      <p className="text-sm text-gray-600">
-                        Level {currentLevel + 1} •{' '}
-                        {tinyUrlProblemDefinition.scenarios[currentLevel].traffic.rps} RPS
-                      </p>
+                {testResults.loading ? (
+                  <div className="rounded-lg shadow-sm border-2 border-blue-500 bg-blue-50 p-6">
+                    <div className="flex items-center gap-3">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                      <div>
+                        <h2 className="text-xl font-bold text-gray-900">
+                          Running Real Execution...
+                        </h2>
+                        <p className="text-sm text-gray-600">
+                          Executing Python code with PostgreSQL database
+                        </p>
+                      </div>
                     </div>
                   </div>
+                ) : (
+                  <>
+                    {/* Overall Result */}
+                    <div
+                      className={`rounded-lg shadow-sm border-2 p-6 ${
+                        testResults.passed
+                          ? 'bg-green-50 border-green-500'
+                          : 'bg-red-50 border-red-500'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3 mb-4">
+                        {testResults.passed ? (
+                          <CheckCircle className="w-8 h-8 text-green-600" />
+                        ) : (
+                          <XCircle className="w-8 h-8 text-red-600" />
+                        )}
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <h2 className="text-2xl font-bold text-gray-900">
+                              {testResults.passed ? 'Test Passed!' : 'Test Failed'}
+                            </h2>
+                            {testResults.executionMode === 'real' && (
+                              <span className="px-2 py-1 text-xs font-semibold bg-green-200 text-green-800 rounded">
+                                REAL EXECUTION
+                              </span>
+                            )}
+                            {!testResults.executionMode && (
+                              <span className="px-2 py-1 text-xs font-semibold bg-blue-200 text-blue-800 rounded">
+                                SIMULATION
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-sm text-gray-600">
+                            Level {currentLevel + 1} •{' '}
+                            {tinyUrlProblemDefinition.scenarios[currentLevel].traffic.rps} RPS
+                            {testResults.databaseAvailable !== undefined && (
+                              <span className="ml-2">
+                                • {testResults.databaseAvailable ? '✓ DB Connected' : '⚠ DB Unavailable'}
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="bg-white bg-opacity-50 rounded p-3">
-                      <div className="text-xs text-gray-600 mb-1">Latency (p99)</div>
-                      <div className="text-2xl font-bold text-gray-900">
-                        {testResults.metrics.p99Latency.toFixed(0)}ms
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="bg-white bg-opacity-50 rounded p-3">
+                          <div className="text-xs text-gray-600 mb-1">Latency (p99)</div>
+                          <div className="text-2xl font-bold text-gray-900">
+                            {testResults.metrics.p99Latency?.toFixed(0) || 'N/A'}ms
+                          </div>
+                        </div>
+                        <div className="bg-white bg-opacity-50 rounded p-3">
+                          <div className="text-xs text-gray-600 mb-1">Error Rate</div>
+                          <div className="text-2xl font-bold text-gray-900">
+                            {((testResults.metrics.errorRate || 0) * 100).toFixed(2)}%
+                          </div>
+                        </div>
+                        {testResults.metrics.totalCost !== undefined && (
+                          <div className="bg-white bg-opacity-50 rounded p-3">
+                            <div className="text-xs text-gray-600 mb-1">Monthly Cost</div>
+                            <div className="text-2xl font-bold text-gray-900">
+                              ${testResults.metrics.totalCost.toFixed(0)}
+                            </div>
+                          </div>
+                        )}
+                        {testResults.metrics.availability !== undefined && (
+                          <div className="bg-white bg-opacity-50 rounded p-3">
+                            <div className="text-xs text-gray-600 mb-1">Availability</div>
+                            <div className="text-2xl font-bold text-gray-900">
+                              {(testResults.metrics.availability * 100).toFixed(2)}%
+                            </div>
+                          </div>
+                        )}
+                        {testResults.executionMode === 'real' && (
+                          <>
+                            <div className="bg-white bg-opacity-50 rounded p-3">
+                              <div className="text-xs text-gray-600 mb-1">Total Requests</div>
+                              <div className="text-2xl font-bold text-gray-900">
+                                {testResults.metrics.totalRequests || 0}
+                              </div>
+                            </div>
+                            <div className="bg-white bg-opacity-50 rounded p-3">
+                              <div className="text-xs text-gray-600 mb-1">Successful</div>
+                              <div className="text-2xl font-bold text-gray-900">
+                                {testResults.metrics.successfulRequests || 0}
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <div className="bg-white bg-opacity-50 rounded p-3">
-                      <div className="text-xs text-gray-600 mb-1">Error Rate</div>
-                      <div className="text-2xl font-bold text-gray-900">
-                        {(testResults.metrics.errorRate * 100).toFixed(2)}%
-                      </div>
+                  </>
+                )}
+
+                {/* Execution Errors */}
+                {testResults.error && (
+                  <div className="bg-white rounded-lg shadow-sm border border-red-200 p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <XCircle className="w-5 h-5 text-red-500" />
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Execution Error
+                      </h3>
                     </div>
-                    <div className="bg-white bg-opacity-50 rounded p-3">
-                      <div className="text-xs text-gray-600 mb-1">Monthly Cost</div>
-                      <div className="text-2xl font-bold text-gray-900">
-                        ${testResults.metrics.totalCost.toFixed(0)}
-                      </div>
-                    </div>
-                    <div className="bg-white bg-opacity-50 rounded p-3">
-                      <div className="text-xs text-gray-600 mb-1">Availability</div>
-                      <div className="text-2xl font-bold text-gray-900">
-                        {(testResults.metrics.availability * 100).toFixed(2)}%
-                      </div>
+                    <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm font-medium text-red-900 mb-2">
+                        {testResults.error}
+                      </p>
+                      {testResults.details && (
+                        <p className="text-xs text-red-700 font-mono">
+                          {testResults.details}
+                        </p>
+                      )}
                     </div>
                   </div>
-                </div>
+                )}
+
+                {/* Python Errors */}
+                {testResults.errors && testResults.errors.length > 0 && (
+                  <div className="bg-white rounded-lg shadow-sm border border-red-200 p-6">
+                    <div className="flex items-center gap-2 mb-4">
+                      <XCircle className="w-5 h-5 text-red-500" />
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        Python Errors
+                      </h3>
+                    </div>
+                    <div className="space-y-2">
+                      {testResults.errors.map((error: string, i: number) => (
+                        <div
+                          key={i}
+                          className="p-3 bg-red-50 border border-red-200 rounded-lg"
+                        >
+                          <p className="text-xs text-red-900 font-mono">{error}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Bottlenecks */}
                 {testResults.bottlenecks && testResults.bottlenecks.length > 0 && (

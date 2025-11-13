@@ -25,14 +25,14 @@ export const tinyurlProblemDefinition: ProblemDefinition = {
   id: 'tinyurl',
   title: 'TinyURL – URL Shortener',
   description: `Shorten URLs and serve redirects at massive read volume. Use a CDN and app‑level cache to offload reads, a primary DB for writes, and replicas for reads. Keep p95 under 50ms and ensure the create path remains reliable under load.
-- Shorten long URLs to 7-character unique codes
+- Given a long URL, generate a short URL
 - Redirect users from short URL to original URL via HTTP 301/302
 - Support custom aliases for premium users (optional)
 - Provide analytics: click count, referrer, geographic data`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
-    'Shorten long URLs to 7-character unique codes',
+    'Given a long URL, generate a short URL',
     'Redirect users from short URL to original URL via HTTP 301/302',
     'Support custom aliases for premium users (optional)',
     'Provide analytics: click count, referrer, geographic data',
@@ -127,7 +127,7 @@ export const tinyurlProblemDefinition: ProblemDefinition = {
   },
 
   scenarios: generateScenarios('tinyurl', problemConfigs['tinyurl'], [
-    'Shorten long URLs to 7-character unique codes',
+    'Given a long URL, generate a short URL',
     'Redirect users from short URL to original URL via HTTP 301/302',
     'Support custom aliases for premium users (optional)',
     'Provide analytics: click count, referrer, geographic data',
