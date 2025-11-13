@@ -117,31 +117,6 @@ export function ResultsPanel({ results, challenge, onClose }: ResultsPanelProps)
                 )}
               </div>
 
-              {/* Bottlenecks */}
-              {result.bottlenecks.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-gray-200">
-                  <p className="text-xs font-medium text-gray-700 mb-2">
-                    🔍 Bottlenecks:
-                  </p>
-                  <div className="space-y-2">
-                    {result.bottlenecks.map((bottleneck, i) => (
-                      <div
-                        key={i}
-                        className="text-xs bg-white rounded p-2 border border-gray-200"
-                      >
-                        <div className="font-medium text-gray-900">
-                          {bottleneck.componentId} (
-                          {(bottleneck.utilization * 100).toFixed(0)}% utilized)
-                        </div>
-                        <div className="text-gray-600 mt-1">
-                          💡 {bottleneck.recommendation}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-
               {/* Traffic Flow Visualization */}
               {result.flowViz && (
                 <div className="mt-3 pt-3 border-t border-gray-200">
