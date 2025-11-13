@@ -442,8 +442,11 @@ def expand(code: str, store: dict) -> str:
             🎨 Canvas
           </button>
 
-          {/* Python Code Tab - Only for TinyURL */}
-          {selectedChallenge?.id === 'tiny_url' && (
+          {/* Python Code Tab - Only for TinyURL and when app server exists */}
+          {(selectedChallenge?.id === 'tiny_url' ||
+            selectedChallenge?.id === 'tiny-url' ||
+            selectedChallenge?.id === 'tinyurl') &&
+            systemGraph.components.some(comp => comp.type === 'app_server') && (
             <button
               onClick={() => setActiveTab('python')}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${

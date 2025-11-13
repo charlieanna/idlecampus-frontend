@@ -94,9 +94,9 @@ export function generateScenarios(
     hasCache: false,
     hasObjectStorage: false,
   };
-  
+
   // Use provided config or default
-  const effectiveConfig = config || defaultConfig;
+  config = config || defaultConfig;
 
   // ========== FUNCTIONAL REQUIREMENTS (FR) ==========
   // If userFacingFRs provided, generate feature-specific tests
@@ -185,14 +185,14 @@ to database. Read operations must return correct data. Tests data integrity.`,
     description: `System handles expected daily traffic with target latency. This is the baseline performance
 test - system must meet latency and cost targets under normal conditions.`,
     traffic: {
-      rps: effectiveConfig.baseRps,
-      readWriteRatio: effectiveConfig.readRatio,
-      avgFileSize: effectiveConfig.avgFileSize,
+      rps: config.baseRps,
+      readWriteRatio: config.readRatio,
+      avgFileSize: config.avgFileSize,
     },
     passCriteria: {
-      maxLatency: effectiveConfig.maxLatency,
+      maxLatency: config.maxLatency,
       maxErrorRate: 0.01,
-      maxCost: calculateMonthlyCost(effectiveConfig.baseRps, effectiveConfig),
+      maxCost: calculateMonthlyCost(config.baseRps, config),
     },
   });
 
@@ -201,14 +201,14 @@ test - system must meet latency and cost targets under normal conditions.`,
     description: `Traffic increases during peak hours (${getPeakDescription(problemId)}).
 System must maintain acceptable latency with 2x traffic. Slight degradation OK but system must stay up.`,
     traffic: {
-      rps: effectiveConfig.baseRps * 2, // 2x peak traffic
-      readWriteRatio: effectiveConfig.readRatio,
-      avgFileSize: effectiveConfig.avgFileSize,
+      rps: config.baseRps * 2, // 2x peak traffic
+      readWriteRatio: config.readRatio,
+      avgFileSize: config.avgFileSize,
     },
     passCriteria: {
-      maxLatency: effectiveConfig.maxLatency * 1.5, // 50% degradation OK
+      maxLatency: config.maxLatency * 1.5, // 50% degradation OK
       maxErrorRate: 0.02,
-      maxCost: calculateMonthlyCost(effectiveConfig.baseRps * 2, effectiveConfig),
+      maxCost: calculateMonthlyCost(config.baseRps * 2, config),
     },
   });
 
@@ -218,12 +218,12 @@ System must maintain acceptable latency with 2x traffic. Slight degradation OK b
     description: `${getSpikDescription(problemId)} causes sudden 50% traffic increase.
 System must handle spike gracefully without complete failure.`,
     traffic: {
-      rps: effectiveConfig.baseRps * 1.5, // 50% spike
-      readWriteRatio: effectiveConfig.readRatio,
-      avgFileSize: effectiveConfig.avgFileSize,
+      rps: config.baseRps * 1.5, // 50% spike
+      readWriteRatio: config.readRatio,
+      avgFileSize: config.avgFileSize,
     },
     passCriteria: {
-      maxLatency: effectiveConfig.maxLatency * 2,
+      maxLatency: config.maxLatency * 2,
       maxErrorRate: 0.03,
     },
   });
@@ -233,12 +233,12 @@ System must handle spike gracefully without complete failure.`,
     description: `${getViralDescription(problemId)} - traffic triples!
 This tests if architecture can scale horizontally. May require load balancers and multiple servers.`,
     traffic: {
-      rps: effectiveConfig.baseRps * 3, // 3x growth
-      readWriteRatio: effectiveConfig.readRatio,
-      avgFileSize: effectiveConfig.avgFileSize,
+      rps: config.baseRps * 3, // 3x growth
+      readWriteRatio: config.readRatio,
+      avgFileSize: config.avgFileSize,
     },
     passCriteria: {
-      maxLatency: effectiveConfig.maxLatency * 2.5,
+      maxLatency: config.maxLatency * 2.5,
       maxErrorRate: 0.05,
     },
   });
@@ -249,9 +249,9 @@ This tests if architecture can scale horizontally. May require load balancers an
     description: `Primary database crashes at 30s into test. System must failover to replica to maintain
 availability. Without replication: complete outage. With replication: < 10s downtime.`,
     traffic: {
-      rps: effectiveConfig.baseRps,
-      readWriteRatio: effectiveConfig.readRatio,
-      avgFileSize: effectiveConfig.avgFileSize,
+      rps: config.baseRps,
+      readWriteRatio: config.readRatio,
+      avgFileSize: config.avgFileSize,
     },
     failureInjection: {
       component: 'database',
@@ -265,22 +265,22 @@ availability. Without replication: complete outage. With replication: < 10s down
     },
   });
 
-  if (effectiveConfig.hasCache) {
+  if (config.hasCache) {
     scenarios.push({
       name: 'NFR-R2: Cache Failure',
       description: `Cache (Redis) fails at 20s. System must continue operating by hitting database directly.
 Performance degrades but system stays up. Tests graceful degradation.`,
       traffic: {
-        rps: effectiveConfig.baseRps,
-        readWriteRatio: effectiveConfig.readRatio,
-        avgFileSize: effectiveConfig.avgFileSize,
+        rps: config.baseRps,
+        readWriteRatio: config.readRatio,
+        avgFileSize: config.avgFileSize,
       },
       failureInjection: {
         component: 'cache',
         at: 20,
       },
       passCriteria: {
-        maxLatency: effectiveConfig.maxLatency * 3, // 3x latency OK
+        maxLatency: config.maxLatency * 3, // 3x latency OK
         maxErrorRate: 0.05,
         availability: 0.95,
       },
