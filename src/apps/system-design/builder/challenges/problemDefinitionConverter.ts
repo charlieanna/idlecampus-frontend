@@ -100,6 +100,12 @@ export function convertProblemDefinitionToChallenge(
 function determineDifficulty(
   def: ProblemDefinition
 ): 'beginner' | 'intermediate' | 'advanced' {
+  // L5 (Staff) and L6 (Principal) problems are always advanced
+  // These are Google interview levels for senior engineers
+  if (def.id.startsWith('l5-') || def.id.startsWith('l6-')) {
+    return 'advanced';
+  }
+
   const componentCount = def.functionalRequirements.mustHave.length;
   const connectionCount = def.functionalRequirements.mustConnect.length;
 
