@@ -1,4 +1,4 @@
-import { ProblemDefinition } from '../../types/problemDefinition';
+import { ProblemDefinition } from '../../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';

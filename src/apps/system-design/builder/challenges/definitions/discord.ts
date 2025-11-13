@@ -79,4 +79,103 @@ export const discordProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict
+
+# In-memory storage (naive implementation)
+users = {}
+servers = {}
+channels = {}
+messages = {}
+members = {}
+voice_sessions = {}
+
+def create_server(server_id: str, name: str, owner_id: str) -> Dict:
+    """
+    FR-1: Users can create servers
+    Naive implementation - stores server in memory
+    """
+    servers[server_id] = {
+        'id': server_id,
+        'name': name,
+        'icon_url': None,
+        'owner_id': owner_id,
+        'created_at': datetime.now()
+    }
+    return servers[server_id]
+
+def create_channel(channel_id: str, server_id: str, name: str, channel_type: str = "text") -> Dict:
+    """
+    FR-1: Users can create multiple channels in a server
+    Naive implementation - stores channel in memory
+    """
+    channels[channel_id] = {
+        'id': channel_id,
+        'server_id': server_id,
+        'name': name,
+        'type': channel_type,  # text, voice, or video
+        'created_at': datetime.now()
+    }
+    return channels[channel_id]
+
+def send_message(message_id: str, channel_id: str, user_id: str, content: str) -> Dict:
+    """
+    FR-2: Users can send text messages in real-time
+    Naive implementation - stores message in memory
+    No actual real-time delivery
+    """
+    messages[message_id] = {
+        'id': message_id,
+        'channel_id': channel_id,
+        'user_id': user_id,
+        'content': content,
+        'created_at': datetime.now()
+    }
+    return messages[message_id]
+
+def join_voice_call(session_id: str, channel_id: str, user_id: str) -> Dict:
+    """
+    FR-3: Users can join voice calls
+    Naive implementation - stores voice session
+    No actual audio/video streaming
+    """
+    voice_sessions[session_id] = {
+        'id': session_id,
+        'channel_id': channel_id,
+        'user_id': user_id,
+        'type': 'voice',
+        'joined_at': datetime.now()
+    }
+    return voice_sessions[session_id]
+
+def join_video_call(session_id: str, channel_id: str, user_id: str) -> Dict:
+    """
+    FR-3: Users can join video calls
+    Naive implementation - stores video session
+    No actual video streaming
+    """
+    voice_sessions[session_id] = {
+        'id': session_id,
+        'channel_id': channel_id,
+        'user_id': user_id,
+        'type': 'video',
+        'joined_at': datetime.now()
+    }
+    return voice_sessions[session_id]
+
+def get_channel_messages(channel_id: str, limit: int = 50) -> List[Dict]:
+    """
+    Helper: Get messages from a channel
+    Naive implementation - returns all messages in channel
+    """
+    channel_messages = []
+    for message in messages.values():
+        if message['channel_id'] == channel_id:
+            channel_messages.append(message)
+
+    # Sort by created_at (oldest first)
+    channel_messages.sort(key=lambda x: x['created_at'])
+    return channel_messages[-limit:]  # Return most recent N messages
+`,
 };

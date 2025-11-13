@@ -88,4 +88,124 @@ export const whatsappProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict
+
+# In-memory storage (naive implementation)
+users = {}
+messages = {}
+chats = {}
+groups = {}
+media = {}
+
+def send_text_message(message_id: str, chat_id: str, sender_id: str, content: str) -> Dict:
+    """
+    FR-1: Users can send text messages in real-time
+    Naive implementation - stores message in memory
+    No actual real-time delivery or encryption
+    """
+    messages[message_id] = {
+        'id': message_id,
+        'chat_id': chat_id,
+        'sender_id': sender_id,
+        'content': content,
+        'media_url': None,
+        'created_at': datetime.now()
+    }
+    return messages[message_id]
+
+def send_photo(message_id: str, chat_id: str, sender_id: str, photo_url: str, caption: str = "") -> Dict:
+    """
+    FR-2: Users can send photos
+    Naive implementation - stores message with photo URL
+    """
+    messages[message_id] = {
+        'id': message_id,
+        'chat_id': chat_id,
+        'sender_id': sender_id,
+        'content': caption,
+        'media_url': photo_url,
+        'media_type': 'photo',
+        'created_at': datetime.now()
+    }
+    return messages[message_id]
+
+def send_video(message_id: str, chat_id: str, sender_id: str, video_url: str, caption: str = "") -> Dict:
+    """
+    FR-2: Users can send videos
+    Naive implementation - stores message with video URL
+    """
+    messages[message_id] = {
+        'id': message_id,
+        'chat_id': chat_id,
+        'sender_id': sender_id,
+        'content': caption,
+        'media_url': video_url,
+        'media_type': 'video',
+        'created_at': datetime.now()
+    }
+    return messages[message_id]
+
+def send_voice_message(message_id: str, chat_id: str, sender_id: str, audio_url: str) -> Dict:
+    """
+    FR-2: Users can send voice messages
+    Naive implementation - stores message with audio URL
+    """
+    messages[message_id] = {
+        'id': message_id,
+        'chat_id': chat_id,
+        'sender_id': sender_id,
+        'content': "",
+        'media_url': audio_url,
+        'media_type': 'voice',
+        'created_at': datetime.now()
+    }
+    return messages[message_id]
+
+def create_group_chat(chat_id: str, name: str, admin_id: str, member_ids: List[str]) -> Dict:
+    """
+    FR-3: Users can create group chats
+    Naive implementation - stores group in memory
+    """
+    chats[chat_id] = {
+        'id': chat_id,
+        'type': 'group',
+        'created_at': datetime.now()
+    }
+
+    groups[chat_id] = {
+        'chat_id': chat_id,
+        'name': name,
+        'admin_id': admin_id,
+        'member_ids': member_ids,
+        'created_at': datetime.now()
+    }
+    return groups[chat_id]
+
+def add_member_to_group(chat_id: str, user_id: str) -> Dict:
+    """
+    Helper: Add member to group chat
+    Naive implementation - adds user to member list
+    """
+    if chat_id in groups:
+        if user_id not in groups[chat_id]['member_ids']:
+            groups[chat_id]['member_ids'].append(user_id)
+        return groups[chat_id]
+    return None
+
+def get_chat_messages(chat_id: str, limit: int = 50) -> List[Dict]:
+    """
+    Helper: Get messages from a chat
+    Naive implementation - returns all messages in chat
+    """
+    chat_messages = []
+    for message in messages.values():
+        if message['chat_id'] == chat_id:
+            chat_messages.append(message)
+
+    # Sort by created_at (oldest first)
+    chat_messages.sort(key=lambda x: x['created_at'])
+    return chat_messages[-limit:]  # Return most recent N messages
+`,
 };

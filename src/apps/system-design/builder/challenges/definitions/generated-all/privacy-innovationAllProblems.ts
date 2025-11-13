@@ -1,8 +1,8 @@
-import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
-import { basicFunctionalValidator } from '../../validation/validators/featureValidators';
-import { generateScenarios } from '../scenarioGenerator';
-import { problemConfigs } from '../problemConfigs';
+import { ProblemDefinition } from '../../../types/problemDefinition';
+import { validConnectionFlowValidator } from '../../../validation/validators/commonValidators';
+import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
+import { generateScenarios } from '../../scenarioGenerator';
+import { problemConfigs } from '../../problemConfigs';
 
 /**
  * Privacy-innovation Problems - Complete Set

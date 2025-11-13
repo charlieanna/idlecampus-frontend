@@ -177,4 +177,27 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
       },
     },
   ],
+
+  pythonTemplate: `import random, string, hashlib, base64
+
+def shorten(url: str) -> str:
+    """
+    Implement logic to generate a short code for the given URL.
+    You can use any Python library.
+    Constraints:
+      - Must return a string of 6–10 chars.
+      - Must avoid collisions.
+      - Should be deterministic (same input → same code).
+    """
+    chars = string.ascii_letters + string.digits
+    return ''.join(random.choice(chars) for _ in range(6))
+
+def expand(code: str, store: dict) -> str:
+    """
+    Optional: implement decode logic.
+    \`store\` is a dict of {code: url}.
+    Return the original URL or raise KeyError.
+    """
+    return store.get(code)
+`,
 };

@@ -99,4 +99,113 @@ export const instagramProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict
+
+# In-memory storage (naive implementation)
+users = {}
+posts = {}
+likes = {}
+comments = {}
+followers = {}
+
+def upload_photo(post_id: str, user_id: str, image_url: str, caption: str = "") -> Dict:
+    """
+    FR-1: Users can upload photos and videos
+    Naive implementation - stores post metadata in memory
+    """
+    posts[post_id] = {
+        'id': post_id,
+        'user_id': user_id,
+        'image_url': image_url,
+        'caption': caption,
+        'created_at': datetime.now()
+    }
+    return posts[post_id]
+
+def follow_user(follower_id: str, following_id: str) -> Dict:
+    """
+    FR-2: Users can follow other users (helper for feed)
+    Naive implementation - stores follow relationship in memory
+    """
+    follow_key = f"{follower_id}_{following_id}"
+    followers[follow_key] = {
+        'follower_id': follower_id,
+        'following_id': following_id,
+        'created_at': datetime.now()
+    }
+    return followers[follow_key]
+
+def get_feed(user_id: str, limit: int = 20) -> List[Dict]:
+    """
+    FR-2: Users can view a feed of photos from people they follow
+    Naive implementation - returns all posts from followed users
+    No ranking algorithm or personalization
+    """
+    # Get all users this user follows
+    following = []
+    for follow in followers.values():
+        if follow['follower_id'] == user_id:
+            following.append(follow['following_id'])
+
+    # Get all posts from followed users
+    feed = []
+    for post in posts.values():
+        if post['user_id'] in following:
+            feed.append(post)
+
+    # Sort by created_at (most recent first)
+    feed.sort(key=lambda x: x['created_at'], reverse=True)
+    return feed[:limit]
+
+def like_photo(post_id: str, user_id: str) -> Dict:
+    """
+    FR-3: Users can like photos
+    Naive implementation - stores like in memory
+    """
+    like_id = f"{post_id}_{user_id}"
+    likes[like_id] = {
+        'post_id': post_id,
+        'user_id': user_id,
+        'created_at': datetime.now()
+    }
+    return likes[like_id]
+
+def comment_on_photo(comment_id: str, post_id: str, user_id: str, text: str) -> Dict:
+    """
+    FR-3: Users can comment on photos
+    Naive implementation - stores comment in memory
+    """
+    comments[comment_id] = {
+        'id': comment_id,
+        'post_id': post_id,
+        'user_id': user_id,
+        'text': text,
+        'created_at': datetime.now()
+    }
+    return comments[comment_id]
+
+def search_users(query: str) -> List[Dict]:
+    """
+    FR-4: Users can search for other users
+    Naive implementation - simple substring match on username
+    """
+    results = []
+    for user in users.values():
+        if query.lower() in user.get('username', '').lower():
+            results.append(user)
+    return results
+
+def search_content(query: str) -> List[Dict]:
+    """
+    FR-4: Users can search for content
+    Naive implementation - simple substring match on captions
+    """
+    results = []
+    for post in posts.values():
+        if query.lower() in post.get('caption', '').lower():
+            results.append(post)
+    return results
+`,
 };

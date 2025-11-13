@@ -150,6 +150,11 @@ def expand(code: str, store: dict) -> str:
     setSelectedNode(null);
     setShowSolutionPanel(false);
     setActiveTab('canvas');
+
+    // Update Python code from challenge template if available
+    if (selectedChallenge?.pythonTemplate) {
+      setPythonCode(selectedChallenge.pythonTemplate);
+    }
   }, [selectedChallenge?.id]);
 
   // Keyboard handler for Delete key
@@ -442,11 +447,8 @@ def expand(code: str, store: dict) -> str:
             🎨 Canvas
           </button>
 
-          {/* Python Code Tab - Only for TinyURL and when app server exists */}
-          {(selectedChallenge?.id === 'tiny_url' ||
-            selectedChallenge?.id === 'tiny-url' ||
-            selectedChallenge?.id === 'tinyurl') &&
-            systemGraph.components.some(comp => comp.type === 'app_server') && (
+          {/* Python Code Tab - Shows when app server exists */}
+          {systemGraph.components.some(comp => comp.type === 'app_server') && (
             <button
               onClick={() => setActiveTab('python')}
               className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${

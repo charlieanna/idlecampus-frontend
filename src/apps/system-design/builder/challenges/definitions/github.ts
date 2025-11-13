@@ -80,4 +80,122 @@ export const githubProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict
+
+# In-memory storage (naive implementation)
+users = {}
+repositories = {}
+commits = {}
+pull_requests = {}
+issues = {}
+stars = {}
+forks = {}
+
+def create_repository(repo_id: str, owner_id: str, name: str, description: str = "", is_private: bool = False) -> Dict:
+    """
+    FR-1: Users can host Git repositories
+    Naive implementation - stores repository metadata
+    """
+    repositories[repo_id] = {
+        'id': repo_id,
+        'owner_id': owner_id,
+        'name': name,
+        'description': description,
+        'is_private': is_private,
+        'stars': 0,
+        'created_at': datetime.now()
+    }
+    return repositories[repo_id]
+
+def create_pull_request(pr_id: str, repo_id: str, author_id: str, title: str, base_branch: str, head_branch: str) -> Dict:
+    """
+    FR-2: Users can create pull requests
+    Naive implementation - stores PR in memory
+    """
+    pull_requests[pr_id] = {
+        'id': pr_id,
+        'repo_id': repo_id,
+        'author_id': author_id,
+        'title': title,
+        'base_branch': base_branch,
+        'head_branch': head_branch,
+        'status': 'open',
+        'created_at': datetime.now()
+    }
+    return pull_requests[pr_id]
+
+def create_issue(issue_id: str, repo_id: str, author_id: str, title: str, body: str = "") -> Dict:
+    """
+    FR-2: Users can create issues
+    Naive implementation - stores issue in memory
+    """
+    issues[issue_id] = {
+        'id': issue_id,
+        'repo_id': repo_id,
+        'author_id': author_id,
+        'title': title,
+        'body': body,
+        'status': 'open',
+        'created_at': datetime.now()
+    }
+    return issues[issue_id]
+
+def fork_repository(fork_id: str, original_repo_id: str, user_id: str) -> Dict:
+    """
+    FR-3: Users can fork repositories
+    Naive implementation - creates copy of repo metadata
+    """
+    original = repositories.get(original_repo_id)
+    if not original:
+        return None
+
+    repositories[fork_id] = {
+        'id': fork_id,
+        'owner_id': user_id,
+        'name': original['name'],
+        'description': original['description'],
+        'is_private': False,
+        'forked_from': original_repo_id,
+        'stars': 0,
+        'created_at': datetime.now()
+    }
+
+    forks[f"{original_repo_id}_{fork_id}"] = {
+        'original_repo_id': original_repo_id,
+        'fork_repo_id': fork_id,
+        'created_at': datetime.now()
+    }
+
+    return repositories[fork_id]
+
+def star_repository(user_id: str, repo_id: str) -> Dict:
+    """
+    FR-3: Users can star repositories
+    Naive implementation - records star and increments count
+    """
+    star_id = f"{user_id}_{repo_id}"
+    stars[star_id] = {
+        'user_id': user_id,
+        'repo_id': repo_id,
+        'created_at': datetime.now()
+    }
+
+    if repo_id in repositories:
+        repositories[repo_id]['stars'] += 1
+
+    return stars[star_id]
+
+def get_repository_pull_requests(repo_id: str, status: str = "open") -> List[Dict]:
+    """
+    Helper: Get pull requests for a repository
+    Naive implementation - returns filtered PRs
+    """
+    repo_prs = []
+    for pr in pull_requests.values():
+        if pr['repo_id'] == repo_id and (status is None or pr['status'] == status):
+            repo_prs.append(pr)
+    return repo_prs
+`,
 };

@@ -99,4 +99,7 @@ export interface ProblemDefinition {
     name: string;
     validate: ValidatorFunction;
   }[];
+
+  // Naive Python implementation template
+  pythonTemplate?: string;
 }

@@ -78,4 +78,113 @@ export const airbnbProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict
+
+# In-memory storage (naive implementation)
+users = {}
+listings = {}
+bookings = {}
+reviews = {}
+payments = {}
+
+def create_listing(listing_id: str, host_id: str, title: str, price_per_night: float, lat: float, lng: float) -> Dict:
+    """
+    FR-1: Hosts can list properties with photos and details
+    Naive implementation - stores listing in memory
+    """
+    listings[listing_id] = {
+        'id': listing_id,
+        'host_id': host_id,
+        'title': title,
+        'description': "",
+        'price_per_night': price_per_night,
+        'lat': lat,
+        'lng': lng,
+        'photos': [],
+        'created_at': datetime.now()
+    }
+    return listings[listing_id]
+
+def search_listings(lat: float, lng: float, check_in: str, check_out: str, max_distance: float = 10.0) -> List[Dict]:
+    """
+    FR-2: Guests can search properties
+    Naive implementation - returns all listings (no geospatial filtering)
+    Real system would use geospatial database
+    """
+    # In real system, would filter by location, availability, dates
+    return list(listings.values())
+
+def book_property(booking_id: str, listing_id: str, guest_id: str, check_in: str, check_out: str) -> Dict:
+    """
+    FR-2: Guests can book properties
+    Naive implementation - creates booking without conflict checking
+    """
+    if listing_id not in listings:
+        return None
+
+    listing = listings[listing_id]
+    # Calculate nights and total (simplified)
+    nights = 1  # Would calculate from dates in real system
+    total_price = listing['price_per_night'] * nights
+
+    bookings[booking_id] = {
+        'id': booking_id,
+        'listing_id': listing_id,
+        'guest_id': guest_id,
+        'check_in': check_in,
+        'check_out': check_out,
+        'total_price': total_price,
+        'status': 'confirmed',
+        'created_at': datetime.now()
+    }
+    return bookings[booking_id]
+
+def process_payment(payment_id: str, booking_id: str, amount: float) -> Dict:
+    """
+    FR-3: Platform handles payments
+    Naive implementation - stores payment record
+    No actual payment processing
+    """
+    payments[payment_id] = {
+        'id': payment_id,
+        'booking_id': booking_id,
+        'amount': amount,
+        'status': 'completed',
+        'created_at': datetime.now()
+    }
+    return payments[payment_id]
+
+def leave_review(review_id: str, booking_id: str, reviewer_id: str, rating: int, comment: str) -> Dict:
+    """
+    FR-4: Users can leave reviews
+    Naive implementation - stores review in memory
+    """
+    reviews[review_id] = {
+        'id': review_id,
+        'booking_id': booking_id,
+        'reviewer_id': reviewer_id,
+        'rating': rating,  # 1-5 stars
+        'comment': comment,
+        'created_at': datetime.now()
+    }
+    return reviews[review_id]
+
+def get_listing_reviews(listing_id: str) -> List[Dict]:
+    """
+    Helper: Get all reviews for a listing
+    Naive implementation - finds all bookings for listing and their reviews
+    """
+    listing_reviews = []
+    # Find all bookings for this listing
+    listing_booking_ids = [b['id'] for b in bookings.values() if b['listing_id'] == listing_id]
+
+    # Find reviews for those bookings
+    for review in reviews.values():
+        if review['booking_id'] in listing_booking_ids:
+            listing_reviews.append(review)
+
+    return listing_reviews
+`,
 };

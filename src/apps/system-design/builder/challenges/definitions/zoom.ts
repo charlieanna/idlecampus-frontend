@@ -87,4 +87,101 @@ export const zoomProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict
+
+# In-memory storage (naive implementation)
+users = {}
+meetings = {}
+participants = {}
+recordings = {}
+chat_messages = {}
+
+def create_meeting(meeting_id: str, host_id: str, title: str, scheduled_start: datetime, duration: int) -> Dict:
+    """
+    FR-1: Users can create video meetings
+    Naive implementation - stores meeting in memory
+    """
+    meetings[meeting_id] = {
+        'id': meeting_id,
+        'host_id': host_id,
+        'title': title,
+        'scheduled_start': scheduled_start,
+        'duration': duration,  # in minutes
+        'status': 'scheduled',
+        'created_at': datetime.now()
+    }
+    return meetings[meeting_id]
+
+def join_meeting(meeting_id: str, user_id: str) -> Dict:
+    """
+    FR-1: Users can join video meetings
+    Naive implementation - stores participant info
+    No actual video/audio streaming
+    """
+    participant_id = f"{meeting_id}_{user_id}"
+    participants[participant_id] = {
+        'meeting_id': meeting_id,
+        'user_id': user_id,
+        'joined_at': datetime.now(),
+        'left_at': None
+    }
+
+    # Update meeting status to active
+    if meeting_id in meetings:
+        meetings[meeting_id]['status'] = 'active'
+
+    return participants[participant_id]
+
+def send_chat_message(message_id: str, meeting_id: str, user_id: str, message: str) -> Dict:
+    """
+    FR-2: Users can chat during meetings
+    Naive implementation - stores chat message in memory
+    """
+    chat_messages[message_id] = {
+        'id': message_id,
+        'meeting_id': meeting_id,
+        'user_id': user_id,
+        'message': message,
+        'created_at': datetime.now()
+    }
+    return chat_messages[message_id]
+
+def leave_meeting(meeting_id: str, user_id: str) -> Dict:
+    """
+    Helper: User leaves meeting
+    Naive implementation - updates participant record
+    """
+    participant_id = f"{meeting_id}_{user_id}"
+    if participant_id in participants:
+        participants[participant_id]['left_at'] = datetime.now()
+        return participants[participant_id]
+    return None
+
+def get_meeting_participants(meeting_id: str) -> List[Dict]:
+    """
+    Helper: Get all participants in a meeting
+    Naive implementation - returns all participants who haven't left
+    """
+    active_participants = []
+    for participant in participants.values():
+        if participant['meeting_id'] == meeting_id and participant['left_at'] is None:
+            active_participants.append(participant)
+    return active_participants
+
+def get_meeting_chat(meeting_id: str) -> List[Dict]:
+    """
+    Helper: Get all chat messages from a meeting
+    Naive implementation - returns all chat messages
+    """
+    meeting_chat = []
+    for message in chat_messages.values():
+        if message['meeting_id'] == meeting_id:
+            meeting_chat.append(message)
+
+    # Sort by created_at
+    meeting_chat.sort(key=lambda x: x['created_at'])
+    return meeting_chat
+`,
 };

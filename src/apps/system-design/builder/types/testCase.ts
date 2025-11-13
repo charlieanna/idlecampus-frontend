@@ -115,4 +115,5 @@ export interface Challenge {
     label: string;
     url: string;
   }[];
+  pythonTemplate?: string; // Naive Python implementation template for the problem
 }

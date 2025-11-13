@@ -93,6 +93,7 @@ export function convertProblemDefinitionToChallenge(
     testCases,
     learningObjectives,
     referenceLinks: getReferenceLinks(def.id),
+    pythonTemplate: def.pythonTemplate, // Pass through Python template
   };
 }
 

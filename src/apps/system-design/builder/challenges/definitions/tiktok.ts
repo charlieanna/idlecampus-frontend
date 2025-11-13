@@ -78,4 +78,93 @@ export const tiktokProblemDefinition: ProblemDefinition = {
       validate: validConnectionFlowValidator,
     },
   ],
+
+  pythonTemplate: `from datetime import datetime
+from typing import List, Dict
+
+# In-memory storage (naive implementation)
+users = {}
+videos = {}
+likes = {}
+comments = {}
+video_feed = []
+
+def upload_video(video_id: str, user_id: str, video_url: str, caption: str = "") -> Dict:
+    """
+    FR-1: Users can upload short videos (15-60 seconds)
+    Naive implementation - stores video metadata in memory
+    """
+    videos[video_id] = {
+        'id': video_id,
+        'user_id': user_id,
+        'video_url': video_url,
+        'thumbnail_url': f"{video_url}_thumb.jpg",
+        'caption': caption,
+        'views': 0,
+        'created_at': datetime.now()
+    }
+    # Add to global feed
+    video_feed.append(video_id)
+    return videos[video_id]
+
+def get_video_feed(user_id: str, offset: int = 0, limit: int = 10) -> List[Dict]:
+    """
+    FR-2: Users can scroll through an infinite feed of videos
+    Naive implementation - returns videos in reverse chronological order
+    No personalization or ranking algorithm
+    """
+    # Get videos from offset
+    feed_video_ids = video_feed[offset:offset + limit]
+
+    # Fetch video details
+    feed_videos = []
+    for video_id in reversed(feed_video_ids):  # Most recent first
+        if video_id in videos:
+            video = videos[video_id].copy()
+            video['views'] += 1  # Increment view count
+            videos[video_id]['views'] = video['views']
+            feed_videos.append(video)
+
+    return feed_videos
+
+def like_video(video_id: str, user_id: str) -> Dict:
+    """
+    FR-3: Users can like videos
+    Naive implementation - stores like in memory
+    """
+    like_id = f"{video_id}_{user_id}"
+    likes[like_id] = {
+        'video_id': video_id,
+        'user_id': user_id,
+        'created_at': datetime.now()
+    }
+    return likes[like_id]
+
+def comment_on_video(comment_id: str, video_id: str, user_id: str, text: str) -> Dict:
+    """
+    FR-3: Users can comment on videos
+    Naive implementation - stores comment in memory
+    """
+    comments[comment_id] = {
+        'id': comment_id,
+        'video_id': video_id,
+        'user_id': user_id,
+        'text': text,
+        'created_at': datetime.now()
+    }
+    return comments[comment_id]
+
+def share_video(video_id: str, user_id: str, share_to: str) -> Dict:
+    """
+    FR-3: Users can share videos
+    Naive implementation - just returns share confirmation
+    In real system, this would create notifications, links, etc.
+    """
+    return {
+        'video_id': video_id,
+        'user_id': user_id,
+        'share_to': share_to,
+        'shared_at': datetime.now()
+    }
+`,
 };
