@@ -9,6 +9,7 @@ import {
   Client,
   LoadBalancer,
   AppServer,
+  Worker,
   PostgreSQL,
   RedisCache,
   CDN,
@@ -46,6 +47,9 @@ export class SimulationEngine {
           break;
         case 'app_server':
           component = new AppServer(node.id, node.config);
+          break;
+        case 'worker':
+          component = new Worker(node.id, node.config);
           break;
         case 'database':
         case 'postgresql':

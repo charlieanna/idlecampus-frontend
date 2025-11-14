@@ -83,6 +83,7 @@ export type ComponentType =
   | 'client'
   | 'load_balancer'
   | 'app_server'
+  | 'worker'
   | 'database'
   | 'postgresql'
   | 'mysql'
@@ -108,10 +109,21 @@ export interface ComponentConfig {
 }
 
 /**
+ * Custom logic configuration for components that support it
+ */
+export interface CustomLogic {
+  enabled: boolean;
+  pythonFile?: string; // Path to Python file
+  functionName?: string; // Entry point function
+  benchmarkedLatency?: number; // Measured latency from benchmarking
+}
+
+/**
  * Component representation in the graph
  */
 export interface ComponentNode {
   id: string;
   type: ComponentType;
   config: ComponentConfig;
+  customLogic?: CustomLogic; // Optional for components that support custom logic
 }
