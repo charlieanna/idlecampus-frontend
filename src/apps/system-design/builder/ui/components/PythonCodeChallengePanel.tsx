@@ -38,9 +38,12 @@ interface PythonCodeChallengePanelProps {
   setPythonCode: (code: string) => void;
   onRunTests: (code: string, testCases: TestCase[]) => Promise<TestResult[]>;
   onSubmit: () => void;
+  exampleTestCases?: TestCase[];
+  hiddenTestCases?: TestCase[];
 }
 
-const EXAMPLE_TEST_CASES: TestCase[] = [
+// Default TinyURL test cases (used if no test cases provided)
+const DEFAULT_EXAMPLE_TEST_CASES: TestCase[] = [
   {
     id: 'example1',
     name: 'Basic Shorten and Expand',
@@ -63,7 +66,7 @@ const EXAMPLE_TEST_CASES: TestCase[] = [
   }
 ];
 
-const HIDDEN_TEST_CASES: TestCase[] = [
+const DEFAULT_HIDDEN_TEST_CASES: TestCase[] = [
   {
     id: 'hidden1',
     name: 'Duplicate URL Handling',
@@ -97,7 +100,9 @@ export function PythonCodeChallengePanel({
   pythonCode,
   setPythonCode,
   onRunTests,
-  onSubmit
+  onSubmit,
+  exampleTestCases = DEFAULT_EXAMPLE_TEST_CASES,
+  hiddenTestCases = DEFAULT_HIDDEN_TEST_CASES
 }: PythonCodeChallengePanelProps) {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
@@ -149,7 +154,7 @@ export function PythonCodeChallengePanel({
   const handleRunCode = async () => {
     setIsRunning(true);
     try {
-      const results = await onRunTests(pythonCode, EXAMPLE_TEST_CASES);
+      const results = await onRunTests(pythonCode, exampleTestCases);
       setTestResults(results);
       setShowTestResultsPanel(true);
     } catch (error) {
@@ -169,7 +174,7 @@ export function PythonCodeChallengePanel({
     setIsRunning(true);
     try {
       // Run all test cases (example + hidden)
-      const allTestCases = [...EXAMPLE_TEST_CASES, ...HIDDEN_TEST_CASES];
+      const allTestCases = [...exampleTestCases, ...hiddenTestCases];
       const results = await onRunTests(pythonCode, allTestCases);
       setTestResults(results);
       setShowTestResultsPanel(true);
@@ -265,7 +270,7 @@ export function PythonCodeChallengePanel({
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Examples</h3>
                 <div className="space-y-4">
-                  {EXAMPLE_TEST_CASES.map((testCase, idx) => (
+                  {exampleTestCases.map((testCase, idx) => (
                     <div key={testCase.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                       <div className="font-medium text-gray-900 mb-2">Example {idx + 1}: {testCase.name}</div>
                       <div className="space-y-1 text-sm font-mono">
