@@ -143,7 +143,9 @@ export const tinyurlProblemDefinition: ProblemDefinition = {
   pythonTemplate: `# tinyurl.py
 import hashlib
 from typing import Optional
-from storage import store, retrieve, exists
+
+# You can create your own data structures here
+# For example: url_map = {}
 
 def shorten(url: str) -> Optional[str]:
     """
@@ -156,6 +158,8 @@ def shorten(url: str) -> Optional[str]:
         A short code string, or None if invalid
     """
     # TODO: Implement this function
+    # Hint: Use a dictionary to store URL mappings
+    # Hint: Use hashlib to generate short codes
     pass
 
 def expand(code: str) -> Optional[str]:

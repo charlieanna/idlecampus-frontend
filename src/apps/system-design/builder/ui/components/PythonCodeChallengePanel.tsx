@@ -1,5 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
+import type { Monaco } from '@monaco-editor/react';
+import type { editor } from 'monaco-editor';
 
 interface TestCase {
   id: string;
@@ -107,30 +109,79 @@ export function PythonCodeChallengePanel({
 }: PythonCodeChallengePanelProps) {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
-  const [activeTab, setActiveTab] = useState<'problem'>('problem');
-  const [showResults, setShowResults] = useState(false);
+  const [showTestResultsPanel, setShowTestResultsPanel] = useState(false);
+  const [resultsViewMode, setResultsViewMode] = useState<'plain' | 'formatted'>('plain');
+  const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
+  const editorContainerRef = useRef<HTMLDivElement | null>(null);
+  const resizeObserverRef = useRef<ResizeObserver | null>(null);
+
+  const formatTestResultsAsText = (results: TestResult[]): string => {
+    if (results.length === 0) {
+      return 'No test results available.';
+    }
+
+    let output = 'Test Results\n';
+    output += '='.repeat(50) + '\n\n';
+
+    results.forEach((result, index) => {
+      output += `Test ${index + 1}: ${result.testName}\n`;
+      output += `Status: ${result.passed ? 'PASSED ✓' : 'FAILED ✗'}\n`;
+      
+      if (result.executionTime) {
+        output += `Execution Time: ${result.executionTime}ms\n`;
+      }
+
+      if (result.operations && result.operations.length > 0) {
+        output += '\nOperations:\n';
+        result.operations.forEach((op, opIdx) => {
+          output += `  ${opIdx + 1}. ${op.method}("${op.input}")\n`;
+          output += `     Expected: ${op.expected || 'None'}\n`;
+          output += `     Actual: ${op.actual || 'None'}\n`;
+          output += `     ${op.passed ? '✓ PASSED' : '✗ FAILED'}\n`;
+        });
+      }
+
+      if (result.error) {
+        output += `\nError: ${result.error}\n`;
+      }
+
+      output += '\n' + '-'.repeat(50) + '\n\n';
+    });
+
+    const passedCount = results.filter(r => r.passed).length;
+    const totalCount = results.length;
+    output += `Summary: ${passedCount}/${totalCount} tests passed\n`;
+
+    return output;
+  };
 
   const handleRunCode = async () => {
     setIsRunning(true);
-    setShowResults(true);
     try {
       const results = await onRunTests(pythonCode, EXAMPLE_TEST_CASES);
       setTestResults(results);
+      setShowTestResultsPanel(true);
     } catch (error) {
       console.error('Error running tests:', error);
     } finally {
       setIsRunning(false);
+      // Force editor layout update after state changes
+      setTimeout(() => {
+        if (editorRef.current) {
+          editorRef.current.layout();
+        }
+      }, 0);
     }
   };
 
   const handleSubmitSolution = async () => {
     setIsRunning(true);
-    setShowResults(true);
     try {
       // Run all test cases (example + hidden)
       const allTestCases = [...EXAMPLE_TEST_CASES, ...HIDDEN_TEST_CASES];
       const results = await onRunTests(pythonCode, allTestCases);
       setTestResults(results);
+      setShowTestResultsPanel(true);
 
       // If all tests pass, trigger the main submit (which runs load tests)
       const allPassed = results.every(r => r.passed);
@@ -141,8 +192,48 @@ export function PythonCodeChallengePanel({
       console.error('Error submitting solution:', error);
     } finally {
       setIsRunning(false);
+      // Force editor layout update after state changes
+      setTimeout(() => {
+        if (editorRef.current) {
+          editorRef.current.layout();
+        }
+      }, 0);
     }
   };
+
+  const handleEditorDidMount = (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+    editorRef.current = editor;
+    
+    // Set up ResizeObserver for the editor container
+    if (editorContainerRef.current) {
+      // Clean up existing observer if any
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+      
+      resizeObserverRef.current = new ResizeObserver(() => {
+        if (editorRef.current) {
+          // Use requestAnimationFrame to ensure layout happens after DOM updates
+          requestAnimationFrame(() => {
+            if (editorRef.current) {
+              editorRef.current.layout();
+            }
+          });
+        }
+      });
+      
+      resizeObserverRef.current.observe(editorContainerRef.current);
+    }
+  };
+
+  // Cleanup ResizeObserver on unmount
+  useEffect(() => {
+    return () => {
+      if (resizeObserverRef.current) {
+        resizeObserverRef.current.disconnect();
+      }
+    };
+  }, []);
 
   return (
     <div className="flex-1 flex overflow-hidden">
@@ -172,10 +263,10 @@ export function PythonCodeChallengePanel({
                   Your implementation should:
                 </p>
                 <ul className="list-disc pl-5 space-y-1 text-gray-700">
-                  <li>Store URL mappings using the provided storage methods</li>
+                  <li>Store URL mappings in a dictionary</li>
                   <li>Handle duplicate URLs consistently (same URL → same code)</li>
                   <li>Return <code className="bg-gray-100 px-1 rounded">None</code> for invalid inputs</li>
-                  <li>Handle hash collisions if they occur</li>
+                  <li>Use hash functions to generate short codes</li>
                 </ul>
               </div>
 
@@ -223,128 +314,195 @@ export function PythonCodeChallengePanel({
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">Hints</h3>
                 <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
-                  <li>Use <code className="bg-gray-100 px-1">store()</code> to save URL mappings</li>
-                  <li>Use <code className="bg-gray-100 px-1">retrieve()</code> to get URLs by code</li>
-                  <li>Use <code className="bg-gray-100 px-1">exists()</code> to check for collisions</li>
-                  <li>Hash functions can generate consistent codes from URLs</li>
-                  <li>Remember to check if a URL already has a code before creating a new one</li>
+                  <li>Create a dictionary to store URL-to-code mappings</li>
+                  <li>Use <code className="bg-gray-100 px-1">hashlib.md5()</code> to generate consistent short codes</li>
+                  <li>Check if a URL already exists before creating a new code</li>
+                  <li>Handle edge cases: empty URLs, None values, etc.</li>
                 </ul>
               </div>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* Right Panel: Code Editor + Results (60%) */}
-      <div className="flex-1 flex flex-col bg-gray-50">
-        {/* Code Editor */}
-        <div className={showResults ? 'h-1/2' : 'flex-1'}>
-          <div className="h-full flex flex-col bg-white">
-            {/* Editor */}
-            <div className="flex-1">
-              <Editor
-                height="100%"
-                defaultLanguage="python"
-                value={pythonCode}
-                onChange={(value) => setPythonCode(value || '')}
-                theme="vs-light"
-                options={{
-                  minimap: { enabled: false },
-                  fontSize: 14,
-                  lineNumbers: 'on',
-                  scrollBeyondLastLine: false,
-                  automaticLayout: true,
-                  tabSize: 4,
-                  wordWrap: 'on',
-                  readOnly: isRunning,
-                }}
-              />
-            </div>
+      {/* Right Panel: Code Editor (Full Width) */}
+      <div className="flex-1 flex flex-col bg-gray-50 min-w-0 relative">
+        {/* Code Editor - Full width */}
+        <div className="flex-1 flex flex-col bg-white min-w-0">
+          <div className="p-3 border-b border-gray-200 bg-gray-50 flex-shrink-0">
+            <h3 className="font-semibold text-gray-900">Code Editor</h3>
+          </div>
+          <div 
+            ref={editorContainerRef}
+            className="flex-1 overflow-hidden"
+            style={{ minWidth: 0, width: '100%' }}
+          >
+            <Editor
+              height="100%"
+              defaultLanguage="python"
+              value={pythonCode}
+              onChange={(value) => setPythonCode(value || '')}
+              onMount={handleEditorDidMount}
+              theme="vs-light"
+              options={{
+                minimap: { enabled: false },
+                fontSize: 14,
+                lineNumbers: 'on',
+                scrollBeyondLastLine: false,
+                automaticLayout: false,
+                tabSize: 4,
+                wordWrap: 'on',
+                readOnly: isRunning,
+              }}
+            />
           </div>
         </div>
 
-        {/* Test Results */}
-        {showResults && (
-          <div className="h-1/2 flex flex-col bg-white border-t border-gray-300">
-            <div className="p-3 border-b border-gray-200 bg-gray-50">
-              <h3 className="font-semibold text-gray-900">Test Results</h3>
-            </div>
-            <div className="flex-1 overflow-y-auto p-4">
-              {isRunning ? (
-                <div className="flex items-center justify-center py-8">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-                    <div className="mt-2 text-sm text-gray-600">Running tests...</div>
-                  </div>
-                </div>
-              ) : testResults.length > 0 ? (
-                <div className="space-y-3">
-                  {testResults.map((result) => (
-                    <div
-                      key={result.testId}
-                      className={`border rounded-lg p-3 ${
-                        result.passed
-                          ? 'border-green-300 bg-green-50'
-                          : 'border-red-300 bg-red-50'
+        {/* Bottom Overlay Panel - Test Results */}
+        {showTestResultsPanel && (
+          <>
+            {/* Backdrop */}
+            <div 
+              className="fixed inset-0 bg-black bg-opacity-30 z-40 transition-opacity"
+              onClick={() => setShowTestResultsPanel(false)}
+            />
+            
+            {/* Panel - positioned above buttons, centered and narrower */}
+            <div className="absolute bottom-16 left-1/2 transform -translate-x-1/2 bg-white border border-gray-200 shadow-2xl z-50 animate-slide-up rounded-t-2xl overflow-hidden"
+                 style={{ 
+                   height: '40vh', 
+                   maxHeight: '500px',
+                   width: '85%',
+                   maxWidth: '1200px',
+                   boxShadow: '0 -10px 40px rgba(0, 0, 0, 0.15)'
+                 }}>
+              {/* Header */}
+              <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white rounded-t-2xl">
+                <div className="flex items-center gap-4">
+                  <h3 className="font-semibold text-gray-900">Test Results</h3>
+                  {/* View Mode Toggle */}
+                  <div className="flex gap-1 bg-white rounded-lg border border-gray-300 p-1">
+                    <button
+                      onClick={() => setResultsViewMode('plain')}
+                      className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
+                        resultsViewMode === 'plain'
+                          ? 'bg-blue-600 text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          {result.passed ? (
-                            <span className="text-green-600">✓</span>
-                          ) : (
-                            <span className="text-red-600">✗</span>
-                          )}
-                          <span className={`font-medium ${
-                            result.passed ? 'text-green-900' : 'text-red-900'
-                          }`}>
-                            {result.testName}
-                          </span>
-                        </div>
-                        {result.executionTime && (
-                          <span className="text-xs text-gray-600">
-                            {result.executionTime}ms
-                          </span>
-                        )}
-                      </div>
+                      Plain Text
+                    </button>
+                    <button
+                      onClick={() => setResultsViewMode('formatted')}
+                      className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
+                        resultsViewMode === 'formatted'
+                          ? 'bg-blue-600 text-white'
+                          : 'text-gray-700 hover:bg-gray-100'
+                      }`}
+                    >
+                      Formatted
+                    </button>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowTestResultsPanel(false)}
+                  className="p-2 hover:bg-gray-200 rounded-lg transition-all hover:scale-110"
+                  title="Close"
+                >
+                  <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
 
-                      {!result.passed && result.operations && (
-                        <div className="mt-2 space-y-1">
-                          {result.operations.filter(op => !op.passed).map((op, idx) => (
-                            <div key={idx} className="text-sm">
-                              <div className="font-mono text-xs text-red-700">
-                                {op.method}("{op.input}")
-                              </div>
-                              <div className="text-xs text-red-600 ml-4">
-                                Expected: {op.expected || 'None'}
-                              </div>
-                              <div className="text-xs text-red-600 ml-4">
-                                Got: {op.actual || 'None'}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {result.error && (
-                        <div className="mt-2 text-xs text-red-700 font-mono">
-                          {result.error}
-                        </div>
-                      )}
+              {/* Content */}
+              <div className="h-full overflow-hidden flex flex-col rounded-b-2xl" style={{ height: 'calc(100% - 60px)' }}>
+                {isRunning ? (
+                  <div className="flex items-center justify-center h-full bg-gray-50">
+                    <div className="text-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+                      <div className="mt-2 text-sm text-gray-600">Running tests...</div>
                     </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500 text-sm">
-                  Click "Run Code" to test your solution
-                </div>
-              )}
+                  </div>
+                ) : resultsViewMode === 'plain' ? (
+                  <textarea
+                    readOnly
+                    value={formatTestResultsAsText(testResults)}
+                    className="flex-1 w-full p-4 font-mono text-sm bg-gray-900 text-green-400 border-0 resize-none focus:outline-none rounded-b-2xl"
+                    style={{ fontFamily: 'monospace' }}
+                  />
+                ) : (
+                  <div className="flex-1 overflow-y-auto p-4 bg-gray-50 rounded-b-2xl">
+                    {testResults.length > 0 ? (
+                      <div className="space-y-3">
+                        {testResults.map((result) => (
+                          <div
+                            key={result.testId}
+                            className={`border rounded-lg p-3 ${
+                              result.passed
+                                ? 'border-green-300 bg-green-50'
+                                : 'border-red-300 bg-red-50'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                {result.passed ? (
+                                  <span className="text-green-600">✓</span>
+                                ) : (
+                                  <span className="text-red-600">✗</span>
+                                )}
+                                <span className={`font-medium ${
+                                  result.passed ? 'text-green-900' : 'text-red-900'
+                                }`}>
+                                  {result.testName}
+                                </span>
+                              </div>
+                              {result.executionTime && (
+                                <span className="text-xs text-gray-600">
+                                  {result.executionTime}ms
+                                </span>
+                              )}
+                            </div>
+
+                            {!result.passed && result.operations && (
+                              <div className="mt-2 space-y-1">
+                                {result.operations.filter(op => !op.passed).map((op, idx) => (
+                                  <div key={idx} className="text-sm">
+                                    <div className="font-mono text-xs text-red-700">
+                                      {op.method}("{op.input}")
+                                    </div>
+                                    <div className="text-xs text-red-600 ml-4">
+                                      Expected: {op.expected || 'None'}
+                                    </div>
+                                    <div className="text-xs text-red-600 ml-4">
+                                      Got: {op.actual || 'None'}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {result.error && (
+                              <div className="mt-2 text-xs text-red-700 font-mono">
+                                {result.error}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-gray-500 text-sm">
+                        No test results available
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          </>
         )}
 
-        {/* Action Buttons */}
-        <div className="p-4 bg-white border-t border-gray-200 flex justify-end gap-3">
+        {/* Action Buttons - Fixed at bottom, below overlay */}
+        <div className="flex-shrink-0 p-4 bg-white border-t border-gray-200 flex justify-end gap-3 relative z-30">
           <button
             onClick={handleRunCode}
             disabled={isRunning}

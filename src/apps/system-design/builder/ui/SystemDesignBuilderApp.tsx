@@ -113,11 +113,11 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
 
   // Default Python starter code with database helpers
   const [pythonCode, setPythonCode] = useState(`# tinyurl.py
-# TinyURL Implementation
-
 import hashlib
 from typing import Optional
-from storage import store, retrieve, exists
+
+# You can create your own data structures here
+# For example: url_map = {}
 
 def shorten(url: str) -> Optional[str]:
     """
@@ -130,6 +130,8 @@ def shorten(url: str) -> Optional[str]:
         A short code string, or None if invalid
     """
     # TODO: Implement this function
+    # Hint: Use a dictionary to store URL mappings
+    # Hint: Use hashlib to generate short codes
     pass
 
 def expand(code: str) -> Optional[str]:
@@ -785,15 +787,12 @@ def expand(code: str) -> Optional[str]:
 
         {/* Python Code Tab Content - LeetCode Style */}
         {activeTab === 'python' && (
-          <div className="flex-1 flex flex-col overflow-hidden">
-            {/* LeetCode-style Panel */}
-            <PythonCodeChallengePanel
-              pythonCode={pythonCode}
-              setPythonCode={setPythonCode}
-              onRunTests={handleRunPythonTests}
-              onSubmit={handleSubmit}
-            />
-          </div>
+          <PythonCodeChallengePanel
+            pythonCode={pythonCode}
+            setPythonCode={setPythonCode}
+            onRunTests={handleRunPythonTests}
+            onSubmit={handleSubmit}
+          />
         )}
 
 
