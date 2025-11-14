@@ -3,7 +3,7 @@ import {
   Play,
   Code,
   Settings,
-  Architecture,
+  Building2,
   Plus,
   Trash2,
   ChevronLeft,
@@ -33,19 +33,28 @@ import { pythonExecutor, BenchmarkResult } from '../services/pythonExecutor';
 import { SimulationEngine } from '../simulation/engine';
 
 // Import example challenges
-import { tinyUrlTieredChallenge } from '../challenges/tier1/tinyUrlTiered';
-import { twitterFeedTieredChallenge } from '../challenges/tier2/twitterFeedTiered';
-import { uberMatchingTieredChallenge } from '../challenges/tier3/uberMatchingTiered';
+import { tieredChallenges } from '../challenges/tieredChallenges';
+
+/**
+ * Props for TieredSystemDesignBuilder
+ */
+interface TieredSystemDesignBuilderProps {
+  challengeId?: string;
+  challenges?: TieredChallenge[];
+}
 
 /**
  * Main Tiered System Design Builder
  *
  * Integrates all three tiers of challenges with appropriate UI
  */
-export function TieredSystemDesignBuilder() {
+export function TieredSystemDesignBuilder({
+  challengeId,
+  challenges = tieredChallenges
+}: TieredSystemDesignBuilderProps = {}) {
   // Challenge and tier state
   const [selectedChallenge, setSelectedChallenge] = useState<TieredChallenge | null>(null);
-  const [showChallengeSelector, setShowChallengeSelector] = useState(true);
+  const [showChallengeSelector, setShowChallengeSelector] = useState(!challengeId);
 
   // Component and graph state
   const [components, setComponents] = useState<ComponentNode[]>([]);
@@ -70,12 +79,16 @@ export function TieredSystemDesignBuilder() {
   const [activeView, setActiveView] = useState<'design' | 'code' | 'results'>('design');
   const [showBehaviorPanel, setShowBehaviorPanel] = useState(true);
 
-  // Available challenges (would come from API in production)
-  const availableChallenges: TieredChallenge[] = [
-    tinyUrlTieredChallenge,
-    twitterFeedTieredChallenge,
-    uberMatchingTieredChallenge,
-  ];
+  // Load challenge from URL if challengeId is provided
+  useEffect(() => {
+    if (challengeId && !selectedChallenge) {
+      const challenge = challenges.find(c => c.id === challengeId);
+      if (challenge) {
+        setSelectedChallenge(challenge);
+        setShowChallengeSelector(false);
+      }
+    }
+  }, [challengeId, challenges, selectedChallenge]);
 
   // Initialize challenge
   useEffect(() => {
@@ -137,6 +150,24 @@ export function TieredSystemDesignBuilder() {
 
     setComponents([...components, newComponent]);
   };
+
+  // Handle system graph changes from DesignCanvas
+  const handleSystemGraphChange = useCallback((graph: { components: ComponentNode[]; connections: any[] }) => {
+    setComponents(graph.components);
+    setConnections(graph.connections);
+  }, []);
+
+  // Handle node selection
+  const handleNodeSelect = useCallback((node: any) => {
+    setSelectedComponentId(node?.id || null);
+  }, []);
+
+  // Handle component config update
+  const handleUpdateConfig = useCallback((nodeId: string, config: Record<string, any>) => {
+    setComponents(prev => prev.map(comp =>
+      comp.id === nodeId ? { ...comp, config: { ...comp.config, ...config } } : comp
+    ));
+  }, []);
 
   // Handle running tests
   const handleRunTests = async () => {
@@ -271,7 +302,7 @@ export function TieredSystemDesignBuilder() {
       <div className="h-screen flex bg-gray-50">
         <div className="w-full max-w-6xl mx-auto p-8">
           <TieredChallengeSelector
-            challenges={availableChallenges}
+            challenges={challenges}
             onSelectChallenge={handleChallengeSelect}
           />
         </div>
@@ -307,7 +338,7 @@ export function TieredSystemDesignBuilder() {
                 `}>
                   {selectedChallenge.implementationTier === 'simple' && <Code className="w-3 h-3" />}
                   {selectedChallenge.implementationTier === 'moderate' && <Settings className="w-3 h-3" />}
-                  {selectedChallenge.implementationTier === 'advanced' && <Architecture className="w-3 h-3" />}
+                  {selectedChallenge.implementationTier === 'advanced' && <Building2 className="w-3 h-3" />}
                   <span>
                     Tier {selectedChallenge.implementationTier === 'simple' ? 1 :
                           selectedChallenge.implementationTier === 'moderate' ? 2 : 3}
@@ -331,7 +362,7 @@ export function TieredSystemDesignBuilder() {
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
               }`}
             >
-              <Architecture className="w-4 h-4 inline mr-2" />
+              <Building2 className="w-4 h-4 inline mr-2" />
               Design
             </button>
 
@@ -442,10 +473,12 @@ export function TieredSystemDesignBuilder() {
           {activeView === 'design' && (
             <div className="h-full bg-white rounded-lg border border-gray-200 p-4">
               <DesignCanvas
-                components={components}
-                connections={connections}
-                onComponentsChange={setComponents}
-                onConnectionsChange={setConnections}
+                systemGraph={{ components, connections }}
+                onSystemGraphChange={handleSystemGraphChange}
+                selectedNode={null}
+                onNodeSelect={handleNodeSelect}
+                onAddComponent={(type) => handleAddComponent(type as ComponentType)}
+                onUpdateConfig={handleUpdateConfig}
               />
             </div>
           )}

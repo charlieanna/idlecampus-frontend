@@ -205,6 +205,31 @@ export function ProblemCatalog() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Tiered Challenges Banner */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+        <div className="max-w-[1800px] mx-auto p-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className="bg-white/20 p-2 rounded-lg">
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+              </div>
+              <div>
+                <h2 className="font-semibold">New: 3-Tier Challenge System</h2>
+                <p className="text-sm text-white/80">Write Python code, configure algorithms, or design architecture</p>
+              </div>
+            </div>
+            <button
+              onClick={() => navigate('/system-design/tiered')}
+              className="px-4 py-2 bg-white text-blue-600 font-medium rounded-lg hover:bg-blue-50 transition-colors"
+            >
+              Try Tiered Challenges →
+            </button>
+          </div>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-[1800px] mx-auto p-6">

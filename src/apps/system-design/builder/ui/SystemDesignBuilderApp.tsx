@@ -30,6 +30,7 @@ import type { LoadTestProgress, LoadTestResults as LoadTestResultsType, LoadTest
 import { generateClientNodes } from '../challenges/generateClients';
 import { isDatabaseComponentType, inferDatabaseType } from '../utils/database';
 import { apiService } from '../../../../services/api';
+import { PythonExecutor, ExecutionContext, MockDatabase, MockRedisCache, MockMessageQueue } from '../services/pythonExecutor';
 
 // No storage.py needed - users create their own dictionaries!
 
@@ -110,6 +111,17 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const [loadTestRunning, setLoadTestRunning] = useState(false);
   const [loadTestProgress, setLoadTestProgress] = useState<LoadTestProgress | null>(null);
   const [loadTestResults, setLoadTestResults] = useState<LoadTestResultsType | null>(null);
+
+  // Python execution context - persistent across test operations
+  const [executionContext] = useState<ExecutionContext>(() => ({
+    db: new MockDatabase(),
+    cache: new MockRedisCache(),
+    queue: new MockMessageQueue(),
+    config: {}
+  }));
+
+  // Python executor instance
+  const [pythonExecutor] = useState(() => PythonExecutor.getInstance());
 
   // Default Python starter code with database helpers
   const [pythonCode, setPythonCode] = useState(`# tinyurl.py
@@ -496,9 +508,13 @@ def expand(code: str) -> Optional[str]:
   };
 
   // Handler for running Python test cases (for LeetCode-style interface)
+  // Uses frontend executor with persistent state (fixes stateful code execution)
   const handleRunPythonTests = async (code: string, testCases: any[]): Promise<any[]> => {
-    // Use the user's code directly
-    const fullCode = code;
+    // Reset execution context for clean test run
+    // Note: We keep the same context object but clear the data
+    executionContext.db = new MockDatabase();
+    executionContext.cache = new MockRedisCache();
+    executionContext.queue = new MockMessageQueue();
 
     const results = [];
 
@@ -515,6 +531,8 @@ def expand(code: str) -> Optional[str]:
 
         try {
           // Execute each operation in the test case sequentially
+          // KEY FIX: Same executionContext is used across all operations
+          // This preserves state (url_map, etc.) between shorten() and expand() calls
           for (const op of testCase.operations) {
             // Replace RESULT_FROM_PREV placeholders with actual previous results
             let actualInput = op.input;
@@ -525,20 +543,19 @@ def expand(code: str) -> Optional[str]:
               actualInput = previousResults[index] || '';
             }
 
-            // Create test code that calls the function and prints the result
-            const testCode = fullCode + `\n\n# Test execution\nresult = ${op.method}("${actualInput}")\nprint(result if result is not None else "None")`;
-
-            // Execute the code
-            const response = await apiService.executeCode(
-              'tinyurl_hash_function', // Challenge ID for TinyURL
-              testCode,
-              '' // No separate test input needed since we're including it in the code
+            // Use frontend executor instead of backend API
+            // This uses simulated execution but maintains state across calls
+            const result = await pythonExecutor.execute(
+              code,
+              op.method,
+              [actualInput],
+              executionContext
             );
 
-            const executionTime = Date.now() - startTime;
-
-            // Parse the result from stdout
-            let actual = response.output?.trim() || response.stdout?.trim() || '';
+            // Convert result to string for comparison
+            const actual = result !== null && result !== undefined
+              ? String(result)
+              : 'None';
             let opPassed = false;
 
             // Handle different expected value types
@@ -572,13 +589,6 @@ def expand(code: str) -> Optional[str]:
               actual: actual || 'None',
               passed: opPassed
             });
-
-            // If there was an error in execution, record it
-            if (response.error) {
-              testError = response.error;
-              testPassed = false;
-              break;
-            }
           }
         } catch (error) {
           testPassed = false;

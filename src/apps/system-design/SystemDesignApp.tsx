@@ -1,6 +1,8 @@
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import SystemDesignBuilderApp from './builder/ui/SystemDesignBuilderApp';
 import { ProblemCatalog } from './builder/ui/components/ProblemCatalog';
+import { TieredSystemDesignBuilder } from './builder/ui/TieredSystemDesignBuilder';
+import { tieredChallenges } from './builder/challenges/tieredChallenges';
 
 // Component to handle dynamic challenge routes
 // Note: Challenge IDs can use either hyphens or underscores depending on when they were created
@@ -13,11 +15,21 @@ function ChallengeRoute() {
   return <SystemDesignBuilderApp challengeId={id} />;
 }
 
+// Component to handle tiered challenge routes
+function TieredChallengeRoute() {
+  const { challengeId } = useParams<{ challengeId: string }>();
+  return <TieredSystemDesignBuilder challengeId={challengeId} />;
+}
+
 export default function SystemDesignApp() {
   return (
     <Routes>
       {/* Catalog view as the landing page */}
       <Route path="/" element={<ProblemCatalog />} />
+
+      {/* Tiered Challenges - New 3-tier system */}
+      <Route path="/tiered" element={<TieredSystemDesignBuilder challenges={tieredChallenges} />} />
+      <Route path="/tiered/:challengeId" element={<TieredChallengeRoute />} />
 
       {/* Individual challenge routes - pass the hyphenated URL ID and let SystemDesignBuilderApp handle the lookup */}
       <Route path="/tiny-url" element={<SystemDesignBuilderApp challengeId="tiny-url" />} />

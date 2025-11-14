@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Code, Settings, Architecture, Search, ChevronRight, Star, Clock, DollarSign } from 'lucide-react';
+import { Code, Settings, Building2, Search, ChevronRight, Star, Clock, DollarSign } from 'lucide-react';
 import { TieredChallenge, getTierDescription, getTierUIRequirements } from '../../types/challengeTiers';
 
 interface TieredChallengeSelectorProps {
@@ -43,7 +43,7 @@ export function TieredChallengeSelector({
       case 'moderate':
         return <Settings className="w-5 h-5" />;
       case 'advanced':
-        return <Architecture className="w-5 h-5" />;
+        return <Building2 className="w-5 h-5" />;
       default:
         return null;
     }
@@ -139,7 +139,7 @@ export function TieredChallengeSelector({
                 : 'bg-red-50 text-red-700 hover:bg-red-100'
             }`}
           >
-            <Architecture className="w-4 h-4" />
+            <Building2 className="w-4 h-4" />
             <span>Tier 3 ({challengesByTier.advanced.length})</span>
           </button>
         </div>
@@ -165,7 +165,7 @@ export function TieredChallengeSelector({
           </div>
 
           <div className="flex items-start space-x-2">
-            <Architecture className="w-4 h-4 text-red-600 mt-0.5" />
+            <Building2 className="w-4 h-4 text-red-600 mt-0.5" />
             <div>
               <div className="font-medium text-gray-900">Tier 3 (Advanced)</div>
               <div className="text-gray-600">Design architecture</div>
@@ -235,7 +235,7 @@ export function TieredChallengeSelector({
                       </div>
 
                       <div className="flex items-center space-x-1 text-gray-500">
-                        <Architecture className="w-4 h-4" />
+                        <Building2 className="w-4 h-4" />
                         <span>{challenge.testCases.length} test cases</span>
                       </div>
                     </div>
@@ -246,7 +246,7 @@ export function TieredChallengeSelector({
                       <div className="flex flex-wrap gap-2">
                         {uiReqs.needsArchitectureOnly && (
                           <span className="inline-flex items-center space-x-1 px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
-                            <Architecture className="w-3 h-3" />
+                            <Building2 className="w-3 h-3" />
                             <span>Design System</span>
                           </span>
                         )}

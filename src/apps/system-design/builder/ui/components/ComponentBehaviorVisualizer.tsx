@@ -12,7 +12,7 @@ import {
   Server,
   Settings,
   Shield,
-  Transform,
+  RefreshCw,
   Users,
   Zap,
   ExternalLink,
@@ -136,7 +136,7 @@ export function ComponentBehaviorVisualizer({
         {/* Transformations */}
         {behavior.transformations && behavior.transformations.length > 0 && (
           <div className="flex items-start space-x-2">
-            <Transform className="w-4 h-4 text-purple-500 mt-1" />
+            <RefreshCw className="w-4 h-4 text-purple-500 mt-1" />
             <div className="flex-1">
               <div className="text-sm font-medium text-gray-700">Transformations</div>
               <div className="space-y-1 mt-1">
