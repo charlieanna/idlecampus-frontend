@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import Editor from '@monaco-editor/react';
-import { StorageAPIReference } from './StorageAPIReference';
 
 interface TestCase {
   id: string;
@@ -35,7 +34,6 @@ interface OperationResult {
 interface PythonCodeChallengePanelProps {
   pythonCode: string;
   setPythonCode: (code: string) => void;
-  storageCode: string;
   onRunTests: (code: string, testCases: TestCase[]) => Promise<TestResult[]>;
   onSubmit: () => void;
 }
@@ -104,15 +102,13 @@ const HIDDEN_TEST_CASES: TestCase[] = [
 export function PythonCodeChallengePanel({
   pythonCode,
   setPythonCode,
-  storageCode,
   onRunTests,
   onSubmit
 }: PythonCodeChallengePanelProps) {
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
-  const [activeTab, setActiveTab] = useState<'problem' | 'api'>('problem');
+  const [activeTab, setActiveTab] = useState<'problem'>('problem');
   const [showResults, setShowResults] = useState(false);
-  const [codeTab, setCodeTab] = useState<'tinyurl' | 'storage'>('tinyurl');
 
   const handleRunCode = async () => {
     setIsRunning(true);
@@ -152,34 +148,8 @@ export function PythonCodeChallengePanel({
     <div className="flex-1 flex overflow-hidden">
       {/* Left Panel: Problem Statement (40%) */}
       <div className="w-2/5 bg-white border-r border-gray-200 flex flex-col">
-        <div className="border-b border-gray-200">
-          <div className="flex">
-            <button
-              onClick={() => setActiveTab('problem')}
-              className={`px-4 py-2 text-sm font-medium ${
-                activeTab === 'problem'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Problem
-            </button>
-            <button
-              onClick={() => setActiveTab('api')}
-              className={`px-4 py-2 text-sm font-medium ${
-                activeTab === 'api'
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-gray-800'
-              }`}
-            >
-              Storage API
-            </button>
-          </div>
-        </div>
-
         <div className="flex-1 overflow-y-auto p-6">
-          {activeTab === 'problem' ? (
-            <div className="space-y-6">
+          <div className="space-y-6">
               {/* Problem Title */}
               <div>
                 <h2 className="text-2xl font-bold text-gray-900">URL Shortener Implementation</h2>
@@ -261,55 +231,22 @@ export function PythonCodeChallengePanel({
                 </ul>
               </div>
             </div>
-          ) : (
-            <StorageAPIReference />
-          )}
+          </div>
         </div>
       </div>
 
       {/* Right Panel: Code Editor + Results (60%) */}
       <div className="flex-1 flex flex-col bg-gray-50">
-        {/* Code Editor with Tabs */}
+        {/* Code Editor */}
         <div className={showResults ? 'h-1/2' : 'flex-1'}>
           <div className="h-full flex flex-col bg-white">
-            {/* File Tabs */}
-            <div className="border-b border-gray-200 bg-gray-50">
-              <div className="flex">
-                <button
-                  onClick={() => setCodeTab('tinyurl')}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                    codeTab === 'tinyurl'
-                      ? 'bg-white border-blue-600 text-blue-600'
-                      : 'bg-gray-50 border-transparent text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  📝 tinyurl.py
-                </button>
-                <button
-                  onClick={() => setCodeTab('storage')}
-                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                    codeTab === 'storage'
-                      ? 'bg-white border-blue-600 text-blue-600'
-                      : 'bg-gray-50 border-transparent text-gray-600 hover:text-gray-800'
-                  }`}
-                >
-                  📦 storage.py (read-only)
-                </button>
-              </div>
-            </div>
-
             {/* Editor */}
             <div className="flex-1">
               <Editor
-                key={codeTab}  // Force re-render when switching tabs
                 height="100%"
                 defaultLanguage="python"
-                value={codeTab === 'tinyurl' ? pythonCode : storageCode}
-                onChange={(value) => {
-                  if (codeTab === 'tinyurl') {
-                    setPythonCode(value || '');
-                  }
-                }}
+                value={pythonCode}
+                onChange={(value) => setPythonCode(value || '')}
                 theme="vs-light"
                 options={{
                   minimap: { enabled: false },
@@ -319,7 +256,7 @@ export function PythonCodeChallengePanel({
                   automaticLayout: true,
                   tabSize: 4,
                   wordWrap: 'on',
-                  readOnly: codeTab === 'storage' || isRunning,
+                  readOnly: isRunning,
                 }}
               />
             </div>

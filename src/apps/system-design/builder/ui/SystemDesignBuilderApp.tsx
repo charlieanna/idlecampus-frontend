@@ -31,58 +31,7 @@ import { generateClientNodes } from '../challenges/generateClients';
 import { isDatabaseComponentType, inferDatabaseType } from '../utils/database';
 import { apiService } from '../../../../services/api';
 
-// Storage.py - Complete implementation (read-only)
-const STORAGE_PY_CODE = `# storage.py
-# Storage API Implementation (PROVIDED - DO NOT MODIFY)
-# This module provides in-memory storage for your application.
-# In production, these would connect to real databases and caches.
-
-from typing import Optional, Any
-
-# In-memory storage (simulates production database/cache)
-storage = {}
-
-def store(key: str, value: Any) -> bool:
-    """
-    Store a key-value pair in memory.
-
-    Args:
-        key: Unique identifier (e.g., 'abc123')
-        value: Data to store (e.g., 'https://example.com')
-
-    Returns:
-        True if successful
-
-    In production: Would persist to database
-    """
-    storage[key] = value
-    return True
-
-def retrieve(key: str) -> Optional[Any]:
-    """
-    Retrieve a value by key.
-
-    Args:
-        key: The key to look up
-
-    Returns:
-        Stored value or None if not found
-
-    In production: Would query database/cache
-    """
-    return storage.get(key)
-
-def exists(key: str) -> bool:
-    """
-    Check if a key exists in storage.
-
-    Args:
-        key: The key to check
-
-    Returns:
-        True if key exists, False otherwise
-    """
-    return key in storage`;
+// No storage.py needed - users create their own dictionaries!
 
 // Initial graph with client components based on problem definition
 const getInitialGraph = (problemDef?: ProblemDefinition | null): SystemGraph => {
@@ -311,9 +260,8 @@ def expand(code: str) -> Optional[str]:
           readWriteRatio: 0.8,
         };
 
-        // Concatenate storage.py with user's tinyurl.py code
-        const userCodeWithoutImport = pythonCode.replace(/^from storage import.*$/m, '');
-        const fullCode = STORAGE_PY_CODE + '\n\n' + userCodeWithoutImport;
+        // Use the user's code directly - no storage.py needed
+        const fullCode = pythonCode;
 
         const loadTestResults = await loadTestService.runLoadTest(
           {
@@ -511,9 +459,8 @@ def expand(code: str) -> Optional[str]:
     setLoadTestResults(null);
 
     try {
-      // Concatenate storage.py with user's tinyurl.py code
-      const userCodeWithoutImport = pythonCode.replace(/^from storage import.*$/m, '');
-      const fullCode = STORAGE_PY_CODE + '\n\n' + userCodeWithoutImport;
+      // Use the user's code directly
+      const fullCode = pythonCode;
 
       const results = await loadTestService.runLoadTest(
         {
@@ -548,10 +495,8 @@ def expand(code: str) -> Optional[str]:
 
   // Handler for running Python test cases (for LeetCode-style interface)
   const handleRunPythonTests = async (code: string, testCases: any[]): Promise<any[]> => {
-    // Concatenate storage.py with user's tinyurl.py code
-    // Remove the import statement from user code since we're concatenating
-    const userCodeWithoutImport = code.replace(/^from storage import.*$/m, '');
-    const fullCode = STORAGE_PY_CODE + '\n\n' + userCodeWithoutImport;
+    // Use the user's code directly
+    const fullCode = code;
 
     const results = [];
 
@@ -845,7 +790,6 @@ def expand(code: str) -> Optional[str]:
             <PythonCodeChallengePanel
               pythonCode={pythonCode}
               setPythonCode={setPythonCode}
-              storageCode={STORAGE_PY_CODE}
               onRunTests={handleRunPythonTests}
               onSubmit={handleSubmit}
             />
