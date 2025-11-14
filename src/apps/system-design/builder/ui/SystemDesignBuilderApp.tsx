@@ -787,7 +787,7 @@ def expand(code: str) -> Optional[str]:
 
         {/* Python Code Tab Content - LeetCode Style */}
         {/* Only show for TinyURL - other problems don't have proper test cases yet */}
-        {activeTab === 'python' && problemDef?.id === 'tinyurl' && (
+        {activeTab === 'python' && selectedChallenge?.id === 'tinyurl' && (
           <PythonCodeChallengePanel
             pythonCode={pythonCode}
             setPythonCode={setPythonCode}
@@ -797,11 +797,11 @@ def expand(code: str) -> Optional[str]:
         )}
 
         {/* For other problems, show Python editor without test panel */}
-        {activeTab === 'python' && problemDef?.id !== 'tinyurl' && (
+        {activeTab === 'python' && selectedChallenge?.id !== 'tinyurl' && (
           <div className="flex-1 flex flex-col bg-white overflow-hidden">
             <div className="flex-1 p-4">
               <p className="text-gray-600 text-sm mb-4">
-                Python code editor for {problemDef?.title || 'this problem'}.
+                Python code editor for {selectedChallenge?.title || 'this problem'}.
                 The code will be used in the simulation when you run load tests.
               </p>
               <div className="border border-gray-300 rounded-lg overflow-hidden" style={{ height: 'calc(100vh - 300px)' }}>
