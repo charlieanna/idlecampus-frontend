@@ -14,8 +14,29 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Middleware
+const allowedOrigins = [
+  'http://localhost:5000',
+  'http://localhost:5173',
+  'http://0.0.0.0:5000',
+];
+
+// Add Replit domain if available
+if (process.env.REPLIT_DEV_DOMAIN) {
+  allowedOrigins.push(`https://${process.env.REPLIT_DEV_DOMAIN}`);
+}
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || ['http://localhost:5173', 'http://localhost:5002'],
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Check if the origin is allowed
+    if (allowedOrigins.includes(origin) || origin.includes('.replit.dev')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
 app.use(bodyParser.json({ limit: '10mb' }));
