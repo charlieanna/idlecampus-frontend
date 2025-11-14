@@ -60,14 +60,6 @@ const EXAMPLE_TEST_CASES: TestCase[] = [
       { method: 'expand', input: 'RESULT_FROM_PREV_0', expected: 'https://google.com' },
       { method: 'expand', input: 'RESULT_FROM_PREV_1', expected: 'https://github.com' }
     ]
-  },
-  {
-    id: 'example3',
-    name: 'Non-existent Code',
-    isExample: true,
-    operations: [
-      { method: 'expand', input: 'notexist', expected: null }
-    ]
   }
 ];
 
@@ -110,7 +102,6 @@ export function PythonCodeChallengePanel({
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [showTestResultsPanel, setShowTestResultsPanel] = useState(false);
-  const [resultsViewMode, setResultsViewMode] = useState<'plain' | 'formatted'>('plain');
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
@@ -377,32 +368,7 @@ export function PythonCodeChallengePanel({
                  }}>
               {/* Header */}
               <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white rounded-t-2xl">
-                <div className="flex items-center gap-4">
-                  <h3 className="font-semibold text-gray-900">Test Results</h3>
-                  {/* View Mode Toggle */}
-                  <div className="flex gap-1 bg-white rounded-lg border border-gray-300 p-1">
-                    <button
-                      onClick={() => setResultsViewMode('plain')}
-                      className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
-                        resultsViewMode === 'plain'
-                          ? 'bg-blue-600 text-white'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      Plain Text
-                    </button>
-                    <button
-                      onClick={() => setResultsViewMode('formatted')}
-                      className={`px-3 py-1 text-sm font-medium rounded transition-colors ${
-                        resultsViewMode === 'formatted'
-                          ? 'bg-blue-600 text-white'
-                          : 'text-gray-700 hover:bg-gray-100'
-                      }`}
-                    >
-                      Formatted
-                    </button>
-                  </div>
-                </div>
+                <h3 className="font-semibold text-gray-900">Test Results</h3>
                 <button
                   onClick={() => setShowTestResultsPanel(false)}
                   className="p-2 hover:bg-gray-200 rounded-lg transition-all hover:scale-110"
@@ -423,78 +389,13 @@ export function PythonCodeChallengePanel({
                       <div className="mt-2 text-sm text-gray-600">Running tests...</div>
                     </div>
                   </div>
-                ) : resultsViewMode === 'plain' ? (
+                ) : (
                   <textarea
                     readOnly
                     value={formatTestResultsAsText(testResults)}
                     className="flex-1 w-full p-4 font-mono text-sm bg-gray-900 text-green-400 border-0 resize-none focus:outline-none rounded-b-2xl"
                     style={{ fontFamily: 'monospace' }}
                   />
-                ) : (
-                  <div className="flex-1 overflow-y-auto p-4 bg-gray-50 rounded-b-2xl">
-                    {testResults.length > 0 ? (
-                      <div className="space-y-3">
-                        {testResults.map((result) => (
-                          <div
-                            key={result.testId}
-                            className={`border rounded-lg p-3 ${
-                              result.passed
-                                ? 'border-green-300 bg-green-50'
-                                : 'border-red-300 bg-red-50'
-                            }`}
-                          >
-                            <div className="flex items-center justify-between mb-2">
-                              <div className="flex items-center gap-2">
-                                {result.passed ? (
-                                  <span className="text-green-600">✓</span>
-                                ) : (
-                                  <span className="text-red-600">✗</span>
-                                )}
-                                <span className={`font-medium ${
-                                  result.passed ? 'text-green-900' : 'text-red-900'
-                                }`}>
-                                  {result.testName}
-                                </span>
-                              </div>
-                              {result.executionTime && (
-                                <span className="text-xs text-gray-600">
-                                  {result.executionTime}ms
-                                </span>
-                              )}
-                            </div>
-
-                            {!result.passed && result.operations && (
-                              <div className="mt-2 space-y-1">
-                                {result.operations.filter(op => !op.passed).map((op, idx) => (
-                                  <div key={idx} className="text-sm">
-                                    <div className="font-mono text-xs text-red-700">
-                                      {op.method}("{op.input}")
-                                    </div>
-                                    <div className="text-xs text-red-600 ml-4">
-                                      Expected: {op.expected || 'None'}
-                                    </div>
-                                    <div className="text-xs text-red-600 ml-4">
-                                      Got: {op.actual || 'None'}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-
-                            {result.error && (
-                              <div className="mt-2 text-xs text-red-700 font-mono">
-                                {result.error}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8 text-gray-500 text-sm">
-                        No test results available
-                      </div>
-                    )}
-                  </div>
                 )}
               </div>
             </div>
