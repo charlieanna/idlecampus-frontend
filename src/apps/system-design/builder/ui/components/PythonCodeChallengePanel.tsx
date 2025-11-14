@@ -173,7 +173,7 @@ export function PythonCodeChallengePanel({
                 </p>
                 <ul className="list-disc pl-5 space-y-1 text-gray-700">
                   <li>Store URL mappings using the provided storage methods</li>
-                  <li>Handle duplicate URLs consistently (same URL → same code)</li>
+                  <li>Handle duplicate URLs consistently (same URL {'->'} same code)</li>
                   <li>Return <code className="bg-gray-100 px-1 rounded">None</code> for invalid inputs</li>
                   <li>Handle hash collisions if they occur</li>
                 </ul>
@@ -204,7 +204,7 @@ export function PythonCodeChallengePanel({
                           
                           return (
                           <div key={opIdx} className="text-gray-700">
-                            {op.method}("{inputDisplay}") → {expectedDisplay}
+                            {op.method}("{inputDisplay}") {'->'} {expectedDisplay}
                           </div>
                           );
                         })}

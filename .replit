@@ -52,3 +52,12 @@ externalPort = 3001
 [[ports]]
 localPort = 5000
 externalPort = 80
+
+[[ports]]
+localPort = 40681
+externalPort = 3000
+
+[deployment]
+deploymentTarget = "vm"
+run = ["bash", "-c", "cd backend && npm run dev & npm run preview"]
+build = ["npm", "run", "build"]
