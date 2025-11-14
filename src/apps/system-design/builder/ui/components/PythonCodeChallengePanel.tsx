@@ -183,28 +183,35 @@ export function PythonCodeChallengePanel({
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Examples</h3>
                 <div className="space-y-4">
-                  {EXAMPLE_TEST_CASES.map((testCase, idx) => (
+                  {EXAMPLE_TEST_CASES.map((testCase, idx) => {
+                    return (
                     <div key={testCase.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200">
                       <div className="font-medium text-gray-900 mb-2">Example {idx + 1}: {testCase.name}</div>
                       <div className="space-y-1 text-sm font-mono">
-                        {testCase.operations.map((op, opIdx) => (
+                        {testCase.operations.map((op, opIdx) => {
+                          const inputDisplay = op.input.startsWith('RESULT_FROM_PREV') 
+                            ? (op.input === 'RESULT_FROM_PREV' ? '<code from step 1>' 
+                               : op.input === 'RESULT_FROM_PREV_0' ? '<code from step 1>' 
+                               : op.input === 'RESULT_FROM_PREV_1' ? '<code from step 2>' 
+                               : op.input) 
+                            : op.input;
+                          
+                          const expectedDisplay = op.expected === 'VALID_CODE' 
+                            ? '<valid short code>' 
+                            : op.expected === null 
+                            ? 'None' 
+                            : `"${op.expected}"`;
+                          
+                          return (
                           <div key={opIdx} className="text-gray-700">
-                            {op.method}("{
-                              op.input.startsWith('RESULT_FROM_PREV') ?
-                                (op.input === 'RESULT_FROM_PREV' ? '<code from step 1>' :
-                                 op.input === 'RESULT_FROM_PREV_0' ? '<code from step 1>' :
-                                 op.input === 'RESULT_FROM_PREV_1' ? '<code from step 2>' :
-                                 op.input) : op.input
-                            }") → {
-                              op.expected === 'VALID_CODE' ? '<valid short code>' :
-                              op.expected === null ? 'None' :
-                              `"${op.expected}"`
-                            }
+                            {op.method}("{inputDisplay}") → {expectedDisplay}
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 

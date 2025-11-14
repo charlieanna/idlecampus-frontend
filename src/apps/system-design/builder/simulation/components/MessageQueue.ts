@@ -53,7 +53,7 @@ export class MessageQueue extends Component {
 
     // Total throughput
     const totalCapacity = this.throughputPerPartition * numPartitions;
-    const utilization = rps / totalCapacity;
+    let utilization = rps / totalCapacity;
 
     // Latency calculation
     let latency = this.calculateQueueLatency(this.baseLatency, utilization);
