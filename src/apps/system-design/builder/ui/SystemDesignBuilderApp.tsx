@@ -23,8 +23,10 @@ import { LoadTestControls } from './components/LoadTestControls';
 import { LiveMetricsDisplay } from './components/LiveMetricsDisplay';
 import { LoadTestResults } from './components/LoadTestResults';
 import { BottleneckAnalysis } from './components/BottleneckAnalysis';
+import { StorageAPIReference } from './components/StorageAPIReference';
+import { PythonCodeChallengePanel } from './components/PythonCodeChallengePanel';
 import { loadTestService } from '../services/loadTestService';
-import type { LoadTestProgress, LoadTestResults as LoadTestResultsType } from '../types/loadTest';
+import type { LoadTestProgress, LoadTestResults as LoadTestResultsType, LoadTestScenario } from '../types/loadTest';
 import { generateClientNodes } from '../challenges/generateClients';
 import { isDatabaseComponentType, inferDatabaseType } from '../utils/database';
 
@@ -98,6 +100,8 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('canvas'); // 'canvas', 'python', or component ID
+  const [challengeMode, setChallengeMode] = useState(false); // Toggle for Challenge Mode
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
 
   // Load test state
@@ -105,28 +109,134 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const [loadTestProgress, setLoadTestProgress] = useState<LoadTestProgress | null>(null);
   const [loadTestResults, setLoadTestResults] = useState<LoadTestResultsType | null>(null);
 
-  // Default Python starter code
-  const [pythonCode, setPythonCode] = useState(`import random, string, hashlib, base64
+  // Default Python starter code with database helpers
+  const [pythonCode, setPythonCode] = useState(`# TinyURL Implementation
+# Your code runs in the App Server component
+
+import hashlib
+import random
+import string
+from typing import Optional, Dict, Any
+
+# ===========================================
+# 📦 STORAGE API (PROVIDED)
+# ===========================================
+# These helpers provide in-memory storage for your URL shortener.
+# In production, this would connect to the databases and caches
+# shown in your system design canvas.
+#
+# Available Methods:
+#   • store(key, value) - Save a key-value pair
+#   • retrieve(key) - Get a value by key
+#   • exists(key) - Check if a key exists
+#
+# Note: All data is stored in memory during test execution.
+# ===========================================
+
+# In-memory storage (simulates production database/cache)
+storage = {}
+
+def store(key: str, value: Any) -> bool:
+    """
+    Store a key-value pair in memory.
+
+    Args:
+        key: Unique identifier (e.g., 'abc123')
+        value: Data to store (e.g., 'https://example.com')
+
+    Returns:
+        True if successful
+
+    In production: Would persist to database
+    """
+    storage[key] = value
+    return True
+
+def retrieve(key: str) -> Optional[Any]:
+    """
+    Retrieve a value by key.
+
+    Args:
+        key: The key to look up
+
+    Returns:
+        Stored value or None if not found
+
+    In production: Would query database/cache
+    """
+    return storage.get(key)
+
+def exists(key: str) -> bool:
+    """
+    Check if a key exists in storage.
+
+    Args:
+        key: The key to check
+
+    Returns:
+        True if key exists, False otherwise
+    """
+    return key in storage
+
+# ===========================================
+# 🚀 YOUR IMPLEMENTATION BELOW
+# ===========================================
 
 def shorten(url: str) -> str:
     """
-    Implement logic to generate a short code for the given URL.
-    You can use any Python library.
-    Constraints:
-      - Must return a string of 6–10 chars.
-      - Must avoid collisions.
-      - Should be deterministic (same input → same code).
-    """
-    chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(6))
+    Create a short code for the given URL.
 
-def expand(code: str, store: dict) -> str:
+    Implementation tips:
+    - Choose a strategy: hash-based, counter, or random
+    - Handle duplicate URLs (return same code)
+    - Consider collision handling
+    - Return None for invalid input
+
+    Args:
+        url: Original long URL to shorten
+
+    Returns:
+        Short code (e.g., 'abc123') or None
     """
-    Optional: implement decode logic.
-    \`store\` is a dict of {code: url}.
-    Return the original URL or raise KeyError.
+    if not url:
+        return None
+
+    # Check if URL already exists (return same code for same URL)
+    for key, value in storage.items():
+        if value == url:
+            return key
+
+    # Strategy: Hash first 6 chars of MD5
+    hash_value = hashlib.md5(url.encode()).hexdigest()[:6]
+
+    # Handle collisions (if hash already exists with different URL)
+    original_hash = hash_value
+    counter = 0
+    while exists(hash_value) and retrieve(hash_value) != url:
+        counter += 1
+        hash_value = original_hash + str(counter)
+
+    # Store the URL mapping
+    store(hash_value, url)
+
+    return hash_value
+
+
+def expand(code: str) -> str:
     """
-    return store.get(code)
+    Retrieve the original URL from a short code.
+
+    Args:
+        code: Short code to expand
+
+    Returns:
+        Original URL or None if not found
+    """
+    if not code:
+        return None
+
+    # Simply retrieve from storage
+    return retrieve(code)
 `);
 
   // Convert challenge ID to URL-friendly path (replace underscores with hyphens)
@@ -139,6 +249,76 @@ def expand(code: str, store: dict) -> str:
     const path = challengeIdToPath(challenge.id);
     navigate(`/system-design/${path}`);
     setSelectedChallenge(challenge);
+  };
+
+  // Function to transform Python code to Challenge Mode (empty signatures)
+  const transformToChallengMode = (code: string): string => {
+    const lines = code.split('\n');
+    const result: string[] = [];
+    let insideFunction = false;
+    let functionIndent = 0;
+    let insideDocstring = false;
+    let docstringQuote = '';
+
+    for (const line of lines) {
+      // Check if this is a function definition
+      if (line.trim().startsWith('def ')) {
+        result.push(line);
+        insideFunction = true;
+        functionIndent = line.length - line.trimStart().length;
+        insideDocstring = false;
+        continue;
+      }
+
+      if (insideFunction) {
+        const currentIndent = line.length - line.trimStart().length;
+
+        // Handle docstrings
+        if (!insideDocstring && (line.trim().startsWith('"""') || line.trim().startsWith("'''"))) {
+          insideDocstring = true;
+          docstringQuote = line.includes('"""') ? '"""' : "'''";
+          result.push(line);
+          // Check if docstring ends on same line
+          if (line.split(docstringQuote).length - 1 === 2) {
+            insideDocstring = false;
+            // Add TODO and pass after docstring
+            const indent = ' '.repeat(functionIndent + 4);
+            result.push(`${indent}# TODO: Implement your solution`);
+            result.push(`${indent}pass`);
+          }
+          continue;
+        }
+
+        if (insideDocstring) {
+          result.push(line);
+          if (line.includes(docstringQuote)) {
+            insideDocstring = false;
+            // Add TODO and pass after docstring
+            const indent = ' '.repeat(functionIndent + 4);
+            result.push(`${indent}# TODO: Implement your solution`);
+            result.push(`${indent}pass`);
+          }
+          continue;
+        }
+
+        // Check if we're at same or lower indentation (new function or non-function code)
+        if (line.trim() && currentIndent <= functionIndent) {
+          insideFunction = false;
+          result.push(line);
+        } else if (!line.trim()) {
+          // Keep empty lines between functions
+          if (!insideFunction || currentIndent <= functionIndent) {
+            result.push(line);
+          }
+        }
+        // Skip all implementation lines (those with greater indentation)
+      } else {
+        // Not inside a function
+        result.push(line);
+      }
+    }
+
+    return result.join('\n');
   };
 
   // Sync selectedChallenge with challengeId prop when URL changes
@@ -164,9 +344,22 @@ def expand(code: str, store: dict) -> str:
 
     // Update Python code from challenge template if available
     if (selectedChallenge?.pythonTemplate) {
-      setPythonCode(selectedChallenge.pythonTemplate);
+      const code = challengeMode
+        ? transformToChallengMode(selectedChallenge.pythonTemplate)
+        : selectedChallenge.pythonTemplate;
+      setPythonCode(code);
     }
   }, [selectedChallenge?.id]);
+
+  // Update Python code when challenge mode changes
+  useEffect(() => {
+    if (selectedChallenge?.pythonTemplate) {
+      const code = challengeMode
+        ? transformToChallengMode(selectedChallenge.pythonTemplate)
+        : selectedChallenge.pythonTemplate;
+      setPythonCode(code);
+    }
+  }, [challengeMode]);
 
   // Keyboard handler for Delete key
   useEffect(() => {
@@ -200,12 +393,14 @@ def expand(code: str, store: dict) -> str:
     setCurrentTestIndex(0);
     setIsRunning(true);
     setHasSubmitted(true);
+    setLoadTestResults(null);
+    setLoadTestProgress(null);
 
     try {
       const validator = new SystemDesignValidator();
       const newResults = new Map<number, TestResult>();
 
-      // Run tests sequentially, stop on first failure
+      // Step 1: Run system design validation tests
       for (let i = 0; i < selectedChallenge.testCases.length; i++) {
         setCurrentTestIndex(i);
 
@@ -224,11 +419,42 @@ def expand(code: str, store: dict) -> str:
           break;
         }
       }
+
+      // Step 2: If all system design tests passed, run load test automatically
+      const allTestsPassed = Array.from(newResults.values()).every(r => r.passed);
+      if (allTestsPassed) {
+        // Show loading message
+        setLoadTestRunning(true);
+
+        // Run load test with default configuration
+        const loadTestConfig = {
+          scenario: 'quick' as LoadTestScenario,
+          rps: 100,
+          duration: 5,
+          readWriteRatio: 0.8,
+        };
+
+        const loadTestResults = await loadTestService.runLoadTest(
+          {
+            ...loadTestConfig,
+            code: pythonCode,
+            challengeId: selectedChallenge.id,
+          },
+          (progress) => {
+            setLoadTestProgress(progress);
+          }
+        );
+
+        setLoadTestResults(loadTestResults);
+        setLoadTestRunning(false);
+        setLoadTestProgress(null);
+      }
     } catch (error) {
       console.error('Submission error:', error);
       alert('Error running tests. Check console for details.');
     } finally {
       setIsRunning(false);
+      setLoadTestRunning(false);
     }
   };
 
@@ -242,6 +468,11 @@ def expand(code: str, store: dict) -> str:
   // Handle try again - reruns all tests
   const handleTryAgain = () => {
     handleSubmit();
+  };
+
+  const showToast = (message: string) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), 4000); // Hide after 4 seconds
   };
 
   const handleAddComponent = (componentType: string, additionalConfig?: any) => {
@@ -260,6 +491,15 @@ def expand(code: str, store: dict) -> str:
       ...systemGraph,
       components: [...systemGraph.components, newComponent],
     });
+
+    // Show toast notification for database and cache components
+    if (componentType === 'database' || componentType === 'postgresql' || componentType === 'mongodb') {
+      showToast('✅ Database added! Use db_write() and db_read() in the Python tab to interact with it.');
+    } else if (componentType === 'cache' || componentType === 'redis') {
+      showToast('⚡ Cache added! Use cache_set() and cache_get() in the Python tab for fast data access.');
+    } else if (componentType === 'app_server') {
+      showToast('📦 App Server added! Write your implementation logic in the Python tab.');
+    }
   };
 
 
@@ -363,39 +603,16 @@ def expand(code: str, store: dict) -> str:
 
   // Get component display name for tab
   const getComponentTabLabel = (component: any) => {
-    // For database component, show the configured type
+    // For database component, always show "Database"
+    // (the specific type is visible on the canvas node)
     if (isDatabaseComponentType(component.type)) {
-      const dataModel = component.config?.dataModel || 'relational';
-      const modelIcons: Record<string, string> = {
-        'relational': '💾',
-        'document': '📄',
-        'wide-column': '📊',
-        'graph': '🔗',
-        'key-value': '🔑',
-      };
-      const modelLabels: Record<string, string> = {
-        'relational': 'Relational DB',
-        'document': 'Document DB',
-        'wide-column': 'Wide-Column DB',
-        'graph': 'Graph DB',
-        'key-value': 'Key-Value Store',
-      };
-      const icon = modelIcons[dataModel] || '💾';
-      const label = modelLabels[dataModel] || 'Database';
-      return `${icon} ${label}`;
+      return '💾 Database';
     }
 
-    // For cache component, show the configured type
+    // For cache component, always show "Cache"
+    // (the specific type is visible on the canvas node if needed)
     if (component.type === 'cache') {
-      const cacheType = component.config?.cacheType || 'redis';
-      const cacheIcons: Record<string, string> = {
-        redis: '🔴',
-        memcached: '⚡',
-        elasticache: '☁️',
-      };
-      const icon = cacheIcons[cacheType] || '⚡';
-      const cacheName = cacheType.charAt(0).toUpperCase() + cacheType.slice(1);
-      return `${icon} ${cacheName}`;
+      return '⚡ Cache';
     }
 
     const typeLabels: Record<string, string> = {
@@ -442,6 +659,45 @@ def expand(code: str, store: dict) -> str:
 
   const handleResetLoadTest = () => {
     setLoadTestResults(null);
+  };
+
+  // Handler for running Python test cases (for LeetCode-style interface)
+  const handleRunPythonTests = async (code: string, testCases: any[]): Promise<any[]> => {
+    // For now, simulate running tests locally
+    // In production, this would call a backend API to execute the Python code
+    const results = [];
+
+    try {
+      // Simulate test execution
+      for (const testCase of testCases) {
+        const result = {
+          testId: testCase.id,
+          testName: testCase.name,
+          passed: Math.random() > 0.3, // Simulate 70% pass rate for demo
+          operations: testCase.operations.map((op: any) => ({
+            method: op.method,
+            input: op.input,
+            expected: op.expected === 'VALID_CODE' ? 'abc123' :
+                     op.expected === 'RESULT_FROM_PREV' ? 'abc123' :
+                     op.expected,
+            actual: Math.random() > 0.3 ?
+                   (op.expected === 'VALID_CODE' ? 'abc123' :
+                    op.expected === 'RESULT_FROM_PREV' ? 'abc123' :
+                    op.expected) : 'wrong_value',
+            passed: Math.random() > 0.3
+          })),
+          executionTime: Math.floor(Math.random() * 50) + 10
+        };
+        results.push(result);
+
+        // Add small delay to simulate execution
+        await new Promise(resolve => setTimeout(resolve, 200));
+      }
+    } catch (error) {
+      console.error('Error running Python tests:', error);
+    }
+
+    return results;
   };
 
   return (
@@ -617,127 +873,50 @@ def expand(code: str, store: dict) -> str:
           </>
         )}
 
-        {/* Python Code Tab Content with Load Testing */}
+        {/* Python Code Tab Content - LeetCode Style */}
         {activeTab === 'python' && (
-          <div className="flex-1 flex overflow-hidden">
-            {/* Left Panel: Code Editor (60%) */}
-            <div className="flex-1 flex flex-col bg-gray-50">
-              {/* Header */}
-              <div className="bg-white border-b border-gray-200 px-6 py-4">
-                <h2 className="text-2xl font-bold text-gray-900">Application Server Implementation</h2>
-                <p className="text-sm text-gray-600 mt-1">
-                  Write your Python code and test it under realistic load conditions
-                </p>
-              </div>
-
-              {/* Code Editor */}
-              <div className="flex-1 p-6">
-                <div className="h-full border border-gray-300 rounded-lg overflow-hidden bg-white shadow-sm">
-                  <Editor
-                    height="100%"
-                    defaultLanguage="python"
-                    value={pythonCode}
-                    onChange={(value) => setPythonCode(value || '')}
-                    theme="vs-light"
-                    options={{
-                      minimap: { enabled: true },
-                      fontSize: 14,
-                      lineNumbers: 'on',
-                      scrollBeyondLastLine: false,
-                      automaticLayout: true,
-                      tabSize: 4,
-                      wordWrap: 'on',
-                      formatOnPaste: true,
-                      formatOnType: true,
-                      readOnly: loadTestRunning,
-                    }}
-                  />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            {/* Header with Mode Toggle */}
+            <div className="bg-white border-b border-gray-200 px-6 py-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900">Python Implementation</h2>
                 </div>
-              </div>
-
-              {/* Footer with actions */}
-              <div className="bg-white border-t border-gray-200 px-6 py-3 flex items-center justify-between">
-                <div className="text-xs text-gray-600">
-                  💡 Tip: Optimize for low latency and high throughput
-                </div>
-                <div className="flex gap-2">
+                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
                   <button
-                    onClick={() => {
-                      const blob = new Blob([pythonCode], { type: 'text/plain' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url;
-                      a.download = 'tinyurl_server.py';
-                      a.click();
-                      URL.revokeObjectURL(url);
-                    }}
-                    className="px-3 py-1.5 text-xs font-medium text-gray-700 bg-white border border-gray-300 rounded hover:bg-gray-50 transition-colors"
+                    onClick={() => setChallengeMode(false)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                      !challengeMode
+                        ? 'bg-white text-blue-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                    title="See working example code to learn from"
                   >
-                    📥 Download
+                    📚 Learn Mode
                   </button>
                   <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(pythonCode);
-                      alert('Code copied to clipboard!');
-                    }}
-                    className="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition-colors"
+                    onClick={() => setChallengeMode(true)}
+                    className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
+                      challengeMode
+                        ? 'bg-white text-orange-600 shadow-sm'
+                        : 'text-gray-600 hover:text-gray-800'
+                    }`}
+                    title="Empty function signatures for you to implement"
                   >
-                    📋 Copy
+                    🏆 Challenge Mode
                   </button>
                 </div>
               </div>
             </div>
 
-            {/* Right Panel: Load Testing (40%) */}
-            <div className="w-2/5 bg-white border-l border-gray-200 flex flex-col overflow-hidden">
-              {!loadTestResults ? (
-                <>
-                  {/* Load Test Controls */}
-                  {!loadTestRunning && !loadTestProgress && (
-                    <LoadTestControls
-                      onRunTest={handleRunLoadTest}
-                      isRunning={loadTestRunning}
-                      onCancel={handleCancelLoadTest}
-                    />
-                  )}
-
-                  {/* Live Metrics During Test */}
-                  {loadTestRunning && loadTestProgress && (
-                    <div className="flex-1 flex flex-col">
-                      <div className="p-4 border-b border-gray-200">
-                        <h3 className="text-lg font-semibold text-gray-900">Running Load Test</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Testing your code with real traffic
-                        </p>
-                      </div>
-                      <LiveMetricsDisplay progress={loadTestProgress} />
-                      <div className="p-4 border-t border-gray-200">
-                        <button
-                          onClick={handleCancelLoadTest}
-                          className="w-full px-4 py-2 bg-red-600 text-white font-medium rounded-lg hover:bg-red-700 transition-colors"
-                        >
-                          ⏹ Cancel Test
-                        </button>
-                      </div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                /* Test Results and Bottleneck Analysis */
-                <div className="flex-1 flex flex-col overflow-hidden">
-                  <div className="p-4 border-b border-gray-200">
-                    <h3 className="text-lg font-semibold text-gray-900">Test Results</h3>
-                  </div>
-                  <div className="flex-1 overflow-y-auto">
-                    <LoadTestResults
-                      metrics={loadTestResults.metrics}
-                      onReset={handleResetLoadTest}
-                    />
-                    <BottleneckAnalysis bottlenecks={loadTestResults.bottlenecks} />
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* LeetCode-style Panel */}
+            <PythonCodeChallengePanel
+              pythonCode={challengeMode ? transformToChallengMode(pythonCode) : pythonCode}
+              setPythonCode={setPythonCode}
+              challengeMode={challengeMode}
+              onRunTests={handleRunPythonTests}
+              onSubmit={handleSubmit}
+            />
           </div>
         )}
 
@@ -785,6 +964,16 @@ def expand(code: str, store: dict) -> str:
           onClose={() => setShowSolutionPanel(false)}
           onApplySolution={handleLoadSolution}
         />
+      )}
+
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-8 right-8 z-50 animate-slide-up">
+          <div className="bg-blue-600 text-white px-6 py-4 rounded-lg shadow-xl flex items-center gap-3 max-w-md">
+            <span className="text-lg">{toastMessage.split(' ')[0]}</span>
+            <span className="text-sm">{toastMessage.substring(toastMessage.indexOf(' ') + 1)}</span>
+          </div>
+        </div>
       )}
 
     </div>

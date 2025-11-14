@@ -140,77 +140,86 @@ export const tinyurlProblemDefinition: ProblemDefinition = {
     },
   ],
 
-  pythonTemplate: `from datetime import datetime
-from typing import List, Dict, Optional, Any
+  pythonTemplate: `import hashlib
+from typing import Optional, Any
 
-# In-memory storage (naive implementation)
-events = {}
-users = {}
-memory = {}
+# ===========================================
+# 📦 STORAGE API (PROVIDED)
+# ===========================================
+# In-memory storage (simulates production database/cache)
+storage = {}
 
-def given_a_long_url_generate_a_short_url(**kwargs) -> Dict:
-    """
-    FR-1: Given a long URL, generate a short URL
-    Naive implementation - placeholder function
-    """
-    return {'status': 'success', 'data': kwargs}
+def store(key: str, value: Any) -> bool:
+    """Store a key-value pair in memory."""
+    storage[key] = value
+    return True
 
-def redirect_users_from_short_url_to_origina(**kwargs) -> Dict:
-    """
-    FR-2: Redirect users from short URL to original URL via HTTP 301/302
-    Naive implementation - placeholder function
-    """
-    return {'status': 'success', 'data': kwargs}
+def retrieve(key: str) -> Optional[Any]:
+    """Retrieve a value by key."""
+    return storage.get(key)
 
-def support_custom_aliases_for_premium_users(**kwargs) -> Dict:
-    """
-    FR-3: Support custom aliases for premium users (optional)
-    Naive implementation - placeholder function
-    """
-    return {'status': 'success', 'data': kwargs}
+def exists(key: str) -> bool:
+    """Check if a key exists in storage."""
+    return key in storage
 
-def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
-    """
-    FR-4: Provide analytics: click count, referrer, geographic data
-    Naive implementation - stores event in memory
-    """
-    event_id = f"{event_type}_{item_id}_{datetime.now().timestamp()}"
-    events[event_id] = {
-        'id': event_id,
-        'type': event_type,
-        'item_id': item_id,
-        'metadata': metadata or {},
-        'created_at': datetime.now()
-    }
-    return events[event_id]
+# ===========================================
+# 🚀 TINYURL CORE IMPLEMENTATION
+# ===========================================
+# This challenge focuses on the core URL shortening algorithm.
+# Only TWO functions are required and tested:
+#   1. shorten(url) - Generate short codes
+#   2. expand(code) - Retrieve original URLs
+#
+# Additional features like analytics, custom aliases, and QR codes
+# are handled by the system architecture (your canvas design),
+# not in this Python implementation.
+# ===========================================
 
-def allow_url_expiration_after_configurable(**kwargs) -> Dict:
+def shorten(url: str) -> str:
     """
-    FR-5: Allow URL expiration after configurable time (30/60/90 days)
-    Naive implementation - placeholder function
-    """
-    return {'status': 'success', 'data': kwargs}
+    Create a short code for the given URL.
 
-def bulk_url_creation_via_api_for_enterprise(**kwargs) -> Dict:
+    Requirements:
+    - Return 6-8 character code
+    - Handle duplicates (same URL → same code)
+    - Handle collisions (different URLs can't have same code)
+    - Return None for invalid input
     """
-    FR-6: Bulk URL creation via API for enterprise customers
-    Naive implementation - placeholder function
-    """
-    return {'status': 'success', 'data': kwargs}
+    # TODO: Implement this function
+    pass
 
-def qr_code_generation_for_each_short_url(**kwargs) -> Dict:
+def expand(code: str) -> str:
     """
-    FR-7: QR code generation for each short URL
-    Naive implementation - placeholder function
-    """
-    return {'status': 'success', 'data': kwargs}
+    Retrieve the original URL from a short code.
 
-def blacklist_spam_detection_for_malicious_u(**kwargs) -> Dict:
+    Requirements:
+    - Return original URL if code exists
+    - Return None if code not found
+    - Return None for invalid input
     """
-    FR-8: Blacklist/spam detection for malicious URLs
-    Naive implementation - placeholder function
-    """
-    return {'status': 'success', 'data': kwargs}`,
+    # TODO: Implement this function
+    pass
+
+# ===========================================
+# OPTIONAL ADVANCED FEATURES (NOT TESTED)
+# ===========================================
+# In a real implementation, you might also include:
+#
+# def track_click(code: str, metadata: dict) -> bool:
+#     '''Track analytics for each URL access'''
+#     pass
+#
+# def create_custom_alias(url: str, alias: str) -> str:
+#     '''Allow custom aliases for premium users'''
+#     pass
+#
+# def set_expiration(code: str, days: int) -> bool:
+#     '''Set URL expiration time'''
+#     pass
+#
+# These features are part of the system design (canvas)
+# but not required in this coding challenge.
+# ===========================================`,
 };
 
 /**

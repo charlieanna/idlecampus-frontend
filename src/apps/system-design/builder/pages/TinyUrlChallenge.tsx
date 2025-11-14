@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { Play, CheckCircle, XCircle, AlertCircle, Database, X, Download, Code, Settings } from 'lucide-react';
+import { Play, CheckCircle, XCircle, AlertCircle, Database, X, Download, Code, Settings, Brain, Target, TrendingUp } from 'lucide-react';
 import { SchemaEditor } from '../ui/components/SchemaEditor';
 import { tinyUrlProblemDefinition } from '../challenges/tinyUrlProblemDefinition';
 import { SystemDesignValidator } from '../validation/SystemDesignValidator';
 import { SystemGraph } from '../types/graph';
 import { RDS_INSTANCES, EC2_INSTANCES, REDIS_INSTANCES } from '../types/instanceTypes';
 import { getMinimalComponentConfig, getConfigDescription } from '../services/componentDefaults';
+import { loadTestService } from '../services/loadTestService';
+import type { IntelligentTestResult, ArchitectureAnalysis, EducationalInsight, PerformanceTestResult } from '../types/loadTest';
 
 type ComponentType = 'app_server' | 'postgresql' | 'redis' | 'load_balancer';
 
@@ -31,6 +33,8 @@ export function TinyUrlChallenge() {
   const [testResults, setTestResults] = useState<any>(null);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [activeTab, setActiveTab] = useState<'canvas' | 'python'>('canvas');
+  const [intelligentResults, setIntelligentResults] = useState<IntelligentTestResult | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const handleAddComponent = (type: ComponentType) => {
     // NEW: Instantly add component with minimal config - no modal!
@@ -174,6 +178,76 @@ export function TinyUrlChallenge() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+  };
+
+  const handleIntelligentAnalysis = async () => {
+    setIsAnalyzing(true);
+    setIntelligentResults(null);
+    
+    try {
+      // Build SystemGraph for system diagram analysis
+      const systemDiagram = {
+        components: components.map(comp => comp.type),
+        architecture: components.length > 0 ? 'multi-tier' : 'single-tier'
+      };
+
+      // For this demo, we'll use a sample Python implementation
+      // In a real application, this would come from a code editor
+      const samplePythonCode = `
+# TinyURL Implementation
+import random
+import string
+
+# In-memory storage for URL mappings
+url_storage = {}
+
+def shorten(long_url):
+    """Generate a short code for the given URL"""
+    short_code = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
+    url_storage[short_code] = long_url
+    return short_code
+
+def expand(short_code):
+    """Get the original URL for the given short code"""
+    return url_storage.get(short_code, "URL not found")
+      `;
+
+      // Call the intelligent analysis service
+      const result = await loadTestService.runIntelligentLoadTest({
+        code: samplePythonCode,
+        challengeId: 'tinyurl',
+        scenario: 'quick',
+        rps: 100,
+        duration: 10,
+        readWriteRatio: 0.7,
+        analysisMode: true,
+        pythonCode: samplePythonCode
+      }, samplePythonCode);
+
+      setIntelligentResults(result);
+      
+      // Also set traditional test results for compatibility
+      setTestResults({
+        passed: result.loadTestResults.success,
+        executionMode: 'intelligent',
+        metrics: result.loadTestResults.metrics,
+        architectureAnalysis: result.architectureAnalysis,
+        educationalInsights: result.educationalInsights,
+        intelligentMode: true
+      });
+      
+    } catch (error) {
+      console.error('Intelligent analysis failed:', error);
+      setTestResults({
+        passed: false,
+        executionMode: 'intelligent',
+        error: 'Intelligent analysis failed',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        intelligentMode: true
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   return (
@@ -406,20 +480,29 @@ export function TinyUrlChallenge() {
 
                 <div className="mt-4 space-y-2">
                   <button
-                    onClick={handleRunTests}
-                    className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 font-medium"
+                    onClick={handleIntelligentAnalysis}
+                    className="w-full px-4 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled={isAnalyzing}
                   >
-                    <Play className="w-5 h-5" />
-                    Run Simulation Test
+                    <Brain className="w-5 h-5" />
+                    {isAnalyzing ? 'Analyzing Architecture...' : 'Run Intelligent Analysis'}
+                  </button>
+
+                  <button
+                    onClick={handleRunTests}
+                    className="w-full px-4 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 font-medium text-sm"
+                  >
+                    <Play className="w-4 h-4" />
+                    Legacy Simulation Test
                   </button>
 
                   <button
                     onClick={handleRunRealExecution}
-                    className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 font-medium"
+                    className="w-full px-4 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 font-medium text-sm"
                     disabled={testResults?.loading}
                   >
-                    <Code className="w-5 h-5" />
-                    {testResults?.loading ? 'Running Real Execution...' : 'Run with Real Python + DB'}
+                    <Code className="w-4 h-4" />
+                    {testResults?.loading ? 'Running...' : 'Legacy Real Execution'}
                   </button>
                 </div>
               </div>
@@ -428,7 +511,21 @@ export function TinyUrlChallenge() {
 
           {/* Right Column: Test Results */}
           <div className="space-y-6">
-            {testResults ? (
+            {isAnalyzing ? (
+              <div className="rounded-lg shadow-sm border-2 border-purple-500 bg-purple-50 p-6">
+                <div className="flex items-center gap-3">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      Running Intelligent Analysis...
+                    </h2>
+                    <p className="text-sm text-gray-600">
+                      Analyzing architecture patterns and performance characteristics
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ) : testResults ? (
               <>
                 {testResults.loading ? (
                   <div className="rounded-lg shadow-sm border-2 border-blue-500 bg-blue-50 p-6">
@@ -450,12 +547,16 @@ export function TinyUrlChallenge() {
                     <div
                       className={`rounded-lg shadow-sm border-2 p-6 ${
                         testResults.passed
-                          ? 'bg-green-50 border-green-500'
+                          ? testResults.intelligentMode
+                            ? 'bg-purple-50 border-purple-500'
+                            : 'bg-green-50 border-green-500'
                           : 'bg-red-50 border-red-500'
                       }`}
                     >
                       <div className="flex items-center gap-3 mb-4">
-                        {testResults.passed ? (
+                        {testResults.intelligentMode ? (
+                          <Brain className="w-8 h-8 text-purple-600" />
+                        ) : testResults.passed ? (
                           <CheckCircle className="w-8 h-8 text-green-600" />
                         ) : (
                           <XCircle className="w-8 h-8 text-red-600" />
@@ -463,8 +564,18 @@ export function TinyUrlChallenge() {
                         <div className="flex-1">
                           <div className="flex items-center gap-2">
                             <h2 className="text-2xl font-bold text-gray-900">
-                              {testResults.passed ? 'Test Passed!' : 'Test Failed'}
+                              {testResults.intelligentMode
+                                ? 'Architecture Analysis Complete!'
+                                : testResults.passed
+                                  ? 'Test Passed!'
+                                  : 'Test Failed'
+                              }
                             </h2>
+                            {testResults.executionMode === 'intelligent' && (
+                              <span className="px-2 py-1 text-xs font-semibold bg-purple-200 text-purple-800 rounded">
+                                INTELLIGENT ANALYSIS
+                              </span>
+                            )}
                             {testResults.executionMode === 'real' && (
                               <span className="px-2 py-1 text-xs font-semibold bg-green-200 text-green-800 rounded">
                                 REAL EXECUTION
@@ -477,12 +588,21 @@ export function TinyUrlChallenge() {
                             )}
                           </div>
                           <p className="text-sm text-gray-600">
-                            Level {currentLevel + 1} •{' '}
-                            {tinyUrlProblemDefinition.scenarios[currentLevel].traffic.rps} RPS
-                            {testResults.databaseAvailable !== undefined && (
-                              <span className="ml-2">
-                                • {testResults.databaseAvailable ? '✓ DB Connected' : '⚠ DB Unavailable'}
-                              </span>
+                            {testResults.intelligentMode ? (
+                              <>
+                                Architecture detected: {testResults.architectureAnalysis?.detectedPattern || 'Unknown'}
+                                • Scalability: {testResults.architectureAnalysis?.performanceMetrics?.scalabilityRating || 'N/A'}/10
+                              </>
+                            ) : (
+                              <>
+                                Level {currentLevel + 1} •{' '}
+                                {tinyUrlProblemDefinition.scenarios[currentLevel].traffic.rps} RPS
+                                {testResults.databaseAvailable !== undefined && (
+                                  <span className="ml-2">
+                                    • {testResults.databaseAvailable ? '✓ DB Connected' : '⚠ DB Unavailable'}
+                                  </span>
+                                )}
+                              </>
                             )}
                           </p>
                         </div>
@@ -535,6 +655,130 @@ export function TinyUrlChallenge() {
                         )}
                       </div>
                     </div>
+
+                    {/* Architecture Analysis (New Section) */}
+                    {testResults.architectureAnalysis && (
+                      <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                          <Target className="w-5 h-5 text-purple-500" />
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            Architecture Analysis
+                          </h3>
+                          <span className={`px-2 py-1 text-xs rounded-full font-medium ${
+                            testResults.architectureAnalysis.confidence > 0.8
+                              ? 'bg-green-100 text-green-800'
+                              : testResults.architectureAnalysis.confidence > 0.6
+                                ? 'bg-yellow-100 text-yellow-800'
+                                : 'bg-red-100 text-red-800'
+                          }`}>
+                            {Math.round(testResults.architectureAnalysis.confidence * 100)}% confidence
+                          </span>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                          <div className="bg-purple-50 rounded-lg p-4">
+                            <div className="text-sm text-purple-600 mb-1">Detected Pattern</div>
+                            <div className="text-lg font-semibold text-purple-900 capitalize">
+                              {testResults.architectureAnalysis.detectedPattern.replace('-', ' ')}
+                            </div>
+                          </div>
+                          <div className="bg-blue-50 rounded-lg p-4">
+                            <div className="text-sm text-blue-600 mb-1">Memory Usage</div>
+                            <div className="text-lg font-semibold text-blue-900">
+                              {testResults.architectureAnalysis.performanceMetrics.estimatedMemoryUsage}
+                            </div>
+                          </div>
+                          <div className="bg-green-50 rounded-lg p-4">
+                            <div className="text-sm text-green-600 mb-1">Concurrency</div>
+                            <div className="text-lg font-semibold text-green-900">
+                              {testResults.architectureAnalysis.performanceMetrics.estimatedConcurrency}
+                            </div>
+                          </div>
+                        </div>
+
+                        {testResults.architectureAnalysis.recommendations && testResults.architectureAnalysis.recommendations.length > 0 && (
+                          <div>
+                            <h4 className="text-sm font-medium text-gray-700 mb-2">Architecture Recommendations</h4>
+                            <ul className="space-y-1">
+                              {testResults.architectureAnalysis.recommendations.slice(0, 3).map((rec: string, i: number) => (
+                                <li key={i} className="text-sm text-gray-600 flex items-start gap-2">
+                                  <span className="text-purple-500 font-bold">→</span>
+                                  <span>{rec}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                    {/* Educational Insights (New Section) */}
+                    {testResults.educationalInsights && testResults.educationalInsights.length > 0 && (
+                      <div className="mt-6 bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                        <div className="flex items-center gap-2 mb-4">
+                          <TrendingUp className="w-5 h-5 text-blue-500" />
+                          <h3 className="text-lg font-semibold text-gray-900">
+                            Educational Insights & Optimizations
+                          </h3>
+                        </div>
+                        <div className="space-y-4">
+                          {testResults.educationalInsights.map((insight: EducationalInsight, i: number) => (
+                            <div
+                              key={i}
+                              className={`p-4 rounded-lg border-l-4 ${
+                                insight.severity === 'high'
+                                  ? 'bg-red-50 border-red-500'
+                                  : insight.severity === 'medium'
+                                    ? 'bg-yellow-50 border-yellow-500'
+                                    : 'bg-blue-50 border-blue-500'
+                              }`}
+                            >
+                              <div className="flex items-start justify-between mb-2">
+                                <div className="flex items-center gap-2">
+                                  <span
+                                    className={`px-2 py-1 text-xs font-semibold rounded ${
+                                      insight.type === 'warning'
+                                        ? 'bg-orange-100 text-orange-800'
+                                        : insight.type === 'optimization'
+                                          ? 'bg-green-100 text-green-800'
+                                          : insight.type === 'architectural_mismatch'
+                                            ? 'bg-red-100 text-red-800'
+                                            : 'bg-blue-100 text-blue-800'
+                                    }`}
+                                  >
+                                    {insight.type.toUpperCase()}
+                                  </span>
+                                  <h4 className="font-medium text-gray-900">{insight.title}</h4>
+                                </div>
+                                <span
+                                  className={`px-2 py-1 text-xs rounded-full ${
+                                    insight.severity === 'high'
+                                      ? 'bg-red-100 text-red-800'
+                                      : insight.severity === 'medium'
+                                        ? 'bg-yellow-100 text-yellow-800'
+                                        : 'bg-gray-100 text-gray-800'
+                                  }`}
+                                >
+                                  {insight.severity}
+                                </span>
+                              </div>
+                              <p className="text-sm text-gray-700 mb-3">{insight.description}</p>
+                              {insight.recommendation && (
+                                <div className="bg-white bg-opacity-75 rounded p-3">
+                                  <div className="flex items-start gap-2">
+                                    <span className="text-blue-500 font-bold mt-0.5">💡</span>
+                                    <div>
+                                      <div className="text-xs text-gray-600 mb-1">Recommendation:</div>
+                                      <div className="text-sm text-gray-800">{insight.recommendation}</div>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </>
                 )}
 

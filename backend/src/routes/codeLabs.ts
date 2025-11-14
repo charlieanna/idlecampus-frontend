@@ -6,6 +6,7 @@
 import { Router, Request, Response } from 'express';
 import { pythonExecutor } from '../services/pythonExecutor.js';
 import { testRunner } from '../services/testRunner.js';
+import { intelligentAnalyzer } from '../services/intelligentAnalyzer.js';
 import {
   getChallenge,
   getAllChallenges,
@@ -91,7 +92,9 @@ router.get('/:id', async (req: Request, res: Response) => {
 router.post('/:id/execute', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { code, testInput, timeout }: ExecuteCodeRequest = req.body;
+    const { code, testInput, test_input, timeout }: ExecuteCodeRequest = req.body;
+    // Handle both camelCase and snake_case for compatibility
+    const finalTestInput = testInput || test_input;
 
     if (!code) {
       return res.status(400).json({
@@ -104,10 +107,30 @@ router.post('/:id/execute', async (req: Request, res: Response) => {
     const timeLimit = timeout || challenge?.time_limit || 5;
     const memoryLimit = challenge?.memory_limit;
 
-    // Execute code
+    // Execute code with test input appended using compatibility wrapper
+    if (finalTestInput) {
+      const executableCode = `${code}\n\n# Test execution\nprint(${finalTestInput})`;
+      
+      const result = await pythonExecutor.executeWithResult(executableCode, {
+        timeout: timeLimit * 1000,
+        memoryLimit,
+      });
+
+      const response: ExecuteCodeResponse = {
+        success: result.exitCode === 0 && !result.error,
+        output: result.stdout || result.stderr,
+        error: result.error || (result.exitCode !== 0 ? result.stderr : undefined),
+        execution_time: result.executionTime,
+        memory_used: result.memoryUsed,
+      };
+
+      res.json(response);
+      return;
+    }
+
+    // Execute code without test input
     const result = await pythonExecutor.execute(code, {
       timeout: timeLimit * 1000,
-      stdin: testInput,
       memoryLimit,
     });
 
@@ -317,6 +340,139 @@ router.get('/:id/solution', async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       error: 'Failed to get solution',
+    });
+  }
+});
+
+/**
+ * POST /api/v1/code_labs/analyze
+ * Analyze Python code for architecture patterns and performance insights
+ */
+router.post('/analyze', async (req: Request, res: Response) => {
+  try {
+    const { code, systemDiagram } = req.body;
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        error: 'Code is required for analysis',
+      });
+    }
+
+    const analysis = await intelligentAnalyzer.analyzeCode(code, systemDiagram);
+
+    res.json({
+      success: true,
+      analysis,
+    });
+  } catch (error) {
+    console.error('Error analyzing code:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Analysis failed',
+    });
+  }
+});
+
+/**
+ * POST /api/v1/code_labs/analyze-and-test
+ * Analyze code and optionally run performance tests
+ */
+router.post('/analyze-and-test', async (req: Request, res: Response) => {
+  try {
+    const { code, systemDiagram, runAllTests = false } = req.body;
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        error: 'Code is required for analysis',
+      });
+    }
+
+    // First, analyze the code
+    const analysis = await intelligentAnalyzer.analyzeCode(code, systemDiagram);
+
+    // Optionally run performance tests
+    let performanceResults = null;
+    if (runAllTests) {
+      const testPromises = analysis.recommendedTests.map(async (test) => {
+        try {
+          return await intelligentAnalyzer.executePerformanceTest(code, test);
+        } catch (error) {
+          return {
+            testName: test.name,
+            success: false,
+            error: error instanceof Error ? error.message : 'Test failed',
+            timestamp: new Date().toISOString(),
+          };
+        }
+      });
+
+      performanceResults = await Promise.all(testPromises);
+    } else {
+      // Run just the baseline test
+      const baselineTest = analysis.recommendedTests.find(t => t.name.includes('Baseline'));
+      if (baselineTest) {
+        try {
+          performanceResults = [await intelligentAnalyzer.executePerformanceTest(code, baselineTest)];
+        } catch (error) {
+          performanceResults = [{
+            testName: baselineTest.name,
+            success: false,
+            error: error instanceof Error ? error.message : 'Baseline test failed',
+            timestamp: new Date().toISOString(),
+          }];
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      analysis,
+      performanceResults: performanceResults || [],
+    });
+  } catch (error) {
+    console.error('Error in analyze-and-test:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Analysis and testing failed',
+    });
+  }
+});
+
+/**
+ * POST /api/v1/code_labs/performance-test
+ * Run a specific performance test scenario
+ */
+router.post('/performance-test', async (req: Request, res: Response) => {
+  try {
+    const { code, testScenario } = req.body;
+
+    if (!code) {
+      return res.status(400).json({
+        success: false,
+        error: 'Code is required for performance testing',
+      });
+    }
+
+    if (!testScenario) {
+      return res.status(400).json({
+        success: false,
+        error: 'Test scenario is required',
+      });
+    }
+
+    const testResult = await intelligentAnalyzer.executePerformanceTest(code, testScenario);
+
+    res.json({
+      success: true,
+      testResult,
+    });
+  } catch (error) {
+    console.error('Error running performance test:', error);
+    res.status(500).json({
+      success: false,
+      error: error instanceof Error ? error.message : 'Performance test failed',
     });
   }
 });

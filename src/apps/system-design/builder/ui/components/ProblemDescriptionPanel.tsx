@@ -89,8 +89,11 @@ export function ProblemDescriptionPanel({ challenge }: ProblemDescriptionPanelPr
       {/* Hint */}
       <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
         <div className="text-xs font-medium text-blue-700 mb-1">💡 Hint</div>
-        <p className="text-sm text-blue-700">
+        <p className="text-sm text-blue-700 mb-2">
           Drag components from the right panel onto the canvas and connect them to build your system architecture.
+        </p>
+        <p className="text-sm text-blue-700">
+          In the Python tab, use the provided database helpers (<code className="bg-blue-100 px-1 rounded">db_write</code>, <code className="bg-blue-100 px-1 rounded">db_read</code>, <code className="bg-blue-100 px-1 rounded">cache_get</code>, <code className="bg-blue-100 px-1 rounded">cache_set</code>) to interact with your system components.
         </p>
       </div>
     </div>

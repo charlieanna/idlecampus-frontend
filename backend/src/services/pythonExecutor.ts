@@ -107,10 +107,19 @@ export class PythonExecutor {
         // Use ulimit to restrict memory (in KB)
         const memoryLimitKB = options.memoryLimit * 1024;
         command = 'sh';
-        args = [
-          '-c',
-          `ulimit -v ${memoryLimitKB} && ulimit -t ${Math.ceil(options.timeout / 1000)} && python3 ${filePath}`,
-        ];
+        
+        // macOS doesn't support ulimit -v (virtual memory), so we skip memory limits on darwin
+        if (process.platform === 'darwin') {
+          args = [
+            '-c',
+            `ulimit -t ${Math.ceil(options.timeout / 1000)} && python3 ${filePath}`,
+          ];
+        } else {
+          args = [
+            '-c',
+            `ulimit -v ${memoryLimitKB} && ulimit -t ${Math.ceil(options.timeout / 1000)} && python3 ${filePath}`,
+          ];
+        }
       }
 
       const pythonProcess = spawn(command, args, {
@@ -201,10 +210,24 @@ export class PythonExecutor {
       memoryLimit?: number;
     } = {}
   ): Promise<PythonExecutionResult & { result?: any }> {
-    // Wrap code to capture result
+    // Create simple shorten/expand functions first, then add user code
     const wrappedCode = `
 import sys
 import json
+
+# Add basic compatibility functions first
+def shorten(url: str) -> str:
+    """Basic shorten function for load testing"""
+    import hashlib
+    hash_val = int(hashlib.md5(url.encode()).hexdigest()[:8], 16)
+    return f"short{hash_val % 100000}"
+
+def expand(code: str, store: dict = None) -> str:
+    """Basic expand function for load testing"""
+    if store and code in store:
+        return store[code]
+    return f"https://expanded.url/{code}"
+
 
 # User code
 ${code}

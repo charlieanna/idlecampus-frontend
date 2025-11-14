@@ -112,3 +112,43 @@ export const LOAD_TEST_SCENARIOS: Record<LoadTestScenario, ScenarioPreset> = {
     readWriteRatio: 0.9,
   },
 };
+
+// Enhanced types for intelligent analysis integration
+export interface EnhancedLoadTestConfig extends LoadTestConfig {
+  analysisMode?: boolean;
+  pythonCode?: string;
+}
+
+export interface ArchitectureAnalysis {
+  detectedPattern: 'in-memory' | 'database' | 'caching' | 'file-storage' | 'hybrid';
+  confidence: number;
+  recommendations: string[];
+  performanceMetrics: {
+    estimatedMemoryUsage: string;
+    estimatedConcurrency: string;
+    scalabilityRating: number;
+  };
+}
+
+export interface EducationalInsight {
+  type: 'warning' | 'suggestion' | 'optimization' | 'architectural_mismatch';
+  title: string;
+  description: string;
+  recommendation?: string;
+  severity: 'low' | 'medium' | 'high';
+}
+
+export interface IntelligentTestResult {
+  loadTestResults: LoadTestResults;
+  architectureAnalysis?: ArchitectureAnalysis;
+  educationalInsights?: EducationalInsight[];
+}
+
+// Performance test result from intelligent analyzer
+export interface PerformanceTestResult {
+  testName: string;
+  success: boolean;
+  metrics?: any;
+  error?: string;
+  timestamp: string;
+}

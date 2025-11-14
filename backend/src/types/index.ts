@@ -4,8 +4,9 @@
 
 export interface ExecuteCodeRequest {
   code: string;
-  testInput?: string;
-  timeout?: number; // in seconds
+  testInput?: string;        // camelCase for TypeScript
+  test_input?: string;       // snake_case from frontend API
+  timeout?: number;          // in seconds
 }
 
 export interface ExecuteCodeResponse {

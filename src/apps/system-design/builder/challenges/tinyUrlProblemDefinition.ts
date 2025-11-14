@@ -193,26 +193,85 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
     },
   ],
 
-  pythonTemplate: `import random, string, hashlib, base64
+  pythonTemplate: `import hashlib
+from typing import Optional, Any
+
+# ===========================================
+# 📦 STORAGE API (PROVIDED)
+# ===========================================
+# In-memory storage (simulates production database/cache)
+storage = {}
+
+def store(key: str, value: Any) -> bool:
+    """Store a key-value pair in memory."""
+    storage[key] = value
+    return True
+
+def retrieve(key: str) -> Optional[Any]:
+    """Retrieve a value by key."""
+    return storage.get(key)
+
+def exists(key: str) -> bool:
+    """Check if a key exists in storage."""
+    return key in storage
+
+# ===========================================
+# 🚀 TINYURL CORE IMPLEMENTATION
+# ===========================================
+# This challenge focuses on the core URL shortening algorithm.
+# Only TWO functions are required and tested:
+#   1. shorten(url) - Generate short codes
+#   2. expand(code) - Retrieve original URLs
+#
+# Additional features like analytics, custom aliases, and QR codes
+# are handled by the system architecture (your canvas design),
+# not in this Python implementation.
+# ===========================================
 
 def shorten(url: str) -> str:
     """
-    Implement logic to generate a short code for the given URL.
-    You can use any Python library.
-    Constraints:
-      - Must return a string of 6–10 chars.
-      - Must avoid collisions.
-      - Should be deterministic (same input → same code).
-    """
-    chars = string.ascii_letters + string.digits
-    return ''.join(random.choice(chars) for _ in range(6))
+    Create a short code for the given URL.
 
-def expand(code: str, store: dict) -> str:
+    Requirements:
+    - Return 6-8 character code
+    - Handle duplicates (same URL → same code)
+    - Handle collisions (different URLs can't have same code)
+    - Return None for invalid input
     """
-    Optional: implement decode logic.
-    \`store\` is a dict of {code: url}.
-    Return the original URL or raise KeyError.
+    # TODO: Implement this function
+    pass
+
+def expand(code: str) -> str:
     """
-    return store.get(code)
+    Retrieve the original URL from a short code.
+
+    Requirements:
+    - Return original URL if code exists
+    - Return None if code not found
+    - Return None for invalid input
+    """
+    # TODO: Implement this function
+    pass
+
+# ===========================================
+# OPTIONAL ADVANCED FEATURES (NOT TESTED)
+# ===========================================
+# In a real implementation, you might also include:
+#
+# def track_click(code: str, metadata: dict) -> bool:
+#     '''Track analytics for each URL access'''
+#     pass
+#
+# def create_custom_alias(url: str, alias: str) -> str:
+#     '''Allow custom aliases for premium users'''
+#     pass
+#
+# def set_expiration(code: str, days: int) -> bool:
+#     '''Set URL expiration time'''
+#     pass
+#
+# These features are part of the system design (canvas)
+# but not required in this coding challenge.
+# ===========================================#
 `,
 };

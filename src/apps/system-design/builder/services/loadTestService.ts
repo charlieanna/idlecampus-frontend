@@ -361,6 +361,152 @@ export class LoadTestService {
   private sleep(ms: number): Promise<void> {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
+
+  /**
+   * Enhanced load testing with intelligent analysis
+   */
+  async runIntelligentLoadTest(
+    config: EnhancedLoadTestConfig,
+    pythonCode?: string
+  ): Promise<IntelligentTestResult> {
+    try {
+      // Run traditional load test
+      const loadTestResults = await this.runLoadTest(config);
+      
+      // If Python code is provided, run intelligent analysis
+      if (pythonCode && config.analysisMode) {
+        try {
+          const response = await fetch('/api/v1/code_labs/analyze-and-test', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              code: pythonCode,
+              systemDiagram: {
+                components: ['web-server', 'url-shortener']
+              },
+              runAllTests: false // Just baseline for now
+            }),
+          });
+
+          if (response.ok) {
+            const analysisData = await response.json();
+            
+            if (analysisData.success) {
+              return {
+                loadTestResults,
+                architectureAnalysis: {
+                  detectedPattern: analysisData.analysis.architecture.type,
+                  confidence: analysisData.analysis.architecture.confidence,
+                  recommendations: analysisData.analysis.insights
+                    .filter((i: any) => i.type === 'suggestion')
+                    .map((i: any) => i.recommendation || i.description),
+                  performanceMetrics: analysisData.analysis.performanceMetrics || {
+                    estimatedMemoryUsage: 'Unknown',
+                    estimatedConcurrency: 'Unknown',
+                    scalabilityRating: 5
+                  }
+                },
+                educationalInsights: analysisData.analysis.insights
+              };
+            }
+          }
+        } catch (analysisError) {
+          console.warn('Intelligent analysis failed, returning basic load test results:', analysisError);
+        }
+      }
+
+      // Return just the load test results if analysis fails or is not requested
+      return {
+        loadTestResults
+      };
+      
+    } catch (error) {
+      throw new Error(`Intelligent load test failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Get architecture-specific test recommendations
+   */
+  async getArchitectureTestRecommendations(
+    pythonCode: string
+  ): Promise<{
+    architecture: string;
+    recommendedTests: Array<{
+      name: string;
+      description: string;
+      testType: string;
+      parameters: any;
+    }>;
+    insights: any[];
+  }> {
+    try {
+      const response = await fetch('/api/v1/code_labs/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code: pythonCode }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Analysis failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        return {
+          architecture: data.analysis.architecture.type,
+          recommendedTests: data.analysis.recommendedTests,
+          insights: data.analysis.insights
+        };
+      } else {
+        throw new Error(data.error || 'Analysis failed');
+      }
+      
+    } catch (error) {
+      throw new Error(`Failed to get architecture recommendations: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  /**
+   * Run a specific performance test scenario
+   */
+  async runPerformanceTestScenario(
+    pythonCode: string,
+    scenario: any
+  ): Promise<any> {
+    try {
+      const response = await fetch('/api/v1/code_labs/performance-test', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          code: pythonCode,
+          testScenario: scenario
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Performance test failed: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      
+      if (data.success) {
+        return data.testResult;
+      } else {
+        throw new Error(data.error || 'Performance test failed');
+      }
+      
+    } catch (error) {
+      throw new Error(`Performance test scenario failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
 }
 
 // Export singleton instance

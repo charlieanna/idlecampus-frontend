@@ -109,23 +109,41 @@ export function DesignCanvas({
             displayName: comp.config?.displayName || componentInfo.displayName,
             subtitle: comp.config?.subtitle || componentInfo.subtitle,
             componentType: comp.type,
+            config: comp.config, // Pass the full config to the node
+            onUpdateConfig: (newConfig: Record<string, any>) => onUpdateConfig(comp.id, newConfig),
           },
         };
       });
 
-      // Remove nodes for deleted components
-      const remainingNodes = currentNodes.filter((node) =>
-        componentIds.has(node.id)
-      );
+      // Update existing nodes and remove deleted ones
+      const updatedNodes = currentNodes.map((node) => {
+        const component = systemGraph.components.find(c => c.id === node.id);
+        if (!component) return null; // Will be filtered out
+
+        // Update node data if config has changed
+        const componentInfo = getComponentInfo(component.type);
+        return {
+          ...node,
+          data: {
+            ...node.data,
+            label: componentInfo.label,
+            displayName: component.config?.displayName || componentInfo.displayName,
+            subtitle: component.config?.subtitle || componentInfo.subtitle,
+            componentType: component.type,
+            config: component.config,
+            onUpdateConfig: (newConfig: Record<string, any>) => onUpdateConfig(component.id, newConfig),
+          },
+        };
+      }).filter(node => node !== null);
 
       // Return updated nodes if there are changes
-      if (newNodes.length > 0 || remainingNodes.length !== currentNodes.length) {
-        return [...remainingNodes, ...newNodes];
+      if (newNodes.length > 0 || updatedNodes.length !== currentNodes.length) {
+        return [...updatedNodes, ...newNodes];
       }
 
-      return currentNodes;
+      return updatedNodes;
     });
-  }, [systemGraph.components, setNodes]);
+  }, [systemGraph.components, setNodes, onUpdateConfig]);
 
   // Sync edges with systemGraph connections
   useEffect(() => {
@@ -235,6 +253,7 @@ export function DesignCanvas({
             displayName: componentInfo.displayName,
             subtitle: componentInfo.subtitle,
             componentType: componentType,
+            config: getDefaultConfig(componentType),
           },
         },
       ]);

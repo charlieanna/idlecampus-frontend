@@ -38,6 +38,13 @@ export function LoadTestResults({ metrics, onReset }: LoadTestResultsProps) {
               </div>
             </div>
           </div>
+          <button
+            onClick={onReset}
+            className="px-4 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            title="Run a new load test with different parameters"
+          >
+            🔄 Run New Test
+          </button>
         </div>
       </div>
 
@@ -189,12 +196,13 @@ export function LoadTestResults({ metrics, onReset }: LoadTestResultsProps) {
         </div>
       </div>
 
-      {/* Reset Button */}
+      {/* Alternative Reset Button at bottom for convenience */}
       <button
         onClick={onReset}
-        className="w-full px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors"
+        className="w-full px-4 py-2 bg-gray-100 text-gray-700 font-medium rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
       >
-        ← Back to Controls
+        <span>🔄</span>
+        <span>Run Another Test</span>
       </button>
     </div>
   );
