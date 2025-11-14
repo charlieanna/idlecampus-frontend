@@ -193,62 +193,33 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
     },
   ],
 
-  pythonTemplate: `import hashlib
-from typing import Optional, Any
+  pythonTemplate: `# tinyurl.py
+import hashlib
+from typing import Optional
+from storage import store, retrieve, exists
 
-# ===========================================
-# 📦 STORAGE API (PROVIDED)
-# ===========================================
-# In-memory storage (simulates production database/cache)
-storage = {}
-
-def store(key: str, value: Any) -> bool:
-    """Store a key-value pair in memory."""
-    storage[key] = value
-    return True
-
-def retrieve(key: str) -> Optional[Any]:
-    """Retrieve a value by key."""
-    return storage.get(key)
-
-def exists(key: str) -> bool:
-    """Check if a key exists in storage."""
-    return key in storage
-
-# ===========================================
-# 🚀 TINYURL CORE IMPLEMENTATION
-# ===========================================
-# This challenge focuses on the core URL shortening algorithm.
-# Only TWO functions are required and tested:
-#   1. shorten(url) - Generate short codes
-#   2. expand(code) - Retrieve original URLs
-#
-# Additional features like analytics, custom aliases, and QR codes
-# are handled by the system architecture (your canvas design),
-# not in this Python implementation.
-# ===========================================
-
-def shorten(url: str) -> str:
+def shorten(url: str) -> Optional[str]:
     """
     Create a short code for the given URL.
 
-    Requirements:
-    - Return 6-8 character code
-    - Handle duplicates (same URL → same code)
-    - Handle collisions (different URLs can't have same code)
-    - Return None for invalid input
+    Args:
+        url: The long URL to shorten
+
+    Returns:
+        A short code string, or None if invalid
     """
     # TODO: Implement this function
     pass
 
-def expand(code: str) -> str:
+def expand(code: str) -> Optional[str]:
     """
     Retrieve the original URL from a short code.
 
-    Requirements:
-    - Return original URL if code exists
-    - Return None if code not found
-    - Return None for invalid input
+    Args:
+        code: The short code to expand
+
+    Returns:
+        The original URL, or None if not found
     """
     # TODO: Implement this function
     pass

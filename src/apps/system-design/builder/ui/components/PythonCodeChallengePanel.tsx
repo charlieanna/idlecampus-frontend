@@ -35,7 +35,7 @@ interface OperationResult {
 interface PythonCodeChallengePanelProps {
   pythonCode: string;
   setPythonCode: (code: string) => void;
-  challengeMode: boolean;
+  storageCode: string;
   onRunTests: (code: string, testCases: TestCase[]) => Promise<TestResult[]>;
   onSubmit: () => void;
 }
@@ -104,7 +104,7 @@ const HIDDEN_TEST_CASES: TestCase[] = [
 export function PythonCodeChallengePanel({
   pythonCode,
   setPythonCode,
-  challengeMode,
+  storageCode,
   onRunTests,
   onSubmit
 }: PythonCodeChallengePanelProps) {
@@ -112,6 +112,7 @@ export function PythonCodeChallengePanel({
   const [isRunning, setIsRunning] = useState(false);
   const [activeTab, setActiveTab] = useState<'problem' | 'api'>('problem');
   const [showResults, setShowResults] = useState(false);
+  const [codeTab, setCodeTab] = useState<'tinyurl' | 'storage'>('tinyurl');
 
   const handleRunCode = async () => {
     setIsRunning(true);
@@ -268,26 +269,60 @@ export function PythonCodeChallengePanel({
 
       {/* Right Panel: Code Editor + Results (60%) */}
       <div className="flex-1 flex flex-col bg-gray-50">
-        {/* Code Editor */}
+        {/* Code Editor with Tabs */}
         <div className={showResults ? 'h-1/2' : 'flex-1'}>
-          <div className="h-full border-b border-gray-300 bg-white">
-            <Editor
-              height="100%"
-              defaultLanguage="python"
-              value={pythonCode}
-              onChange={(value) => setPythonCode(value || '')}
-              theme="vs-light"
-              options={{
-                minimap: { enabled: false },
-                fontSize: 14,
-                lineNumbers: 'on',
-                scrollBeyondLastLine: false,
-                automaticLayout: true,
-                tabSize: 4,
-                wordWrap: 'on',
-                readOnly: isRunning,
-              }}
-            />
+          <div className="h-full flex flex-col bg-white">
+            {/* File Tabs */}
+            <div className="border-b border-gray-200 bg-gray-50">
+              <div className="flex">
+                <button
+                  onClick={() => setCodeTab('tinyurl')}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    codeTab === 'tinyurl'
+                      ? 'bg-white border-blue-600 text-blue-600'
+                      : 'bg-gray-50 border-transparent text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  📝 tinyurl.py
+                </button>
+                <button
+                  onClick={() => setCodeTab('storage')}
+                  className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                    codeTab === 'storage'
+                      ? 'bg-white border-blue-600 text-blue-600'
+                      : 'bg-gray-50 border-transparent text-gray-600 hover:text-gray-800'
+                  }`}
+                >
+                  📦 storage.py (read-only)
+                </button>
+              </div>
+            </div>
+
+            {/* Editor */}
+            <div className="flex-1">
+              <Editor
+                key={codeTab}  // Force re-render when switching tabs
+                height="100%"
+                defaultLanguage="python"
+                value={codeTab === 'tinyurl' ? pythonCode : storageCode}
+                onChange={(value) => {
+                  if (codeTab === 'tinyurl') {
+                    setPythonCode(value || '');
+                  }
+                }}
+                theme="vs-light"
+                options={{
+                  minimap: { enabled: false },
+                  fontSize: 14,
+                  lineNumbers: 'on',
+                  scrollBeyondLastLine: false,
+                  automaticLayout: true,
+                  tabSize: 4,
+                  wordWrap: 'on',
+                  readOnly: codeTab === 'storage' || isRunning,
+                }}
+              />
+            </div>
           </div>
         </div>
 

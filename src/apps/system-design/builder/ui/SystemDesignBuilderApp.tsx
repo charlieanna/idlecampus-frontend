@@ -29,6 +29,60 @@ import { loadTestService } from '../services/loadTestService';
 import type { LoadTestProgress, LoadTestResults as LoadTestResultsType, LoadTestScenario } from '../types/loadTest';
 import { generateClientNodes } from '../challenges/generateClients';
 import { isDatabaseComponentType, inferDatabaseType } from '../utils/database';
+import { apiService } from '../../../../services/api';
+
+// Storage.py - Complete implementation (read-only)
+const STORAGE_PY_CODE = `# storage.py
+# Storage API Implementation (PROVIDED - DO NOT MODIFY)
+# This module provides in-memory storage for your application.
+# In production, these would connect to real databases and caches.
+
+from typing import Optional, Any
+
+# In-memory storage (simulates production database/cache)
+storage = {}
+
+def store(key: str, value: Any) -> bool:
+    """
+    Store a key-value pair in memory.
+
+    Args:
+        key: Unique identifier (e.g., 'abc123')
+        value: Data to store (e.g., 'https://example.com')
+
+    Returns:
+        True if successful
+
+    In production: Would persist to database
+    """
+    storage[key] = value
+    return True
+
+def retrieve(key: str) -> Optional[Any]:
+    """
+    Retrieve a value by key.
+
+    Args:
+        key: The key to look up
+
+    Returns:
+        Stored value or None if not found
+
+    In production: Would query database/cache
+    """
+    return storage.get(key)
+
+def exists(key: str) -> bool:
+    """
+    Check if a key exists in storage.
+
+    Args:
+        key: The key to check
+
+    Returns:
+        True if key exists, False otherwise
+    """
+    return key in storage`;
 
 // Initial graph with client components based on problem definition
 const getInitialGraph = (problemDef?: ProblemDefinition | null): SystemGraph => {
@@ -100,7 +154,6 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const [showAnalysisPanel, setShowAnalysisPanel] = useState(false);
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('canvas'); // 'canvas', 'python', or component ID
-  const [challengeMode, setChallengeMode] = useState(false); // Toggle for Challenge Mode
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
 
@@ -110,133 +163,38 @@ export default function SystemDesignBuilderApp({ challengeId }: SystemDesignBuil
   const [loadTestResults, setLoadTestResults] = useState<LoadTestResultsType | null>(null);
 
   // Default Python starter code with database helpers
-  const [pythonCode, setPythonCode] = useState(`# TinyURL Implementation
-# Your code runs in the App Server component
+  const [pythonCode, setPythonCode] = useState(`# tinyurl.py
+# TinyURL Implementation
 
 import hashlib
-import random
-import string
-from typing import Optional, Dict, Any
+from typing import Optional
+from storage import store, retrieve, exists
 
-# ===========================================
-# 📦 STORAGE API (PROVIDED)
-# ===========================================
-# These helpers provide in-memory storage for your URL shortener.
-# In production, this would connect to the databases and caches
-# shown in your system design canvas.
-#
-# Available Methods:
-#   • store(key, value) - Save a key-value pair
-#   • retrieve(key) - Get a value by key
-#   • exists(key) - Check if a key exists
-#
-# Note: All data is stored in memory during test execution.
-# ===========================================
-
-# In-memory storage (simulates production database/cache)
-storage = {}
-
-def store(key: str, value: Any) -> bool:
-    """
-    Store a key-value pair in memory.
-
-    Args:
-        key: Unique identifier (e.g., 'abc123')
-        value: Data to store (e.g., 'https://example.com')
-
-    Returns:
-        True if successful
-
-    In production: Would persist to database
-    """
-    storage[key] = value
-    return True
-
-def retrieve(key: str) -> Optional[Any]:
-    """
-    Retrieve a value by key.
-
-    Args:
-        key: The key to look up
-
-    Returns:
-        Stored value or None if not found
-
-    In production: Would query database/cache
-    """
-    return storage.get(key)
-
-def exists(key: str) -> bool:
-    """
-    Check if a key exists in storage.
-
-    Args:
-        key: The key to check
-
-    Returns:
-        True if key exists, False otherwise
-    """
-    return key in storage
-
-# ===========================================
-# 🚀 YOUR IMPLEMENTATION BELOW
-# ===========================================
-
-def shorten(url: str) -> str:
+def shorten(url: str) -> Optional[str]:
     """
     Create a short code for the given URL.
 
-    Implementation tips:
-    - Choose a strategy: hash-based, counter, or random
-    - Handle duplicate URLs (return same code)
-    - Consider collision handling
-    - Return None for invalid input
-
     Args:
-        url: Original long URL to shorten
+        url: The long URL to shorten
 
     Returns:
-        Short code (e.g., 'abc123') or None
+        A short code string, or None if invalid
     """
-    if not url:
-        return None
+    # TODO: Implement this function
+    pass
 
-    # Check if URL already exists (return same code for same URL)
-    for key, value in storage.items():
-        if value == url:
-            return key
-
-    # Strategy: Hash first 6 chars of MD5
-    hash_value = hashlib.md5(url.encode()).hexdigest()[:6]
-
-    # Handle collisions (if hash already exists with different URL)
-    original_hash = hash_value
-    counter = 0
-    while exists(hash_value) and retrieve(hash_value) != url:
-        counter += 1
-        hash_value = original_hash + str(counter)
-
-    # Store the URL mapping
-    store(hash_value, url)
-
-    return hash_value
-
-
-def expand(code: str) -> str:
+def expand(code: str) -> Optional[str]:
     """
     Retrieve the original URL from a short code.
 
     Args:
-        code: Short code to expand
+        code: The short code to expand
 
     Returns:
-        Original URL or None if not found
+        The original URL, or None if not found
     """
-    if not code:
-        return None
-
-    # Simply retrieve from storage
-    return retrieve(code)
+    # TODO: Implement this function
+    pass
 `);
 
   // Convert challenge ID to URL-friendly path (replace underscores with hyphens)
@@ -251,75 +209,6 @@ def expand(code: str) -> str:
     setSelectedChallenge(challenge);
   };
 
-  // Function to transform Python code to Challenge Mode (empty signatures)
-  const transformToChallengMode = (code: string): string => {
-    const lines = code.split('\n');
-    const result: string[] = [];
-    let insideFunction = false;
-    let functionIndent = 0;
-    let insideDocstring = false;
-    let docstringQuote = '';
-
-    for (const line of lines) {
-      // Check if this is a function definition
-      if (line.trim().startsWith('def ')) {
-        result.push(line);
-        insideFunction = true;
-        functionIndent = line.length - line.trimStart().length;
-        insideDocstring = false;
-        continue;
-      }
-
-      if (insideFunction) {
-        const currentIndent = line.length - line.trimStart().length;
-
-        // Handle docstrings
-        if (!insideDocstring && (line.trim().startsWith('"""') || line.trim().startsWith("'''"))) {
-          insideDocstring = true;
-          docstringQuote = line.includes('"""') ? '"""' : "'''";
-          result.push(line);
-          // Check if docstring ends on same line
-          if (line.split(docstringQuote).length - 1 === 2) {
-            insideDocstring = false;
-            // Add TODO and pass after docstring
-            const indent = ' '.repeat(functionIndent + 4);
-            result.push(`${indent}# TODO: Implement your solution`);
-            result.push(`${indent}pass`);
-          }
-          continue;
-        }
-
-        if (insideDocstring) {
-          result.push(line);
-          if (line.includes(docstringQuote)) {
-            insideDocstring = false;
-            // Add TODO and pass after docstring
-            const indent = ' '.repeat(functionIndent + 4);
-            result.push(`${indent}# TODO: Implement your solution`);
-            result.push(`${indent}pass`);
-          }
-          continue;
-        }
-
-        // Check if we're at same or lower indentation (new function or non-function code)
-        if (line.trim() && currentIndent <= functionIndent) {
-          insideFunction = false;
-          result.push(line);
-        } else if (!line.trim()) {
-          // Keep empty lines between functions
-          if (!insideFunction || currentIndent <= functionIndent) {
-            result.push(line);
-          }
-        }
-        // Skip all implementation lines (those with greater indentation)
-      } else {
-        // Not inside a function
-        result.push(line);
-      }
-    }
-
-    return result.join('\n');
-  };
 
   // Sync selectedChallenge with challengeId prop when URL changes
   useEffect(() => {
@@ -344,22 +233,10 @@ def expand(code: str) -> str:
 
     // Update Python code from challenge template if available
     if (selectedChallenge?.pythonTemplate) {
-      const code = challengeMode
-        ? transformToChallengMode(selectedChallenge.pythonTemplate)
-        : selectedChallenge.pythonTemplate;
-      setPythonCode(code);
+      setPythonCode(selectedChallenge.pythonTemplate);
     }
   }, [selectedChallenge?.id]);
 
-  // Update Python code when challenge mode changes
-  useEffect(() => {
-    if (selectedChallenge?.pythonTemplate) {
-      const code = challengeMode
-        ? transformToChallengMode(selectedChallenge.pythonTemplate)
-        : selectedChallenge.pythonTemplate;
-      setPythonCode(code);
-    }
-  }, [challengeMode]);
 
   // Keyboard handler for Delete key
   useEffect(() => {
@@ -434,10 +311,14 @@ def expand(code: str) -> str:
           readWriteRatio: 0.8,
         };
 
+        // Concatenate storage.py with user's tinyurl.py code
+        const userCodeWithoutImport = pythonCode.replace(/^from storage import.*$/m, '');
+        const fullCode = STORAGE_PY_CODE + '\n\n' + userCodeWithoutImport;
+
         const loadTestResults = await loadTestService.runLoadTest(
           {
             ...loadTestConfig,
-            code: pythonCode,
+            code: fullCode,
             challengeId: selectedChallenge.id,
           },
           (progress) => {
@@ -630,10 +511,14 @@ def expand(code: str) -> str:
     setLoadTestResults(null);
 
     try {
+      // Concatenate storage.py with user's tinyurl.py code
+      const userCodeWithoutImport = pythonCode.replace(/^from storage import.*$/m, '');
+      const fullCode = STORAGE_PY_CODE + '\n\n' + userCodeWithoutImport;
+
       const results = await loadTestService.runLoadTest(
         {
           ...config,
-          code: pythonCode,
+          code: fullCode,
           challengeId: 'tinyurl_hash_function', // TODO: Make this dynamic based on selected challenge
         },
         (progress) => {
@@ -663,38 +548,118 @@ def expand(code: str) -> str:
 
   // Handler for running Python test cases (for LeetCode-style interface)
   const handleRunPythonTests = async (code: string, testCases: any[]): Promise<any[]> => {
-    // For now, simulate running tests locally
-    // In production, this would call a backend API to execute the Python code
+    // Concatenate storage.py with user's tinyurl.py code
+    // Remove the import statement from user code since we're concatenating
+    const userCodeWithoutImport = code.replace(/^from storage import.*$/m, '');
+    const fullCode = STORAGE_PY_CODE + '\n\n' + userCodeWithoutImport;
+
     const results = [];
 
     try {
-      // Simulate test execution
+      // Execute each test case
       for (const testCase of testCases) {
-        const result = {
+        const startTime = Date.now();
+        const operationResults = [];
+        let testPassed = true;
+        let testError: string | undefined;
+
+        // Store previous results for RESULT_FROM_PREV placeholders
+        const previousResults: string[] = [];
+
+        try {
+          // Execute each operation in the test case sequentially
+          for (const op of testCase.operations) {
+            // Replace RESULT_FROM_PREV placeholders with actual previous results
+            let actualInput = op.input;
+            if (actualInput === 'RESULT_FROM_PREV') {
+              actualInput = previousResults[previousResults.length - 1] || '';
+            } else if (actualInput.startsWith('RESULT_FROM_PREV_')) {
+              const index = parseInt(actualInput.split('_')[3]);
+              actualInput = previousResults[index] || '';
+            }
+
+            // Create test code that calls the function and prints the result
+            const testCode = fullCode + `\n\n# Test execution\nresult = ${op.method}("${actualInput}")\nprint(result if result is not None else "None")`;
+
+            // Execute the code
+            const response = await apiService.executeCode(
+              'tinyurl_hash_function', // Challenge ID for TinyURL
+              testCode,
+              '' // No separate test input needed since we're including it in the code
+            );
+
+            const executionTime = Date.now() - startTime;
+
+            // Parse the result from stdout
+            let actual = response.output?.trim() || response.stdout?.trim() || '';
+            let opPassed = false;
+
+            // Handle different expected value types
+            if (op.expected === 'VALID_CODE') {
+              // For VALID_CODE, check if result is a non-empty string
+              opPassed = actual && actual !== 'None' && actual.length >= 6;
+              previousResults.push(actual);
+            } else if (op.expected === null) {
+              // For null, check if result is None
+              opPassed = actual === 'None' || actual === '';
+            } else if (op.expected === 'RESULT_FROM_PREV') {
+              // For RESULT_FROM_PREV, check if it matches the previous result
+              const expectedValue = previousResults[previousResults.length - 1];
+              opPassed = actual === expectedValue;
+            } else {
+              // For exact match
+              opPassed = actual === op.expected;
+            }
+
+            if (!opPassed) {
+              testPassed = false;
+            }
+
+            operationResults.push({
+              method: op.method,
+              input: actualInput,
+              expected: op.expected === 'VALID_CODE' ? '<valid code>' :
+                       op.expected === 'RESULT_FROM_PREV' ? previousResults[previousResults.length - 1] :
+                       op.expected === null ? 'None' :
+                       op.expected,
+              actual: actual || 'None',
+              passed: opPassed
+            });
+
+            // If there was an error in execution, record it
+            if (response.error) {
+              testError = response.error;
+              testPassed = false;
+              break;
+            }
+          }
+        } catch (error) {
+          testPassed = false;
+          testError = error instanceof Error ? error.message : 'Unknown error during execution';
+        }
+
+        const executionTime = Date.now() - startTime;
+
+        results.push({
           testId: testCase.id,
           testName: testCase.name,
-          passed: Math.random() > 0.3, // Simulate 70% pass rate for demo
-          operations: testCase.operations.map((op: any) => ({
-            method: op.method,
-            input: op.input,
-            expected: op.expected === 'VALID_CODE' ? 'abc123' :
-                     op.expected === 'RESULT_FROM_PREV' ? 'abc123' :
-                     op.expected,
-            actual: Math.random() > 0.3 ?
-                   (op.expected === 'VALID_CODE' ? 'abc123' :
-                    op.expected === 'RESULT_FROM_PREV' ? 'abc123' :
-                    op.expected) : 'wrong_value',
-            passed: Math.random() > 0.3
-          })),
-          executionTime: Math.floor(Math.random() * 50) + 10
-        };
-        results.push(result);
-
-        // Add small delay to simulate execution
-        await new Promise(resolve => setTimeout(resolve, 200));
+          passed: testPassed,
+          operations: operationResults,
+          error: testError,
+          executionTime
+        });
       }
     } catch (error) {
       console.error('Error running Python tests:', error);
+      // Return error result
+      return testCases.map(tc => ({
+        testId: tc.id,
+        testName: tc.name,
+        passed: false,
+        operations: [],
+        error: error instanceof Error ? error.message : 'Failed to execute tests',
+        executionTime: 0
+      }));
     }
 
     return results;
@@ -876,49 +841,17 @@ def expand(code: str) -> str:
         {/* Python Code Tab Content - LeetCode Style */}
         {activeTab === 'python' && (
           <div className="flex-1 flex flex-col overflow-hidden">
-            {/* Header with Mode Toggle */}
-            <div className="bg-white border-b border-gray-200 px-6 py-3">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h2 className="text-xl font-bold text-gray-900">Python Implementation</h2>
-                </div>
-                <div className="flex items-center gap-2 bg-gray-50 rounded-lg p-1">
-                  <button
-                    onClick={() => setChallengeMode(false)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                      !challengeMode
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                    title="See working example code to learn from"
-                  >
-                    📚 Learn Mode
-                  </button>
-                  <button
-                    onClick={() => setChallengeMode(true)}
-                    className={`px-3 py-1.5 text-xs font-medium rounded transition-colors ${
-                      challengeMode
-                        ? 'bg-white text-orange-600 shadow-sm'
-                        : 'text-gray-600 hover:text-gray-800'
-                    }`}
-                    title="Empty function signatures for you to implement"
-                  >
-                    🏆 Challenge Mode
-                  </button>
-                </div>
-              </div>
-            </div>
-
             {/* LeetCode-style Panel */}
             <PythonCodeChallengePanel
-              pythonCode={challengeMode ? transformToChallengMode(pythonCode) : pythonCode}
+              pythonCode={pythonCode}
               setPythonCode={setPythonCode}
-              challengeMode={challengeMode}
+              storageCode={STORAGE_PY_CODE}
               onRunTests={handleRunPythonTests}
               onSubmit={handleSubmit}
             />
           </div>
         )}
+
 
         {/* Database Component Tab Content */}
         {databaseComponents.map((component) => {

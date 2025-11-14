@@ -194,7 +194,7 @@ class ApiService {
     return response.json();
   }
 
-  async executeCode(labId: number, code: string, testInput?: string) {
+  async executeCode(labId: number | string, code: string, testInput?: string) {
     const response = await fetch(`${this.baseUrl}/code_labs/${labId}/execute`, {
       method: 'POST',
       headers: {
@@ -204,8 +204,14 @@ class ApiService {
     });
 
     if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Failed to execute code');
+      let errorMessage = 'Failed to execute code';
+      try {
+        const error = await response.json();
+        errorMessage = error.error || errorMessage;
+      } catch {
+        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+      }
+      throw new Error(errorMessage);
     }
 
     return response.json();
