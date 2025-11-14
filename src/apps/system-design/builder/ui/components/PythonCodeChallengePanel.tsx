@@ -240,7 +240,6 @@ export function PythonCodeChallengePanel({
             </div>
           </div>
         </div>
-      </div>
 
       {/* Right Panel: Code Editor + Results (60%) */}
       <div className="flex-1 flex flex-col bg-gray-50">
