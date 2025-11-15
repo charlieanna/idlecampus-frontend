@@ -11,40 +11,89 @@
 import { CustomLogic } from '../types/component';
 
 /**
- * Execution context provided to Python code
+ * Unified storage backend for all APIs
+ * All APIs (db, cache, direct context access) share the same in-memory storage
  */
-export interface ExecutionContext {
-  db: MockDatabase;
-  cache: MockRedisCache;
-  queue: MockMessageQueue;
-  config: Record<string, any>;
-}
-
-/**
- * Mock database for Python code
- */
-export class MockDatabase {
+class UnifiedStorage {
   private data: Map<string, any> = new Map();
   private idCounter = 1;
 
-  exists(key: string): boolean {
-    return this.data.has(key);
-  }
-
+  // Direct dictionary-style access
   get(key: string): any {
     return this.data.get(key);
   }
 
-  insert(key: string, value: any): void {
+  set(key: string, value: any): void {
     this.data.set(key, value);
   }
 
-  get_next_id(): number {
+  has(key: string): boolean {
+    return this.data.has(key);
+  }
+
+  delete(key: string): void {
+    this.data.delete(key);
+  }
+
+  // ID counter for generating unique IDs
+  getNextId(): number {
     return this.idCounter++;
   }
 
+  // Iterator support for finding values
+  entries(): IterableIterator<[string, any]> {
+    return this.data.entries();
+  }
+
+  // Clear all data (for app server restart simulation)
+  clear(): void {
+    this.data.clear();
+    this.idCounter = 1;
+  }
+}
+
+/**
+ * Execution context provided to Python code
+ * All APIs (db, cache, direct context) use the same unified storage
+ */
+export interface ExecutionContext extends Record<string, any> {
+  db: MockDatabase;
+  cache: MockRedisCache;
+  queue: MockMessageQueue;
+  config: Record<string, any>;
+  // Also supports direct access: context['key'] = value
+  [key: string]: any;
+}
+
+/**
+ * Mock database for Python code
+ * Uses unified storage backend - same as cache and direct context access
+ */
+export class MockDatabase {
+  constructor(private storage: UnifiedStorage) {}
+
+  exists(key: string): boolean {
+    return this.storage.has(key);
+  }
+
+  get(key: string): any {
+    return this.storage.get(key);
+  }
+
+  insert(key: string, value: any): void {
+    this.storage.set(key, value);
+  }
+
+  set(key: string, value: any): void {
+    this.storage.set(key, value);
+  }
+
+  get_next_id(): number {
+    return this.storage.getNextId();
+  }
+
   find_by_url(url: string): any {
-    for (const [key, value] of this.data.entries()) {
+    for (const [key, value] of this.storage.entries()) {
       if (value === url) {
         return { short_code: key, long_url: value };
       }
@@ -55,28 +104,41 @@ export class MockDatabase {
 
 /**
  * Mock Redis cache for Python code
+ * Uses unified storage backend - same as database and direct context access
+ * TTL is simulated but data is stored in the same place
  */
 export class MockRedisCache {
-  private cache: Map<string, { value: any; expiry: number }> = new Map();
+  private expiryMap: Map<string, number> = new Map();
+
+  constructor(private storage: UnifiedStorage) {}
 
   get(key: string): any {
-    const entry = this.cache.get(key);
-    if (entry && entry.expiry > Date.now()) {
-      return entry.value;
+    const expiry = this.expiryMap.get(key);
+    if (expiry && expiry < Date.now()) {
+      // Expired - remove from storage
+      this.storage.delete(key);
+      this.expiryMap.delete(key);
+      return null;
     }
-    return null;
+    return this.storage.get(key);
   }
 
   set(key: string, value: any, ttl: number = 3600): void {
-    this.cache.set(key, {
-      value,
-      expiry: Date.now() + ttl * 1000,
-    });
+    this.storage.set(key, value);
+    this.expiryMap.set(key, Date.now() + ttl * 1000);
   }
 
   exists(key: string): boolean {
-    const entry = this.cache.get(key);
-    return !!(entry && entry.expiry > Date.now());
+    const expiry = this.expiryMap.get(key);
+    if (expiry && expiry < Date.now()) {
+      return false;
+    }
+    return this.storage.has(key);
+  }
+
+  delete(key: string): void {
+    this.storage.delete(key);
+    this.expiryMap.delete(key);
   }
 }
 
@@ -126,6 +188,55 @@ export class PythonExecutor {
       PythonExecutor.instance = new PythonExecutor();
     }
     return PythonExecutor.instance;
+  }
+
+  /**
+   * Create execution context with unified storage
+   * All APIs (db, cache, direct context) share the same in-memory storage
+   */
+  createContext(): ExecutionContext {
+    const storage = new UnifiedStorage();
+
+    // Create a proxy that allows direct context['key'] = value access
+    // and also provides db, cache, queue APIs
+    const context: any = new Proxy({
+      db: new MockDatabase(storage),
+      cache: new MockRedisCache(storage),
+      queue: new MockMessageQueue(),
+      config: {},
+    }, {
+      get(target, prop: string) {
+        // First check if it's a built-in property
+        if (prop in target) {
+          return target[prop];
+        }
+        // Otherwise, get from unified storage
+        return storage.get(prop);
+      },
+      set(target, prop: string, value) {
+        // If it's a built-in property, set it normally
+        if (prop === 'db' || prop === 'cache' || prop === 'queue' || prop === 'config') {
+          target[prop] = value;
+          return true;
+        }
+        // Otherwise, set in unified storage
+        storage.set(prop, value);
+        return true;
+      },
+      has(target, prop: string) {
+        return prop in target || storage.has(prop);
+      },
+      deleteProperty(target, prop: string) {
+        if (prop in target) {
+          delete target[prop];
+        } else {
+          storage.delete(prop);
+        }
+        return true;
+      }
+    });
+
+    return context as ExecutionContext;
   }
 
   /**

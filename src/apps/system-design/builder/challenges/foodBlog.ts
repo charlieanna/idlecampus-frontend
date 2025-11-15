@@ -1,4 +1,5 @@
 import { Challenge } from '../types/testCase';
+import { foodBlogCodeChallenges } from './code/foodBlogChallenges';
 
 export const foodBlogChallenge: Challenge = {
   id: 'food_blog',
@@ -29,7 +30,7 @@ Example:
     'load_balancer',
     'app_server',
     'database',
-    'redis',
+    'cache',
     'message_queue',
     'cdn',
     's3',
@@ -94,6 +95,51 @@ Example:
       duration: 10,
       passCriteria: {
         maxErrorRate: 0,
+      },
+    },
+    {
+      name: 'App Server Crash - Blog Posts Lost',
+      type: 'functional',
+      requirement: 'FR-4',
+      description: 'App server crashes and restarts. With only in-memory storage, all blog posts are lost!',
+      traffic: {
+        type: 'read',
+        rps: 10,
+      },
+      duration: 10,
+      failureInjection: {
+        type: 'server_restart',
+        atSecond: 5,
+      },
+      passCriteria: {
+        maxErrorRate: 0,
+      },
+      solution: {
+        components: [
+          { type: 'client', config: {} },
+          { type: 'app_server', config: { instances: 1 } },
+          { type: 'postgresql', config: { readCapacity: 100, writeCapacity: 100 } },
+          { type: 's3', config: { storageSizeGB: 10 } },
+        ],
+        connections: [
+          { from: 'client', to: 'app_server' },
+          { from: 'app_server', to: 'postgresql' },
+          { from: 'app_server', to: 's3' },
+        ],
+        explanation: `This test shows why persistence is essential for content sites:
+
+**With only in-memory storage:**
+- App crash = ALL blog posts LOST ❌
+- Years of content vanishes instantly
+- Website becomes empty shell!
+
+**With database + S3:**
+- App crash = content persists ✅
+- Blog posts in database, images in S3
+- Website recovers immediately
+
+**Content is your business:**
+Blog content takes years to build. Losing it is catastrophic!`,
       },
     },
 
@@ -384,6 +430,27 @@ Example:
 
   hints: [
     {
+      trigger: 'test_failed:App Server Crash - Blog Posts Lost',
+      message: `💡 Your entire blog disappeared after app server restart!
+
+**The disaster:**
+- All blog posts stored in memory = GONE
+- Years of content creation = LOST
+- Your food blog = NOW EMPTY
+
+**This is catastrophic for content sites:**
+- Content is your primary asset
+- Takes years to build quality posts
+- Losing it means starting from scratch
+
+**Solution:**
+1. Add Database component for blog post metadata
+2. Add S3/Object Storage for images
+3. Connect both to app_server
+
+**Remember:** Content sites MUST persist data. In-memory storage is only for demos!`,
+    },
+    {
       trigger: 'test_failed:Normal Load',
       message: `💡 Your design is too expensive or slow for serving images.
 
@@ -424,4 +491,121 @@ With CDN:
 CDN is essential for viral content!`,
     },
   ],
+
+  // Code challenges for deeper learning
+  codeChallenges: foodBlogCodeChallenges,
+
+  // Python template for app server implementation
+  pythonTemplate: `# Food Blog App Server
+# Implement image optimization and cache control
+
+def get_optimized_image_url(image_path: str, user_agent: str, connection: str) -> str:
+    """
+    Generate optimized image URL based on device and connection.
+
+    Args:
+        image_path: Original image path (e.g., '/images/pasta.jpg')
+        user_agent: User agent string
+        connection: Connection type ('slow' | 'fast')
+
+    Returns:
+        Optimized CDN URL with query parameters
+
+    Example:
+        get_optimized_image_url('/images/pasta.jpg', 'Mozilla/5.0 (iPhone)', 'slow')
+        -> '/images/pasta.jpg?w=800&q=60'
+    """
+    is_mobile = 'mobile' in user_agent.lower()
+
+    # Your code here
+
+    return ''
+
+
+def get_cache_header(content_type: str) -> str:
+    """
+    Return appropriate Cache-Control header for content type.
+
+    Args:
+        content_type: MIME type (e.g., 'text/html', 'image/jpeg', 'application/json')
+
+    Returns:
+        Cache-Control header value
+
+    Examples:
+        get_cache_header('text/html') -> 'public, max-age=300'
+        get_cache_header('image/jpeg') -> 'public, max-age=31536000, immutable'
+        get_cache_header('application/json') -> 'no-store'
+    """
+    # Your code here
+
+    return ''
+
+
+# App Server Handler
+def handle_request(request: dict, context: dict) -> dict:
+    """
+    Handle incoming HTTP requests for the food blog.
+
+    Args:
+        request: {
+            'method': 'GET' | 'POST',
+            'path': '/posts/pasta' | '/images/pasta.jpg',
+            'headers': {'User-Agent': '...', 'Accept': '...'}
+        }
+        context: Shared context (db, cache, etc.)
+
+    Returns:
+        {
+            'status': 200 | 404 | 500,
+            'body': '...',
+            'headers': {'Cache-Control': '...', 'Content-Type': '...'}
+        }
+    """
+    path = request.get('path', '')
+    user_agent = request.get('headers', {}).get('User-Agent', '')
+
+    # Image requests
+    if path.startswith('/images/'):
+        connection = 'fast'  # Detect from request headers in real implementation
+        optimized_url = get_optimized_image_url(path, user_agent, connection)
+        cache_header = get_cache_header('image/jpeg')
+
+        return {
+            'status': 200,
+            'body': f'Serving image: {optimized_url}',
+            'headers': {
+                'Cache-Control': cache_header,
+                'Content-Type': 'image/jpeg'
+            }
+        }
+
+    # HTML page requests
+    elif path.startswith('/posts/'):
+        cache_header = get_cache_header('text/html')
+
+        return {
+            'status': 200,
+            'body': '<html>Blog post HTML...</html>',
+            'headers': {
+                'Cache-Control': cache_header,
+                'Content-Type': 'text/html'
+            }
+        }
+
+    # API requests
+    elif path.startswith('/api/'):
+        cache_header = get_cache_header('application/json')
+
+        return {
+            'status': 200,
+            'body': '{"data": "..."}',
+            'headers': {
+                'Cache-Control': cache_header,
+                'Content-Type': 'application/json'
+            }
+        }
+
+    return {'status': 404, 'body': 'Not found'}
+`,
 };

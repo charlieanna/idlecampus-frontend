@@ -24,6 +24,17 @@ const API_TO_COMPONENT_TYPE: Record<APIType, string[]> = {
 };
 
 /**
+ * User-friendly labels for API types
+ */
+const API_TYPE_LABELS: Record<APIType, string> = {
+  db: 'database',
+  cache: 'cache',
+  queue: 'message queue',
+  cdn: 'CDN',
+  search: 'search service',
+};
+
+/**
  * Validation error for connection mismatch
  */
 export interface ConnectionValidationError {
@@ -135,15 +146,66 @@ export function validateConnections(
   // Check each used API
   for (const apiType of usedAPIs) {
     if (!connectedAPIs.includes(apiType)) {
-      const validComponentTypes = API_TO_COMPONENT_TYPE[apiType];
-      const componentTypeLabel = validComponentTypes.join(' or ');
+      const friendlyLabel = API_TYPE_LABELS[apiType] || apiType;
 
       errors.push({
         apiType,
-        message: `Code uses context.${apiType} but app_server is not connected to a ${apiType} component`,
-        suggestion: `Add a ${componentTypeLabel} component and connect it to app_server`,
+        message: `Code uses context.${apiType} but app_server is not connected to a ${friendlyLabel} component`,
+        suggestion: `Add a ${friendlyLabel} component from the palette and connect it to app_server`,
       });
     }
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+    usedAPIs,
+    connectedAPIs,
+  };
+}
+
+/**
+ * Smart validation that only checks connections for components that exist on canvas
+ *
+ * Key difference from validateConnections:
+ * - If code uses context.db but NO database component exists → OK (uses in-memory)
+ * - If code uses context.db AND database component exists but not connected → ERROR
+ * - If code uses context.db AND database component connected → OK
+ */
+export function validateSmartConnections(
+  pythonCode: string,
+  systemGraph: SystemGraph
+): ConnectionValidationResult {
+  const usedAPIs = detectAPIUsage(pythonCode);
+  const connectedTypes = getConnectedComponents(systemGraph);
+  const connectedAPIs = componentTypesToAPIs(connectedTypes);
+
+  const errors: ConnectionValidationError[] = [];
+
+  // Find what components exist on canvas (not just connected)
+  const componentsOnCanvas = systemGraph.components.map(c => c.type);
+
+  // Check each used API
+  for (const apiType of usedAPIs) {
+    // Find component types that provide this API
+    const requiredComponentTypes = API_TO_COMPONENT_TYPE[apiType] || [];
+
+    // Check if any of these component types exist on canvas
+    const componentExistsOnCanvas = requiredComponentTypes.some(compType =>
+      componentsOnCanvas.includes(compType)
+    );
+
+    // Only validate connection if component exists on canvas
+    if (componentExistsOnCanvas && !connectedAPIs.includes(apiType)) {
+      const friendlyLabel = API_TYPE_LABELS[apiType] || apiType;
+
+      errors.push({
+        apiType,
+        message: `You have a ${friendlyLabel} component on canvas but it's not connected to app_server`,
+        suggestion: `Connect the ${friendlyLabel} component to app_server, or remove it from canvas to use in-memory storage`,
+      });
+    }
+    // If component doesn't exist on canvas, it's OK - will use in-memory storage
   }
 
   return {

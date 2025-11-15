@@ -14,53 +14,45 @@ import { tinyUrlCodeChallenges } from '../code/tinyUrlChallenges';
 const APP_SERVER_TEMPLATE = `"""
 TinyURL App Server Implementation
 
-Your task: Implement the URL shortening and redirect logic
-The simulation will measure your code's actual performance!
+Simple in-memory URL shortening service.
+This version stores URLs in memory - data will be lost if the server restarts!
 
 Available context methods:
-- context['db'].get(key) - Get value from database
-- context['db'].insert(key, value) - Insert into database
-- context['db'].exists(key) - Check if key exists
-- context['db'].get_next_id() - Get auto-incrementing ID
-- context['cache'].get(key) - Get from cache (if available)
-- context['cache'].set(key, value, ttl) - Set in cache
+- context: A dictionary to store your data
+- You can add your own keys like context['url_mappings'] = {}
 """
 
 import random
 import string
-import hashlib
 
 def shorten(long_url: str, context: dict) -> str:
     """
-    Generate a short code for a long URL.
+    Generate a short code for a long URL and store it in memory.
 
     Args:
         long_url: The URL to shorten
-        context: Available services (db, cache, queue)
+        context: Dictionary for storing data (in-memory only!)
 
     Returns:
         short_code: The generated short code
-
-    Performance target: < 50ms per request
     """
-    # TODO: Implement your URL shortening algorithm
+    # Initialize storage if this is the first request
+    if 'url_mappings' not in context:
+        context['url_mappings'] = {}
+    if 'next_id' not in context:
+        context['next_id'] = 0
 
-    # ❌ STARTER CODE (Bad performance - will fail tests!)
-    # This checks for collisions in a loop - SLOW!
-    chars = string.ascii_letters + string.digits
-    code = ''.join(random.choices(chars, k=6))
+    # Get next ID and increment counter
+    id = context['next_id']
+    context['next_id'] = id + 1
 
-    while context['db'].exists(code):
-        code = ''.join(random.choices(chars, k=6))
+    # Convert ID to short code using base62 encoding
+    code = base62_encode(id)
 
-    context['db'].insert(code, long_url)
+    # Store mapping in memory
+    context['url_mappings'][code] = long_url
+
     return code
-
-    # ✅ BETTER APPROACH (Uncomment to improve):
-    # id = context['db'].get_next_id()
-    # code = base62_encode(id)
-    # context['db'].insert(code, long_url)
-    # return code
 
 
 def redirect(short_code: str, context: dict) -> str:
@@ -69,27 +61,17 @@ def redirect(short_code: str, context: dict) -> str:
 
     Args:
         short_code: The short code to expand
-        context: Available services
+        context: Dictionary containing stored data
 
     Returns:
         long_url: The original URL, or None if not found
-
-    Performance target: < 10ms per request
     """
-    # Check cache first for better performance
-    if 'cache' in context:
-        cached_url = context['cache'].get(short_code)
-        if cached_url:
-            return cached_url
+    # Initialize storage if needed
+    if 'url_mappings' not in context:
+        context['url_mappings'] = {}
 
-    # Cache miss - check database
-    long_url = context['db'].get(short_code)
-
-    # Warm the cache for next time
-    if long_url and 'cache' in context:
-        context['cache'].set(short_code, long_url, ttl=3600)
-
-    return long_url
+    # Simple lookup from in-memory dictionary
+    return context['url_mappings'].get(short_code)
 
 
 def base62_encode(num: int) -> str:
@@ -197,8 +179,8 @@ Example:
     'load_balancer',
     'app_server',
     'worker',
-    'postgresql',
-    'redis',
+    'database',
+    'cache',
     'message_queue',
     'cdn',
     's3',
@@ -322,6 +304,27 @@ Available in context dict:
       },
     },
     {
+      name: 'App Server Crash - Data Loss',
+      type: 'reliability',
+      requirement: 'NFR-R1',
+      description: 'Demonstrates that in-memory storage loses data when server restarts',
+      traffic: {
+        type: 'mixed',
+        rps: 20,
+        readRps: 10,
+        writeRps: 10,
+      },
+      duration: 30,
+      faultInjection: {
+        type: 'component_crash',
+        componentType: 'app_server',
+        startTime: 15, // Crash at 15 seconds
+      },
+      passCriteria: {
+        maxErrorRate: 1.0, // We EXPECT errors after crash - this demonstrates data loss
+      },
+    },
+    {
       name: 'Normal Load',
       type: 'performance',
       requirement: 'NFR-P1',
@@ -368,6 +371,19 @@ Available in context dict:
 
   // Hints for students
   hints: [
+    {
+      trigger: 'test_failed:App Server Crash - Data Loss',
+      message: `💡 Data Loss Detected!
+
+Your in-memory storage lost all URL mappings when the app server crashed.
+
+This is why we need permanent storage:
+1. Add a database component from the palette
+2. Connect it to your app_server
+3. Update your code to use context['db'] instead of context dictionary
+
+Try connecting a database and submitting again!`,
+    },
     {
       trigger: 'test_failed:Normal Load',
       message: `💡 Your system is too slow!

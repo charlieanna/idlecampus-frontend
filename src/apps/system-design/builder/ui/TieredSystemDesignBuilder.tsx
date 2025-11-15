@@ -2,10 +2,12 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ReactFlowProvider } from 'reactflow';
 import 'reactflow/dist/style.css';
+import Editor from '@monaco-editor/react';
 
 // Import components
 import { PythonCodeChallengePanel } from './components/PythonCodeChallengePanel';
 import { WebCrawlerCodeChallengePanel } from './components/WebCrawlerCodeChallengePanel';
+import { APIsReference } from './components/APIsReference';
 
 // Import existing components (matching original layout)
 import { DesignCanvas, getDefaultConfig } from './components/DesignCanvas';
@@ -18,7 +20,7 @@ import { EnhancedInspector } from './components/EnhancedInspector';
 import { Challenge } from '../types/testCase';
 import { SystemGraph } from '../types/graph';
 import { TestResult } from '../types/testCase';
-import { validateConnections, formatValidationErrors } from '../services/connectionValidator';
+import { validateConnections, validateSmartConnections, formatValidationErrors } from '../services/connectionValidator';
 import { validateDatabaseSchema, formatSchemaErrors } from '../services/schemaValidator';
 import { TieredChallenge } from '../types/challengeTiers';
 import type { DatabaseSchema } from '../types/challengeTiers';
@@ -87,6 +89,9 @@ export function TieredSystemDesignBuilder({
   // Helper flags for challenge-specific behavior
   const isTinyUrl = selectedChallenge?.id === 'tiny_url';
   const isWebCrawler = selectedChallenge?.id === 'web_crawler';
+  const isFoodBlog = selectedChallenge?.id === 'food_blog';
+  const hasCodeChallenges = selectedChallenge?.codeChallenges && selectedChallenge.codeChallenges.length > 0;
+  const hasPythonTemplate = selectedChallenge?.pythonTemplate && selectedChallenge.pythonTemplate.length > 0;
 
   // Run Python TinyURL code tests via backend executor
   const handleRunPythonTests = useCallback(
@@ -480,13 +485,28 @@ if __name__ == "__main__":
   const handleSubmit = async () => {
     if (!selectedChallenge) return;
 
-    // Step 1: Validate Python code connections
-    const connectionValidation = validateConnections(pythonCode, systemGraph);
+    // Step 1: Smart Validation - Only validate connections for components on canvas
+    // If user has database/cache on canvas but not connected, that's an error
+    // If user doesn't have database/cache on canvas, that's OK (uses in-memory)
+    const connectionValidation = validateSmartConnections(pythonCode, systemGraph);
 
     if (!connectionValidation.valid) {
-      // Show connection validation errors
-      const errorMessage = formatValidationErrors(connectionValidation.errors);
-      alert(errorMessage);
+      // Instead of showing alert, create failed test results for all test cases
+      const resultsMap = new Map<number, TestResult>();
+
+      if (selectedChallenge.testCases && selectedChallenge.testCases.length > 0) {
+        selectedChallenge.testCases.forEach((testCase, index) => {
+          resultsMap.set(index, {
+            passed: false,
+            message: 'Failed - ' + connectionValidation.errors[0]?.message || 'Connection error',
+            executionTime: 0
+          });
+        });
+      }
+
+      setTestResults(resultsMap);
+      setCurrentTestIndex(0);
+      setHasSubmitted(true);
       return;
     }
 
@@ -514,8 +534,22 @@ if __name__ == "__main__":
       );
 
       if (!schemaValidation.valid) {
-        const errorMessage = formatSchemaErrors(schemaValidation.errors);
-        alert(errorMessage);
+        // Instead of showing alert, create failed test results for all test cases
+        const resultsMap = new Map<number, TestResult>();
+
+        if (selectedChallenge.testCases && selectedChallenge.testCases.length > 0) {
+          selectedChallenge.testCases.forEach((testCase, index) => {
+            resultsMap.set(index, {
+              passed: false,
+              message: 'Failed',
+              executionTime: 0
+            });
+          });
+        }
+
+        setTestResults(resultsMap);
+        setCurrentTestIndex(0);
+        setHasSubmitted(true);
         return;
       }
     }
@@ -656,6 +690,18 @@ if __name__ == "__main__":
             🐍 Python Application Server
           </button>
 
+          {/* APIs Reference Tab - Always show */}
+          <button
+            onClick={() => setActiveTab('apis')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'apis'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+            }`}
+          >
+            📚 APIs Available
+          </button>
+
           {/* Dynamic Database Component Tabs */}
           {databaseComponents.map((component) => (
             <button
@@ -786,6 +832,70 @@ if __name__ == "__main__":
             onRunTests={handleRunWebCrawlerTests}
             onSubmit={handleSubmit}
           />
+        )}
+
+        {/* Generic Code Challenges using PythonCodeChallengePanel */}
+        {activeTab === 'python' && !isTinyUrl && !isWebCrawler && hasCodeChallenges && (
+          <PythonCodeChallengePanel
+            pythonCode={pythonCode}
+            setPythonCode={setPythonCode}
+            systemGraph={systemGraph}
+            onRunTests={handleRunPythonTests}
+            onSubmit={handleSubmit}
+          />
+        )}
+
+        {/* Generic Python Editor for challenges with pythonTemplate but no codeChallenges */}
+        {activeTab === 'python' && !isTinyUrl && !isWebCrawler && !hasCodeChallenges && hasPythonTemplate && (
+          <div className="flex-1 flex flex-col bg-white overflow-hidden">
+            <div className="flex-1 p-6 overflow-auto">
+              <div className="max-w-7xl mx-auto">
+                <div className="mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Python Code Editor</h2>
+                  <p className="text-gray-600">
+                    Implement the functions below to complete the {selectedChallenge?.title} challenge.
+                    Your code will be tested when you submit your system design.
+                  </p>
+                </div>
+
+                <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                  <Editor
+                    height="600px"
+                    defaultLanguage="python"
+                    value={pythonCode}
+                    onChange={(value) => setPythonCode(value || '')}
+                    theme="vs-dark"
+                    options={{
+                      minimap: { enabled: false },
+                      fontSize: 14,
+                      lineNumbers: 'on',
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                    }}
+                  />
+                </div>
+
+                <div className="mt-6 flex justify-between items-center">
+                  <div className="text-sm text-gray-500">
+                    Tip: Complete the TODO sections in the code above
+                  </div>
+                  <button
+                    onClick={handleSubmit}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Submit Solution
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* APIs Reference Tab Content */}
+        {activeTab === 'apis' && (
+          <div className="flex-1 overflow-auto">
+            <APIsReference />
+          </div>
         )}
 
         {/* Database Component Tab Content */}

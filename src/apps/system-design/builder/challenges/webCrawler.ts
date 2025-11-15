@@ -30,7 +30,7 @@ Example:
     'app_server',
     'worker',
     'database',
-    'redis',
+    'cache',
     'message_queue',
     's3',
   ],

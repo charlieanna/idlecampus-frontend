@@ -176,7 +176,7 @@ export function SubmissionResultsPanel({
                   </div>
 
                 {/* Test Result Details */}
-                {result && (
+                {result && result.metrics && (
                   <div className="ml-6 space-y-2">
                     {/* Metrics */}
                     <div className="text-xs space-y-1">

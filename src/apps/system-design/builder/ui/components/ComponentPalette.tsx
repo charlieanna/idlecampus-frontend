@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { isDatabaseComponentType } from '../../utils/database';
+import { isDatabaseComponentType, isCacheComponentType } from '../../utils/database';
 
 interface ComponentPaletteProps {
   availableComponents: string[];
@@ -30,9 +30,11 @@ export function ComponentPalette({
   const [draggingComponent, setDraggingComponent] = useState<string | null>(null);
 
   const normalizedComponents = useMemo(() => {
-    const normalized = availableComponents.map((comp) =>
-      isDatabaseComponentType(comp) ? 'database' : comp
-    );
+    const normalized = availableComponents.map((comp) => {
+      if (isDatabaseComponentType(comp)) return 'database';
+      if (isCacheComponentType(comp)) return 'cache';
+      return comp;
+    });
     return Array.from(new Set(normalized));
   }, [availableComponents]);
 
