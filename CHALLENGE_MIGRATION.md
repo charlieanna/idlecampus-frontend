@@ -75,20 +75,20 @@ See `pythonTemplateGenerator.ts` for pattern matching logic.
 
 ## Challenge Coverage
 
-All 618 challenges now have Python templates:
+All 618 challenges now have auto-generated Python templates:
 
 | Category | Count | Template Type |
 |----------|-------|---------------|
-| Tutorial | 4 | Custom tutorial templates |
-| Caching | 36 | Generic + Redis patterns |
-| Gateway | 37 | Generic patterns |
-| Streaming | 37 | Messaging patterns |
-| Storage | 36 | Generic patterns |
-| Search | 36 | Search patterns |
-| Multiregion | 36 | Generic patterns |
-| Platform Migration | 37 | System-specific patterns |
-| And 16 more... | 333 | Auto-detected patterns |
-| **Total** | **618** | **All have Python templates** |
+| Tutorial | 4 | Auto-generated (messaging/generic) |
+| Caching | 36 | Auto-generated (generic) |
+| Gateway | 37 | Auto-generated (generic) |
+| Streaming | 37 | Auto-generated (messaging) |
+| Storage | 36 | Auto-generated (generic) |
+| Search | 36 | Auto-generated (search) |
+| Multiregion | 36 | Auto-generated (generic) |
+| Platform Migration | 37 | Auto-generated (system-specific) |
+| And 16 more... | 333 | Auto-generated (pattern matching) |
+| **Total** | **618** | **All auto-generated** |
 
 ---
 
@@ -214,11 +214,12 @@ context.external.call(api_name: str, params: dict) -> dict
 ## Next Steps
 
 1. ✅ All 618 problems have Python templates
-2. ✅ Tutorial problems have custom templates
-3. ⏳ Add Python execution environment
-4. ⏳ Add test cases for validating student code
-5. ⏳ Add performance benchmarking
-6. ⏳ Consider adding Tier 2/3 later (optional algorithmsconfigurations)
+2. ✅ All templates auto-generated (no custom templates)
+3. ✅ Tier system simplified to Tier 1 only
+4. ⏳ Add Python execution environment
+5. ⏳ Add test cases for validating student code
+6. ⏳ Add performance benchmarking
+7. ⏳ Consider adding Tier 2/3 later (optional algorithm configurations)
 
 ---
 
