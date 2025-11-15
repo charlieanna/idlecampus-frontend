@@ -5,6 +5,7 @@ import 'reactflow/dist/style.css';
 
 // Import components
 import { PythonCodeChallengePanel } from './components/PythonCodeChallengePanel';
+import { WebCrawlerCodeChallengePanel } from './components/WebCrawlerCodeChallengePanel';
 
 // Import existing components (matching original layout)
 import { DesignCanvas, getDefaultConfig } from './components/DesignCanvas';
@@ -83,10 +84,18 @@ export function TieredSystemDesignBuilder({
   // Simulation test runner for system design FR/NFR testCases
   const [testRunner] = useState(() => new TestRunner());
 
+  // Helper flags for challenge-specific behavior
+  const isTinyUrl = selectedChallenge?.id === 'tiny_url';
+  const isWebCrawler = selectedChallenge?.id === 'web_crawler';
+
   // Run Python TinyURL code tests via backend executor
   const handleRunPythonTests = useCallback(
     async (code: string, panelTestCases: any[]) => {
       const results: any[] = [];
+
+      if (!panelTestCases || panelTestCases.length === 0) {
+        return results;
+      }
 
       for (const testCase of panelTestCases) {
         const operationsJson = JSON.stringify(testCase.operations || []);
@@ -211,6 +220,141 @@ if __name__ == "__main__":
             testName: testCase.name,
             passed: false,
             operations: [],
+            error: 'Failed to parse Python test result',
+          });
+        }
+      }
+
+      return results;
+    },
+    []
+  );
+
+  // Web Crawler harness: assumes crawl_page(url, html) and manage_frontier(current_batch, seen_urls)
+  const handleRunWebCrawlerTests = useCallback(
+    async (code: string, testCases: any[]) => {
+      const results: any[] = [];
+
+      if (!testCases || testCases.length === 0) {
+        return results;
+      }
+
+      for (const testCase of testCases) {
+        const stepsJson = JSON.stringify(testCase.steps || []);
+        const stepsLiteral = JSON.stringify(stepsJson);
+
+        const script = `
+import json
+
+${code}
+
+def run_test():
+    steps = json.loads(${stepsLiteral})
+    step_results = []
+
+    for step in steps:
+        step_type = step.get("type")
+
+        if step_type == "crawl":
+            url = step.get("url")
+            html = step.get("html") or ""
+            expected_links = step.get("expectedLinks") or []
+
+            actual = crawl_page(url, html)
+            actual_links = sorted(list(set(actual.get("links") or [])))
+            expected_sorted = sorted(list(set(expected_links)))
+
+            passed = actual_links == expected_sorted
+            description = f'crawl_page({url}) should return links {expected_sorted}'
+            details = f'Actual links: {actual_links}'
+
+            step_results.append({
+                "type": "crawl",
+                "description": description,
+                "passed": passed,
+                "details": details,
+            })
+
+        elif step_type == "frontier":
+            current_batch = step.get("currentBatch") or []
+            seen = set(step.get("seen") or [])
+            expected_next = step.get("expectedNext") or []
+
+            actual_next = manage_frontier(current_batch, seen)
+            actual_unique = list(dict.fromkeys(actual_next))
+            expected_unique = list(dict.fromkeys(expected_next))
+
+            passed = actual_unique == expected_unique
+            description = 'manage_frontier(...) should return next URLs ' + str(expected_unique)
+            details = f'Actual: {actual_unique}'
+
+            step_results.append({
+                "type": "frontier",
+                "description": description,
+                "passed": passed,
+                "details": details,
+            })
+
+        else:
+            step_results.append({
+                "type": step_type or "unknown",
+                "description": "Unknown step type",
+                "passed": False,
+                "details": "Unsupported step type in test definition",
+            })
+
+    overall_passed = all(s["passed"] for s in step_results)
+    return {
+        "testId": ${JSON.stringify(testCase.id)},
+        "testName": ${JSON.stringify(testCase.name)},
+        "passed": overall_passed,
+        "steps": step_results,
+    }
+
+if __name__ == "__main__":
+    try:
+        result = run_test()
+        print("__TEST_RESULT__", json.dumps(result))
+    except Exception as e:
+        failure = {
+            "testId": ${JSON.stringify(testCase.id)},
+            "testName": ${JSON.stringify(testCase.name)},
+            "passed": False,
+            "steps": [],
+            "error": str(e),
+        }
+        print("__TEST_RESULT__", json.dumps(failure))
+`;
+
+        const response = await apiService.executeCode('tinyurl_hash_function', script);
+        const output: string = response.output || '';
+
+        const marker = '__TEST_RESULT__';
+        const line = (output || '')
+          .split('\n')
+          .find((l: string) => l.includes(marker));
+
+        if (!line) {
+          results.push({
+            testId: testCase.id,
+            testName: testCase.name,
+            passed: false,
+            steps: [],
+            error: 'No test result produced by Python execution',
+          });
+          continue;
+        }
+
+        const jsonStr = line.substring(line.indexOf(marker) + marker.length).trim();
+        try {
+          const parsed = JSON.parse(jsonStr);
+          results.push(parsed);
+        } catch (e) {
+          results.push({
+            testId: testCase.id,
+            testName: testCase.name,
+            passed: false,
+            steps: [],
             error: 'Failed to parse Python test result',
           });
         }
@@ -625,12 +769,21 @@ if __name__ == "__main__":
         )}
 
         {/* Python Code Tab Content */}
-        {activeTab === 'python' && (
+        {activeTab === 'python' && isTinyUrl && (
           <PythonCodeChallengePanel
             pythonCode={pythonCode}
             setPythonCode={setPythonCode}
             systemGraph={systemGraph}
             onRunTests={handleRunPythonTests}
+            onSubmit={handleSubmit}
+          />
+        )}
+
+        {activeTab === 'python' && isWebCrawler && (
+          <WebCrawlerCodeChallengePanel
+            pythonCode={pythonCode}
+            setPythonCode={setPythonCode}
+            onRunTests={handleRunWebCrawlerTests}
             onSubmit={handleSubmit}
           />
         )}
