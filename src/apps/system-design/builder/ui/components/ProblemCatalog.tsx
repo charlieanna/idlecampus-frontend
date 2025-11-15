@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { generatedChallenges } from '../../challenges/generatedChallenges';
+import { tieredChallenges } from '../../challenges/tieredChallenges';
 import { Challenge } from '../../types/testCase';
 
 // Extract category from problem ID
@@ -149,7 +149,7 @@ export function ProblemCatalog() {
 
   // Enrich challenges with metadata and filter out tutorials
   const enrichedChallenges = useMemo(() => {
-    return generatedChallenges
+    return tieredChallenges
       .filter(challenge => !challenge.id.includes('tutorial') && !challenge.id.includes('boe-walkthrough'))
       .map(challenge => ({
         ...challenge,

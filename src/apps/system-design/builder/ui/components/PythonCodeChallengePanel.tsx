@@ -2,12 +2,15 @@ import { useState, useEffect, useRef } from 'react';
 import Editor from '@monaco-editor/react';
 import type { Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
+import { SystemGraph } from '../../types/graph';
+import { APIConnectionStatus } from './APIConnectionStatus';
 
 interface TestCase {
   id: string;
   name: string;
   operations: Operation[];
   isExample: boolean;
+  requirement?: string;
 }
 
 interface Operation {
@@ -38,6 +41,7 @@ interface PythonCodeChallengePanelProps {
   setPythonCode: (code: string) => void;
   onRunTests: (code: string, testCases: TestCase[]) => Promise<TestResult[]>;
   onSubmit: () => void;
+  systemGraph?: SystemGraph;
   exampleTestCases?: TestCase[];
   hiddenTestCases?: TestCase[];
 }
@@ -46,8 +50,9 @@ interface PythonCodeChallengePanelProps {
 const DEFAULT_EXAMPLE_TEST_CASES: TestCase[] = [
   {
     id: 'example1',
-    name: 'Basic Shorten and Expand',
+    name: 'FR-1/FR-3: Basic Shorten and Expand',
     isExample: true,
+    requirement: 'FR-1, FR-3',
     operations: [
       { method: 'shorten', input: 'https://example.com', expected: 'VALID_CODE' },
       { method: 'expand', input: 'RESULT_FROM_PREV', expected: 'https://example.com' }
@@ -55,8 +60,9 @@ const DEFAULT_EXAMPLE_TEST_CASES: TestCase[] = [
   },
   {
     id: 'example2',
-    name: 'Multiple URLs',
+    name: 'FR-2/FR-3: Multiple URLs',
     isExample: true,
+    requirement: 'FR-2, FR-3',
     operations: [
       { method: 'shorten', input: 'https://google.com', expected: 'VALID_CODE' },
       { method: 'shorten', input: 'https://github.com', expected: 'VALID_CODE' },
@@ -69,8 +75,9 @@ const DEFAULT_EXAMPLE_TEST_CASES: TestCase[] = [
 const DEFAULT_HIDDEN_TEST_CASES: TestCase[] = [
   {
     id: 'hidden1',
-    name: 'Duplicate URL Handling',
+    name: 'FR-4: Duplicate URL Handling',
     isExample: false,
+    requirement: 'FR-4',
     operations: [
       { method: 'shorten', input: 'https://example.com', expected: 'VALID_CODE' },
       { method: 'shorten', input: 'https://example.com', expected: 'RESULT_FROM_PREV' }
@@ -78,8 +85,9 @@ const DEFAULT_HIDDEN_TEST_CASES: TestCase[] = [
   },
   {
     id: 'hidden2',
-    name: 'Empty Input',
+    name: 'FR-5: Empty / Invalid Input',
     isExample: false,
+    requirement: 'FR-5',
     operations: [
       { method: 'shorten', input: '', expected: null },
       { method: 'expand', input: '', expected: null }
@@ -87,8 +95,9 @@ const DEFAULT_HIDDEN_TEST_CASES: TestCase[] = [
   },
   {
     id: 'hidden3',
-    name: 'Very Long URL',
+    name: 'FR-1/FR-3: Very Long URL',
     isExample: false,
+    requirement: 'FR-1, FR-3',
     operations: [
       { method: 'shorten', input: 'https://example.com/' + 'a'.repeat(1000), expected: 'VALID_CODE' },
       { method: 'expand', input: 'RESULT_FROM_PREV', expected: 'https://example.com/' + 'a'.repeat(1000) }
@@ -101,6 +110,7 @@ export function PythonCodeChallengePanel({
   setPythonCode,
   onRunTests,
   onSubmit,
+  systemGraph,
   exampleTestCases = DEFAULT_EXAMPLE_TEST_CASES,
   hiddenTestCases = DEFAULT_HIDDEN_TEST_CASES
 }: PythonCodeChallengePanelProps) {
@@ -265,6 +275,11 @@ export function PythonCodeChallengePanel({
                   <li>Use hash functions to generate short codes</li>
                 </ul>
               </div>
+
+              {/* API Connection Status */}
+              {systemGraph && (
+                <APIConnectionStatus pythonCode={pythonCode} systemGraph={systemGraph} />
+              )}
 
               {/* Examples */}
               <div>

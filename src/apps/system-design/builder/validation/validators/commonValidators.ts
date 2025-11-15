@@ -133,6 +133,121 @@ export const objectStorageForLargeFilesValidator: ValidatorFunction = (graph, sc
 };
 
 /**
+ * Validate database replication configuration for high availability / consistency scenarios
+ *
+ * Enforces:
+ * - Replication enabled when availability targets are high or traffic is large
+ * - Highlights tradeoffs of synchronous replication under heavy write load
+ */
+export const replicationConfigValidator: ValidatorFunction = (graph, scenario) => {
+  const requiredAvailability = scenario.passCriteria.availability;
+  const rps = scenario.traffic.rps;
+
+  const db = graph.components.find(c => isDatabaseComponentType(c.type));
+  if (!db) {
+    return { valid: true };
+  }
+
+  const replicationConfig = db.config.replication;
+  const replicationEnabled =
+    (typeof replicationConfig === 'boolean' && replicationConfig) ||
+    (typeof replicationConfig === 'object' && replicationConfig.enabled);
+
+  // If high availability or very high traffic, require replication
+  if ((requiredAvailability && requiredAvailability > 0.999) || rps > 2000) {
+    if (!replicationEnabled) {
+      return {
+        valid: false,
+        hint: 'High availability / multi-region traffic requires database replication (primary + replicas). Enable replication for your database.',
+      };
+    }
+  }
+
+  // If synchronous replication is configured under heavy write load, warn about write latency
+  if (replicationEnabled && typeof replicationConfig === 'object') {
+    const mode = replicationConfig.mode || 'async';
+    const readRatio = scenario.traffic.readWriteRatio ?? 0.5;
+    const writeRps = rps * (1 - readRatio);
+
+    if (mode === 'sync' && writeRps > 200) {
+      return {
+        valid: false,
+        hint: 'Synchronous replication with high write traffic will significantly increase write latency. Consider async replication or reducing write load.',
+      };
+    }
+  }
+
+  return { valid: true };
+};
+
+/**
+ * Validate database partitioning / sharding strategy for high-traffic scenarios
+ *
+ * Enforces:
+ * - Sharding enabled for very high RPS
+ * - Warns on obviously bad shard keys (e.g., created_at) that create hot partitions
+ */
+export const partitioningConfigValidator: ValidatorFunction = (graph, scenario) => {
+  const rps = scenario.traffic.rps;
+  const db = graph.components.find(c => isDatabaseComponentType(c.type));
+  if (!db) {
+    return { valid: true };
+  }
+
+  const sharding = db.config.sharding as
+    | { enabled?: boolean; shards?: number; shardKey?: string }
+    | undefined;
+
+  // At very high traffic, encourage sharding
+  if (rps > 5000) {
+    if (!sharding?.enabled) {
+      return {
+        valid: false,
+        hint: 'Very high traffic (>5000 RPS) should use sharding/partitioning for the URL mapping table. Configure sharding with an appropriate shard key (e.g., short_code).',
+      };
+    }
+
+    const shardKey = sharding.shardKey || '';
+    if (shardKey === 'created_at' || shardKey === 'timestamp') {
+      return {
+        valid: false,
+        hint: 'Sharding by created_at/timestamp can create hot partitions during spikes. Use a more uniform key such as short_code or user_id.',
+      };
+    }
+  }
+
+  return { valid: true };
+};
+
+/**
+ * Validate transactional configuration vs data-loss tolerance
+ *
+ * Enforces:
+ * - If scenario does not tolerate data loss, isolation level should not be read-uncommitted
+ */
+export const transactionConfigValidator: ValidatorFunction = (graph, scenario) => {
+  const db = graph.components.find(c => isDatabaseComponentType(c.type));
+  if (!db) {
+    return { valid: true };
+  }
+
+  const dataLossNotAllowed = scenario.passCriteria.dataLoss === false;
+  if (!dataLossNotAllowed) {
+    return { valid: true };
+  }
+
+  const isolation = (db.config.isolationLevel || 'read-committed') as string;
+  if (isolation === 'read-uncommitted') {
+    return {
+      valid: false,
+      hint: 'Scenario does not tolerate data loss, but database isolation is read-uncommitted. Increase isolation level to at least read-committed.',
+    };
+  }
+
+  return { valid: true };
+};
+
+/**
  * Validate cost optimization
  */
 export const costOptimizationValidator: ValidatorFunction = (graph, scenario) => {

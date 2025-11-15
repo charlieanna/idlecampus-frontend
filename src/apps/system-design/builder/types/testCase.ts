@@ -115,5 +115,6 @@ export interface Challenge {
     label: string;
     url: string;
   }[];
-  pythonTemplate?: string; // Naive Python implementation template for the problem
+  pythonTemplate?: string; // Python implementation template for the problem
+  requiredAPIs?: string[]; // Required context APIs: ['db', 'cache', 'queue', 'cdn', 'search']
 }

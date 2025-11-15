@@ -1,36 +1,36 @@
 /**
- * All Tiered Challenges
+ * All Challenges with Python Templates
  *
- * Three-tier system for 400+ problems:
- * - Tier 1 (Simple): Students write Python code
- * - Tier 2 (Moderate): Students configure algorithms
- * - Tier 3 (Advanced): Students design architecture
+ * All 658 challenges with auto-generated Python templates
+ * Every challenge = Tier 1 (Write Python code using context API)
+ *
+ * Challenges are automatically enhanced with Python templates using challengeMigration.ts
  */
 
-import { TieredChallenge } from '../types/challengeTiers';
-import { tinyUrlTieredChallenge } from './tier1/tinyUrlTiered';
-import { twitterFeedTieredChallenge } from './tier2/twitterFeedTiered';
-import { uberMatchingTieredChallenge } from './tier3/uberMatchingTiered';
-
-/**
- * All available tiered challenges
- */
-export const tieredChallenges: TieredChallenge[] = [
-  tinyUrlTieredChallenge,
-  twitterFeedTieredChallenge,
-  uberMatchingTieredChallenge,
-];
+import { Challenge } from '../types/testCase';
+import { challenges } from './index';
+import { migrateAllChallenges } from './challengeMigration';
 
 /**
- * Get tiered challenge by ID
+ * All available challenges with Python templates (658 total)
+ * Automatically migrated from legacy challenges
  */
-export function getTieredChallenge(id: string): TieredChallenge | undefined {
-  return tieredChallenges.find(c => c.id === id);
+export const tieredChallenges: Challenge[] = migrateAllChallenges(challenges);
+
+// Log challenge count in development
+if (process.env.NODE_ENV === 'development') {
+  console.log('📊 Challenge Distribution:');
+  console.log(`   Total challenges: ${tieredChallenges.length}`);
+  console.log(`   All with Python templates for Tier 1 (write code)`);
+
+  // Debug: Show sample challenges
+  const samples = tieredChallenges.slice(0, 5);
+  console.log('   Sample challenges:', samples.map(c => c.title).join(', '));
 }
 
 /**
- * Get challenges by tier
+ * Get challenge by ID
  */
-export function getChallengesByTier(tier: 'simple' | 'moderate' | 'advanced'): TieredChallenge[] {
-  return tieredChallenges.filter(c => c.implementationTier === tier);
+export function getTieredChallenge(id: string): Challenge | undefined {
+  return tieredChallenges.find(c => c.id === id);
 }
