@@ -1,59 +1,23 @@
 /**
- * Challenge Tiers - Support for 400 scalable problems
+ * Challenge Tiers - Simplified to Tier 1 Only
  *
- * Tier 1 (Simple): Students write Python code
- * Tier 2 (Moderate): Students configure pre-built algorithms
- * Tier 3 (Advanced): Fully pre-built, focus on system design
+ * ALL 618 challenges use Tier 1: Students write Python code using context API
+ *
+ * Every problem has:
+ * - Python template with TODO comments
+ * - Context API (db, cache, queue, cdn, search, external)
+ * - Performance targets in comments
+ * - Example usage
+ *
+ * Tier 2 and Tier 3 are removed for simplicity.
  */
 
 import { Challenge } from './testCase';
 
 /**
- * Implementation tier levels
+ * REMOVED: Tier 2 and Tier 3 interfaces
+ * Keeping only Tier 1 (Python implementation) for all challenges
  */
-export type ImplementationTier = 'simple' | 'moderate' | 'advanced';
-
-/**
- * Algorithm configuration option for Tier 2 problems
- */
-export interface AlgorithmOption {
-  id: string;
-  name: string;
-  description: string;
-  performanceProfile: {
-    avgLatency: number; // milliseconds
-    throughputMultiplier: number; // relative to baseline
-    cpuIntensive: boolean;
-    memoryIntensive: boolean;
-    ioIntensive: boolean;
-  };
-  configCode?: string; // Optional code snippet showing the algorithm
-}
-
-/**
- * Configurable algorithm for Tier 2
- */
-export interface ConfigurableAlgorithm {
-  componentType: 'app_server' | 'worker';
-  algorithmKey: string; // e.g., 'feed_ranking', 'cache_strategy'
-  label: string;
-  description: string;
-  options: AlgorithmOption[];
-  defaultOption: string;
-}
-
-/**
- * Pre-built behavior for Tier 3
- */
-export interface PrebuiltBehavior {
-  operation: string; // e.g., 'match_driver', 'calculate_surge'
-  description: string;
-  latency: number | { min: number; max: number; factors: string[] };
-  throughput?: number; // operations per second
-  dependencies: string[]; // Required components
-  failureRate?: number; // Expected error rate
-  implementationNotes?: string; // Explain what the pre-built logic does
-}
 
 /**
  * Worker behavior types
@@ -116,120 +80,37 @@ export interface DatabaseSchema {
 }
 
 /**
- * Required Python implementations for Tier 1
+ * Python implementation for Tier 1 (all challenges)
+ *
+ * Simplified: Python template is stored directly in Challenge.pythonTemplate
+ * No separate RequiredImplementation interface needed
  */
-export interface RequiredImplementation {
-  componentType: 'app_server' | 'worker';
-  fileName: string; // e.g., 'app_server.py'
-  template: string; // Starter code
-  functions: {
-    name: string; // Function to implement
-    description: string;
-    signature: string; // Function signature
-    performanceTarget?: string; // e.g., "< 50ms per request"
-  }[];
-  contextAPI?: string; // Documentation for available context methods
+
+/**
+ * SIMPLIFIED: All challenges are now just regular Challenge objects
+ *
+ * Every challenge has:
+ * - challenge.pythonTemplate (required)
+ * - challenge.requiredAPIs (detected automatically)
+ *
+ * TieredChallenge is now just an alias to Challenge for backwards compatibility
+ */
+export type TieredChallenge = Challenge;
+
+/**
+ * SIMPLIFIED: All challenges use Tier 1 (Python code editor)
+ */
+
+/**
+ * Check if a challenge has a Python template
+ */
+export function hasPythonTemplate(challenge: Challenge): boolean {
+  return !!challenge.pythonTemplate;
 }
 
 /**
- * Extended Challenge interface with tier support
+ * Get required APIs for a challenge
  */
-export interface TieredChallenge extends Challenge {
-  /**
-   * Implementation tier - determines how students interact
-   */
-  implementationTier: ImplementationTier;
-
-  /**
-   * Tier 1: Required Python implementations
-   */
-  requiredImplementations?: RequiredImplementation[];
-
-  /**
-   * Tier 2: Configurable algorithms
-   */
-  configurableAlgorithms?: ConfigurableAlgorithm[];
-
-  /**
-   * Tier 3: Pre-built behaviors with realistic performance
-   */
-  prebuiltBehaviors?: {
-    [componentType: string]: PrebuiltBehavior[];
-  };
-
-  /**
-   * Component behaviors for simulation (all tiers)
-   */
-  componentBehaviors?: ComponentBehaviorConfig;
-
-  /**
-   * Whether to show Python code editor (Tier 1 & some Tier 2)
-   */
-  showCodeEditor?: boolean;
-
-  /**
-   * Whether to show algorithm configuration UI (Tier 2)
-   */
-  showAlgorithmConfig?: boolean;
-
-  /**
-   * Performance benchmarking settings
-   */
-  benchmarkSettings?: {
-    sampleSize: number; // Number of requests to benchmark
-    warmupRequests: number; // Requests to warm up before measuring
-    timeoutMs: number; // Max time for a single request
-  };
-}
-
-/**
- * Helper to determine UI requirements based on tier
- */
-export function getTierUIRequirements(tier: ImplementationTier): {
-  needsCodeEditor: boolean;
-  needsAlgorithmConfig: boolean;
-  needsArchitectureOnly: boolean;
-} {
-  switch (tier) {
-    case 'simple':
-      return {
-        needsCodeEditor: true,
-        needsAlgorithmConfig: false,
-        needsArchitectureOnly: false,
-      };
-    case 'moderate':
-      return {
-        needsCodeEditor: false, // Optional
-        needsAlgorithmConfig: true,
-        needsArchitectureOnly: false,
-      };
-    case 'advanced':
-      return {
-        needsCodeEditor: false,
-        needsAlgorithmConfig: false,
-        needsArchitectureOnly: true,
-      };
-  }
-}
-
-/**
- * Get tier description for UI
- */
-export function getTierDescription(tier: ImplementationTier): string {
-  switch (tier) {
-    case 'simple':
-      return 'Write Python code to implement the core algorithms';
-    case 'moderate':
-      return 'Configure pre-built algorithms and tune parameters';
-    case 'advanced':
-      return 'Design the system architecture using pre-built components';
-  }
-}
-
-/**
- * Check if a challenge requires Python execution
- */
-export function requiresPythonExecution(challenge: TieredChallenge): boolean {
-  return challenge.implementationTier === 'simple' ||
-         (challenge.implementationTier === 'moderate' && challenge.showCodeEditor === true);
+export function getRequiredAPIs(challenge: Challenge): string[] {
+  return (challenge as any).requiredAPIs || ['db'];
 }
