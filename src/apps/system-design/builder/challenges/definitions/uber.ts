@@ -12,6 +12,7 @@ import { problemConfigs } from '../problemConfigs';
 /**
  * Uber - Ride Sharing Platform
  * DDIA Ch. 8 (Distributed Systems) - Distributed Consensus for Driver Allocation
+ * DDIA Ch. 11 (Stream Processing) - Real-time Driver-Rider Matching
  *
  * DDIA Concepts Applied:
  * - Ch. 8: Distributed consensus for driver allocation (preventing double-allocation)
@@ -139,6 +140,112 @@ import { problemConfigs } from '../problemConfigs';
  * - Execute compensating transaction for Step 1 (release reserve)
  * - Retry payment later (eventual consistency)
  *
+ * DDIA Ch. 11 - Stream Processing for Real-time Matching:
+ *
+ * Event Stream Architecture:
+ * 1. Location Update Events → Kafka Topic: "driver-locations"
+ *    {driver_id, lat, lng, status, timestamp, speed, heading}
+ *    Published every 4 seconds by each active driver
+ *
+ * 2. Ride Request Events → Kafka Topic: "ride-requests"
+ *    {request_id, rider_id, pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, timestamp}
+ *
+ * 3. Stream Processor: Real-time Matching Engine (Kafka Streams)
+ *    - Join ride requests with driver locations (stream-stream join)
+ *    - Geospatial filtering: Find drivers within 2km radius
+ *    - Stateful processing: Track driver availability in-memory
+ *    - Ranking: Score drivers by distance, rating, acceptance rate
+ *    - Output: Match candidate to "match-candidates" topic
+ *
+ * Stream-Stream Join Example (DDIA Ch. 11):
+ *
+ * Ride Request Stream (partitioned by city):
+ * {request_123, rider_456, lat: 37.7749, lng: -122.4194, time: 10:00:00}
+ *
+ * Driver Location Stream (partitioned by city):
+ * {driver_789, lat: 37.7750, lng: -122.4195, status: "available", time: 10:00:01}
+ * {driver_890, lat: 37.7800, lng: -122.4300, status: "available", time: 10:00:01}
+ *
+ * Join Window: 30 seconds (join requests with driver locations within 30s)
+ *
+ * Joined Output:
+ * {request_123, rider_456, driver_789, distance: 50m, score: 0.95}
+ * {request_123, rider_456, driver_890, distance: 800m, score: 0.75}
+ *
+ * Stateful Matching Pipeline (DDIA Ch. 11):
+ * rideRequests.stream()
+ *   .selectKey((key, value) => getCityPartition(value.pickup_lat, value.pickup_lng))
+ *   .join(
+ *     driverLocations.stream(),
+ *     (request, location) => ({
+ *       request_id: request.id,
+ *       driver_id: location.driver_id,
+ *       distance: calculateDistance(request.pickup_lat, location.lat, ...),
+ *       eta: estimateArrivalTime(location, request.pickup_lat)
+ *     }),
+ *     JoinWindows.of(Duration.ofSeconds(30)),
+ *     StreamJoined.with(Serdes.String(), requestSerde, locationSerde)
+ *   )
+ *   .filter((key, match) => match.distance < 2000)  // Within 2km
+ *   .filter((key, match) => match.driver_status == "available")
+ *   .groupByKey()
+ *   .aggregate(
+ *     () => new ArrayList<Match>(),
+ *     (key, match, agg) => rankAndSelectBest(agg, match)
+ *   )
+ *   .toStream()
+ *   .to("match-candidates")
+ *
+ * Windowed State Stores (DDIA Ch. 11):
+ * - State Store 1: "driver-availability" (KTable)
+ *   Key: driver_id, Value: {status, last_location, last_updated}
+ *   Updated on every location event
+ *
+ * - State Store 2: "pending-requests" (Windowed KTable)
+ *   Key: request_id, Value: {rider_id, pickup, best_match, candidates[]}
+ *   TTL: 5 minutes (auto-expire unmatched requests)
+ *
+ * Event-Driven Matching Flow (DDIA Ch. 11):
+ * T0: Rider opens app → "ride_request_created" event
+ * T1 (100ms): Stream processor joins with driver locations
+ * T2 (200ms): Top 3 drivers ranked by distance + rating
+ * T3 (300ms): Send match offer to driver #1 → "match_offered" event
+ * T4 (8s): Driver #1 accepts → "match_accepted" event
+ * T5 (8.1s): Update driver status: available → en_route
+ *
+ * If Driver #1 rejects (T4):
+ * T4: "match_rejected" event
+ * T5: Offer to driver #2 (fallback)
+ *
+ * Exactly-Once Driver Assignment (DDIA Ch. 11):
+ * Problem: Network retry causes driver to be assigned twice
+ *
+ * Solution: Transactional Outbox Pattern
+ * BEGIN TRANSACTION;
+ *   INSERT INTO ride_assignments (ride_id, driver_id, idempotency_key);
+ *   UPDATE drivers SET status = 'on_ride' WHERE id = driver_id AND status = 'available';
+ *   INSERT INTO outbox (event_type, payload) VALUES ('driver_assigned', {...});
+ * COMMIT;
+ *
+ * Outbox processor (separate stream):
+ * - Read outbox table (CDC stream)
+ * - Publish events to Kafka
+ * - Delete outbox entry after successful publish
+ *
+ * Late-Arriving Location Updates (DDIA Ch. 11):
+ * Normal Order:
+ * T0: Location update 1 (lat: 37.7749) arrives at 10:00:00
+ * T1: Location update 2 (lat: 37.7750) arrives at 10:00:04
+ *
+ * Out-of-Order (network delay):
+ * T0: Location update 2 (lat: 37.7750) arrives at 10:00:04
+ * T1: Location update 1 (lat: 37.7749) arrives at 10:00:06 (late by 2s!)
+ *
+ * Solution: Event-time processing with watermarks
+ * - Use event timestamp (not processing timestamp)
+ * - Watermark: Allow 10s for late events
+ * - Discard events older than watermark (> 10s late)
+ *
  * System Design Primer Concepts:
  * - Geospatial Indexing: QuadTree or Geohash for driver proximity search
  * - WebSocket/SSE: Real-time location updates and ride matching notifications
@@ -155,7 +262,7 @@ export const uberProblemDefinition: ProblemDefinition = {
 - Platform matches riders with nearby drivers
 - Real-time location tracking during rides
 
-Learning Objectives (DDIA Ch. 8):
+Learning Objectives (DDIA Ch. 8, 11):
 1. Prevent driver double-allocation with distributed consensus (DDIA Ch. 8)
    - Use compare-and-swap (CAS) with version numbers
    - Raft/Paxos consensus for distributed locking
@@ -172,7 +279,17 @@ Learning Objectives (DDIA Ch. 8):
    - Saga pattern with compensating transactions
    - Idempotency keys for retry safety
 6. Manage bounded staleness for location updates (DDIA Ch. 8)
-   - Accept stale location data (< 10s) for availability`,
+   - Accept stale location data (< 10s) for availability
+7. Implement real-time matching with stream processing (DDIA Ch. 11)
+   - Stream-stream joins between ride requests and driver locations
+   - Stateful processing with windowed state stores
+   - Event-driven architecture for match workflow
+8. Handle out-of-order events with watermarks (DDIA Ch. 11)
+   - Event-time processing for late-arriving location updates
+   - Grace period for delayed events
+9. Ensure exactly-once semantics for assignments (DDIA Ch. 11)
+   - Transactional outbox pattern
+   - Idempotent stream processing`,
 
   // DDIA/SDP Non-Functional Requirements
   userFacingNFRs: [
@@ -185,6 +302,12 @@ Learning Objectives (DDIA Ch. 8):
     'Fencing tokens: Prevent stale driver writes (DDIA Ch. 8: Monotonic token numbers)',
     'Partial failure handling: Saga pattern for payment (DDIA Ch. 8: Compensating transactions)',
     'Idempotency: Retry-safe operations (DDIA Ch. 8: Unique request IDs)',
+    'Real-time matching latency: < 300ms end-to-end (DDIA Ch. 11: Stream-stream join)',
+    'Stream join window: 30s for request-location join (DDIA Ch. 11: Windowed joins)',
+    'Out-of-order tolerance: 10s watermark (DDIA Ch. 11: Event-time processing)',
+    'State recovery: < 60s from changelog (DDIA Ch. 11: Kafka Streams state stores)',
+    'Exactly-once matching: No duplicate assignments (DDIA Ch. 11: Transactional outbox)',
+    'Location stream throughput: 100K updates/second (DDIA Ch. 11: Scalable stream processing)',
   ],
 
   functionalRequirements: {
