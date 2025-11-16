@@ -602,8 +602,632 @@ Key requirements:
   ],
 };
 
-// Continue with remaining Chapter 1 problems...
-// (Problems 8-15 omitted for brevity - would include load parameters, performance metrics, fan-out, operability, simplicity, evolvability, observability, technical debt)
+/**
+ * Problem 8: Load Parameters
+ * Teaches: Identify and measure system load
+ */
+export const loadParametersProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch1-load-parameters',
+  title: 'Load Parameters - Measure System Load',
+  description: `Identify the key load parameters for your system and measure them. Different systems have different load characteristics: requests per second, concurrent users, data volume, cache hit rate, etc.
+
+Learning objectives:
+- Identify relevant load parameters for your system
+- Measure and track load metrics
+- Understand which parameters matter most
+
+Example: Twitter's key load is fan-out ratio (avg followers per user), not just tweets/sec.
+
+Key requirements:
+- Measure requests per second (RPS)
+- Track concurrent active users
+- Monitor database queries per second
+- Track cache hit rate
+- Measure write amplification (fan-out ratio)`,
+
+  userFacingFRs: [
+    'Track requests per second (RPS)',
+    'Measure concurrent active users',
+    'Monitor database reads and writes per second',
+    'Calculate cache hit rate',
+    'Track fan-out ratio for writes (e.g., 1 write → 100 reads)',
+  ],
+  userFacingNFRs: [
+    'Metrics granularity: 1-second resolution',
+    'Retention: 90 days of metrics',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Application servers with metrics',
+      },
+      {
+        type: 'storage',
+        reason: 'Time-series database for metrics (Prometheus, InfluxDB)',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Send metrics to time-series DB',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch1-load-parameters', problemConfigs['ddia-ch1-load-parameters'] || {
+    baseRps: 1000,
+    readRatio: 0.9,
+    maxLatency: 100,
+    availability: 0.99,
+  }, [
+    'Track RPS',
+    'Measure concurrent users',
+    'Monitor DB queries/sec',
+    'Calculate cache hit rate',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
+
+/**
+ * Problem 9: Performance Metrics
+ * Teaches: Measure latency percentiles (p50, p95, p99)
+ */
+export const performanceMetricsProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch1-performance-metrics',
+  title: 'Performance Metrics - Latency Percentiles',
+  description: `Measure response time using percentiles (p50, p95, p99, p999) rather than averages. Averages hide outliers - the 99th percentile shows what the slowest 1% of users experience.
+
+Learning objectives:
+- Understand why percentiles matter more than averages
+- Calculate p50, p95, p99 latency
+- Set SLAs based on percentiles
+
+Example: Average 100ms looks good, but p99 = 5 seconds means 1% of users wait 5+ seconds!
+
+Key requirements:
+- Track all request latencies
+- Calculate p50, p95, p99, p999 percentiles
+- Set SLA: p99 < 200ms
+- Alert when p99 exceeds SLA`,
+
+  userFacingFRs: [
+    'Record every request latency',
+    'Calculate percentiles: p50, p95, p99, p999',
+    'Display latency distribution histogram',
+    'Alert when p99 > 200ms',
+  ],
+  userFacingNFRs: [
+    'p50 latency: <50ms',
+    'p95 latency: <100ms',
+    'p99 latency: <200ms',
+    'p999 latency: <500ms',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Application with latency tracking',
+      },
+      {
+        type: 'storage',
+        reason: 'Metrics database',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Store latency metrics',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch1-performance-metrics', problemConfigs['ddia-ch1-performance-metrics'] || {
+    baseRps: 2000,
+    readRatio: 0.8,
+    maxLatency: 200,
+    availability: 0.99,
+  }, [
+    'Record request latencies',
+    'Calculate p50, p95, p99',
+    'Display histogram',
+    'Alert on SLA violations',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
+
+/**
+ * Problem 10: Fan-out Problem
+ * Teaches: Handle Twitter-like fan-out on writes
+ */
+export const fanoutProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch1-fanout',
+  title: 'Fan-out Problem - Twitter Timeline',
+  description: `Solve the Twitter fan-out problem: when a user with 1M followers posts a tweet, do you write to 1M timelines immediately (write fan-out) or compute timelines on-demand (read fan-out)?
+
+Learning objectives:
+- Understand write fan-out vs read fan-out
+- Handle celebrity users with millions of followers
+- Hybrid approach: fan-out for normal users, merge for celebrities
+
+Key requirements:
+- Normal users (<10K followers): Write fan-out (push to all follower timelines)
+- Celebrities (>10K followers): Read fan-out (merge at read time)
+- Hybrid approach for best performance`,
+
+  userFacingFRs: [
+    'When user posts tweet, check follower count',
+    'If < 10K followers: Write to all follower timelines (fan-out on write)',
+    'If > 10K followers: Store in user timeline only (fan-out on read)',
+    'On timeline read: Merge user tweets + celebrity tweets',
+  ],
+  userFacingNFRs: [
+    'Post latency: <100ms for normal users',
+    'Timeline read: <200ms (includes merge)',
+    'Handle 1M+ followers for celebrities',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Tweet ingestion service',
+      },
+      {
+        type: 'storage',
+        reason: 'User timelines (Redis/Cassandra)',
+      },
+      {
+        type: 'storage',
+        reason: 'Tweet database',
+      },
+      {
+        type: 'cache',
+        reason: 'Cache for celebrity tweets',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'compute',
+        reason: 'Post tweets, read timelines',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Fan-out writes or reads',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Cache celebrity tweets',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch1-fanout', problemConfigs['ddia-ch1-fanout'] || {
+    baseRps: 5000,
+    readRatio: 0.95,
+    maxLatency: 200,
+    availability: 0.999,
+  }, [
+    'Check follower count on post',
+    'Fan-out write for normal users',
+    'Fan-out read for celebrities',
+    'Merge timelines on read',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
+
+// ============================================================================
+// 1.3 Maintainability
+// ============================================================================
+
+/**
+ * Problem 11: Operability
+ * Teaches: Design for easy operations (monitoring, deployment)
+ */
+export const operabilityProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch1-operability',
+  title: 'Operability - Easy Operations',
+  description: `Design a system that's easy to operate. Provide good monitoring, clear documentation, automation, and self-healing capabilities to reduce operational burden.
+
+Learning objectives:
+- Implement comprehensive monitoring and alerting
+- Automate deployments and scaling
+- Provide runbooks for common issues
+- Enable self-healing (auto-restart, auto-scale)
+
+Key requirements:
+- Monitoring dashboards (Grafana)
+- Automated deployments (CI/CD)
+- Auto-scaling based on load
+- Runbooks for common failures`,
+
+  userFacingFRs: [
+    'Dashboards showing key metrics (RPS, latency, errors, CPU, memory)',
+    'Alerts for anomalies (high latency, error rate)',
+    'CI/CD pipeline for automated deployments',
+    'Auto-scaling: Add servers when CPU > 70%',
+    'Auto-restart failed services',
+    'Runbooks documenting common issues and fixes',
+  ],
+  userFacingNFRs: [
+    'Deployment frequency: Multiple times per day',
+    'Mean time to recovery (MTTR): <10 minutes',
+    'Alert fatigue: <5 alerts per day',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Application services with health checks',
+      },
+      {
+        type: 'compute',
+        reason: 'Monitoring system (Prometheus + Grafana)',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Send metrics to monitoring',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch1-operability', problemConfigs['ddia-ch1-operability'] || {
+    baseRps: 2000,
+    readRatio: 0.7,
+    maxLatency: 100,
+    availability: 0.999,
+  }, [
+    'Dashboards with key metrics',
+    'Alerts for anomalies',
+    'CI/CD pipeline',
+    'Auto-scaling',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
+
+/**
+ * Problem 12: Simplicity
+ * Teaches: Avoid accidental complexity
+ */
+export const simplicityProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch1-simplicity',
+  title: 'Simplicity - Avoid Complexity',
+  description: `Design a simple system that avoids accidental complexity. Use abstractions, standard patterns, and clear interfaces. Complexity is the enemy of maintainability.
+
+Learning objectives:
+- Identify accidental vs essential complexity
+- Use abstractions to hide complexity
+- Apply standard design patterns
+- Keep interfaces simple and consistent
+
+Example: Don't build custom distributed consensus - use proven systems like ZooKeeper, etcd.
+
+Key requirements:
+- Use proven libraries and frameworks
+- Create clear abstraction layers
+- Follow standard patterns (MVC, repository, factory)
+- Document architectural decisions`,
+
+  userFacingFRs: [
+    'Use standard frameworks (Express, Django, Spring)',
+    'Use proven databases (PostgreSQL, Redis) - avoid custom storage',
+    'Create clear layers: API → Service → Repository → Database',
+    'Use dependency injection for testability',
+    'Document architecture decisions (ADRs)',
+  ],
+  userFacingNFRs: [
+    'Onboarding time: New developer productive in <1 week',
+    'Code complexity: Avoid deeply nested logic (max 3 levels)',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Application with clear layered architecture',
+      },
+      {
+        type: 'storage',
+        reason: 'Standard database (PostgreSQL)',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'compute',
+        reason: 'API layer',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Repository pattern',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch1-simplicity', problemConfigs['ddia-ch1-simplicity'] || {
+    baseRps: 1000,
+    readRatio: 0.7,
+    maxLatency: 100,
+    availability: 0.99,
+  }, [
+    'Use standard frameworks',
+    'Clear layered architecture',
+    'Standard design patterns',
+    'Document decisions',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
+
+/**
+ * Problem 13: Evolvability
+ * Teaches: Design for change
+ */
+export const evolvabilityProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch1-evolvability',
+  title: 'Evolvability - Design for Change',
+  description: `Design a system that's easy to change and evolve. Use loose coupling, versioned APIs, feature flags, and backward compatibility to enable rapid iteration without breaking existing functionality.
+
+Learning objectives:
+- Use loose coupling between services
+- Version APIs for backward compatibility
+- Feature flags for gradual rollouts
+- Schema evolution strategies
+
+Key requirements:
+- Versioned APIs (v1, v2)
+- Feature flags for new features
+- Backward-compatible schema changes
+- Service contracts and API documentation`,
+
+  userFacingFRs: [
+    'Version APIs: /api/v1/users, /api/v2/users',
+    'Support multiple API versions simultaneously',
+    'Feature flags to enable/disable features per user',
+    'Backward-compatible database schema changes (add nullable columns)',
+    'API documentation with examples (OpenAPI/Swagger)',
+  ],
+  userFacingNFRs: [
+    'API version support: Maintain n-1 versions (current + previous)',
+    'Feature flag latency: <5ms overhead',
+    'Schema migration: Zero downtime',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'API gateway with versioning',
+      },
+      {
+        type: 'compute',
+        reason: 'Feature flag service',
+      },
+      {
+        type: 'storage',
+        reason: 'Database with schema versioning',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'compute',
+        reason: 'Versioned API requests',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Schema-versioned data access',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch1-evolvability', problemConfigs['ddia-ch1-evolvability'] || {
+    baseRps: 1500,
+    readRatio: 0.8,
+    maxLatency: 100,
+    availability: 0.99,
+  }, [
+    'Versioned APIs',
+    'Feature flags',
+    'Backward-compatible schemas',
+    'API documentation',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
+
+/**
+ * Problem 14: Observability
+ * Teaches: Implement logging, metrics, tracing
+ */
+export const observabilityProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch1-observability',
+  title: 'Observability - Logging, Metrics, Tracing',
+  description: `Implement the three pillars of observability: logging, metrics, and distributed tracing. Make your system observable so you can debug issues in production.
+
+Learning objectives:
+- Structured logging (JSON logs)
+- Metrics collection (Prometheus)
+- Distributed tracing (Jaeger, Zipkin)
+- Correlate logs, metrics, and traces
+
+Key requirements:
+- Structured JSON logs with trace IDs
+- Metrics (RED: Rate, Errors, Duration)
+- Distributed tracing across services
+- Centralized log aggregation`,
+
+  userFacingFRs: [
+    'Structured JSON logging with fields: timestamp, level, message, trace_id, user_id',
+    'Collect RED metrics: Request rate, error rate, duration',
+    'Distributed tracing: Trace requests across all services',
+    'Centralized logs (ELK stack or Loki)',
+    'Correlation: Search logs by trace_id',
+  ],
+  userFacingNFRs: [
+    'Log volume: ~1GB/day per service',
+    'Trace sampling: 1% of requests (100% for errors)',
+    'Metrics resolution: 10-second granularity',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Application with instrumentation',
+      },
+      {
+        type: 'storage',
+        reason: 'Log storage (Elasticsearch)',
+      },
+      {
+        type: 'storage',
+        reason: 'Metrics storage (Prometheus)',
+      },
+      {
+        type: 'compute',
+        reason: 'Tracing backend (Jaeger)',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Send logs and metrics',
+      },
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Send traces',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch1-observability', problemConfigs['ddia-ch1-observability'] || {
+    baseRps: 2000,
+    readRatio: 0.7,
+    maxLatency: 100,
+    availability: 0.99,
+  }, [
+    'Structured JSON logging',
+    'RED metrics collection',
+    'Distributed tracing',
+    'Centralized log aggregation',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
+
+/**
+ * Problem 15: Technical Debt
+ * Teaches: Manage and reduce technical debt
+ */
+export const technicalDebtProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch1-technical-debt',
+  title: 'Technical Debt - Manage and Reduce',
+  description: `Identify, track, and systematically reduce technical debt. Balance shipping features with improving code quality. Use metrics like code coverage, code duplication, and cyclomatic complexity.
+
+Learning objectives:
+- Identify technical debt (code smells, outdated dependencies)
+- Track debt using tools (SonarQube, CodeClimate)
+- Allocate time for debt reduction (20% rule)
+- Refactor incrementally
+
+Key requirements:
+- Code quality metrics (coverage, duplication, complexity)
+- Dependency updates (security patches)
+- Refactoring sprints
+- Debt tracking in backlog`,
+
+  userFacingFRs: [
+    'Run code quality analysis (SonarQube)',
+    'Track metrics: test coverage, code duplication, cyclomatic complexity',
+    'Flag outdated dependencies (npm audit, Dependabot)',
+    'Allocate 20% of sprint to debt reduction',
+    'Refactor incrementally (small PRs)',
+  ],
+  userFacingNFRs: [
+    'Test coverage: >80%',
+    'Code duplication: <5%',
+    'Cyclomatic complexity: <10 per function',
+    'Dependency freshness: No vulnerabilities',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Application codebase',
+      },
+      {
+        type: 'compute',
+        reason: 'Code quality tools (SonarQube)',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'compute',
+        reason: 'Analyze code quality',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch1-technical-debt', problemConfigs['ddia-ch1-technical-debt'] || {
+    baseRps: 500,
+    readRatio: 0.5,
+    maxLatency: 100,
+    availability: 0.99,
+  }, [
+    'Code quality analysis',
+    'Track coverage, duplication, complexity',
+    'Update dependencies',
+    'Allocate refactoring time',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
 
 // Export all Chapter 1 problems
 export const ddiaChapter1Problems = [
@@ -614,5 +1238,12 @@ export const ddiaChapter1Problems = [
   chaosEngineeringProblemDefinition,
   verticalScalingProblemDefinition,
   horizontalScalingProblemDefinition,
-  // Additional 8 problems would be added here
+  loadParametersProblemDefinition,
+  performanceMetricsProblemDefinition,
+  fanoutProblemDefinition,
+  operabilityProblemDefinition,
+  simplicityProblemDefinition,
+  evolvabilityProblemDefinition,
+  observabilityProblemDefinition,
+  technicalDebtProblemDefinition,
 ];
