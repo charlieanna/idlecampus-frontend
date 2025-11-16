@@ -130,45 +130,6 @@ export const APIsReference: React.FC = () => {
             </div>
           </div>
         </div>
-
-        {/* Progressive Enhancement */}
-        <div className="border-t pt-4">
-          <h3 className="font-semibold text-gray-900 mb-3">Progressive Enhancement Path</h3>
-          <div className="space-y-3">
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-semibold">
-                1
-              </div>
-              <div className="text-sm text-gray-700">
-                <strong>Start Simple:</strong> Client → App Server with in-memory storage
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-purple-100 text-purple-600 rounded-full flex items-center justify-center font-semibold">
-                2
-              </div>
-              <div className="text-sm text-gray-700">
-                <strong>Add Persistence:</strong> Connect Database component for data durability
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center font-semibold">
-                3
-              </div>
-              <div className="text-sm text-gray-700">
-                <strong>Optimize Performance:</strong> Add Cache component for faster reads
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="flex-shrink-0 w-8 h-8 bg-green-100 text-green-600 rounded-full flex items-center justify-center font-semibold">
-                4
-              </div>
-              <div className="text-sm text-gray-700">
-                <strong>Scale Further:</strong> Add load balancer, multiple app servers, etc.
-              </div>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
