@@ -126,6 +126,7 @@ function determineDifficulty(
 
 function determineAvailableComponents(def: ProblemDefinition): string[] {
   const baseComponents = [
+    'client',
     'load_balancer',
     'app_server',
     'database',
