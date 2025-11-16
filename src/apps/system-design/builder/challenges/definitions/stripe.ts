@@ -1,11 +1,29 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  transactionConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Stripe - Payment Processing Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 2 (Document Model/Event Sourcing) & Ch. 7 (Idempotency)
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 2: Event sourcing - Store payment events as immutable log
+ * - Ch. 2: Document model (MongoDB) for flexible payment metadata
+ * - Ch. 7: Idempotency keys to prevent duplicate charges
+ * - Ch. 7: Two-phase commit for payment authorization + capture
+ * - Ch. 7: Exactly-once semantics for payment processing
+ *
+ * Key Patterns (from Stripe's actual architecture):
+ * - Event Sourcing: All state changes stored as events (payment.created, payment.succeeded)
+ * - Idempotency: Unique idempotency_key prevents duplicate API calls
+ * - Webhooks: Async event notifications to merchants
+ * - Append-only Log: Never delete/update payments, only add new events
  */
 export const stripeProblemDefinition: ProblemDefinition = {
   id: 'stripe',
@@ -14,7 +32,14 @@ export const stripeProblemDefinition: ProblemDefinition = {
 - Merchants can accept credit card payments
 - Platform processes payments securely
 - Platform handles subscriptions and recurring billing
-- Merchants can view transaction history and analytics`,
+- Merchants can view transaction history and analytics
+
+Learning Objectives (DDIA Ch. 2, 7):
+1. Implement event sourcing for payment history (DDIA Ch. 2: Append-only log)
+2. Use idempotency keys to prevent duplicate charges (DDIA Ch. 7)
+3. Ensure exactly-once payment processing (DDIA Ch. 7)
+4. Store payments in document model for flexibility (DDIA Ch. 2)
+5. Handle two-phase commits (authorize → capture) (DDIA Ch. 7)`,
 
   functionalRequirements: {
     mustHave: [
@@ -62,13 +87,35 @@ export const stripeProblemDefinition: ProblemDefinition = {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
     },
+    {
+      name: 'Transaction Configuration (DDIA Ch. 7)',
+      validate: transactionConfigValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
+    },
   ],
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Merchants can accept credit card payments',
     'Platform handles subscriptions and recurring billing',
-    'Merchants can view transaction history'
+    'Merchants can view transaction history',
+    'Platform processes payments securely'
+  ],
+
+  // DDIA/SDP Non-Functional Requirements
+  userFacingNFRs: [
+    'No duplicate charges: idempotency keys (DDIA Ch. 7: Exactly-once semantics)',
+    'Payment atomicity: authorize + capture together (DDIA Ch. 7)',
+    'Event sourcing: all events immutable (DDIA Ch. 2: Append-only log)',
+    'Webhook delivery: at-least-once guarantee (DDIA Ch. 7)',
+    'Audit trail: complete payment history (DDIA Ch. 2: Event sourcing)',
   ],
 
   pythonTemplate: `from datetime import datetime, timedelta

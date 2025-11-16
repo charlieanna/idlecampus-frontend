@@ -1,11 +1,29 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  transactionConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Amazon - E-commerce Marketplace
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 2 (NoSQL Data Models) & Ch. 7 (Transactions for Inventory)
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 2: NoSQL key-value store (DynamoDB) for shopping cart (session data)
+ * - Ch. 2: Document model for product catalog (flexible schema)
+ * - Ch. 7: ACID transactions for inventory management (prevent overselling)
+ * - Ch. 7: Lost update prevention - optimistic locking for inventory
+ * - Ch. 6: Partitioning by user_id for cart, product_id for catalog
+ *
+ * Key Design Patterns:
+ * - Shopping Cart: DynamoDB with TTL for session expiry
+ * - Product Catalog: Document store (MongoDB/DynamoDB) for flexible attributes
+ * - Inventory: ACID transactions to prevent overselling (compare-and-swap)
+ * - Order Processing: Two-phase commit (reserve inventory + create order)
  */
 export const amazonProblemDefinition: ProblemDefinition = {
   id: 'amazon',
@@ -14,13 +32,28 @@ export const amazonProblemDefinition: ProblemDefinition = {
 - Users can browse and search for products
 - Users can add items to cart and checkout
 - Users can track orders and view order history
-- Sellers can list and manage products`,
+- Sellers can list and manage products
 
-  // User-facing requirements (interview-style)
+Learning Objectives (DDIA Ch. 2, 7):
+1. Use NoSQL (DynamoDB) for shopping cart (DDIA Ch. 2: Key-value model)
+2. Prevent inventory overselling with transactions (DDIA Ch. 7: Lost updates)
+3. Implement optimistic locking for inventory (DDIA Ch. 7: Compare-and-swap)
+4. Use document model for product catalog (DDIA Ch. 2: Flexible schema)
+5. Ensure atomicity for order + inventory (DDIA Ch. 7)`,
+
   userFacingFRs: [
     'Users can browse and search for products',
     'Users can add items to cart and checkout',
-    'Users can track orders and view order history'
+    'Users can track orders and view order history',
+    'Sellers can list and manage products'
+  ],
+
+  userFacingNFRs: [
+    'No overselling: 100% guarantee (DDIA Ch. 7: Optimistic locking on inventory)',
+    'Cart operations: < 50ms (DDIA Ch. 2: DynamoDB key-value access)',
+    'Order atomicity: Inventory + order together (DDIA Ch. 7: ACID transaction)',
+    'Product search: < 300ms (DDIA Ch. 3: Secondary indexes)',
+    'Inventory consistency: Strong consistency (DDIA Ch. 7: Serializable)',
   ],
 
   functionalRequirements: {
@@ -70,6 +103,18 @@ export const amazonProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Transaction Configuration (DDIA Ch. 7)',
+      validate: transactionConfigValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

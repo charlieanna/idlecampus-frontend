@@ -1,11 +1,42 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  highAvailabilityValidator,
+  transactionConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Booking.com - Hotel Booking Platform
- * Comprehensive FR and NFR scenarios
+ * Comprehensive FR and NFR scenarios with DDIA/SDP concepts
+ *
+ * DDIA Concepts Applied (Ch. 2 - Data Models & Ch. 7 - Transactions):
+ * - Relational Integrity: Foreign key constraints (hotel → rooms, rooms → bookings)
+ * - Cascading Operations: ON DELETE CASCADE for hotel removal
+ * - Complex Joins: Multi-table queries for availability checking
+ * - ACID Transactions (Ch. 7): Critical for preventing double-bookings
+ *   - Atomicity: Booking + payment must succeed/fail together
+ *   - Consistency: Room count must always be accurate
+ *   - Isolation: Serializable isolation to prevent write skew
+ *   - Durability: Confirmed bookings persisted to disk immediately
+ *
+ * DDIA Ch. 7 - Transaction Isolation Levels:
+ * - Read Committed: Prevent dirty reads for room availability
+ * - Repeatable Read: Prevent non-repeatable reads during booking process
+ * - Serializable: Prevent write skew (two bookings for same room/date)
+ *
+ * Classic Double-Booking Problem (DDIA Ch. 7):
+ * - Two users book last available room simultaneously
+ * - Without serializable isolation, both bookings succeed
+ * - Solution: SELECT FOR UPDATE or optimistic locking with version numbers
+ *
+ * System Design Primer Concepts:
+ * - Database Constraints: Foreign keys, unique constraints, check constraints
+ * - Optimistic Locking: Version field to detect concurrent modifications
+ * - Pessimistic Locking: Row-level locks (SELECT FOR UPDATE)
  */
 export const bookingcomProblemDefinition: ProblemDefinition = {
   id: 'bookingcom',
@@ -14,13 +45,42 @@ export const bookingcomProblemDefinition: ProblemDefinition = {
 - Users can search for hotels by location and dates
 - Users can view room availability and prices
 - Users can book rooms and manage reservations
-- Platform handles payments and cancellations`,
+- Platform handles payments and cancellations
+
+Learning Objectives (DDIA/SDP):
+1. Design SQL schema with strong referential integrity (DDIA Ch. 2)
+   - Foreign keys: room.hotel_id → hotel.id, booking.room_id → room.id
+   - Cascading deletes: Delete hotel → cascade to rooms → cascade to bookings
+2. Prevent double-bookings with ACID transactions (DDIA Ch. 7)
+   - Serializable isolation level to prevent write skew
+   - Pessimistic locking: SELECT FOR UPDATE when checking availability
+3. Implement complex availability queries (DDIA Ch. 2)
+   - JOIN rooms with bookings to find available rooms for date range
+   - Handle overlapping date ranges correctly
+4. Handle concurrent booking attempts (DDIA Ch. 7)
+   - Optimistic locking with version numbers
+   - Retry logic for serialization failures
+5. Ensure atomicity for booking + payment (DDIA Ch. 7)
+   - Two-phase commit or single transaction for both operations`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can search for hotels by location and dates',
     'Users can view room availability and prices',
-    'Users can book rooms and manage reservations'
+    'Users can book rooms and manage reservations',
+    'Platform handles payments and cancellations'
+  ],
+
+  // DDIA/SDP Non-Functional Requirements
+  userFacingNFRs: [
+    'No double-bookings: 100% guarantee (DDIA Ch. 7: Serializable isolation)',
+    'Booking transaction: ACID compliant (DDIA Ch. 7: Atomicity, Consistency, Isolation, Durability)',
+    'Availability query: < 200ms (DDIA Ch. 3: Index on (room_id, check_in, check_out))',
+    'Referential integrity: Enforce FK constraints (DDIA Ch. 2: No orphaned bookings)',
+    'Concurrent bookings: Handle gracefully (DDIA Ch. 7: Serialization failure retry)',
+    'Payment atomicity: Booking + payment in single transaction (DDIA Ch. 7)',
+    'Isolation level: Serializable for bookings (DDIA Ch. 7: Prevent write skew)',
+    'Scalability: Partition by hotel_id/region (DDIA Ch. 6)',
   ],
 
   functionalRequirements: {
@@ -69,6 +129,22 @@ export const bookingcomProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Transaction Configuration (DDIA Ch. 7)',
+      validate: transactionConfigValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
+    },
+    {
+      name: 'High Availability (DDIA Ch. 5)',
+      validate: highAvailabilityValidator,
     },
   ],
 

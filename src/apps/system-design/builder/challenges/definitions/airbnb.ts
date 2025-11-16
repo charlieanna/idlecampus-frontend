@@ -1,11 +1,35 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  highAvailabilityValidator,
+  transactionConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Airbnb - Vacation Rental Platform
- * Comprehensive FR and NFR scenarios
+ * Comprehensive FR and NFR scenarios with DDIA/SDP concepts
+ *
+ * DDIA Concepts Applied (Ch. 2 - Data Models & Query Languages):
+ * - Relational Model: Normalized SQL schema design with proper foreign keys
+ * - Complex Joins: Multi-table queries (listings → bookings → reviews → users)
+ * - Indexing Strategies: Geospatial indexes for location search, composite indexes
+ * - Query Optimization: Efficient joins for review aggregation, availability checks
+ * - Referential Integrity: Foreign key constraints to prevent orphaned bookings
+ * - ACID Transactions (Ch. 7): Atomic booking + payment processing
+ *
+ * DDIA Ch. 3 - Storage & Retrieval:
+ * - Composite Indexes: (listing_id, check_in, check_out) for availability queries
+ * - Geospatial Indexes: PostGIS or MySQL spatial indexes for location search
+ * - Covering Indexes: Include commonly queried columns to avoid table lookups
+ *
+ * System Design Primer Concepts:
+ * - Database Indexing: B-tree indexes for primary keys, geospatial for location
+ * - Transaction Management: Two-phase commit for booking + payment atomicity
+ * - Denormalization: Cache listing ratings to avoid expensive review aggregations
  */
 export const airbnbProblemDefinition: ProblemDefinition = {
   id: 'airbnb',
@@ -14,11 +38,41 @@ export const airbnbProblemDefinition: ProblemDefinition = {
 - Hosts can list properties with photos and details
 - Guests can search and book properties
 - Platform handles payments and bookings
-- Users can leave reviews`,
+- Users can leave reviews
+
+Learning Objectives (DDIA/SDP):
+1. Design normalized SQL schema with foreign keys (DDIA Ch. 2)
+   - Proper relationships: users → listings, listings → bookings, bookings → reviews
+2. Implement complex joins for aggregations (DDIA Ch. 2)
+   - Average rating per listing from reviews table
+   - Availability checks across bookings table
+3. Create efficient indexes for common queries (DDIA Ch. 3)
+   - Geospatial index for location-based search
+   - Composite index (listing_id, check_in, check_out) for availability
+4. Ensure ACID transactions for bookings (DDIA Ch. 7)
+   - Atomic: Create booking + payment together
+   - Isolation: Prevent double-booking with serializable transactions
+5. Optimize query performance with denormalization (DDIA Ch. 2)
+   - Cache average_rating on listings table`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
+    'Hosts can list properties with photos and details',
+    'Guests can search and book properties',
+    'Platform handles payments and bookings',
     'Users can leave reviews'
+  ],
+
+  // DDIA/SDP Non-Functional Requirements
+  userFacingNFRs: [
+    'Search latency: p99 < 300ms (DDIA Ch. 3: Geospatial index)',
+    'Booking transaction: ACID guarantees (DDIA Ch. 7: Serializable isolation)',
+    'No double-bookings: Prevent with transactions (DDIA Ch. 7: Write skew prevention)',
+    'Review aggregation: p99 < 100ms (DDIA Ch. 2: Denormalized average_rating)',
+    'Availability query: < 50ms (DDIA Ch. 3: Composite index on dates)',
+    'Referential integrity: Enforce FK constraints (DDIA Ch. 2: Relational model)',
+    'Complex joins: < 200ms for 5-table queries (DDIA Ch. 2: Query optimization)',
+    'Scalability: Partition by city/region (DDIA Ch. 6: Geographic partitioning)',
   ],
 
   functionalRequirements: {
@@ -76,6 +130,22 @@ export const airbnbProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Transaction Configuration (DDIA Ch. 7)',
+      validate: transactionConfigValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
+    },
+    {
+      name: 'High Availability (DDIA Ch. 5)',
+      validate: highAvailabilityValidator,
     },
   ],
 
