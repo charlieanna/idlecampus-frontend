@@ -1,20 +1,33 @@
 /**
- * Problem Whitelist - 250 curated problems
+ * Problem Whitelist - 440+ curated problems
  *
  * Breakdown:
  * - L1: 40 original real-world problems (Instagram, Twitter, etc.)
  * - L2-4: 35 distinct pattern examples (30 patterns + 5 DDIA gaps)
  * - L5: 107 platform problems (migrations, APIs, multi-tenant, etc.)
  * - L6: 10 next-gen problems (practical modern tech)
- * - DDIA Teaching: 58 concept-focused problems (new!)
+ * - DDIA Teaching: 151 concept-focused problems (ALL CHAPTERS!)
+ * - System Design Primer: 45 infrastructure & data problems
  *
- * DDIA Teaching Problems (58 new):
- * - Chapter 5 Replication: 16 problems
- * - Chapter 6 Partitioning: 12 problems
- * - Chapter 7 Transactions: 16 problems
- * - Chapter 9 Consensus: 14 problems
+ * DDIA Teaching Problems (151 total - ALL CHAPTERS):
+ * - Chapter 1: Reliability, Scalability, Maintainability (15)
+ * - Chapter 2: Data Models & Query Languages (12)
+ * - Chapter 3: Storage & Retrieval (10)
+ * - Chapter 4: Encoding & Evolution (8)
+ * - Chapter 5: Replication (16)
+ * - Chapter 6: Partitioning (12)
+ * - Chapter 7: Transactions (16)
+ * - Chapter 8: Distributed Systems (15)
+ * - Chapter 9: Consensus (14)
+ * - Chapter 10: Batch Processing (10)
+ * - Chapter 11: Stream Processing (15)
+ * - Chapter 12: Future of Data Systems (8)
  *
- * These teaching problems focus on individual DDIA concepts, providing
+ * System Design Primer (45 total):
+ * - Infrastructure: Performance, DNS, CDN, Load Balancers, Reverse Proxy, App Layer (41)
+ * - Data & Communication: Database concepts (4)
+ *
+ * These teaching problems focus on individual concepts, providing
  * a progressive learning path from single concepts to complex real-world systems.
  */
 
@@ -291,9 +304,62 @@ export const nextGenProblems = [
 ];
 
 /**
- * DDIA Teaching Problems - Concept-focused learning (58)
+ * DDIA Teaching Problems - Concept-focused learning (151 total - ALL CHAPTERS)
  */
 export const ddiaTeachingProblems = [
+  // Chapter 1: Reliability, Scalability, Maintainability (15)
+  'ddia-ch1-spof',
+  'ddia-ch1-hardware-faults',
+  'ddia-ch1-software-errors',
+  'ddia-ch1-human-errors',
+  'ddia-ch1-chaos-engineering',
+  'ddia-ch1-vertical-scaling',
+  'ddia-ch1-horizontal-scaling',
+  'ddia-ch1-load-parameters',
+  'ddia-ch1-performance-metrics',
+  'ddia-ch1-fanout',
+  'ddia-ch1-operability',
+  'ddia-ch1-simplicity',
+  'ddia-ch1-evolvability',
+  'ddia-ch1-observability',
+  'ddia-ch1-technical-debt',
+
+  // Chapter 2: Data Models & Query Languages (12)
+  'ddia-ch2-relational-schema',
+  'ddia-ch2-foreign-keys',
+  'ddia-ch2-sql-optimization',
+  'ddia-ch2-indexing',
+  'ddia-ch2-document-schema',
+  'ddia-ch2-embedded-vs-referenced',
+  'ddia-ch2-schema-on-read',
+  'ddia-ch2-json-bson',
+  'ddia-ch2-graph-basics',
+  'ddia-ch2-graph-traversal',
+  'ddia-ch2-property-graphs',
+  'ddia-ch2-cypher-queries',
+
+  // Chapter 3: Storage & Retrieval (10)
+  'ddia-ch3-append-only-log',
+  'ddia-ch3-lsm-trees',
+  'ddia-ch3-bloom-filters',
+  'ddia-ch3-btrees',
+  'ddia-ch3-wal',
+  'ddia-ch3-copy-on-write',
+  'ddia-ch3-star-schema',
+  'ddia-ch3-snowflake-schema',
+  'ddia-ch3-columnar-storage',
+  'ddia-ch3-materialized-views',
+
+  // Chapter 4: Encoding & Evolution (8)
+  'ddia-ch4-json-encoding',
+  'ddia-ch4-binary-encoding',
+  'ddia-ch4-avro-schema',
+  'ddia-ch4-thrift',
+  'ddia-ch4-forward-compatibility',
+  'ddia-ch4-backward-compatibility',
+  'ddia-ch4-schema-versioning',
+  'ddia-ch4-migration-strategies',
+
   // Chapter 5: Replication (16)
   'ddia-read-replicas',
   'ddia-async-replication',
@@ -344,6 +410,23 @@ export const ddiaTeachingProblems = [
   'ddia-optimistic-concurrency',
   'ddia-deadlock-detection',
 
+  // Chapter 8: Distributed Systems (15)
+  'ddia-ch8-network-partitions',
+  'ddia-ch8-timeouts',
+  'ddia-ch8-circuit-breakers',
+  'ddia-ch8-idempotency',
+  'ddia-ch8-tcp-vs-udp',
+  'ddia-ch8-time-of-day-clocks',
+  'ddia-ch8-monotonic-clocks',
+  'ddia-ch8-lamport-timestamps',
+  'ddia-ch8-vector-clocks',
+  'ddia-ch8-ntp',
+  'ddia-ch8-byzantine-faults',
+  'ddia-ch8-merkle-trees',
+  'ddia-ch8-digital-signatures',
+  'ddia-ch8-pbft',
+  'ddia-ch8-blockchain',
+
   // Chapter 9: Consensus (14)
   'ddia-linearizability',
   'ddia-eventual-consistency',
@@ -359,18 +442,122 @@ export const ddiaTeachingProblems = [
   'ddia-pn-counter',
   'ddia-lww-register',
   'ddia-or-set',
+
+  // Chapter 10: Batch Processing (10)
+  'ddia-ch10-map-function',
+  'ddia-ch10-reduce-function',
+  'ddia-ch10-combiner',
+  'ddia-ch10-distributed-sort',
+  'ddia-ch10-join-algorithms',
+  'ddia-ch10-spark-rdds',
+  'ddia-ch10-dag-execution',
+  'ddia-ch10-lazy-evaluation',
+  'ddia-ch10-caching-results',
+  'ddia-ch10-lineage-recovery',
+
+  // Chapter 11: Stream Processing (15)
+  'ddia-ch11-message-brokers',
+  'ddia-ch11-pubsub',
+  'ddia-ch11-partitioned-logs',
+  'ddia-ch11-consumer-groups',
+  'ddia-ch11-offset-management',
+  'ddia-ch11-tumbling-windows',
+  'ddia-ch11-sliding-windows',
+  'ddia-ch11-session-windows',
+  'ddia-ch11-event-time',
+  'ddia-ch11-watermarks',
+  'ddia-ch11-stream-joins',
+  'ddia-ch11-stream-aggregations',
+  'ddia-ch11-stream-table-duality',
+  'ddia-ch11-exactly-once',
+  'ddia-ch11-checkpointing',
+
+  // Chapter 12: Future of Data Systems (8)
+  'ddia-ch12-lambda-architecture',
+  'ddia-ch12-kappa-architecture',
+  'ddia-ch12-cdc',
+  'ddia-ch12-event-sourcing',
+  'ddia-ch12-materialized-views-derived',
+  'ddia-ch12-cache-invalidation-derived',
+  'ddia-ch12-search-index-maintenance',
+  'ddia-ch12-cqrs',
+];
+
+/**
+ * System Design Primer Problems (45 total)
+ */
+export const systemDesignPrimerProblems = [
+  // Performance & Scalability (10)
+  'sdp-performance-vs-scalability',
+  'sdp-latency-vs-throughput',
+  'sdp-cap-theorem',
+  'sdp-amdahls-law',
+  'sdp-littles-law',
+  'sdp-load-testing',
+  'sdp-stress-testing',
+  'sdp-capacity-planning',
+  'sdp-performance-profiling',
+  'sdp-cost-optimization',
+
+  // DNS (5)
+  'sdp-dns-basics',
+  'sdp-dns-records',
+  'sdp-dns-caching',
+  'sdp-dns-load-balancing',
+  'sdp-geo-routing',
+
+  // CDN (6)
+  'sdp-cdn-basics',
+  'sdp-push-cdn',
+  'sdp-pull-cdn',
+  'sdp-cdn-cache-invalidation',
+  'sdp-cdn-ssl-termination',
+  'sdp-cdn-ddos-protection',
+
+  // Load Balancers (8)
+  'sdp-layer4-load-balancing',
+  'sdp-layer7-load-balancing',
+  'sdp-round-robin-lb',
+  'sdp-least-connections-lb',
+  'sdp-ip-hash-lb',
+  'sdp-health-checks-lb',
+  'sdp-session-affinity-lb',
+  'sdp-active-passive-failover',
+
+  // Reverse Proxy (4)
+  'sdp-nginx-reverse-proxy',
+  'sdp-ssl-termination-proxy',
+  'sdp-compression-proxy',
+  'sdp-static-asset-proxy',
+
+  // Application Layer (8)
+  'sdp-microservices',
+  'sdp-service-discovery',
+  'sdp-bff',
+  'sdp-sidecar',
+  'sdp-bulkhead',
+  'sdp-retry-backoff',
+  'sdp-rate-limiting',
+  'sdp-api-versioning',
+
+  // Database (4)
+  'sdp-denormalization',
+  'sdp-sql-optimization',
+  'sdp-key-value-store',
+  'sdp-wide-column-store',
 ];
 
 /**
  * Complete whitelist of all problem IDs to keep
  */
 export const problemWhitelist = new Set([
-  ...originalProblems,      // 40
-  ...patternProblems,       // 35 (30 original + 5 DDIA gaps)
-  ...platformProblems,      // 107
-  ...nextGenProblems,       // 10
-  ...ddiaTeachingProblems,  // 58
-  // Total: 250 problems
+  ...originalProblems,                // 40
+  ...patternProblems,                 // 35 (30 original + 5 DDIA gaps)
+  ...platformProblems,                // 107
+  ...nextGenProblems,                 // 10
+  ...ddiaTeachingProblems,            // 151 (ALL CHAPTERS!)
+  ...systemDesignPrimerProblems,      // 45
+  // Total: 388 problems (previously 250, now with full DDIA + SDP)
 ]);
 
 /**
