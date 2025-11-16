@@ -1,11 +1,63 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Spotify - Music Streaming Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 3 (Storage & Retrieval) - Music Catalog Search
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 3: Multi-field full-text search for music catalog
+ *   - Elasticsearch with multi_match query across song, artist, album
+ *   - Field boosting: title^3, artist^2, album, lyrics
+ *   - Support fuzzy matching for typos (Levenshtein distance)
+ * - Ch. 3: Autocomplete/typeahead search (DDIA Ch. 3)
+ *   - Edge n-gram tokenizer for prefix matching
+ *   - Index: "beatles" → "b", "be", "bea", "beat", "beatl", "beatles"
+ *   - Sub-millisecond autocomplete latency
+ * - Ch. 3: Composite indexes for filtering
+ *   - Index on (genre, popularity DESC) for discovery
+ *   - Index on (artist_id, release_year DESC) for artist discography
+ * - Ch. 3: Audio fingerprinting index
+ *   - Chromaprint/AcoustID for duplicate detection
+ *   - Shazam-style audio recognition
+ *
+ * Multi-Field Search Example (Elasticsearch):
+ * {
+ *   "query": {
+ *     "multi_match": {
+ *       "query": "imagine john lennon",
+ *       "fields": ["title^3", "artist^2", "album"],
+ *       "type": "best_fields",
+ *       "fuzziness": "AUTO"
+ *     }
+ *   },
+ *   "suggest": {
+ *     "song-suggest": {
+ *       "prefix": "imag",
+ *       "completion": {
+ *         "field": "title.suggest",
+ *         "size": 10
+ *       }
+ *     }
+ *   }
+ * }
+ *
+ * Autocomplete Architecture (DDIA Ch. 3):
+ * - Edge n-gram tokenizer breaks "imagine" into:
+ *   - "i", "im", "ima", "imag", "imagi", "imagin", "imagine"
+ * - Searching "imag" instantly matches "imagine" (no full-text scan)
+ * - Typically limited to first 20 chars for performance
+ *
+ * System Design Primer Concepts:
+ * - Search: Elasticsearch cluster for catalog search
+ * - CDN: Audio file distribution (similar to Netflix)
+ * - Caching: Redis for popular song metadata, playlists
  */
 export const spotifyProblemDefinition: ProblemDefinition = {
   id: 'spotify',
@@ -14,13 +66,36 @@ export const spotifyProblemDefinition: ProblemDefinition = {
 - Users can search and play songs
 - Users can create and share playlists
 - Platform recommends music based on listening history
-- Users can follow artists and other users`,
+- Users can follow artists and other users
+
+Learning Objectives (DDIA Ch. 3):
+1. Implement multi-field full-text search (DDIA Ch. 3)
+   - Search across song title, artist, album, lyrics simultaneously
+   - Use field boosting for relevance (title > artist > album)
+2. Design autocomplete/typeahead search (DDIA Ch. 3)
+   - Edge n-gram tokenizer for instant prefix matching
+   - Sub-millisecond latency for suggestions
+3. Create composite indexes for music discovery (DDIA Ch. 3)
+   - Index on (genre, popularity DESC) for trending
+4. Handle fuzzy matching for typos (DDIA Ch. 3)
+   - Levenshtein distance for "beatels" → "beatles"
+5. Index audio fingerprints for recognition (DDIA Ch. 3)
+   - Chromaprint for Shazam-style audio matching`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can search and play songs',
     'Users can create and share playlists',
     'Users can follow artists and other users'
+  ],
+
+  userFacingNFRs: [
+    'Search latency: p99 < 200ms (DDIA Ch. 3: Multi-field Elasticsearch)',
+    'Autocomplete: p99 < 50ms (DDIA Ch. 3: Edge n-gram indexing)',
+    'Fuzzy matching: Handle 1-2 character typos (DDIA Ch. 3: Levenshtein distance)',
+    'Discovery feed: < 300ms (DDIA Ch. 3: Composite index on genre + popularity)',
+    'Audio CDN: > 95% cache hit ratio (SDP: Pre-position popular tracks)',
+    'Audio fingerprint: < 1s to identify song (DDIA Ch. 3: Chromaprint index)',
   ],
 
   functionalRequirements: {
@@ -78,6 +153,14 @@ export const spotifyProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

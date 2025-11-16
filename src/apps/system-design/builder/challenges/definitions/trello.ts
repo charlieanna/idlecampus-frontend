@@ -1,11 +1,91 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Trello - Project Management Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 2 (Data Models) & Ch. 3 (Storage) - Document-Oriented Model
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 2: Document model for nested board/list/card hierarchy
+ *   - MongoDB/document DB stores board as single denormalized document
+ *   - Embedding: Lists embedded in board, cards embedded in lists
+ *   - One-to-many relationships: board → lists → cards
+ * - Ch. 3: Denormalization for fast board loading
+ *   - Fetch entire board structure in one query (no joins)
+ *   - Trade-off: Larger document size vs fewer queries
+ *   - Update position atomically with single document update
+ * - Ch. 3: Document versioning for real-time collaboration
+ *   - Optimistic locking: version field incremented on each update
+ *   - Conflict detection: reject update if version mismatch
+ * - Ch. 3: Secondary indexes for board access
+ *   - Index on (owner_id, created_at DESC) for "my boards"
+ *   - Index on (members, updated_at DESC) for "shared boards"
+ *
+ * Document Model Example (MongoDB):
+ * {
+ *   "_id": "board_123",
+ *   "name": "Sprint Planning",
+ *   "owner_id": "user_456",
+ *   "members": ["user_456", "user_789"],
+ *   "version": 42,
+ *   "lists": [
+ *     {
+ *       "id": "list_1",
+ *       "name": "To Do",
+ *       "position": 0,
+ *       "cards": [
+ *         {
+ *           "id": "card_1",
+ *           "title": "Implement feature X",
+ *           "description": "...",
+ *           "position": 0,
+ *           "assignees": ["user_789"],
+ *           "comments": [
+ *             {"user_id": "user_456", "text": "LGTM", "created_at": "2024-01-01"}
+ *           ],
+ *           "checklists": [
+ *             {"text": "Write tests", "completed": false}
+ *           ]
+ *         }
+ *       ]
+ *     }
+ *   ],
+ *   "created_at": "2024-01-01",
+ *   "updated_at": "2024-01-15"
+ * }
+ *
+ * Document Model Benefits (DDIA Ch. 2):
+ * 1. Schema flexibility: Add fields to cards without migrations
+ * 2. Locality: Entire board loaded in one query (no joins)
+ * 3. Natural hierarchy: JSON/BSON matches application data structure
+ * 4. Atomic updates: Move card between lists atomically
+ *
+ * Document Model Trade-offs (DDIA Ch. 2):
+ * - ❌ Large documents: Board with 1000 cards = large document
+ * - ❌ Duplication: User info duplicated in assignees/comments
+ * - ✅ Fast reads: One query to load board (vs 100+ with normalized schema)
+ * - ✅ Atomic updates: No transaction coordination across tables
+ *
+ * Real-Time Collaboration (DDIA Ch. 3):
+ * - Optimistic locking: version field prevents lost updates
+ * - WebSocket: Push updates to all board members
+ * - Conflict resolution: Last-write-wins with version check
+ *
+ * Card Search Index (DDIA Ch. 3):
+ * - Multi-key index on lists.cards.title for full-text search
+ * - Index on lists.cards.assignees for "my tasks"
+ * - Index on lists.cards.due_date for "upcoming deadlines"
+ *
+ * System Design Primer Concepts:
+ * - Document DB: MongoDB for hierarchical board structure
+ * - WebSocket: Real-time updates to collaborators
+ * - Caching: Redis for active board caching
  */
 export const trelloProblemDefinition: ProblemDefinition = {
   id: 'trello',
@@ -14,12 +94,35 @@ export const trelloProblemDefinition: ProblemDefinition = {
 - Users can create boards with lists and cards
 - Cards can be moved between lists (drag and drop)
 - Users can collaborate on boards
-- Cards support comments, attachments, and checklists`,
+- Cards support comments, attachments, and checklists
+
+Learning Objectives (DDIA Ch. 2 & 3):
+1. Design document model for nested hierarchy (DDIA Ch. 2)
+   - Embed lists in board, cards in lists
+   - Understand one-to-many relationships in documents
+2. Implement denormalization for performance (DDIA Ch. 3)
+   - Load entire board in one query (no joins)
+   - Trade-offs: document size vs query count
+3. Handle real-time collaboration (DDIA Ch. 3)
+   - Optimistic locking with version field
+   - Detect and resolve conflicts
+4. Create multi-key indexes for card search (DDIA Ch. 3)
+   - Index on nested fields: lists.cards.title
+   - Search across all cards in all boards`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can create boards with lists and cards',
     'Users can collaborate on boards'
+  ],
+
+  userFacingNFRs: [
+    'Board load: p99 < 200ms (DDIA Ch. 2: Denormalized document, one query)',
+    'Card move: p99 < 100ms (DDIA Ch. 2: Atomic document update)',
+    'Conflict detection: < 50ms (DDIA Ch. 3: Optimistic locking version check)',
+    'Card search: p99 < 300ms (DDIA Ch. 3: Multi-key index on nested cards)',
+    'Real-time updates: < 100ms (SDP: WebSocket push to collaborators)',
+    'Board cache: > 80% hit ratio (SDP: Redis for active boards)',
   ],
 
   functionalRequirements: {
@@ -67,6 +170,14 @@ export const trelloProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

@@ -1,11 +1,76 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * LinkedIn - Professional Networking Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 3 (Storage & Retrieval) - Multi-Faceted Search & Graph Indexing
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 3: Multi-faceted job search with composite indexes
+ *   - Index on (location, title, company, salary_range)
+ *   - Support filtering by skills (array contains query)
+ *   - Faceted search: "Show me jobs by location, then title"
+ * - Ch. 3: Skills taxonomy indexing
+ *   - Hierarchical skills: "JavaScript" → "Frontend" → "Web Development"
+ *   - Skill graph for recommendations: "Users with Python also have Pandas"
+ *   - Inverted index: skill → [user_ids with that skill]
+ * - Ch. 3: Professional graph with adjacency lists
+ *   - Index on (user_id) → [connection_ids, skills, companies]
+ *   - 2nd-degree network queries (friend-of-friend for introductions)
+ * - Ch. 3: Full-text search on profiles
+ *   - Elasticsearch for searching by name, headline, summary, experience
+ *   - Field boosting: name^3, headline^2, current_company^2
+ *
+ * Job Search Composite Index (DDIA Ch. 3):
+ * Index on (location, job_function, seniority_level, posted_at DESC):
+ * Query: "Software Engineer jobs in San Francisco, Senior level, posted last 7 days"
+ * - location = "San Francisco"      (range filter on index)
+ * - job_function = "Engineering"     (exact match on index)
+ * - seniority_level = "Senior"       (exact match on index)
+ * - posted_at >= NOW() - 7 days      (range filter on index)
+ *
+ * Skills Indexing (DDIA Ch. 3):
+ * Inverted Index:
+ * {
+ *   "Python": [user_123, user_456, user_789],
+ *   "Machine Learning": [user_123, user_789],
+ *   "TensorFlow": [user_789]
+ * }
+ *
+ * Skill Graph for Recommendations:
+ * - Users with "Python" often have "Pandas" (co-occurrence analysis)
+ * - Suggest "NumPy" to users with "Python" + "Pandas"
+ *
+ * Faceted Search Example (Elasticsearch):
+ * {
+ *   "query": {
+ *     "bool": {
+ *       "must": [
+ *         {"match": {"title": "software engineer"}},
+ *         {"term": {"location": "remote"}}
+ *       ],
+ *       "filter": [
+ *         {"terms": {"skills": ["python", "aws"]}}
+ *       ]
+ *     }
+ *   },
+ *   "aggs": {
+ *     "locations": {"terms": {"field": "location"}},
+ *     "companies": {"terms": {"field": "company"}},
+ *     "seniority": {"terms": {"field": "seniority_level"}}
+ *   }
+ * }
+ *
+ * System Design Primer Concepts:
+ * - Search: Elasticsearch for job/profile search with facets
+ * - Graph Database: Neo4j/TAO for professional network
+ * - Caching: Redis for job search results, profile views
  */
 export const linkedinProblemDefinition: ProblemDefinition = {
   id: 'linkedin',
@@ -14,7 +79,22 @@ export const linkedinProblemDefinition: ProblemDefinition = {
 - Users can create profiles with work experience
 - Users can connect with other professionals
 - Users can post updates and articles
-- Users can search for jobs and people`,
+- Users can search for jobs and people
+
+Learning Objectives (DDIA Ch. 3):
+1. Design multi-faceted job search (DDIA Ch. 3)
+   - Composite index on (location, title, skills, posted_at)
+   - Support filtering by multiple dimensions
+   - Implement faceted search (show counts by category)
+2. Build skills taxonomy indexing (DDIA Ch. 3)
+   - Inverted index: skill → [user_ids]
+   - Hierarchical skills graph for recommendations
+3. Implement professional graph queries (DDIA Ch. 3)
+   - 2nd-degree network (connections-of-connections)
+   - Mutual connection count for introductions
+4. Create profile full-text search (DDIA Ch. 3)
+   - Search across name, headline, experience, skills
+   - Field boosting for relevance ranking`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
@@ -22,6 +102,15 @@ export const linkedinProblemDefinition: ProblemDefinition = {
     'Users can connect with other professionals',
     'Users can post updates and articles',
     'Users can search for jobs and people'
+  ],
+
+  userFacingNFRs: [
+    'Job search latency: p99 < 300ms (DDIA Ch. 3: Composite index + Elasticsearch)',
+    'Faceted search: < 500ms with aggregations (DDIA Ch. 3: Elasticsearch facets)',
+    'Profile search: p99 < 200ms (DDIA Ch. 3: Full-text with field boosting)',
+    'Skills recommendations: < 1s (DDIA Ch. 3: Skill graph co-occurrence)',
+    '2nd-degree network: < 2s (DDIA Ch. 3: BFS to depth 2)',
+    'Job feed: < 400ms (DDIA Ch. 3: Index on skills + location + posted_at)',
   ],
 
   functionalRequirements: {
@@ -70,6 +159,14 @@ export const linkedinProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 
