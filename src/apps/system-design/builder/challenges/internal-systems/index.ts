@@ -24,6 +24,7 @@ export { secretManagementChallenge } from './secretManagement';
 export { internalApiGatewayChallenge } from './internalApiGateway';
 export { serviceMeshControlPlaneChallenge } from './serviceMeshControlPlane';
 export { internalJobSchedulerChallenge } from './internalJobScheduler';
+export { developerMetricsDashboardChallenge } from './developerMetricsDashboard';
 
 // Data Infrastructure
 export { featureStoreChallenge } from './featureStore';
@@ -32,12 +33,14 @@ export { logAggregationChallenge } from './logAggregation';
 export { metricsAggregationChallenge } from './metricsAggregation';
 export { realtimeAnalyticsPipelineChallenge } from './realtimeAnalyticsPipeline';
 export { dataLineageTrackingChallenge } from './dataLineageTracking';
+export { dataQualityMonitoringChallenge } from './dataQualityMonitoring';
 
 // Observability & Operations
 export { distributedTracingChallenge } from './distributedTracing';
 export { alertingIncidentManagementChallenge } from './alertingIncidentManagement';
 export { chaosEngineeringPlatformChallenge } from './chaosEngineeringPlatform';
 export { configurationRolloutChallenge } from './configurationRollout';
+export { capacityPlanningSystemChallenge } from './capacityPlanningSystem';
 
 // Migration & Reliability
 export { zeroDowntimeMigrationChallenge } from './zeroDowntimeMigration';
@@ -102,16 +105,19 @@ export function getInternalSystemsChallenges() {
   const { internalApiGatewayChallenge } = require('./internalApiGateway');
   const { serviceMeshControlPlaneChallenge } = require('./serviceMeshControlPlane');
   const { internalJobSchedulerChallenge } = require('./internalJobScheduler');
+  const { developerMetricsDashboardChallenge } = require('./developerMetricsDashboard');
   const { featureStoreChallenge } = require('./featureStore');
   const { etlOrchestrationChallenge } = require('./etlOrchestration');
   const { logAggregationChallenge } = require('./logAggregation');
   const { metricsAggregationChallenge } = require('./metricsAggregation');
   const { realtimeAnalyticsPipelineChallenge } = require('./realtimeAnalyticsPipeline');
   const { dataLineageTrackingChallenge } = require('./dataLineageTracking');
+  const { dataQualityMonitoringChallenge } = require('./dataQualityMonitoring');
   const { distributedTracingChallenge } = require('./distributedTracing');
   const { alertingIncidentManagementChallenge } = require('./alertingIncidentManagement');
   const { chaosEngineeringPlatformChallenge } = require('./chaosEngineeringPlatform');
   const { configurationRolloutChallenge } = require('./configurationRollout');
+  const { capacityPlanningSystemChallenge } = require('./capacityPlanningSystem');
   const { zeroDowntimeMigrationChallenge } = require('./zeroDowntimeMigration');
   const { multiRegionFailoverChallenge } = require('./multiRegionFailover');
   const { circuitBreakerLibraryChallenge } = require('./circuitBreakerLibrary');
@@ -128,6 +134,7 @@ export function getInternalSystemsChallenges() {
     internalApiGatewayChallenge,
     serviceMeshControlPlaneChallenge,
     internalJobSchedulerChallenge,
+    developerMetricsDashboardChallenge,
     // Data Infrastructure
     featureStoreChallenge,
     etlOrchestrationChallenge,
@@ -135,11 +142,13 @@ export function getInternalSystemsChallenges() {
     metricsAggregationChallenge,
     realtimeAnalyticsPipelineChallenge,
     dataLineageTrackingChallenge,
+    dataQualityMonitoringChallenge,
     // Observability
     distributedTracingChallenge,
     alertingIncidentManagementChallenge,
     chaosEngineeringPlatformChallenge,
     configurationRolloutChallenge,
+    capacityPlanningSystemChallenge,
     // Migration & Reliability
     zeroDowntimeMigrationChallenge,
     multiRegionFailoverChallenge,
@@ -166,6 +175,7 @@ export function getChallengesByCategory(category: string) {
       'internal_api_gateway',
       'service_mesh_control_plane',
       'internal_job_scheduler',
+      'developer_metrics_dashboard',
     ],
     data_infrastructure: [
       'feature_store',
@@ -174,12 +184,14 @@ export function getChallengesByCategory(category: string) {
       'metrics_aggregation_service',
       'realtime_analytics_pipeline',
       'data_lineage_tracking',
+      'data_quality_monitoring',
     ],
     observability: [
       'distributed_tracing',
       'alerting_incident_management',
       'chaos_engineering_platform',
       'configuration_rollout',
+      'capacity_planning_system',
     ],
     migration: [
       'zero_downtime_migration',
