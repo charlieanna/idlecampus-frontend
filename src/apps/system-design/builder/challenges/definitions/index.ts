@@ -136,6 +136,8 @@ export { ddiaChapter12Problems } from './generated-all/ddiaTeachingChapter12';
 
 // System Design Primer - Infrastructure & Data Concepts (45 total)
 // Source: https://github.com/donnemartin/system-design-primer
+import { systemDesignPrimerInfrastructureProblems } from './systemDesignPrimerInfrastructure';
+import { systemDesignPrimerDataProblems } from './systemDesignPrimerData';
 export { systemDesignPrimerInfrastructureProblems } from './systemDesignPrimerInfrastructure';
 export { systemDesignPrimerDataProblems } from './systemDesignPrimerData';
 
