@@ -1,20 +1,21 @@
 /**
- * Problem Whitelist - 192 curated, non-repetitive problems
+ * Problem Whitelist - 250 curated problems
  *
- * Reduction: 658 → 192 problems (71% reduction)
+ * Breakdown:
+ * - L1: 40 original real-world problems (Instagram, Twitter, etc.)
+ * - L2-4: 35 distinct pattern examples (30 patterns + 5 DDIA gaps)
+ * - L5: 107 platform problems (migrations, APIs, multi-tenant, etc.)
+ * - L6: 10 next-gen problems (practical modern tech)
+ * - DDIA Teaching: 58 concept-focused problems (new!)
  *
- * Rationale:
- * - L1: Keep all 40 original problems (100%)
- * - L2-4: Keep 35 distinct pattern examples (14% of 253)
- *   - 30 original patterns + 5 DDIA gap-filling problems
- * - L5: Keep 107 platform problems (59% of 182)
- *   - All 37 migration problems (valuable real-world case studies)
- *   - 70 best examples from other L5 categories
- * - L6: Keep 10 next-gen problems (5% of 195)
+ * DDIA Teaching Problems (58 new):
+ * - Chapter 5 Replication: 16 problems
+ * - Chapter 6 Partitioning: 12 problems
+ * - Chapter 7 Transactions: 16 problems
+ * - Chapter 9 Consensus: 14 problems
  *
- * DDIA Coverage: ~95% of "Designing Data-Intensive Applications" concepts
- * Added 5 problems to fill critical gaps: batch processing, sharding,
- * transaction isolation, OLAP, and graph databases
+ * These teaching problems focus on individual DDIA concepts, providing
+ * a progressive learning path from single concepts to complex real-world systems.
  */
 
 /**
@@ -290,6 +291,77 @@ export const nextGenProblems = [
 ];
 
 /**
+ * DDIA Teaching Problems - Concept-focused learning (58)
+ */
+export const ddiaTeachingProblems = [
+  // Chapter 5: Replication (16)
+  'ddia-read-replicas',
+  'ddia-async-replication',
+  'ddia-sync-replication',
+  'ddia-replication-lag',
+  'ddia-failover',
+  'ddia-multi-datacenter',
+  'ddia-write-conflicts',
+  'ddia-conflict-resolution',
+  'ddia-circular-topology',
+  'ddia-star-topology',
+  'ddia-quorum',
+  'ddia-dynamo-style',
+  'ddia-sloppy-quorum',
+  'ddia-hinted-handoff',
+  'ddia-read-repair',
+  'ddia-anti-entropy',
+
+  // Chapter 6: Partitioning (12)
+  'ddia-hash-partitioning',
+  'ddia-range-partitioning',
+  'ddia-consistent-hashing',
+  'ddia-hot-spot-avoidance',
+  'ddia-composite-partitioning',
+  'ddia-local-secondary-index',
+  'ddia-global-secondary-index',
+  'ddia-index-maintenance',
+  'ddia-fixed-partitions',
+  'ddia-dynamic-partitioning',
+  'ddia-proportional-partitioning',
+  'ddia-automatic-rebalancing',
+
+  // Chapter 7: Transactions (16)
+  'ddia-atomicity',
+  'ddia-consistency',
+  'ddia-isolation',
+  'ddia-durability',
+  'ddia-read-committed',
+  'ddia-snapshot-isolation',
+  'ddia-serializable',
+  'ddia-repeatable-read',
+  'ddia-dirty-reads',
+  'ddia-dirty-writes',
+  'ddia-read-skew',
+  'ddia-write-skew',
+  'ddia-phantom-reads',
+  'ddia-two-phase-locking',
+  'ddia-optimistic-concurrency',
+  'ddia-deadlock-detection',
+
+  // Chapter 9: Consensus (14)
+  'ddia-linearizability',
+  'ddia-eventual-consistency',
+  'ddia-causal-consistency',
+  'ddia-read-your-writes',
+  'ddia-monotonic-reads',
+  'ddia-paxos',
+  'ddia-raft',
+  'ddia-leader-election',
+  'ddia-distributed-locks',
+  'ddia-fencing-tokens',
+  'ddia-g-counter',
+  'ddia-pn-counter',
+  'ddia-lww-register',
+  'ddia-or-set',
+];
+
+/**
  * Complete whitelist of all problem IDs to keep
  */
 export const problemWhitelist = new Set([
@@ -297,7 +369,8 @@ export const problemWhitelist = new Set([
   ...patternProblems,       // 35 (30 original + 5 DDIA gaps)
   ...platformProblems,      // 107
   ...nextGenProblems,       // 10
-  // Total: 192 problems
+  ...ddiaTeachingProblems,  // 58
+  // Total: 250 problems
 ]);
 
 /**
