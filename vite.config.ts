@@ -6,11 +6,11 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: '0.0.0.0',
-    port: 5000,
+    port: 5001,
     strictPort: true,
     allowedHosts: ['all'],
     hmr: {
-      clientPort: 5000
+      clientPort: 5001
     },
     proxy: {
       '/api': {
