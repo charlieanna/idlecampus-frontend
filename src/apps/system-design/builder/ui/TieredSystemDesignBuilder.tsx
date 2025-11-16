@@ -73,7 +73,9 @@ export function TieredSystemDesignBuilder({
   const [systemGraph, setSystemGraph] = useState<SystemGraph>({ components: [], connections: [] });
   const [selectedNode, setSelectedNode] = useState<any>(null);
 
-  // Python code state
+  // Python code state - Multi-server support
+  const [pythonCodeByServer, setPythonCodeByServer] = useState<Record<string, {code: string, apis: string[]}>>({});
+  // Legacy pythonCode for backward compatibility
   const [pythonCode, setPythonCode] = useState<string>('');
 
   // Test results state
@@ -102,6 +104,31 @@ export function TieredSystemDesignBuilder({
         return results;
       }
 
+      // Determine which code to use: multi-server or legacy single code
+      let combinedCode = code;
+      
+      // Check if we have any non-empty server-specific code with assigned APIs
+      // Validate against current systemGraph to ensure servers still exist and have APIs
+      const validServerEntries = Object.entries(pythonCodeByServer).filter(([serverId, entry]) => {
+        // Check entry has code and APIs
+        if (!entry.code || entry.code.trim().length === 0) return false;
+        if (!entry.apis || entry.apis.length === 0) return false;
+        
+        // Verify server still exists in systemGraph with APIs assigned
+        const currentServer = systemGraph.components.find(c => c.id === serverId);
+        if (!currentServer || currentServer.type !== 'app_server') return false;
+        
+        const currentAPIs = currentServer.config.handledAPIs || [];
+        return currentAPIs.length > 0;
+      });
+
+      if (validServerEntries.length > 0) {
+        // Use multi-server code: combine all valid server codes
+        const validCodes = validServerEntries.map(([_, entry]) => entry.code);
+        combinedCode = validCodes.join('\n\n# ---\n\n');
+      }
+      // Otherwise, fall back to legacy pythonCode (already set to `code` parameter)
+
       for (const testCase of panelTestCases) {
         const operationsJson = JSON.stringify(testCase.operations || []);
         const operationsLiteral = JSON.stringify(operationsJson);
@@ -109,7 +136,7 @@ export function TieredSystemDesignBuilder({
         const script = `
 import json
 
-${code}
+${combinedCode}
 
 def run_test():
     operations = json.loads(${operationsLiteral})
@@ -232,7 +259,7 @@ if __name__ == "__main__":
 
       return results;
     },
-    []
+    [pythonCodeByServer, systemGraph]
   );
 
   // Web Crawler harness: assumes crawl_page(url, html) and manage_frontier(current_batch, seen_urls)
@@ -411,13 +438,51 @@ if __name__ == "__main__":
 
       // Initialize Python code from template (all challenges have pythonTemplate now)
       setPythonCode(selectedChallenge.pythonTemplate || '');
+      setPythonCodeByServer({});
     }
   }, [selectedChallenge]);
+
+  // Sync pythonCodeByServer entries with current app_server handledAPIs
+  useEffect(() => {
+    const appServers = systemGraph.components.filter(
+      c => c.type === 'app_server' && c.config.handledAPIs && c.config.handledAPIs.length > 0
+    );
+
+    // Update apis field for existing entries that might be stale
+    const needsUpdate = appServers.some(server => {
+      const entry = pythonCodeByServer[server.id];
+      if (entry) {
+        const currentAPIs = server.config.handledAPIs || [];
+        const cachedAPIs = entry.apis || [];
+        // Check if APIs are different
+        return JSON.stringify(currentAPIs.sort()) !== JSON.stringify(cachedAPIs.sort());
+      }
+      return false;
+    });
+
+    if (needsUpdate) {
+      const updated = { ...pythonCodeByServer };
+      appServers.forEach(server => {
+        if (updated[server.id]) {
+          updated[server.id] = {
+            ...updated[server.id],
+            apis: server.config.handledAPIs || []
+          };
+        }
+      });
+      setPythonCodeByServer(updated);
+    }
+  }, [systemGraph.components]);
 
   // Handle component addition
   const handleAddComponent = (componentType: string) => {
     const id = `${componentType}_${Date.now()}`;
     const defaultConfig = getDefaultConfig(componentType);
+
+    // For app_server, initialize with empty handledAPIs array
+    if (componentType === 'app_server') {
+      defaultConfig.handledAPIs = [];
+    }
 
     const newComponent = {
       id,
@@ -433,6 +498,7 @@ if __name__ == "__main__":
 
   // Handle component config update
   const handleUpdateConfig = useCallback((nodeId: string, config: Record<string, any>) => {
+    const component = systemGraph.components.find(c => c.id === nodeId);
     const updatedComponents = systemGraph.components.map((comp) =>
       comp.id === nodeId ? { ...comp, config: { ...comp.config, ...config } } : comp
     );
@@ -441,7 +507,22 @@ if __name__ == "__main__":
       ...systemGraph,
       components: updatedComponents,
     });
-  }, [systemGraph]);
+
+    // Synchronize pythonCodeByServer when app_server's handledAPIs change
+    if (component?.type === 'app_server' && config.handledAPIs !== undefined) {
+      const existingEntry = pythonCodeByServer[nodeId];
+      if (existingEntry) {
+        // Update the apis field to match the new handledAPIs
+        setPythonCodeByServer({
+          ...pythonCodeByServer,
+          [nodeId]: {
+            ...existingEntry,
+            apis: config.handledAPIs
+          }
+        });
+      }
+    }
+  }, [systemGraph, pythonCodeByServer]);
 
   // Handle delete component
   const handleDeleteComponent = (nodeId: string) => {
@@ -463,6 +544,13 @@ if __name__ == "__main__":
 
     if (selectedNode?.id === nodeId) {
       setSelectedNode(null);
+    }
+
+    // If deleting an app_server, clean up its code from pythonCodeByServer
+    if (component?.type === 'app_server' && pythonCodeByServer[nodeId]) {
+      const newCodeByServer = { ...pythonCodeByServer };
+      delete newCodeByServer[nodeId];
+      setPythonCodeByServer(newCodeByServer);
     }
 
     // If deleting an app_server and Python tab is active, switch to canvas
@@ -620,6 +708,22 @@ if __name__ == "__main__":
 
   // Check if app_server component exists on canvas
   const hasAppServer = systemGraph.components.some(comp => comp.type === 'app_server');
+
+  // Get available APIs from challenge (for API assignment in inspector)
+  const getAvailableAPIs = (): string[] => {
+    // For TinyURL, define standard APIs
+    if (selectedChallenge.id === 'tiny_url') {
+      return [
+        'POST /api/v1/urls',
+        'GET /api/v1/urls/*',
+        'GET /api/v1/stats',
+      ];
+    }
+    // For other challenges, could use challenge.requiredAPIs or derive from pythonTemplate
+    return [];
+  };
+
+  const availableAPIs = getAvailableAPIs();
 
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
@@ -818,6 +922,8 @@ if __name__ == "__main__":
           <PythonCodeChallengePanel
             pythonCode={pythonCode}
             setPythonCode={setPythonCode}
+            pythonCodeByServer={pythonCodeByServer}
+            setPythonCodeByServer={setPythonCodeByServer}
             systemGraph={systemGraph}
             onRunTests={handleRunPythonTests}
             onSubmit={handleSubmit}
@@ -838,6 +944,8 @@ if __name__ == "__main__":
           <PythonCodeChallengePanel
             pythonCode={pythonCode}
             setPythonCode={setPythonCode}
+            pythonCodeByServer={pythonCodeByServer}
+            setPythonCodeByServer={setPythonCodeByServer}
             systemGraph={systemGraph}
             onRunTests={handleRunPythonTests}
             onSubmit={handleSubmit}
@@ -997,6 +1105,7 @@ if __name__ == "__main__":
                 systemGraph={systemGraph}
                 onUpdateConfig={handleUpdateConfig}
                 isModal={false}
+                availableAPIs={availableAPIs}
               />
             </div>
           );

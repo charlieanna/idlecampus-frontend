@@ -11,6 +11,7 @@ interface InspectorProps {
   onUpdateConfig: (nodeId: string, config: Record<string, any>) => void;
   onBack?: () => void;
   isModal?: boolean;
+  availableAPIs?: string[]; // List of available APIs for assignment
 }
 
 interface ConfigPreset {
@@ -27,6 +28,7 @@ export function EnhancedInspector({
   onUpdateConfig,
   onBack,
   isModal = false,
+  availableAPIs = [],
 }: InspectorProps) {
   // Support both 'node' and 'selectedNode' props for backward compatibility
   const activeNode = node || selectedNode;
@@ -131,6 +133,7 @@ export function EnhancedInspector({
             config={component.config}
             onChange={handleChange}
             onApplyPreset={applyPreset}
+            availableAPIs={availableAPIs}
           />
         )}
 
@@ -210,6 +213,7 @@ interface ConfigProps {
   config: Record<string, any>;
   onChange: (key: string, value: any) => void;
   onApplyPreset?: (preset: Record<string, any>) => void;
+  availableAPIs?: string[];
 }
 
 interface DatabaseConfigProps extends ConfigProps {
@@ -217,10 +221,11 @@ interface DatabaseConfigProps extends ConfigProps {
   defaultDbCategory: DatabaseCategory;
 }
 
-function AppServerConfig({ config, onChange, onApplyPreset }: ConfigProps) {
+function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [] }: ConfigProps) {
   const instances = config.instances || 1;
   const capacity = instances * 1000; // 1000 RPS per instance
   const cost = instances * 100;
+  const handledAPIs = config.handledAPIs || [];
 
   const presets: ConfigPreset[] = [
     {
@@ -242,6 +247,14 @@ function AppServerConfig({ config, onChange, onApplyPreset }: ConfigProps) {
       icon: '🚀',
     },
   ];
+
+  const handleAPIToggle = (api: string) => {
+    const currentAPIs = config.handledAPIs || [];
+    const newAPIs = currentAPIs.includes(api)
+      ? currentAPIs.filter((a: string) => a !== api)
+      : [...currentAPIs, api];
+    onChange('handledAPIs', newAPIs);
+  };
 
   return (
     <div className="space-y-4">
@@ -325,6 +338,43 @@ function AppServerConfig({ config, onChange, onApplyPreset }: ConfigProps) {
             With only 1 instance, your system has no redundancy. Consider using
             at least 2 instances for production.
           </p>
+        </div>
+      )}
+
+      {/* API Assignment Section */}
+      {availableAPIs.length > 0 && (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            API Assignment
+          </label>
+          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+            <div className="text-xs text-gray-600 mb-2">
+              Select which APIs this server should handle:
+            </div>
+            <div className="space-y-2">
+              {availableAPIs.map((api) => (
+                <label key={api} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
+                  <input
+                    type="checkbox"
+                    checked={handledAPIs.includes(api)}
+                    onChange={() => handleAPIToggle(api)}
+                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-mono text-gray-700">{api}</span>
+                </label>
+              ))}
+            </div>
+            {handledAPIs.length === 0 && (
+              <div className="mt-2 text-xs text-gray-500 italic">
+                No APIs assigned - this server will handle all requests
+              </div>
+            )}
+            {handledAPIs.length > 0 && (
+              <div className="mt-2 text-xs text-green-700">
+                ✓ Handling {handledAPIs.length} API{handledAPIs.length !== 1 ? 's' : ''}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

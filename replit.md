@@ -82,8 +82,9 @@ Preferred communication style: Simple, everyday language.
 - Progressive content unlocking tied to command completion
 
 **2. Visual Builder** (System Design):
-- Drag-and-drop component canvas using React Flow
+- Drag-and-drop component canvas using React Flow (starts empty - users build from scratch)
 - Component palette with real AWS instance types
+- Conditional tab visibility: Python code editor tab appears only when app_server component is added to canvas
 - Analytical simulation engine (not discrete-event)
 - Pass/fail validation with explanatory feedback
 - Cost estimation based on component configuration

@@ -41,6 +41,8 @@ interface OperationResult {
 interface PythonCodeChallengePanelProps {
   pythonCode: string;
   setPythonCode: (code: string) => void;
+  pythonCodeByServer?: Record<string, {code: string, apis: string[]}>;
+  setPythonCodeByServer?: (codeByServer: Record<string, {code: string, apis: string[]}>) => void;
   onRunTests: (code: string, testCases: TestCase[]) => Promise<TestResult[]>;
   onSubmit: () => void;
   systemGraph?: SystemGraph;
@@ -110,6 +112,8 @@ const DEFAULT_HIDDEN_TEST_CASES: TestCase[] = [
 export function PythonCodeChallengePanel({
   pythonCode,
   setPythonCode,
+  pythonCodeByServer = {},
+  setPythonCodeByServer,
   onRunTests,
   onSubmit,
   systemGraph,
@@ -120,10 +124,10 @@ export function PythonCodeChallengePanel({
   const [isRunning, setIsRunning] = useState(false);
   const [showTestResultsPanel, setShowTestResultsPanel] = useState(false);
   const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
-  const [serviceCodes, setServiceCodes] = useState<Record<string, string>>({});
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+  const previousServiceIdRef = useRef<string | null>(null);
 
   // Get app servers with APIs assigned (these are microservices)
   const getAppServersWithAPIs = () => {
@@ -138,29 +142,65 @@ export function PythonCodeChallengePanel({
 
   const appServersWithAPIs = getAppServersWithAPIs();
 
-  // Initialize service codes and selection
+  // Initialize service selection (conservative - don't auto-seed)
   useEffect(() => {
-    if (appServersWithAPIs.length > 0) {
-      const codes: Record<string, string> = {};
-
-      // Initialize codes for each service
-      appServersWithAPIs.forEach(server => {
-        const existingCode = pythonExecutor.getServiceCode(server.id);
-        codes[server.id] = existingCode || pythonCode || getDefaultCodeForService(server);
-      });
-
-      setServiceCodes(codes);
-
+    if (appServersWithAPIs.length > 0 && setPythonCodeByServer) {
+      // Only manage selection, don't auto-create entries
+      // User must explicitly edit per-server code to populate pythonCodeByServer
+      
       // Select first service if none selected
-      if (!selectedServiceId || !codes[selectedServiceId]) {
+      if (!selectedServiceId) {
         setSelectedServiceId(appServersWithAPIs[0].id);
+      }
+      
+      // If selected service was deleted, switch to another
+      if (selectedServiceId && !appServersWithAPIs.find(s => s.id === selectedServiceId)) {
+        setSelectedServiceId(appServersWithAPIs[0]?.id || null);
       }
     } else {
       // No microservices, use global code
       setSelectedServiceId(null);
-      setServiceCodes({});
     }
   }, [systemGraph, appServersWithAPIs.length]);
+
+  // Save code before switching servers to ensure persistence
+  useEffect(() => {
+    // If switching from one service to another, save the previous service's code
+    if (previousServiceIdRef.current !== null && 
+        previousServiceIdRef.current !== selectedServiceId &&
+        setPythonCodeByServer &&
+        editorRef.current) {
+      
+      const previousServiceId = previousServiceIdRef.current;
+      const currentEditorContent = editorRef.current.getValue();
+      
+      // Save the current editor content to the previous service
+      if (currentEditorContent && currentEditorContent.trim().length > 0) {
+        const previousServer = appServersWithAPIs.find(s => s.id === previousServiceId);
+        if (previousServer) {
+          setPythonCodeByServer(prev => ({
+            ...prev,
+            [previousServiceId]: {
+              code: currentEditorContent,
+              apis: previousServer.config.handledAPIs || []
+            }
+          }));
+        } else {
+          // Server was deleted, but save code anyway in case it's restored
+          setPythonCodeByServer(prev => ({
+            ...prev,
+            [previousServiceId]: {
+              code: currentEditorContent,
+              apis: prev[previousServiceId]?.apis || []
+            }
+          }));
+        }
+      }
+    }
+    
+    // Update the ref to track current selection
+    previousServiceIdRef.current = selectedServiceId;
+  }, [selectedServiceId, setPythonCodeByServer, appServersWithAPIs]);
 
   // Get default code template for a service based on its APIs
   const getDefaultCodeForService = (server: any) => {
@@ -204,11 +244,17 @@ ${functions.join('\n\n')}
   // Update current service code when editor changes
   const handleCodeChange = (value: string | undefined) => {
     if (value !== undefined) {
-      if (selectedServiceId) {
-        // Update service-specific code
-        const newCodes = { ...serviceCodes, [selectedServiceId]: value };
-        setServiceCodes(newCodes);
-        pythonExecutor.setServiceCode(selectedServiceId, value);
+      if (selectedServiceId && setPythonCodeByServer) {
+        // Update service-specific code in pythonCodeByServer
+        const currentServer = appServersWithAPIs.find(s => s.id === selectedServiceId);
+        const newCodeByServer = {
+          ...pythonCodeByServer,
+          [selectedServiceId]: {
+            code: value,
+            apis: currentServer?.config.handledAPIs || []
+          }
+        };
+        setPythonCodeByServer(newCodeByServer);
       } else {
         // Update global code
         setPythonCode(value);
@@ -218,9 +264,16 @@ ${functions.join('\n\n')}
 
   // Get current code based on selection
   const getCurrentCode = () => {
-    if (selectedServiceId && serviceCodes[selectedServiceId]) {
-      return serviceCodes[selectedServiceId];
+    if (selectedServiceId) {
+      // If we have code for this service, use it
+      if (pythonCodeByServer[selectedServiceId]) {
+        return pythonCodeByServer[selectedServiceId].code;
+      }
+      // Otherwise, show the template code (will be saved when user edits)
+      // This preserves template helpers until user explicitly edits
+      return pythonCode;
     }
+    // No service selected, use global code
     return pythonCode;
   };
 
@@ -463,9 +516,22 @@ ${functions.join('\n\n')}
                     {appServersWithAPIs.map(server => {
                       const displayName = server.config.serviceName || getServerDisplayName(server);
                       const apis = server.config.handledAPIs || [];
+                      const apiNames = apis.map(api => {
+                        // Extract method and path for display
+                        const parts = api.split(' ');
+                        if (parts.length === 2) {
+                          const method = parts[0];
+                          const path = parts[1];
+                          // Get last meaningful part of path for short display
+                          const pathParts = path.split('/').filter(p => p && p !== 'api' && p !== 'v1');
+                          return pathParts.join('/') || method;
+                        }
+                        return api;
+                      }).join(', ');
+
                       return (
                         <option key={server.id} value={server.id}>
-                          {displayName} ({apis.length} APIs)
+                          {displayName} ({apiNames || 'no APIs'})
                         </option>
                       );
                     })}
