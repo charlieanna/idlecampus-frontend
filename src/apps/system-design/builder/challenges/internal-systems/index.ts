@@ -22,12 +22,14 @@ export { featureFlagSystemChallenge } from './featureFlagSystem';
 export { internalBuildSystemChallenge } from './internalBuildSystem';
 export { secretManagementChallenge } from './secretManagement';
 export { internalApiGatewayChallenge } from './internalApiGateway';
+export { serviceMeshControlPlaneChallenge } from './serviceMeshControlPlane';
 
 // Data Infrastructure
 export { featureStoreChallenge } from './featureStore';
 export { etlOrchestrationChallenge } from './etlOrchestration';
 export { logAggregationChallenge } from './logAggregation';
 export { metricsAggregationChallenge } from './metricsAggregation';
+export { realtimeAnalyticsPipelineChallenge } from './realtimeAnalyticsPipeline';
 
 // Observability & Operations
 export { distributedTracingChallenge } from './distributedTracing';
@@ -37,6 +39,7 @@ export { chaosEngineeringPlatformChallenge } from './chaosEngineeringPlatform';
 // Migration & Reliability
 export { zeroDowntimeMigrationChallenge } from './zeroDowntimeMigration';
 export { multiRegionFailoverChallenge } from './multiRegionFailover';
+export { circuitBreakerLibraryChallenge } from './circuitBreakerLibrary';
 
 // ML Infrastructure
 export { modelServingPlatformChallenge } from './modelServingPlatform';
@@ -45,21 +48,23 @@ export { modelServingPlatformChallenge } from './modelServingPlatform';
  * All internal systems challenges
  */
 export const internalSystemsChallenges = [
-  // Developer Tools (6 implemented, 9 pending)
+  // Developer Tools (7 implemented, 8 pending)
   'codeReviewSystemChallenge',
   'cicdPipelineChallenge',
   'featureFlagSystemChallenge',
   'internalBuildSystemChallenge',
   'secretManagementChallenge',
   'internalApiGatewayChallenge',
-  // TODO: Add remaining 9 developer tools challenges
+  'serviceMeshControlPlaneChallenge',
+  // TODO: Add remaining 8 developer tools challenges
 
-  // Data Infrastructure (4 implemented, 11 pending)
+  // Data Infrastructure (5 implemented, 10 pending)
   'featureStoreChallenge',
   'etlOrchestrationChallenge',
   'logAggregationChallenge',
   'metricsAggregationChallenge',
-  // TODO: Add remaining 11 data infrastructure challenges
+  'realtimeAnalyticsPipelineChallenge',
+  // TODO: Add remaining 10 data infrastructure challenges
 
   // Observability (3 implemented, 9 pending)
   'distributedTracingChallenge',
@@ -67,10 +72,11 @@ export const internalSystemsChallenges = [
   'chaosEngineeringPlatformChallenge',
   // TODO: Add remaining 9 observability challenges
 
-  // Migration & Reliability (2 implemented, 6 pending)
+  // Migration & Reliability (3 implemented, 5 pending)
   'zeroDowntimeMigrationChallenge',
   'multiRegionFailoverChallenge',
-  // TODO: Add remaining 6 migration challenges
+  'circuitBreakerLibraryChallenge',
+  // TODO: Add remaining 5 migration challenges
 
   // ML Infrastructure (2 implemented, 8 pending)
   // featureStoreChallenge already exported in Data Infrastructure above
@@ -89,15 +95,18 @@ export function getInternalSystemsChallenges() {
   const { internalBuildSystemChallenge } = require('./internalBuildSystem');
   const { secretManagementChallenge } = require('./secretManagement');
   const { internalApiGatewayChallenge } = require('./internalApiGateway');
+  const { serviceMeshControlPlaneChallenge } = require('./serviceMeshControlPlane');
   const { featureStoreChallenge } = require('./featureStore');
   const { etlOrchestrationChallenge } = require('./etlOrchestration');
   const { logAggregationChallenge } = require('./logAggregation');
   const { metricsAggregationChallenge } = require('./metricsAggregation');
+  const { realtimeAnalyticsPipelineChallenge } = require('./realtimeAnalyticsPipeline');
   const { distributedTracingChallenge } = require('./distributedTracing');
   const { alertingIncidentManagementChallenge } = require('./alertingIncidentManagement');
   const { chaosEngineeringPlatformChallenge } = require('./chaosEngineeringPlatform');
   const { zeroDowntimeMigrationChallenge } = require('./zeroDowntimeMigration');
   const { multiRegionFailoverChallenge } = require('./multiRegionFailover');
+  const { circuitBreakerLibraryChallenge } = require('./circuitBreakerLibrary');
   const { modelServingPlatformChallenge } = require('./modelServingPlatform');
 
   return [
@@ -108,11 +117,13 @@ export function getInternalSystemsChallenges() {
     internalBuildSystemChallenge,
     secretManagementChallenge,
     internalApiGatewayChallenge,
+    serviceMeshControlPlaneChallenge,
     // Data Infrastructure
     featureStoreChallenge,
     etlOrchestrationChallenge,
     logAggregationChallenge,
     metricsAggregationChallenge,
+    realtimeAnalyticsPipelineChallenge,
     // Observability
     distributedTracingChallenge,
     alertingIncidentManagementChallenge,
@@ -120,6 +131,7 @@ export function getInternalSystemsChallenges() {
     // Migration & Reliability
     zeroDowntimeMigrationChallenge,
     multiRegionFailoverChallenge,
+    circuitBreakerLibraryChallenge,
     // ML Infrastructure
     modelServingPlatformChallenge,
   ];
@@ -139,12 +151,14 @@ export function getChallengesByCategory(category: string) {
       'internal_build_system',
       'secret_management',
       'internal_api_gateway',
+      'service_mesh_control_plane',
     ],
     data_infrastructure: [
       'feature_store',
       'etl_orchestration',
       'log_aggregation',
       'metrics_aggregation_service',
+      'realtime_analytics_pipeline',
     ],
     observability: [
       'distributed_tracing',
@@ -154,6 +168,7 @@ export function getChallengesByCategory(category: string) {
     migration: [
       'zero_downtime_migration',
       'multi_region_failover',
+      'circuit_breaker_library',
     ],
     ml_infrastructure: [
       'feature_store',
