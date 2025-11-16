@@ -860,6 +860,41 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
+  // ========== EXTRACTED PROBLEMS - SYSTEM DESIGN (3) ==========
+
+  // Rate Limiter - from extracted-problems/system-design.md
+  'rate-limiter': {
+    baseRps: 10000, // 10k requests/sec normal, 100k peak
+    readRatio: 0.8, // 80% reads (checking limits)
+    maxLatency: 15, // P99 < 15ms for rate limit checks
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: true, // Redis for fast counter access
+    hasObjectStorage: false,
+  },
+
+  // Real-time Chat System - from extracted-problems/system-design.md
+  'chat': {
+    baseRps: 100000, // 100k messages/sec sustained
+    readRatio: 0.7, // 70% reads (viewing history vs sending)
+    maxLatency: 100, // P95 < 100ms message delivery
+    availability: 0.9995,
+    hasCdn: false,
+    hasCache: true, // For presence and online status
+    hasObjectStorage: true, // For file sharing
+  },
+
+  // Data Ingestion Pipeline - from extracted-problems/system-design.md
+  'ingestion': {
+    baseRps: 10000, // 10k events/sec steady, 20k peak
+    readRatio: 0.3, // 30% reads (mostly writes to pipeline)
+    maxLatency: 200, // P99 < 200ms for ingestion
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: true, // For raw event archival
+  },
+
   // ========== DDIA GAP PROBLEMS (5) ==========
   'batch-processing-mapreduce': {
     baseRps: 0, // Batch processing, not request-based
