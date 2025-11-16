@@ -604,8 +604,388 @@ Key requirements:
   ],
 };
 
-// Continue with remaining Chapter 2 problems (23-27)...
-// Graph model problems will be added here
+/**
+ * Problem 23: JSON/BSON Storage
+ * Teaches: Store and query JSON/BSON data
+ */
+export const jsonBsonStorageProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch2-json-bson',
+  title: 'JSON/BSON Storage',
+  description: `Store and query JSON/BSON documents efficiently. Understand the trade-offs of JSON (human-readable, larger) vs BSON (binary, compact, faster parsing).
+
+Learning objectives:
+- Store JSON documents in database
+- Query nested JSON fields
+- Index JSON properties
+- Understand JSON vs BSON encoding
+
+JSON: {"name": "Alice", "age": 30}
+BSON: Binary representation, more compact, includes type information
+
+Key requirements:
+- Store JSON documents
+- Query nested fields (e.g., user.address.city)
+- Index JSON properties for fast queries
+- Handle schema-less data`,
+
+  userFacingFRs: [
+    'Store JSON documents in PostgreSQL JSONB or MongoDB',
+    'Query nested fields: WHERE data->\'address\'->>\'city\' = \'NYC\'',
+    'Create indexes on JSON properties: CREATE INDEX ON table ((data->>\'email\'))',
+    'Handle varying document structures',
+  ],
+  userFacingNFRs: [
+    'Read latency: <30ms',
+    'Storage: BSON ~10-20% smaller than JSON',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'storage',
+        reason: 'Database with JSON/BSON support (PostgreSQL JSONB, MongoDB)',
+      },
+      {
+        type: 'compute',
+        reason: 'Application layer',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Store and query JSON documents',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch2-json-bson', problemConfigs['ddia-ch2-json-bson'] || {
+    baseRps: 1500,
+    readRatio: 0.8,
+    maxLatency: 30,
+    availability: 0.99,
+  }, [
+    'Store JSON documents',
+    'Query nested fields',
+    'Index JSON properties',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
+
+// ============================================================================
+// 2.3 Graph Model
+// ============================================================================
+
+/**
+ * Problem 24: Graph Database Basics
+ * Teaches: Model data as nodes and edges in Neo4j
+ */
+export const graphDatabaseBasicsProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch2-graph-basics',
+  title: 'Graph Database Basics - Neo4j',
+  description: `Model a social network as a graph with users (nodes) and relationships (edges). Learn when graphs are better than relational or document models.
+
+Learning objectives:
+- Model entities as nodes with properties
+- Model relationships as edges with types and properties
+- Understand graph use cases (social networks, recommendations, fraud detection)
+
+Example: Social Network
+Nodes: User {id, name, email}
+Edges: FOLLOWS, LIKES, FRIENDS_WITH
+
+Key requirements:
+- Create nodes with properties
+- Create directed/undirected relationships
+- Store properties on edges
+- Query graph structure`,
+
+  userFacingFRs: [
+    'Create user nodes: CREATE (u:User {name: \'Alice\', email: \'alice@example.com\'})',
+    'Create relationships: (alice)-[:FOLLOWS]->(bob)',
+    'Store edge properties: [:FOLLOWS {since: \'2024-01-01\'}]',
+    'Query graph: Find all users Alice follows',
+  ],
+  userFacingNFRs: [
+    'Node creation: <10ms',
+    'Relationship creation: <20ms',
+    'Graph traversal: <100ms for simple queries',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'storage',
+        reason: 'Graph database (Neo4j, Amazon Neptune)',
+      },
+      {
+        type: 'compute',
+        reason: 'Application layer',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Graph queries (Cypher, Gremlin)',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch2-graph-basics', problemConfigs['ddia-ch2-graph-basics'] || {
+    baseRps: 1000,
+    readRatio: 0.85,
+    maxLatency: 100,
+    availability: 0.99,
+  }, [
+    'Create nodes',
+    'Create relationships',
+    'Store edge properties',
+    'Query graph',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
+
+/**
+ * Problem 25: Graph Traversal
+ * Teaches: Shortest path, recommendations, multi-hop queries
+ */
+export const graphTraversalProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch2-graph-traversal',
+  title: 'Graph Traversal - Shortest Path & Recommendations',
+  description: `Implement graph traversal algorithms: shortest path, friend recommendations, multi-hop queries. Learn when graphs excel over relational joins.
+
+Learning objectives:
+- Find shortest path between nodes
+- Generate friend recommendations (friends of friends)
+- Multi-hop traversals
+- Understand graph query performance
+
+Example queries:
+- Shortest path: Alice → Bob (through mutual friends)
+- Friend recommendations: Friends of Alice's friends who Alice doesn't follow
+- Influencers: Users with most followers
+
+Key requirements:
+- Shortest path algorithm
+- Multi-hop traversals (2-3 hops)
+- Limit result size to avoid expensive queries
+- Use indexes on node properties`,
+
+  userFacingFRs: [
+    'Find shortest path between two users',
+    'Recommend friends: MATCH (alice)-[:FOLLOWS]->(friend)-[:FOLLOWS]->(fof) WHERE NOT (alice)-[:FOLLOWS]->(fof)',
+    'Find influencers: Users with >10K followers',
+    'Limit traversal depth to avoid expensive queries',
+  ],
+  userFacingNFRs: [
+    'Shortest path: <200ms for 2-3 hops',
+    'Recommendations: <500ms',
+    'Max traversal depth: 4 hops',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'storage',
+        reason: 'Graph database with traversal algorithms',
+      },
+      {
+        type: 'compute',
+        reason: 'Query optimizer',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Execute graph traversals',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch2-graph-traversal', problemConfigs['ddia-ch2-graph-traversal'] || {
+    baseRps: 800,
+    readRatio: 0.95,
+    maxLatency: 500,
+    availability: 0.99,
+  }, [
+    'Shortest path',
+    'Friend recommendations',
+    'Find influencers',
+    'Limit depth',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
+
+/**
+ * Problem 26: Property Graphs
+ * Teaches: Design node and edge properties
+ */
+export const propertyGraphsProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch2-property-graphs',
+  title: 'Property Graphs - Nodes & Edges with Properties',
+  description: `Design a property graph where both nodes and edges have rich properties. This enables flexible modeling of real-world relationships.
+
+Learning objectives:
+- Add properties to nodes (labels, attributes)
+- Add properties to edges (weights, timestamps, metadata)
+- Query based on properties
+- Index properties for performance
+
+Example: E-commerce graph
+Nodes: User {name, email}, Product {title, price}, Review {rating, text}
+Edges: PURCHASED {date, quantity}, REVIEWED {rating, helpful_count}
+
+Key requirements:
+- Nodes with multiple labels and properties
+- Edges with properties (timestamps, weights)
+- Query filtering by properties
+- Index frequently queried properties`,
+
+  userFacingFRs: [
+    'Create nodes with properties: (p:Product {title: \'Laptop\', price: 1000})',
+    'Create edges with properties: [:PURCHASED {date: \'2024-01-01\', quantity: 2}]',
+    'Query by property: MATCH (u)-[p:PURCHASED]->(prod) WHERE p.date > \'2024-01-01\'',
+    'Index properties: CREATE INDEX ON :User(email)',
+  ],
+  userFacingNFRs: [
+    'Property query latency: <100ms',
+    'Index usage: >80% of property queries use indexes',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'storage',
+        reason: 'Property graph database',
+      },
+      {
+        type: 'compute',
+        reason: 'Application layer',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Property-based queries',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch2-property-graphs', problemConfigs['ddia-ch2-property-graphs'] || {
+    baseRps: 1200,
+    readRatio: 0.8,
+    maxLatency: 100,
+    availability: 0.99,
+  }, [
+    'Nodes with properties',
+    'Edges with properties',
+    'Query by properties',
+    'Index properties',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
+
+/**
+ * Problem 27: Cypher Query Language
+ * Teaches: Write Cypher queries for graph databases
+ */
+export const cypherQueryProblemDefinition: ProblemDefinition = {
+  id: 'ddia-ch2-cypher',
+  title: 'Cypher Query Language',
+  description: `Learn Cypher, the query language for Neo4j. Cypher uses ASCII art patterns to express graph queries: (node)-[:RELATIONSHIP]->(node).
+
+Learning objectives:
+- MATCH patterns to find nodes and relationships
+- CREATE nodes and relationships
+- WHERE clauses to filter
+- RETURN results with aggregations
+
+Example Cypher queries:
+// Find Alice's friends
+MATCH (alice:User {name: 'Alice'})-[:FOLLOWS]->(friend)
+RETURN friend.name
+
+// Friend recommendations
+MATCH (alice)-[:FOLLOWS]->(friend)-[:FOLLOWS]->(fof)
+WHERE NOT (alice)-[:FOLLOWS]->(fof)
+RETURN fof.name, COUNT(*) AS mutual_friends
+ORDER BY mutual_friends DESC
+LIMIT 10
+
+Key requirements:
+- Use MATCH to find patterns
+- Use CREATE to add data
+- Use WHERE for filtering
+- Use RETURN with aggregations (COUNT, AVG)`,
+
+  userFacingFRs: [
+    'MATCH patterns: (user:User)-[:FOLLOWS]->(friend)',
+    'CREATE nodes and edges: CREATE (u:User {name: \'Alice\'})',
+    'WHERE filtering: WHERE user.age > 18',
+    'RETURN with aggregation: RETURN COUNT(friend)',
+    'ORDER BY and LIMIT: ORDER BY mutual_friends DESC LIMIT 10',
+  ],
+  userFacingNFRs: [
+    'Simple queries: <50ms',
+    'Complex queries (2-3 hops): <500ms',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'storage',
+        reason: 'Neo4j or Cypher-compatible database',
+      },
+      {
+        type: 'compute',
+        reason: 'Query interface',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Execute Cypher queries',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('ddia-ch2-cypher', problemConfigs['ddia-ch2-cypher'] || {
+    baseRps: 1000,
+    readRatio: 0.9,
+    maxLatency: 500,
+    availability: 0.99,
+  }, [
+    'MATCH patterns',
+    'CREATE nodes/edges',
+    'WHERE filtering',
+    'RETURN with aggregation',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+  ],
+};
 
 // Export all Chapter 2 problems
 export const ddiaChapter2Problems = [
@@ -616,5 +996,9 @@ export const ddiaChapter2Problems = [
   documentSchemaProblemDefinition,
   embeddedVsReferencedProblemDefinition,
   schemaOnReadProblemDefinition,
-  // Graph problems (23-27) would be added here - omitted for now to move forward
+  jsonBsonStorageProblemDefinition,
+  graphDatabaseBasicsProblemDefinition,
+  graphTraversalProblemDefinition,
+  propertyGraphsProblemDefinition,
+  cypherQueryProblemDefinition,
 ];
