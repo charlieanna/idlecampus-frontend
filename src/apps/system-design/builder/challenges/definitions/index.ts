@@ -1,10 +1,18 @@
 /**
- * All 658 System Design Challenge Definitions (40 original + 618 generated)
+ * Curated System Design Challenge Definitions
+ *
+ * Reduced from 658 → 187 high-quality, non-repetitive problems (72% reduction)
+ * - L1: 40 original problems (Instagram, Twitter, Netflix, etc.)
+ * - L2-4: 30 distinct pattern examples (caching, gateway, streaming, etc.)
+ * - L5: 107 platform problems (migrations, APIs, multi-tenant, etc.)
+ * - L6: 10 next-gen problems (practical modern tech only)
  *
  * Each challenge has ONLY Level 1: "The Brute Force Test - Does It Even Work?"
  * Focus: Verify connectivity (Client → App → Database path exists)
  * No performance optimization, just basic connectivity
  */
+
+import { problemWhitelist } from '../problemWhitelist';
 
 // Social Media (10)
 export { instagramProblemDefinition } from './instagram';
@@ -878,4 +886,7 @@ export const allProblemDefinitions: ProblemDefinition[] = [
 ].filter((problem, index, self) => {
   // Deduplicate by title - keep only the first occurrence of each title
   return index === self.findIndex(p => p.title === problem.title);
+}).filter((problem) => {
+  // Filter to keep only whitelisted problems (165 curated, non-repetitive problems)
+  return problemWhitelist.has(problem.id);
 });
