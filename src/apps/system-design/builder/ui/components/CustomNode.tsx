@@ -152,6 +152,39 @@ function CustomNode({ data, selected }: NodeProps) {
             )}
           </div>
         )}
+
+        {/* App Server API Display */}
+        {componentType === 'app_server' && data.config?.handledAPIs && data.config.handledAPIs.length > 0 && (
+          <div className="px-1 mt-0.5">
+            <div className="flex flex-wrap gap-0.5">
+              {data.config.handledAPIs.slice(0, 3).map((api: string, index: number) => {
+                // Parse the API pattern to show a compact version
+                const parts = api.trim().split(/\s+/);
+                const method = parts.length > 1 ? parts[0] : 'API';
+                const path = parts.length > 1 ? parts[1] : parts[0];
+
+                // Extract the main path segment for display
+                const pathSegments = path.split('/').filter(s => s && !s.includes('*'));
+                const displayPath = pathSegments[pathSegments.length - 1] || 'api';
+
+                return (
+                  <span
+                    key={index}
+                    className="text-[7px] px-1 py-0.5 rounded-sm bg-purple-100 text-purple-700 font-medium"
+                    title={api}
+                  >
+                    {method === '*' ? displayPath : `${method.substring(0, 3)} ${displayPath}`}
+                  </span>
+                );
+              })}
+              {data.config.handledAPIs.length > 3 && (
+                <span className="text-[7px] px-1 py-0.5 rounded-sm bg-gray-100 text-gray-600">
+                  +{data.config.handledAPIs.length - 3}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Context Menu for Database */}

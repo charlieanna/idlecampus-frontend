@@ -69,7 +69,10 @@ export interface TestCase {
  */
 export interface TestMetrics {
   p50Latency: number;
+  p90Latency?: number; // Optional for backward compatibility
+  p95Latency?: number; // Optional for backward compatibility
   p99Latency: number;
+  p999Latency?: number; // Optional for backward compatibility
   errorRate: number;
   monthlyCost: number;
   availability: number;
@@ -115,5 +118,6 @@ export interface Challenge {
     label: string;
     url: string;
   }[];
-  pythonTemplate?: string; // Naive Python implementation template for the problem
+  pythonTemplate?: string; // Python implementation template for the problem
+  requiredAPIs?: string[]; // Required context APIs: ['db', 'cache', 'queue', 'cdn', 'search']
 }

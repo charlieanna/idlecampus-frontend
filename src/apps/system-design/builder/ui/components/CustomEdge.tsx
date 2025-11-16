@@ -28,10 +28,6 @@ export default function CustomEdge({
     const pathElement = pathRef.current;
 
     if (!pathElement || typeof pathElement.getTotalLength !== 'function') {
-      console.log('[CustomEdge] pathRef missing getTotalLength', {
-        id,
-        hasPathElement: !!pathElement,
-      });
       return;
     }
 
@@ -58,26 +54,6 @@ export default function CustomEdge({
       };
 
       setMarkerState(newState);
-
-      const debugPoint = (point: DOMPoint | SVGPoint | { x: number; y: number }) => ({
-        x: Number(point?.x?.toFixed?.(2) ?? point?.x ?? 0),
-        y: Number(point?.y?.toFixed?.(2) ?? point?.y ?? 0),
-      });
-
-      console.log('[CustomEdge] marker update', {
-        id,
-        totalLength,
-        midpoint: debugPoint(midpoint),
-        beforePoint: debugPoint(beforePoint),
-        afterPoint: debugPoint(afterPoint),
-        tangentAngle: Number(tangentAngle.toFixed(2)),
-        angleToTarget: Number(angleToTarget.toFixed(2)),
-        angleToSource: Number(angleToSource.toFixed(2)),
-        selectedAngle: Number(angleToTarget.toFixed(2)),
-        markerState: newState,
-        source: { x: sourceX, y: sourceY },
-        target: { x: targetX, y: targetY },
-      });
     } catch (error) {
       console.warn('[CustomEdge] getPointAtLength failed, using fallback', {
         id,

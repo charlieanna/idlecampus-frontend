@@ -459,7 +459,6 @@ class FeedService {
     if (followerCount > this.CELEBRITY_THRESHOLD) {
       // Celebrity: Skip fan-out, use pull on read
       // Store post in user's timeline (for followers to pull)
-      console.log(\`Celebrity post: \${post.id}, skip fan-out\`);
       return;
     }
 

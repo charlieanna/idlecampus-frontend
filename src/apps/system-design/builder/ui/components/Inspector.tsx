@@ -1,4 +1,5 @@
 import { Node } from 'reactflow';
+import { useState } from 'react';
 import { SystemGraph } from '../../types/graph';
 import {
   EC2_INSTANCES,
@@ -6,6 +7,7 @@ import {
   REDIS_INSTANCES,
   InstanceSpec,
 } from '../../types/instanceTypes';
+import { COMMON_API_PATTERNS, validateAPIPattern } from '../../utils/apiRouting';
 
 interface InspectorProps {
   selectedNode: Node | null;
@@ -18,6 +20,9 @@ export function Inspector({
   systemGraph,
   onUpdateConfig,
 }: InspectorProps) {
+  const [newAPIPattern, setNewAPIPattern] = useState('');
+  const [apiError, setApiError] = useState<string | null>(null);
+
   if (!selectedNode) {
     return (
       <div className="p-6">
@@ -34,6 +39,28 @@ export function Inspector({
 
   const handleChange = (key: string, value: any) => {
     onUpdateConfig(selectedNode.id, { [key]: value });
+  };
+
+  const handleAddAPI = () => {
+    if (!newAPIPattern.trim()) return;
+
+    const validation = validateAPIPattern(newAPIPattern);
+    if (!validation.valid) {
+      setApiError(validation.error || 'Invalid API pattern');
+      return;
+    }
+
+    const currentAPIs = component.config.handledAPIs || [];
+    if (!currentAPIs.includes(newAPIPattern)) {
+      handleChange('handledAPIs', [...currentAPIs, newAPIPattern]);
+      setNewAPIPattern('');
+      setApiError(null);
+    }
+  };
+
+  const handleRemoveAPI = (api: string) => {
+    const currentAPIs = component.config.handledAPIs || [];
+    handleChange('handledAPIs', currentAPIs.filter((a: string) => a !== api));
   };
 
   return (
@@ -98,6 +125,103 @@ export function Inspector({
               <p className="text-xs text-gray-500 mt-1">
                 For high availability, use 2+ instances
               </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Service Name (Optional)
+              </label>
+              <input
+                type="text"
+                value={component.config.serviceName || ''}
+                onChange={(e) => handleChange('serviceName', e.target.value)}
+                placeholder="e.g., url-shortener, user-service"
+                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Handled APIs
+              </label>
+              <div className="space-y-2">
+                {/* Current APIs */}
+                {component.config.handledAPIs && component.config.handledAPIs.length > 0 && (
+                  <div className="space-y-1">
+                    {component.config.handledAPIs.map((api: string, index: number) => (
+                      <div key={index} className="flex items-center justify-between bg-gray-50 rounded px-2 py-1">
+                        <span className="text-xs font-mono">{api}</span>
+                        <button
+                          onClick={() => handleRemoveAPI(api)}
+                          className="text-red-500 hover:text-red-700 text-xs"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add new API */}
+                <div className="flex space-x-2">
+                  <input
+                    type="text"
+                    value={newAPIPattern}
+                    onChange={(e) => {
+                      setNewAPIPattern(e.target.value);
+                      setApiError(null);
+                    }}
+                    onKeyPress={(e) => e.key === 'Enter' && handleAddAPI()}
+                    placeholder="e.g., GET /api/v1/urls/*"
+                    className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  <button
+                    onClick={handleAddAPI}
+                    className="px-3 py-1 text-xs bg-blue-500 text-white rounded hover:bg-blue-600"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                {apiError && (
+                  <p className="text-xs text-red-500">{apiError}</p>
+                )}
+
+                {/* Quick patterns */}
+                <div className="pt-2">
+                  <p className="text-xs text-gray-500 mb-1">Quick patterns:</p>
+                  <div className="flex flex-wrap gap-1">
+                    <button
+                      onClick={() => setNewAPIPattern('GET /api/v1/*')}
+                      className="px-2 py-0.5 text-xs bg-gray-100 rounded hover:bg-gray-200"
+                    >
+                      All GETs
+                    </button>
+                    <button
+                      onClick={() => setNewAPIPattern('POST /api/v1/*')}
+                      className="px-2 py-0.5 text-xs bg-gray-100 rounded hover:bg-gray-200"
+                    >
+                      All POSTs
+                    </button>
+                    <button
+                      onClick={() => setNewAPIPattern('* /api/v1/urls/*')}
+                      className="px-2 py-0.5 text-xs bg-gray-100 rounded hover:bg-gray-200"
+                    >
+                      URL Service
+                    </button>
+                    <button
+                      onClick={() => setNewAPIPattern('* /api/v1/users/*')}
+                      className="px-2 py-0.5 text-xs bg-gray-100 rounded hover:bg-gray-200"
+                    >
+                      User Service
+                    </button>
+                  </div>
+                </div>
+
+                <p className="text-xs text-gray-400 italic">
+                  Leave empty for this server to handle all unassigned APIs
+                </p>
+              </div>
             </div>
           </>
         )}

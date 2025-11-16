@@ -356,7 +356,7 @@ export function getComponentInfo(type: string): { label: string; displayName: st
     message_queue: {
       label: '📮 Queue',
       displayName: 'Message Queue',
-      subtitle: 'Kafka/RabbitMQ',
+      subtitle: 'Async messaging',
     },
     cdn: {
       label: '🌍 CDN',
@@ -364,8 +364,8 @@ export function getComponentInfo(type: string): { label: string; displayName: st
       subtitle: 'Content delivery',
     },
     s3: {
-      label: '☁️ S3',
-      displayName: 'S3 Storage',
+      label: '☁️ Storage',
+      displayName: 'Object Storage',
       subtitle: 'Object storage',
     },
   };

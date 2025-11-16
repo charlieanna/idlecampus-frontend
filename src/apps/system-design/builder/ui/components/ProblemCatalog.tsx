@@ -1,7 +1,8 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { generatedChallenges } from '../../challenges/generatedChallenges';
+import { tieredChallenges } from '../../challenges/tieredChallenges';
 import { Challenge } from '../../types/testCase';
+import { isCoreProblem, getCoreStage } from '../../challenges/coreTrack';
 
 // Extract category from problem ID
 function extractCategory(id: string): string {
@@ -137,6 +138,11 @@ function ProblemCard({ challenge, onClick }: { challenge: Challenge; onClick: ()
       {/* Badges */}
       <div className="flex flex-wrap gap-2">
         {challenge.company && <CompanyBadge company={challenge.company} />}
+        {challenge.isCore && (
+          <span className="px-2 py-1 text-[10px] font-semibold rounded-full bg-purple-100 text-purple-800">
+            Core Track{challenge.coreStage ? ` · Stage ${challenge.coreStage}` : ''}
+          </span>
+        )}
       </div>
     </div>
   );
@@ -146,15 +152,18 @@ export function ProblemCatalog() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'difficulty' | 'category'>('difficulty');
+  const [trackFilter, setTrackFilter] = useState<'all' | 'core'>('all');
 
   // Enrich challenges with metadata and filter out tutorials
   const enrichedChallenges = useMemo(() => {
-    return generatedChallenges
+    return tieredChallenges
       .filter(challenge => !challenge.id.includes('tutorial') && !challenge.id.includes('boe-walkthrough'))
       .map(challenge => ({
         ...challenge,
         category: extractCategory(challenge.id),
         company: extractCompany(challenge),
+        isCore: isCoreProblem(challenge),
+        coreStage: getCoreStage(challenge),
       }));
   }, []);
 
@@ -166,15 +175,21 @@ export function ProblemCatalog() {
 
   // Filter challenges
   const filteredChallenges = useMemo(() => {
-    if (!searchTerm) return enrichedChallenges;
+    let list = enrichedChallenges;
+
+    if (trackFilter === 'core') {
+      list = list.filter(c => c.isCore);
+    }
+
+    if (!searchTerm) return list;
 
     const term = searchTerm.toLowerCase();
-    return enrichedChallenges.filter(c =>
+    return list.filter(c =>
       c.title.toLowerCase().includes(term) ||
       c.description.toLowerCase().includes(term) ||
       c.category.toLowerCase().includes(term)
     );
-  }, [enrichedChallenges, searchTerm]);
+  }, [enrichedChallenges, searchTerm, trackFilter]);
 
   // Group by difficulty
   const byDifficulty = useMemo(() => {
@@ -212,33 +227,60 @@ export function ProblemCatalog() {
             <div>
               <h1 className="text-3xl font-bold text-gray-900">System Design Problems</h1>
               <p className="text-sm text-gray-600 mt-1">
-                {enrichedChallenges.length} problems • {filteredChallenges.length} filtered
+                {enrichedChallenges.length} total • {enrichedChallenges.filter(c => c.isCore).length} core • {filteredChallenges.length} shown
               </p>
             </div>
 
-            {/* View Mode Toggle */}
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">View by:</span>
-              <button
-                onClick={() => setViewMode('difficulty')}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  viewMode === 'difficulty'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Difficulty
-              </button>
-              <button
-                onClick={() => setViewMode('category')}
-                className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  viewMode === 'category'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Category
-              </button>
+            <div className="flex items-center gap-4">
+              {/* Track Filter */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">Track:</span>
+                <button
+                  onClick={() => setTrackFilter('all')}
+                  className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+                    trackFilter === 'all'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  All Problems
+                </button>
+                <button
+                  onClick={() => setTrackFilter('core')}
+                  className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+                    trackFilter === 'core'
+                      ? 'bg-purple-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Core Track
+                </button>
+              </div>
+
+              {/* View Mode Toggle */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-600">View by:</span>
+                <button
+                  onClick={() => setViewMode('difficulty')}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    viewMode === 'difficulty'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Difficulty
+                </button>
+                <button
+                  onClick={() => setViewMode('category')}
+                  className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                    viewMode === 'category'
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  Category
+                </button>
+              </div>
             </div>
           </div>
 

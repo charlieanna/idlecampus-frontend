@@ -859,4 +859,55 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasCache: true,
     hasObjectStorage: false,
   },
+
+  // ========== DDIA GAP PROBLEMS (5) ==========
+  'batch-processing-mapreduce': {
+    baseRps: 0, // Batch processing, not request-based
+    readRatio: 1.0, // Read-heavy (scan data)
+    maxLatency: 21600000, // 6 hours for batch job
+    availability: 0.99,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'explicit-sharding-design': {
+    baseRps: 110000, // 100k reads/sec + 10k writes/sec
+    readRatio: 0.9, // 90% reads
+    maxLatency: 50, // P99 < 50ms for single-shard
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'transaction-isolation-levels': {
+    baseRps: 10000, // 10k transactions/sec
+    readRatio: 0.7, // 70% reads (balance queries)
+    maxLatency: 100, // P99 < 100ms for transfers
+    availability: 0.9999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'data-warehouse-olap': {
+    baseRps: 100, // 100 concurrent analytical queries
+    readRatio: 0.99, // 99% reads (OLAP)
+    maxLatency: 5000, // P95 < 5s for complex queries
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
+
+  'graph-database-social': {
+    baseRps: 50000, // 50k graph queries/sec
+    readRatio: 0.95, // 95% reads
+    maxLatency: 100, // P99 < 100ms for 2-hop queries
+    availability: 0.999,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
 };

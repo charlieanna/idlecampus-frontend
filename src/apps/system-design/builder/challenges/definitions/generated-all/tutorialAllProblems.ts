@@ -469,7 +469,7 @@ export const boeWalkthroughChatProblemDefinition: ProblemDefinition = {
   },
 
   scenarios: generateScenarios('boe-walkthrough-chat', problemConfigs['boe-walkthrough-chat'], [
-    
+
   ]),
 
   validators: [

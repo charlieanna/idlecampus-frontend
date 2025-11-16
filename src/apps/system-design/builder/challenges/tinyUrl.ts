@@ -29,7 +29,7 @@ Example:
     'load_balancer',
     'app_server',
     'database',
-    'redis',
+    'cache',
     'message_queue',
     'cdn',
     's3',
@@ -91,6 +91,50 @@ Example:
       duration: 10,
       passCriteria: {
         maxErrorRate: 0,
+      },
+    },
+    {
+      name: 'App Server Restart - URL Mappings Lost',
+      type: 'functional',
+      requirement: 'FR-4',
+      description: 'App server restarts at second 5. With only in-memory storage, all URL mappings are lost!',
+      traffic: {
+        type: 'mixed',
+        rps: 10,
+        readRatio: 0.5,
+      },
+      duration: 10,
+      failureInjection: {
+        type: 'server_restart',
+        atSecond: 5,
+      },
+      passCriteria: {
+        maxErrorRate: 0, // After restart, should work but mappings are gone
+      },
+      solution: {
+        components: [
+          { type: 'client', config: {} },
+          { type: 'app_server', config: { instances: 1 } },
+          { type: 'postgresql', config: { readCapacity: 100, writeCapacity: 100 } },
+        ],
+        connections: [
+          { from: 'client', to: 'app_server' },
+          { from: 'app_server', to: 'postgresql' },
+        ],
+        explanation: `This test shows why persistence matters for URL shortening:
+
+**With only in-memory storage:**
+- App restart = ALL URL mappings LOST ❌
+- Short URLs created before restart return 404
+- Users' links are broken forever!
+
+**With database connected:**
+- App restart = mappings persist ✅
+- Short URLs continue working after restart
+- Links remain valid indefinitely
+
+**Critical for URL shorteners:**
+URLs must work forever once created. Losing mappings breaks trust!`,
       },
     },
 
@@ -383,6 +427,30 @@ Example:
 
   hints: [
     {
+      trigger: 'test_failed:App Server Restart - URL Mappings Lost',
+      message: `💡 All your short URLs broke after app server restart!
+
+**What happened:**
+- You're using in-memory storage (context['url_mappings'])
+- When app server restarts, memory is cleared
+- ALL URL mappings are lost permanently!
+
+**Why this is CRITICAL for URL shorteners:**
+- Users expect short URLs to work FOREVER
+- Losing mappings = breaking user trust
+- Imagine if bit.ly links stopped working after a restart!
+
+**Solution:**
+Add a Database component and connect it to app_server.
+This ensures URL mappings persist across restarts, crashes, and deployments.
+
+**Progressive path:**
+1. Start with in-memory (for learning)
+2. Add Database (for persistence)
+3. Add Cache (for performance)
+4. Scale with more instances as needed`,
+    },
+    {
       trigger: 'test_failed:Read Spike',
       message: `💡 Your database is saturated during the traffic spike.
 
@@ -434,4 +502,146 @@ Remember: Meet requirements at minimum cost!`,
 
   // Code challenges for hands-on implementation practice
   codeChallenges: tinyUrlCodeChallenges,
+
+  // Python template for app server implementation
+  pythonTemplate: `# TinyURL App Server
+# Implement URL shortening and redirect functionality
+
+def shorten(long_url: str, context: dict) -> str:
+    """
+    Generate a short code for a long URL and store the mapping.
+
+    Args:
+        long_url: The URL to shorten (e.g., 'https://example.com/very/long/url')
+        context: Shared context for storing data in memory
+
+    Returns:
+        short_code: Generated short code (e.g., 'abc123')
+
+    Requirements:
+    - Generate unique short codes
+    - Store mapping in memory (context['url_mappings'])
+    - Use counter-based approach with base62 encoding
+
+    Example:
+        shorten('https://google.com', context) -> 'a'
+        shorten('https://facebook.com', context) -> 'b'
+    """
+    # Initialize storage if first request
+    if 'url_mappings' not in context:
+        context['url_mappings'] = {}
+    if 'next_id' not in context:
+        context['next_id'] = 0
+
+    # Your code here: Generate short code and store mapping
+
+    return ''
+
+
+def redirect(short_code: str, context: dict) -> str:
+    """
+    Get the original URL from a short code.
+
+    Args:
+        short_code: The short code to expand
+        context: Shared context containing stored mappings
+
+    Returns:
+        long_url: The original URL, or None if not found
+
+    Requirements:
+    - Look up short code in stored mappings
+    - Return original URL if found
+    - Return None if short code doesn't exist
+
+    Example:
+        redirect('a', context) -> 'https://google.com'
+        redirect('xyz', context) -> None
+    """
+    # Initialize storage if needed
+    if 'url_mappings' not in context:
+        context['url_mappings'] = {}
+
+    # Your code here: Look up and return the URL
+
+    return None
+
+
+def base62_encode(num: int) -> str:
+    """
+    Convert a number to base62 string (helper function).
+
+    Args:
+        num: Integer to encode
+
+    Returns:
+        Base62 encoded string using [a-zA-Z0-9]
+
+    Example:
+        base62_encode(0) -> 'a'
+        base62_encode(10) -> 'k'
+        base62_encode(61) -> '9'
+        base62_encode(62) -> 'ba'
+    """
+    charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+
+    # Your code here: Convert number to base62
+
+    return ''
+
+
+# App Server Handler
+def handle_request(request: dict, context: dict) -> dict:
+    """
+    Handle incoming HTTP requests for URL shortening service.
+
+    Args:
+        request: {
+            'method': 'GET' | 'POST',
+            'path': '/:code' | '/shorten',
+            'body': {'url': 'https://...'}
+        }
+        context: Shared context (in-memory storage)
+
+    Returns:
+        {
+            'status': 200 | 404 | 400,
+            'body': {...}
+        }
+    """
+    method = request.get('method', 'GET')
+    path = request.get('path', '')
+    body = request.get('body', {})
+
+    # POST /shorten - Create short URL
+    if method == 'POST' and path == '/shorten':
+        long_url = body.get('url', '')
+        if not long_url:
+            return {'status': 400, 'body': {'error': 'URL required'}}
+
+        short_code = shorten(long_url, context)
+        return {
+            'status': 201,
+            'body': {
+                'short_code': short_code,
+                'short_url': f'https://tiny.url/{short_code}',
+                'long_url': long_url
+            }
+        }
+
+    # GET /:code - Redirect to original URL
+    elif method == 'GET' and path.startswith('/'):
+        short_code = path[1:]  # Remove leading '/'
+        long_url = redirect(short_code, context)
+
+        if long_url:
+            return {
+                'status': 302,
+                'headers': {'Location': long_url},
+                'body': {'redirect_to': long_url}
+            }
+        return {'status': 404, 'body': {'error': 'Short URL not found'}}
+
+    return {'status': 404, 'body': {'error': 'Not found'}}
+`,
 };

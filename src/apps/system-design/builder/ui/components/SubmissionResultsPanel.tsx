@@ -40,6 +40,14 @@ export function SubmissionResultsPanel({
     return testResults.get(testIdx)?.passed;
   }).length;
 
+  // Collect failing requirements for quick FR/NFR summary
+  const failingRequirements = testCases
+    .map((tc, index) => {
+      const result = testResults.get(index);
+      return result && !result.passed ? tc.requirement : null;
+    })
+    .filter((req): req is string => !!req);
+
   return (
     <div className="w-80 bg-white border-r border-gray-200 flex flex-col h-full">
       {/* Header */}
@@ -64,6 +72,12 @@ export function SubmissionResultsPanel({
                 {passedTests}/{totalTests} Tests Passed
               </span>
             </div>
+            {failingRequirements.length > 0 && (
+              <div className="text-xs text-red-600">
+                Failing requirements:{' '}
+                {Array.from(new Set(failingRequirements)).join(', ')}
+              </div>
+            )}
             <div className="text-xs space-y-0.5">
               <div className="flex items-center gap-2">
                 <span className="text-gray-500">Functional:</span>
@@ -162,7 +176,7 @@ export function SubmissionResultsPanel({
                   </div>
 
                 {/* Test Result Details */}
-                {result && (
+                {result && result.metrics && (
                   <div className="ml-6 space-y-2">
                     {/* Metrics */}
                     <div className="text-xs space-y-1">

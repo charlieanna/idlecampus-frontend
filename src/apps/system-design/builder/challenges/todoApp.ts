@@ -1,4 +1,5 @@
 import { Challenge } from '../types/testCase';
+import { todoAppCodeChallenges } from './code/todoAppChallenges';
 
 export const todoAppChallenge: Challenge = {
   id: 'todo_app',
@@ -31,7 +32,7 @@ Example:
     'load_balancer',
     'app_server',
     'database',
-    'redis',
+    'cache',
     'message_queue',
     'cdn',
     's3',
@@ -64,6 +65,51 @@ Example:
           { from: 'app_server', to: 'postgresql' },
         ],
         explanation: `Minimal viable system - app server handles CRUD operations, PostgreSQL stores todos.`,
+      },
+    },
+    {
+      name: 'App Server Restart - Data Loss',
+      type: 'functional',
+      requirement: 'FR-1b',
+      description: 'App server restarts at second 5. With only in-memory storage, all todos are lost!',
+      traffic: {
+        type: 'mixed',
+        rps: 10,
+        readRatio: 0.5,
+      },
+      duration: 10,
+      failureInjection: {
+        type: 'server_restart',
+        atSecond: 5,
+      },
+      passCriteria: {
+        maxErrorRate: 0, // After restart, should work but data is gone
+      },
+      solution: {
+        components: [
+          { type: 'client', config: {} },
+          { type: 'app_server', config: { instances: 1 } },
+          { type: 'postgresql', config: { readCapacity: 100, writeCapacity: 100 } },
+        ],
+        connections: [
+          { from: 'client', to: 'app_server' },
+          { from: 'app_server', to: 'postgresql' },
+        ],
+        explanation: `This test demonstrates why persistence is critical:
+
+**With only in-memory storage (no database):**
+- App server restart = ALL DATA LOST ❌
+- Todos created before restart disappear
+- Users lose all their work!
+
+**With database connected:**
+- App server restart = data persists ✅
+- Todos remain after restart
+- Users' work is safe
+
+**Key insight:**
+In-memory storage (context['todos']) is VOLATILE - gone when process dies.
+Database provides PERSISTENCE - data survives restarts, crashes, deployments.`,
       },
     },
     {
@@ -345,6 +391,24 @@ PostgreSQL: replication=true enables automatic failover`,
 
   hints: [
     {
+      trigger: 'test_failed:App Server Restart - Data Loss',
+      message: `💡 Your todos disappeared after app server restart!
+
+**What happened:**
+- You're using in-memory storage (context['todos'] or context.db)
+- When app server restarts, memory is cleared
+- ALL data is lost - todos, users, everything!
+
+**Solutions:**
+1. **Quick fix:** Add a Database component and connect it to app_server
+2. **Better:** Use both Database (for persistence) and Cache (for performance)
+3. **Best:** Database + Cache + Replication for high availability
+
+**Remember:** In-memory storage is great for learning, terrible for production!
+
+Try again with a Database component connected.`,
+    },
+    {
       trigger: 'test_failed:Database Failure',
       message: `💡 Your system failed during database failure!
 
@@ -395,4 +459,161 @@ Solutions:
 Hint: writeCapacity should be at least 400-500 to handle spikes`,
     },
   ],
+
+  // Code challenges for hands-on implementation practice
+  codeChallenges: todoAppCodeChallenges,
+
+  // Python template for app server implementation
+  pythonTemplate: `# Collaborative Todo App Server
+# Implement CRUD operations with caching
+
+def create_todo(user_id: str, title: str, context: dict) -> dict:
+    """
+    Create a new todo item for a user.
+
+    Args:
+        user_id: User identifier
+        title: Todo title/description
+        context: Shared context with db and cache access
+
+    Returns:
+        {
+            'id': 'todo_123',
+            'user_id': 'user_1',
+            'title': 'Buy groceries',
+            'completed': False,
+            'created_at': 1234567890
+        }
+
+    Requirements:
+    - Generate unique todo ID
+    - Store in database (context['db'])
+    - Invalidate user's todo cache
+    - Return the created todo
+    """
+    # Your code here
+
+    return {}
+
+
+def get_todos(user_id: str, context: dict) -> list:
+    """
+    Get all todos for a user with caching.
+
+    Args:
+        user_id: User identifier
+        context: Shared context with db and cache access
+
+    Returns:
+        List of todo dictionaries
+
+    Requirements:
+    - Check cache first (context['cache'])
+    - If cache miss, fetch from database
+    - Cache the result for future requests
+    - Return list of todos
+    """
+    # Your code here
+
+    return []
+
+
+def update_todo(todo_id: str, completed: bool, context: dict) -> dict:
+    """
+    Update a todo's completion status.
+
+    Args:
+        todo_id: Todo identifier
+        completed: New completion status
+        context: Shared context with db and cache access
+
+    Returns:
+        Updated todo dictionary or None if not found
+
+    Requirements:
+    - Update in database
+    - Invalidate cache for the todo's user
+    - Return updated todo
+    """
+    # Your code here
+
+    return {}
+
+
+def delete_todo(todo_id: str, context: dict) -> bool:
+    """
+    Delete a todo item.
+
+    Args:
+        todo_id: Todo identifier
+        context: Shared context with db and cache access
+
+    Returns:
+        True if deleted, False if not found
+
+    Requirements:
+    - Delete from database
+    - Invalidate cache for the todo's user
+    - Return success status
+    """
+    # Your code here
+
+    return False
+
+
+# App Server Handler
+def handle_request(request: dict, context: dict) -> dict:
+    """
+    Handle incoming HTTP requests for the todo app.
+
+    Args:
+        request: {
+            'method': 'GET' | 'POST' | 'PUT' | 'DELETE',
+            'path': '/todos' | '/todos/:id',
+            'body': {...},
+            'user_id': 'user_1'
+        }
+        context: Shared context (db, cache)
+
+    Returns:
+        {
+            'status': 200 | 404 | 500,
+            'body': {...}
+        }
+    """
+    method = request.get('method', 'GET')
+    path = request.get('path', '')
+    user_id = request.get('user_id', '')
+    body = request.get('body', {})
+
+    # GET /todos - List all todos for user
+    if method == 'GET' and path == '/todos':
+        todos = get_todos(user_id, context)
+        return {'status': 200, 'body': {'todos': todos}}
+
+    # POST /todos - Create new todo
+    elif method == 'POST' and path == '/todos':
+        title = body.get('title', '')
+        todo = create_todo(user_id, title, context)
+        return {'status': 201, 'body': todo}
+
+    # PUT /todos/:id - Update todo
+    elif method == 'PUT' and path.startswith('/todos/'):
+        todo_id = path.split('/')[-1]
+        completed = body.get('completed', False)
+        todo = update_todo(todo_id, completed, context)
+        if todo:
+            return {'status': 200, 'body': todo}
+        return {'status': 404, 'body': {'error': 'Todo not found'}}
+
+    # DELETE /todos/:id - Delete todo
+    elif method == 'DELETE' and path.startswith('/todos/'):
+        todo_id = path.split('/')[-1]
+        success = delete_todo(todo_id, context)
+        if success:
+            return {'status': 204, 'body': {}}
+        return {'status': 404, 'body': {'error': 'Todo not found'}}
+
+    return {'status': 404, 'body': {'error': 'Not found'}}
+`,
 };

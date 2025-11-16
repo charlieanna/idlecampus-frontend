@@ -1,9 +1,13 @@
 import { SystemGraph } from './graph';
 import { TestCase } from './testCase';
+import { CacheStrategy } from './advancedConfig';
 
 /**
  * Problem Definition - Defines how to validate any system design problem
  */
+
+// Consistency requirements for the system
+export type ConsistencyRequirement = 'strong' | 'eventual' | 'causal';
 
 // Component requirements
 export type ComponentType = 'compute' | 'storage' | 'cache' | 'load_balancer' | 'message_queue' | 'object_storage' | 'cdn' | 'realtime_messaging';
@@ -72,7 +76,11 @@ export interface ValidationResult {
 }
 
 // Validator function type
-export type ValidatorFunction = (graph: SystemGraph, scenario: Scenario) => ValidationResult;
+export type ValidatorFunction = (
+  graph: SystemGraph,
+  scenario: Scenario,
+  problem?: ProblemDefinition
+) => ValidationResult;
 
 // Client description for initial canvas
 export interface ClientDescription {
@@ -93,6 +101,12 @@ export interface ProblemDefinition {
 
   // Client descriptions for initial canvas (optional - will be auto-generated if not provided)
   clientDescriptions?: ClientDescription[];
+
+  // Consistency and caching requirements
+  consistencyRequirement?: ConsistencyRequirement; // Default: 'eventual'
+  dataLossAcceptable?: boolean; // Default: true for non-critical systems
+  recommendedCacheStrategy?: CacheStrategy; // Recommended caching approach
+  cacheStrategyJustification?: string; // Why this strategy is recommended
 
   // Architectural requirements (for validation)
   functionalRequirements: {

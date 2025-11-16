@@ -5,7 +5,16 @@ import {
   highAvailabilityValidator,
   costOptimizationValidator,
   validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  transactionConfigValidator,
 } from '../validation/validators/commonValidators';
+import {
+  cacheStrategyConsistencyValidator,
+  readHeavyCacheStrategyValidator,
+  cacheInvalidationValidator,
+  dataDurabilityValidator,
+} from '../validation/validators/cachingValidators';
 
 /**
  * TinyURL Problem Definition
@@ -20,6 +29,12 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
 - Accepts long URLs and generates short codes
 - Redirects short codes to original URLs
 - Ensures short codes are unique`,
+
+  // Consistency and caching requirements
+  consistencyRequirement: 'eventual',
+  dataLossAcceptable: false, // URLs once created should never be lost
+  recommendedCacheStrategy: 'cache_aside',
+  cacheStrategyJustification: 'Read-heavy workload (90% reads) with acceptable eventual consistency. Cache-aside allows flexible invalidation and high cache hit ratio.',
 
   // User-facing functional requirements and problem-specific clients
   userFacingFRs: [
@@ -134,6 +149,7 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
         maxLatency: 150,
         maxDowntime: 10,
         availability: 0.999,
+        dataLoss: false,
       },
     },
 
@@ -150,6 +166,7 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
         maxErrorRate: 0.05,
         maxCost: 500,
         availability: 0.99,  // Lower than Level 4
+        dataLoss: false,
       },
     },
   ],
@@ -165,12 +182,40 @@ export const tinyUrlProblemDefinition: ProblemDefinition = {
       validate: cacheForReadHeavyValidator,
     },
     {
+      name: 'Cache Strategy Consistency',
+      validate: cacheStrategyConsistencyValidator,
+    },
+    {
+      name: 'Read-Heavy Cache Strategy',
+      validate: readHeavyCacheStrategyValidator,
+    },
+    {
+      name: 'Cache Invalidation Strategy',
+      validate: cacheInvalidationValidator,
+    },
+    {
+      name: 'Data Durability Check',
+      validate: dataDurabilityValidator,
+    },
+    {
       name: 'Database Write Capacity',
       validate: databaseWriteCapacityValidator,
     },
     {
       name: 'High Availability Requirements',
       validate: highAvailabilityValidator,
+    },
+    {
+      name: 'Replication Configuration',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration',
+      validate: partitioningConfigValidator,
+    },
+    {
+      name: 'Transaction Configuration',
+      validate: transactionConfigValidator,
     },
     {
       name: 'Cost Optimization',

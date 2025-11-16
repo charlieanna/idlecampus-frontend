@@ -939,67 +939,14 @@ function DatabaseConfig({
 // ============================================================================
 
 function CacheConfig({ config, onChange, onApplyPreset }: ConfigProps) {
-  const cacheType = config.cacheType || 'redis';
-  const memorySizeGB = config.memorySizeGB || 4;
   const ttl = config.ttl || 3600;
-
-  const cacheTypes = [
-    { value: 'redis', label: 'Redis', desc: 'In-memory key-value store', icon: '🔴' },
-    { value: 'memcached', label: 'Memcached', desc: 'Simple distributed cache', icon: '⚡' },
-    { value: 'elasticache', label: 'ElastiCache', desc: 'AWS managed cache', icon: '☁️' },
-  ];
 
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-sm text-gray-900">Cache Configuration</h3>
 
-      {/* Cache Type Selector */}
-      <div>
-        <label className="block text-xs font-medium text-gray-700 mb-2">
-          Cache Type
-        </label>
-        <div className="space-y-2">
-          {cacheTypes.map((cache) => (
-            <button
-              key={cache.value}
-              onClick={() => onChange('cacheType', cache.value)}
-              className={`w-full p-3 text-left border-2 rounded-lg transition-colors ${
-                cacheType === cache.value
-                  ? 'border-blue-500 bg-blue-50'
-                  : 'border-gray-200 hover:border-gray-300'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <span className="text-2xl">{cache.icon}</span>
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-gray-900">{cache.label}</div>
-                  <div className="text-xs text-gray-500">{cache.desc}</div>
-                </div>
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Memory Size */}
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Memory Size (GB)
-        </label>
-        <input
-          type="range"
-          min="1"
-          max="128"
-          value={memorySizeGB}
-          onChange={(e) => onChange('memorySizeGB', parseInt(e.target.value))}
-          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-        />
-        <div className="flex justify-between items-center mt-2">
-          <span className="text-2xl font-bold text-blue-600">{memorySizeGB} GB</span>
-          <span className="text-xs text-gray-500">
-            ~${(memorySizeGB * 50).toLocaleString()}/mo
-          </span>
-        </div>
+      <div className="text-xs text-gray-600 bg-blue-50 p-3 rounded-lg border border-blue-200">
+        💡 <strong>Tip:</strong> Need more capacity? Add more cache instances instead of configuring size.
       </div>
 
       {/* TTL */}
@@ -1030,13 +977,28 @@ function CacheConfig({ config, onChange, onApplyPreset }: ConfigProps) {
         </label>
         <div className="space-y-2">
           {[
-            { value: 'cache_aside', label: 'Cache-Aside (Lazy Loading)', icon: '📥' },
-            { value: 'write_through', label: 'Write-Through', icon: '✍️' },
-            { value: 'write_behind', label: 'Write-Behind (Async)', icon: '⏱️' },
+            {
+              value: 'cache_aside',
+              label: 'Cache-Aside (Lazy Loading)',
+              icon: '📥',
+              desc: 'Load data into cache only when requested'
+            },
+            {
+              value: 'write_through',
+              label: 'Write-Through',
+              icon: '✍️',
+              desc: 'Write to cache and database simultaneously'
+            },
+            {
+              value: 'write_behind',
+              label: 'Write-Behind (Async)',
+              icon: '⏱️',
+              desc: 'Write to cache first, then database asynchronously'
+            },
           ].map((strategy) => (
             <label
               key={strategy.value}
-              className={`flex items-center p-3 border-2 rounded-lg cursor-pointer transition-colors ${
+              className={`flex items-start p-3 border-2 rounded-lg cursor-pointer transition-colors ${
                 config.strategy === strategy.value
                   ? 'border-blue-500 bg-blue-50'
                   : 'border-gray-200 hover:border-gray-300'
@@ -1048,10 +1010,13 @@ function CacheConfig({ config, onChange, onApplyPreset }: ConfigProps) {
                 value={strategy.value}
                 checked={config.strategy === strategy.value}
                 onChange={(e) => onChange('strategy', e.target.value)}
-                className="mr-3"
+                className="mr-3 mt-1"
               />
               <span className="text-lg mr-2">{strategy.icon}</span>
-              <span className="text-sm text-gray-900">{strategy.label}</span>
+              <div className="flex-1">
+                <div className="text-sm font-medium text-gray-900">{strategy.label}</div>
+                <div className="text-xs text-gray-500 mt-1">{strategy.desc}</div>
+              </div>
             </label>
           ))}
         </div>
@@ -2493,7 +2458,7 @@ function getComponentTypeLabel(type: string): string {
     mongodb: 'Document Database (NoSQL)',
     cassandra: 'Wide-Column Store (AP System)',
     redis: 'In-Memory Cache',
-    message_queue: 'Message Queue (Kafka/RabbitMQ)',
+    message_queue: 'Message Queue',
     cdn: 'Content Delivery Network',
     s3: 'Object Storage',
   };

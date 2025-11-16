@@ -13,8 +13,18 @@ export const LEGACY_DATABASE_COMPONENT_TYPES = [
   'keydb',
 ];
 
+export const LEGACY_CACHE_COMPONENT_TYPES = [
+  'redis',
+  'memcached',
+  'elasticache',
+];
+
 export function isDatabaseComponentType(type: string): boolean {
   return type === 'database' || LEGACY_DATABASE_COMPONENT_TYPES.includes(type);
+}
+
+export function isCacheComponentType(type: string): boolean {
+  return type === 'cache' || LEGACY_CACHE_COMPONENT_TYPES.includes(type);
 }
 
 const TYPE_TO_CATEGORY: Record<string, DatabaseCategory> = {
