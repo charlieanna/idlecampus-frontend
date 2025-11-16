@@ -15,6 +15,7 @@ import { problemConfigs } from '../problemConfigs';
 /**
  * Netflix - Video Streaming Platform
  * DDIA Ch. 8 (Distributed Systems) - CDN Edge Failures & Network Partitions
+ * DDIA Ch. 11 (Stream Processing) - Real-time Streaming Analytics
  *
  * DDIA Concepts Applied:
  * - Ch. 8: CDN edge server failures and fallback to origin
@@ -112,6 +113,185 @@ import { problemConfigs } from '../problemConfigs';
  * - Phone update arrives second → Overwrites with 12:00
  * → Final: 12:00 (user's phone was ahead)
  *
+ * DDIA Ch. 11 - Stream Processing for Real-time Analytics:
+ *
+ * Event Stream Architecture:
+ * 1. Viewing Events → Kafka Topic: "playback-events"
+ *    {user_id, video_id, timestamp, event_type, position, quality, device_type}
+ *    Event Types: play, pause, seek, buffer, quality_change, completion
+ *    Published every 10 seconds during playback + on-demand events
+ *
+ * 2. Stream Processors:
+ *    a) Real-time Quality Monitoring
+ *    b) Personalization Engine (viewing patterns)
+ *    c) Content Popularity Tracker
+ *    d) A/B Test Analytics
+ *
+ * Windowed Aggregations for Quality Monitoring (DDIA Ch. 11):
+ *
+ * Tumbling Window (1-minute intervals):
+ * - Count buffer events per CDN edge per minute
+ * - Calculate average bitrate per region
+ * - Track quality degradation incidents
+ *
+ * Example Pipeline - Buffer Rate Monitoring:
+ * playbackEvents.stream()
+ *   .filter(event => event.type == 'buffer')
+ *   .groupBy(event => event.cdn_edge_id)
+ *   .windowedBy(TumblingWindow.of(Duration.ofMinutes(1)))
+ *   .count()
+ *   .toStream()
+ *   .filter((edge, bufferCount) => bufferCount > 1000)  // Alert threshold
+ *   .to("quality-alerts")
+ *
+ * Window 1 (10:00:00 - 10:00:59):
+ *   US-East-Edge-01: 150 buffer events (normal)
+ *   US-West-Edge-03: 2,500 buffer events (ALERT!)
+ *   EU-Central-Edge-02: 80 buffer events (normal)
+ *
+ * Sliding Window for Viewing Patterns (DDIA Ch. 11):
+ *
+ * Sliding Window (5-minute window, 1-minute slide):
+ * - Track concurrent viewers per show
+ * - Detect viral content (rapid viewership growth)
+ * - Predict server load
+ *
+ * playbackEvents.stream()
+ *   .filter(event => event.type == 'play')
+ *   .groupBy(event => event.video_id)
+ *   .windowedBy(SlidingWindow.of(Duration.ofMinutes(5)).advanceBy(Duration.ofMinutes(1)))
+ *   .count()
+ *   .toStream()
+ *   .map((video, count, windowEnd) => ({
+ *     video_id: video,
+ *     concurrent_viewers: count,
+ *     timestamp: windowEnd
+ *   }))
+ *   .to("popularity-trends")
+ *
+ * Session Windows for Binge-Watching Detection (DDIA Ch. 11):
+ *
+ * Session Window (gap: 30 minutes):
+ * - Group consecutive viewing events into "sessions"
+ * - If gap > 30 min → New session
+ * - Track binge-watching patterns for recommendations
+ *
+ * playbackEvents.stream()
+ *   .groupBy(event => event.user_id)
+ *   .windowedBy(SessionWindows.with(Duration.ofMinutes(30)))
+ *   .aggregate(
+ *     () => new ViewingSession(),
+ *     (user, event, session) => session.addEvent(event)
+ *   )
+ *   .toStream()
+ *   .filter((user, session) => session.episodesWatched >= 3)  // Binge detected
+ *   .to("binge-recommendations")
+ *
+ * Example Session:
+ * User 123:
+ *   Session 1: 8:00 PM - 11:30 PM (watched 6 episodes of Stranger Things)
+ *   [30 min gap]
+ *   Session 2: 12:00 AM - 12:45 AM (watched 1 episode of The Crown)
+ *
+ * Stream-Table Join for Personalization (DDIA Ch. 11):
+ *
+ * Stream: playback-events (viewing activity)
+ * Table: user-profiles (KTable from database CDC)
+ *
+ * playbackEvents.stream()
+ *   .join(
+ *     userProfiles.table(),
+ *     (event, profile) => ({
+ *       user_id: event.user_id,
+ *       video_id: event.video_id,
+ *       genre: lookupGenre(event.video_id),
+ *       user_preferences: profile.preferred_genres,
+ *       viewing_time: event.timestamp
+ *     })
+ *   )
+ *   .filter((key, enriched) => enriched.genre in enriched.user_preferences)
+ *   .to("personalization-signals")
+ *
+ * Real-time A/B Test Analytics (DDIA Ch. 11):
+ *
+ * Scenario: Test new recommendation algorithm
+ * Control Group: 50% of users (existing algo)
+ * Treatment Group: 50% of users (new algo)
+ *
+ * Metrics to Track (real-time):
+ * - Click-through rate (CTR)
+ * - Average watch time per session
+ * - Completion rate
+ *
+ * playbackEvents.stream()
+ *   .join(abTestAssignments.table(), (event, assignment) => ({
+ *     user_id: event.user_id,
+ *     variant: assignment.variant,  // 'control' or 'treatment'
+ *     event_type: event.type,
+ *     duration: event.duration
+ *   }))
+ *   .groupBy(data => data.variant)
+ *   .windowedBy(TumblingWindow.of(Duration.ofMinutes(5)))
+ *   .aggregate(
+ *     () => new ABTestMetrics(),
+ *     (variant, data, metrics) => metrics.update(data)
+ *   )
+ *   .toStream()
+ *   .to("ab-test-results")
+ *
+ * Output (real-time dashboard):
+ * Window: 10:00 - 10:05
+ *   Control:   CTR: 15.2%, Avg Watch Time: 42 min, Completion: 68%
+ *   Treatment: CTR: 18.7%, Avg Watch Time: 48 min, Completion: 73%
+ *   → Treatment is winning!
+ *
+ * Change Data Capture (CDC) for Content Catalog (DDIA Ch. 11):
+ *
+ * Database: content_catalog (PostgreSQL)
+ * Changes: new_release, metadata_update, availability_change
+ *
+ * CDC Stream (Debezium):
+ * - Capture INSERT, UPDATE, DELETE from content_catalog table
+ * - Publish to Kafka topic: "catalog-changes"
+ * - Stream processors update cached catalog in real-time
+ *
+ * catalogChanges.stream()
+ *   .filter(change => change.op == 'INSERT')  // New content added
+ *   .map(change => ({
+ *     video_id: change.after.id,
+ *     title: change.after.title,
+ *     release_date: change.after.release_date
+ *   }))
+ *   .to("new-releases-notifications")
+ *
+ * Exactly-Once Analytics (DDIA Ch. 11):
+ *
+ * Problem: Network retry causes duplicate view count
+ * User watches episode 1 → Event published twice → Count = 2 views (WRONG!)
+ *
+ * Solution: Kafka Transactions + Idempotent Processing
+ * - Each event has unique event_id
+ * - Deduplication window: 1 hour
+ * - State store tracks seen event_ids
+ *
+ * playbackEvents.stream()
+ *   .transformValues(event => ({
+ *     ...event,
+ *     event_id: event.user_id + "_" + event.video_id + "_" + event.timestamp
+ *   }))
+ *   .groupByKey()
+ *   .aggregate(
+ *     () => new HashSet<String>(),  // Seen event IDs
+ *     (key, event, seenIds) => {
+ *       if (seenIds.contains(event.event_id)) {
+ *         return seenIds;  // Duplicate, skip
+ *       }
+ *       seenIds.add(event.event_id);
+ *       // Process event...
+ *       return seenIds;
+ *     }
+ *   )
+ *
  * System Design Primer Concepts:
  * - CDN: Global edge caching for video chunks (Netflix Open Connect)
  * - Circuit Breaker: Detect and route around failing edges
@@ -127,7 +307,7 @@ export const netflixProblemDefinition: ProblemDefinition = {
 - Platform recommends content based on viewing history
 - Videos are available in multiple qualities (SD, HD, 4K)
 
-Learning Objectives (DDIA Ch. 8):
+Learning Objectives (DDIA Ch. 8, 11):
 1. Handle CDN edge failures with circuit breaker pattern (DDIA Ch. 8)
    - Detect edge server down, failover to backup edge < 100ms
    - Circuit breaker states: CLOSED → OPEN → HALF_OPEN
@@ -140,7 +320,20 @@ Learning Objectives (DDIA Ch. 8):
    - Async replication across devices with eventual consistency
    - Last-write-wins conflict resolution
 5. Coordinate distributed video encoding jobs (DDIA Ch. 8)
-   - Leader-worker pattern, reassign failed chunks`,
+   - Leader-worker pattern, reassign failed chunks
+6. Implement real-time analytics with stream processing (DDIA Ch. 11)
+   - Windowed aggregations for quality monitoring (tumbling windows)
+   - Sliding windows for concurrent viewer tracking
+   - Session windows for binge-watching detection
+7. Design stream-table joins for personalization (DDIA Ch. 11)
+   - Join playback events with user profiles (CDC from database)
+   - Enrich events with contextual data
+8. Build real-time A/B test analytics (DDIA Ch. 11)
+   - Compare control vs treatment groups in real-time
+   - Windowed metrics: CTR, watch time, completion rate
+9. Ensure exactly-once semantics for view counts (DDIA Ch. 11)
+   - Idempotent processing with deduplication
+   - Kafka transactions for atomic operations`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
@@ -159,6 +352,15 @@ Learning Objectives (DDIA Ch. 8):
     'Clock synchronization: ±50ms across edges (DDIA Ch. 8: NTP)',
     'Encoding job recovery: Reassign failed chunks (DDIA Ch. 8: Idempotent workers)',
     'Availability during partition: > 99.9% (DDIA Ch. 8: Favor availability over consistency)',
+    'Analytics latency: < 5s end-to-end (DDIA Ch. 11: Real-time stream processing)',
+    'Quality monitoring window: 1-minute tumbling (DDIA Ch. 11: Windowed aggregations)',
+    'Popularity tracking: 5-minute sliding window (DDIA Ch. 11: Sliding windows)',
+    'Binge detection: 30-minute session gap (DDIA Ch. 11: Session windows)',
+    'Stream-table join: < 100ms (DDIA Ch. 11: KTable lookups)',
+    'A/B test metrics: Real-time 5-minute windows (DDIA Ch. 11: Windowed aggregations)',
+    'Exactly-once view counts: 100% accuracy (DDIA Ch. 11: Kafka transactions + deduplication)',
+    'Event throughput: 1M playback events/second (DDIA Ch. 11: Scalable stream processing)',
+    'CDC latency: < 1s for catalog updates (DDIA Ch. 11: Change data capture)',
   ],
 
   functionalRequirements: {
