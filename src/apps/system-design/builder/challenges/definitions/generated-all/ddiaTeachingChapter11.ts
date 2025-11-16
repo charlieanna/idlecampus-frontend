@@ -26,8 +26,8 @@
  * 15. Checkpointing - Save and restore stream state
  */
 
-import { ProblemDefinition } from '../../types';
-import { generateScenarios } from '../../utils/scenarioGenerator';
+import { ProblemDefinition } from '../../../types/problemDefinition';
+import { generateScenarios } from '../../scenarioGenerator';
 
 // ============================================================================
 // MESSAGING SYSTEMS (5 PROBLEMS)

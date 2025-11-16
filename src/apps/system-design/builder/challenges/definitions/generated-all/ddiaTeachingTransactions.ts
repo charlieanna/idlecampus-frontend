@@ -230,7 +230,7 @@ Key requirements:
         to: 'storage',
         reason: 'Coordinate concurrent access',
       },
-    },
+    ],
   },
 
   scenarios: generateScenarios('ddia-isolation', problemConfigs['ddia-isolation'] || {
@@ -386,7 +386,7 @@ Key requirements:
         to: 'storage',
         reason: 'Execute with row-level locks',
       },
-    },
+    ],
   },
 
   scenarios: generateScenarios('ddia-read-committed', problemConfigs['ddia-read-committed'] || {
@@ -609,7 +609,7 @@ Key requirements:
         to: 'storage',
         reason: 'Read from consistent snapshot',
       },
-    },
+    ],
   },
 
   scenarios: generateScenarios('ddia-repeatable-read', problemConfigs['ddia-repeatable-read'] || {
@@ -686,7 +686,7 @@ Key requirements:
         to: 'storage',
         reason: 'Execute transactions',
       },
-    },
+    ],
   },
 
   scenarios: generateScenarios('ddia-dirty-reads', problemConfigs['ddia-dirty-reads'] || {
@@ -760,7 +760,7 @@ Key requirements:
         to: 'storage',
         reason: 'Acquire write locks before updating',
       },
-    },
+    ],
   },
 
   scenarios: generateScenarios('ddia-dirty-writes', problemConfigs['ddia-dirty-writes'] || {

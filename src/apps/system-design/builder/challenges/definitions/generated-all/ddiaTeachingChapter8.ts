@@ -26,8 +26,8 @@
  * 15. Blockchain Basics - Proof-of-work consensus
  */
 
-import { ProblemDefinition } from '../../types';
-import { generateScenarios } from '../../utils/scenarioGenerator';
+import { ProblemDefinition } from '../../../types/problemDefinition';
+import { generateScenarios } from '../../scenarioGenerator';
 
 // ============================================================================
 // NETWORK ISSUES (5 PROBLEMS)

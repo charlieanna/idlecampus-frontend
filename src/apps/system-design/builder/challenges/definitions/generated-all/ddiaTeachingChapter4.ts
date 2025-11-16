@@ -14,8 +14,8 @@
  * 8. Migration Strategies - Zero-downtime schema migrations
  */
 
-import { ProblemDefinition } from '../../types';
-import { generateScenarios } from '../../utils/scenarioGenerator';
+import { ProblemDefinition } from '../../../types/problemDefinition';
+import { generateScenarios } from '../../scenarioGenerator';
 
 // ============================================================================
 // DATA ENCODING (4 PROBLEMS)

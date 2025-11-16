@@ -17,8 +17,8 @@
  * 8. CQRS - Command Query Responsibility Segregation
  */
 
-import { ProblemDefinition } from '../../types';
-import { generateScenarios } from '../../utils/scenarioGenerator';
+import { ProblemDefinition } from '../../../types/problemDefinition';
+import { generateScenarios } from '../../scenarioGenerator';
 
 // ============================================================================
 // DATA INTEGRATION (4 PROBLEMS)

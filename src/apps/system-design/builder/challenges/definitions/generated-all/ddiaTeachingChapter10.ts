@@ -19,8 +19,8 @@
  * 10. Lineage-Based Fault Tolerance - Recovery without replication
  */
 
-import { ProblemDefinition } from '../../types';
-import { generateScenarios } from '../../utils/scenarioGenerator';
+import { ProblemDefinition } from '../../../types/problemDefinition';
+import { generateScenarios } from '../../scenarioGenerator';
 
 // ============================================================================
 // MAPREDUCE (5 PROBLEMS)
