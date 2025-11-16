@@ -19,36 +19,50 @@
 export { codeReviewSystemChallenge } from './codeReviewSystem';
 export { cicdPipelineChallenge } from './cicdPipeline';
 export { featureFlagSystemChallenge } from './featureFlagSystem';
+export { internalBuildSystemChallenge } from './internalBuildSystem';
+export { secretManagementChallenge } from './secretManagement';
+export { internalApiGatewayChallenge } from './internalApiGateway';
 
-// Data Infrastructure & ML
+// Data Infrastructure
 export { featureStoreChallenge } from './featureStore';
+export { etlOrchestrationChallenge } from './etlOrchestration';
+export { logAggregationChallenge } from './logAggregation';
 
 // Observability & Operations
 export { distributedTracingChallenge } from './distributedTracing';
+
+// Migration & Reliability
+export { zeroDowntimeMigrationChallenge } from './zeroDowntimeMigration';
 
 /**
  * All internal systems challenges
  */
 export const internalSystemsChallenges = [
-  // Developer Tools (5 implemented, 10 pending)
+  // Developer Tools (6 implemented, 9 pending)
   'codeReviewSystemChallenge',
   'cicdPipelineChallenge',
   'featureFlagSystemChallenge',
-  // TODO: Add remaining 12 developer tools challenges
+  'internalBuildSystemChallenge',
+  'secretManagementChallenge',
+  'internalApiGatewayChallenge',
+  // TODO: Add remaining 9 developer tools challenges
 
-  // Data Infrastructure (1 implemented, 14 pending)
+  // Data Infrastructure (3 implemented, 12 pending)
   'featureStoreChallenge',
-  // TODO: Add remaining 14 data infrastructure challenges
+  'etlOrchestrationChallenge',
+  'logAggregationChallenge',
+  // TODO: Add remaining 12 data infrastructure challenges
 
   // Observability (1 implemented, 11 pending)
   'distributedTracingChallenge',
   // TODO: Add remaining 11 observability challenges
 
-  // Migration & Reliability (0 implemented, 8 pending)
-  // TODO: Add all 8 migration challenges
+  // Migration & Reliability (1 implemented, 7 pending)
+  'zeroDowntimeMigrationChallenge',
+  // TODO: Add remaining 7 migration challenges
 
   // ML Infrastructure (1 implemented, 9 pending)
-  // Already exported featureStoreChallenge above
+  // featureStoreChallenge already exported in Data Infrastructure above
   // TODO: Add remaining 9 ML infrastructure challenges
 ];
 
@@ -60,15 +74,31 @@ export function getInternalSystemsChallenges() {
   const { codeReviewSystemChallenge } = require('./codeReviewSystem');
   const { cicdPipelineChallenge } = require('./cicdPipeline');
   const { featureFlagSystemChallenge } = require('./featureFlagSystem');
+  const { internalBuildSystemChallenge } = require('./internalBuildSystem');
+  const { secretManagementChallenge } = require('./secretManagement');
+  const { internalApiGatewayChallenge } = require('./internalApiGateway');
   const { featureStoreChallenge } = require('./featureStore');
+  const { etlOrchestrationChallenge } = require('./etlOrchestration');
+  const { logAggregationChallenge } = require('./logAggregation');
   const { distributedTracingChallenge } = require('./distributedTracing');
+  const { zeroDowntimeMigrationChallenge } = require('./zeroDowntimeMigration');
 
   return [
+    // Developer Tools
     codeReviewSystemChallenge,
     cicdPipelineChallenge,
     featureFlagSystemChallenge,
+    internalBuildSystemChallenge,
+    secretManagementChallenge,
+    internalApiGatewayChallenge,
+    // Data Infrastructure
     featureStoreChallenge,
+    etlOrchestrationChallenge,
+    logAggregationChallenge,
+    // Observability
     distributedTracingChallenge,
+    // Migration & Reliability
+    zeroDowntimeMigrationChallenge,
   ];
 }
 
@@ -83,11 +113,24 @@ export function getChallengesByCategory(category: string) {
       'code_review_system',
       'cicd_pipeline',
       'feature_flag_system',
+      'internal_build_system',
+      'secret_management',
+      'internal_api_gateway',
     ],
-    data_infrastructure: ['feature_store'],
-    observability: ['distributed_tracing'],
-    migration: [],
-    ml_infrastructure: ['feature_store'],
+    data_infrastructure: [
+      'feature_store',
+      'etl_orchestration',
+      'log_aggregation',
+    ],
+    observability: [
+      'distributed_tracing',
+    ],
+    migration: [
+      'zero_downtime_migration',
+    ],
+    ml_infrastructure: [
+      'feature_store',
+    ],
   };
 
   const challengeIds = categoryMap[category] || [];
