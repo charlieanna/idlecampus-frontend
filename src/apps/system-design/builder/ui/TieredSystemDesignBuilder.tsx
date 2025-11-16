@@ -377,13 +377,19 @@ if __name__ == "__main__":
   // Load challenge from URL if challengeId is provided
   useEffect(() => {
     if (challengeId && !selectedChallenge) {
-      // Convert URL format (dashes) back to challenge ID format (underscores)
-      const actualChallengeId = challengeId.replace(/-/g, '_');
-      const challenge = challenges.find(c => c.id === actualChallengeId);
+      // Try to find challenge - first with the exact URL ID (which may use hyphens)
+      let challenge = challenges.find(c => c.id === challengeId);
+
+      // If not found, try converting dashes to underscores (for legacy IDs)
+      if (!challenge) {
+        const underscoreId = challengeId.replace(/-/g, '_');
+        challenge = challenges.find(c => c.id === underscoreId);
+      }
+
       if (challenge) {
         setSelectedChallenge(challenge);
       } else {
-        console.error(`Challenge not found: ${actualChallengeId} (from URL: ${challengeId})`);
+        console.error(`Challenge not found: ${challengeId}`);
       }
     }
   }, [challengeId, challenges, selectedChallenge]);
@@ -847,45 +853,126 @@ if __name__ == "__main__":
 
         {/* Generic Python Editor for challenges with pythonTemplate but no codeChallenges */}
         {activeTab === 'python' && !isTinyUrl && !isWebCrawler && !hasCodeChallenges && hasPythonTemplate && (
-          <div className="flex-1 flex flex-col bg-white overflow-hidden">
-            <div className="flex-1 p-6 overflow-auto">
-              <div className="max-w-7xl mx-auto">
-                <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 mb-2">Python Code Editor</h2>
-                  <p className="text-gray-600">
-                    Implement the functions below to complete the {selectedChallenge?.title} challenge.
-                    Your code will be tested when you submit your system design.
-                  </p>
-                </div>
+          <div className="flex-1 flex overflow-hidden">
+            {/* Left Panel: Problem Statement (40%) */}
+            <div className="w-2/5 bg-white border-r border-gray-200 flex flex-col">
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="space-y-6">
+                  {/* Problem Title */}
+                  <div>
+                    <h2 className="text-2xl font-bold text-gray-900">{selectedChallenge?.title}</h2>
+                    <div className="mt-2 flex items-center gap-2">
+                      <span className={`px-2 py-1 text-xs font-medium rounded ${
+                        selectedChallenge?.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
+                        selectedChallenge?.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
+                      }`}>
+                        {selectedChallenge?.difficulty || 'Medium'}
+                      </span>
+                      <span className="px-2 py-1 bg-blue-100 text-blue-700 text-xs font-medium rounded">System Design</span>
+                    </div>
+                  </div>
 
-                <div className="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                  {/* Problem Description */}
+                  <div className="prose prose-sm max-w-none">
+                    <p className="text-gray-700">
+                      {selectedChallenge?.description}
+                    </p>
+                  </div>
+
+                  {/* Functional Requirements */}
+                  {selectedChallenge?.requirements && selectedChallenge.requirements.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Requirements</h3>
+                      <ul className="list-disc pl-5 space-y-1 text-gray-700">
+                        {selectedChallenge.requirements.map((req, idx) => (
+                          <li key={idx}>{req}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Non-Functional Requirements */}
+                  {selectedChallenge?.nonFunctionalRequirements && selectedChallenge.nonFunctionalRequirements.length > 0 && (
+                    <div>
+                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Performance Requirements</h3>
+                      <ul className="list-disc pl-5 space-y-1 text-gray-700">
+                        {selectedChallenge.nonFunctionalRequirements.map((req, idx) => (
+                          <li key={idx}>{req}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Constraints */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Constraints</h3>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-gray-700">
+                      <li>Your implementation should be efficient</li>
+                      <li>Handle error cases gracefully</li>
+                      <li>Follow the function signatures provided</li>
+                    </ul>
+                  </div>
+
+                  {/* Hints */}
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Hints</h3>
+                    <ul className="list-disc pl-5 space-y-1 text-sm text-gray-600">
+                      <li>Use the context API to interact with databases and caches</li>
+                      {selectedChallenge?.requiredAPIs && selectedChallenge.requiredAPIs.length > 0 && (
+                        <li>Available APIs: {selectedChallenge.requiredAPIs.join(', ')}</li>
+                      )}
+                      <li>Complete the TODO sections in the code</li>
+                      <li>Handle edge cases appropriately</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Panel: Code Editor (60%) */}
+            <div className="flex-1 flex flex-col bg-gray-50 min-w-0 relative">
+              {/* Code Editor */}
+              <div className="flex-1 flex flex-col bg-white min-w-0">
+                <div className="p-3 border-b border-gray-200 bg-gray-50 flex-shrink-0">
+                  <div className="flex items-center justify-between">
+                    <h3 className="font-semibold text-gray-900">Code Editor</h3>
+                  </div>
+                </div>
+                <div className="flex-1 overflow-hidden" style={{ minWidth: 0, width: '100%' }}>
                   <Editor
-                    height="600px"
+                    height="100%"
                     defaultLanguage="python"
                     value={pythonCode}
                     onChange={(value) => setPythonCode(value || '')}
-                    theme="vs-dark"
+                    theme="vs-light"
                     options={{
                       minimap: { enabled: false },
                       fontSize: 14,
                       lineNumbers: 'on',
                       scrollBeyondLastLine: false,
                       automaticLayout: true,
+                      tabSize: 4,
+                      wordWrap: 'on',
                     }}
                   />
                 </div>
+              </div>
 
-                <div className="mt-6 flex justify-between items-center">
-                  <div className="text-sm text-gray-500">
-                    Tip: Complete the TODO sections in the code above
-                  </div>
-                  <button
-                    onClick={handleSubmit}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                  >
-                    Submit Solution
-                  </button>
-                </div>
+              {/* Action Buttons - Fixed at bottom */}
+              <div className="flex-shrink-0 p-4 bg-white border-t border-gray-200 flex justify-end gap-3">
+                <button
+                  onClick={handleSubmit}
+                  className="px-4 py-2 bg-gray-600 text-white font-medium rounded-lg hover:bg-gray-700 transition-colors"
+                >
+                  Run Code
+                </button>
+                <button
+                  onClick={handleSubmit}
+                  className="px-4 py-2 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition-colors"
+                >
+                  Submit Solution
+                </button>
               </div>
             </div>
           </div>
