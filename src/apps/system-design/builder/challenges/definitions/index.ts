@@ -1,14 +1,29 @@
 /**
  * Curated System Design Challenge Definitions
  *
- * Reduced from 658 → 192 high-quality, non-repetitive problems (71% reduction)
- * - L1: 40 original problems (Instagram, Twitter, Netflix, etc.)
+ * Total: 400+ problems
+ * - L1: 40 original real-world problems (Instagram, Twitter, Netflix, etc.)
  * - L2-4: 35 distinct pattern examples (30 patterns + 5 DDIA gaps)
  * - L5: 107 platform problems (migrations, APIs, multi-tenant, etc.)
  * - L6: 10 next-gen problems (practical modern tech only)
+ * - DDIA Teaching: 151 concept-focused problems (COMPLETE!)
  *
- * DDIA Coverage: ~95% of "Designing Data-Intensive Applications" concepts
- * Added 5 problems for: batch processing, sharding, transactions, OLAP, graph DBs
+ * DDIA Teaching Problems (151 total - ALL CHAPTERS):
+ * - Chapter 1: Reliability, Scalability, Maintainability (15 problems)
+ * - Chapter 2: Data Models & Query Languages (12 problems)
+ * - Chapter 3: Storage & Retrieval (10 problems)
+ * - Chapter 4: Encoding & Evolution (8 problems)
+ * - Chapter 5: Replication (16 problems)
+ * - Chapter 6: Partitioning (12 problems)
+ * - Chapter 7: Transactions (16 problems)
+ * - Chapter 8: Distributed Systems (15 problems)
+ * - Chapter 9: Consensus (14 problems)
+ * - Chapter 10: Batch Processing (10 problems)
+ * - Chapter 11: Stream Processing (15 problems)
+ * - Chapter 12: Future of Data Systems (8 problems)
+ *
+ * These teaching problems provide a progressive learning path from individual
+ * DDIA concepts to complex real-world system design challenges.
  *
  * Each challenge has ONLY Level 1: "The Brute Force Test - Does It Even Work?"
  * Focus: Verify connectivity (Client → App → Database path exists)
@@ -105,6 +120,20 @@ export { l6ExistentialNuclearResilientProblemDefinition, l6ExistentialClimateAda
 // DDIA Gap Problems - Filling missing "Designing Data-Intensive Applications" concepts (5)
 export { batchProcessingMapreduceProblemDefinition, explicitShardingDesignProblemDefinition, transactionIsolationLevelsProblemDefinition, dataWarehouseOlapProblemDefinition, graphDatabaseSocialProblemDefinition } from './generated-all/ddiaGapProblems';
 
+// DDIA Teaching Problems - Concept-focused learning problems (151 total - ALL CHAPTERS)
+export { ddiaChapter1Problems } from './generated-all/ddiaTeachingChapter1';
+export { ddiaChapter2Problems } from './generated-all/ddiaTeachingChapter2';
+export { ddiaChapter3Problems } from './generated-all/ddiaTeachingChapter3';
+export { ddiaChapter4Problems } from './generated-all/ddiaTeachingChapter4';
+export { ddiaReplicationProblems } from './generated-all/ddiaTeachingReplication';
+export { ddiaPartitioningProblems } from './generated-all/ddiaTeachingPartitioning';
+export { ddiaTransactionProblems } from './generated-all/ddiaTeachingTransactions';
+export { ddiaChapter8Problems } from './generated-all/ddiaTeachingChapter8';
+export { ddiaConsensusProblems } from './generated-all/ddiaTeachingConsensus';
+export { ddiaChapter10Problems } from './generated-all/ddiaTeachingChapter10';
+export { ddiaChapter11Problems } from './generated-all/ddiaTeachingChapter11';
+export { ddiaChapter12Problems } from './generated-all/ddiaTeachingChapter12';
+
 // Extracted Problems - Tutorials (3)
 // Note: These are now imported from generated-all/tutorialAllProblems
 
@@ -200,6 +229,20 @@ import { l6ExistentialNuclearResilientProblemDefinition, l6ExistentialClimateAda
 
 // DDIA Gap Problems - Filling missing DDIA concepts
 import { batchProcessingMapreduceProblemDefinition, explicitShardingDesignProblemDefinition, transactionIsolationLevelsProblemDefinition, dataWarehouseOlapProblemDefinition, graphDatabaseSocialProblemDefinition } from './generated-all/ddiaGapProblems';
+
+// DDIA Teaching Problems - Concept-focused learning (151 total)
+import { ddiaChapter1Problems } from './generated-all/ddiaTeachingChapter1';
+import { ddiaChapter2Problems } from './generated-all/ddiaTeachingChapter2';
+import { ddiaChapter3Problems } from './generated-all/ddiaTeachingChapter3';
+import { ddiaChapter4Problems } from './generated-all/ddiaTeachingChapter4';
+import { ddiaReplicationProblems } from './generated-all/ddiaTeachingReplication';
+import { ddiaPartitioningProblems } from './generated-all/ddiaTeachingPartitioning';
+import { ddiaTransactionProblems } from './generated-all/ddiaTeachingTransactions';
+import { ddiaChapter8Problems } from './generated-all/ddiaTeachingChapter8';
+import { ddiaConsensusProblems } from './generated-all/ddiaTeachingConsensus';
+import { ddiaChapter10Problems } from './generated-all/ddiaTeachingChapter10';
+import { ddiaChapter11Problems } from './generated-all/ddiaTeachingChapter11';
+import { ddiaChapter12Problems } from './generated-all/ddiaTeachingChapter12';
 
 // Note: Individual problem definitions that were previously imported here are now imported from generated-all files above
 
@@ -899,6 +942,19 @@ export const allProblemDefinitions: ProblemDefinition[] = [
     transactionIsolationLevelsProblemDefinition,
     dataWarehouseOlapProblemDefinition,
     graphDatabaseSocialProblemDefinition,
+    // DDIA Teaching Problems (151 - ALL CHAPTERS)
+    ...ddiaChapter1Problems,
+    ...ddiaChapter2Problems,
+    ...ddiaChapter3Problems,
+    ...ddiaChapter4Problems,
+    ...ddiaReplicationProblems,
+    ...ddiaPartitioningProblems,
+    ...ddiaTransactionProblems,
+    ...ddiaChapter8Problems,
+    ...ddiaConsensusProblems,
+    ...ddiaChapter10Problems,
+    ...ddiaChapter11Problems,
+    ...ddiaChapter12Problems,
 ].filter((problem, index, self) => {
   // Deduplicate by title - keep only the first occurrence of each title
   return index === self.findIndex(p => p.title === problem.title);
