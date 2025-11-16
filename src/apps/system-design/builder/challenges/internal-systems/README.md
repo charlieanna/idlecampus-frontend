@@ -24,7 +24,7 @@ These problems differ from the existing challenges by focusing on:
 | 6 | **Developer Metrics Dashboard** | DORA metrics, deployment tracking, MTTR | Cross-system aggregation, real-time alerts, anomaly detection |
 | ✅ | **Internal API Gateway** | Request routing, auth, rate limiting | Dynamic routing, quota management, traffic shadowing, circuit breaking |
 | ✅ | **Secret Management System** | Secret rotation, access control, audit logs | Encryption at rest/transit, high availability, versioning, grace periods |
-| 9 | **Internal Job Scheduler** | Task scheduling, resource allocation, priorities | Google Borg/K8s style, bin packing, preemption |
+| ✅ | **Internal Job Scheduler** | Task scheduling, resource allocation, priorities | Google Borg/K8s style, bin packing, preemption |
 | 10 | **Dependency Graph Analyzer** | Service dependencies, impact analysis | Real-time updates, circular dependency detection |
 | 11 | **Code Search Engine** | Multi-repo search, regex, reference finding | Google Code Search style, incremental indexing |
 | 12 | **Internal Docs Platform** | Wiki, API docs, runbooks | Search relevance, version control, access control |
@@ -148,70 +148,75 @@ The following problems have full implementations with test cases:
    - xDS protocol for config propagation (<10 seconds)
    - Health checking with hysteresis (N consecutive failures)
 
+8. ✅ **Internal Job Scheduler** (`internalJobScheduler.ts`)
+   - 7 test cases for bin packing, preemption, resource quotas
+   - Priority-based scheduling with preemption (P0 kills P3)
+   - First-fit bin packing algorithm, 10K jobs/sec throughput
+
 ### Data Infrastructure
 
-8. ✅ **ML Feature Store** (`featureStore.ts`)
+9. ✅ **ML Feature Store** (`featureStore.ts`)
    - 6 test cases covering online/offline consistency
    - Point-in-time correctness implementation
    - Multi-tier caching strategy
 
-9. ✅ **ETL Orchestration** (`etlOrchestration.ts`)
-   - 7 test cases for DAG execution, backfilling, retries
-   - Topological sort for parallel execution
-   - Idempotent data pipeline patterns
+10. ✅ **ETL Orchestration** (`etlOrchestration.ts`)
+    - 7 test cases for DAG execution, backfilling, retries
+    - Topological sort for parallel execution
+    - Idempotent data pipeline patterns
 
-10. ✅ **Log Aggregation** (`logAggregation.ts`)
+11. ✅ **Log Aggregation** (`logAggregation.ts`)
     - 6 test cases for high-volume ingestion (1M logs/sec)
     - Multi-tier storage (hot/warm/cold)
     - PII redaction and sampling strategies
 
-11. ✅ **Metrics Aggregation Service** (`metricsAggregation.ts`)
+12. ✅ **Metrics Aggregation Service** (`metricsAggregation.ts`)
     - 6 test cases for 1M metrics/sec ingestion
     - Series ID mapping for cardinality reduction
     - Multi-resolution storage (1s/1m/1h/1d downsampling)
 
-12. ✅ **Real-time Analytics Pipeline** (`realtimeAnalyticsPipeline.ts`)
+13. ✅ **Real-time Analytics Pipeline** (`realtimeAnalyticsPipeline.ts`)
     - 7 test cases for windowing, late data handling, checkpointing
     - Watermark-based event-time processing
     - Exactly-once semantics with Kafka + RocksDB
 
 ### Observability & Operations
 
-13. ✅ **Distributed Tracing** (`distributedTracing.ts`)
+14. ✅ **Distributed Tracing** (`distributedTracing.ts`)
     - 6 test cases with sampling and graceful degradation
     - <1ms overhead requirement
     - Tail-based sampling strategy
 
-14. ✅ **Alerting & Incident Management** (`alertingIncidentManagement.ts`)
+15. ✅ **Alerting & Incident Management** (`alertingIncidentManagement.ts`)
     - 8 test cases for alert deduplication and escalation
     - Fingerprint-based deduplication (1000 alerts → 1 incident)
     - Multi-channel delivery (Slack/SMS/phone)
 
-15. ✅ **Chaos Engineering Platform** (`chaosEngineeringPlatform.ts`)
+16. ✅ **Chaos Engineering Platform** (`chaosEngineeringPlatform.ts`)
     - 8 test cases for failure injection and rollback
     - Blast radius enforcement (never exceed 25% of fleet)
     - Automatic rollback on SLO breach (<60s)
 
 ### Migration & Reliability
 
-16. ✅ **Zero-Downtime DB Migration** (`zeroDowntimeMigration.ts`)
+17. ✅ **Zero-Downtime DB Migration** (`zeroDowntimeMigration.ts`)
     - 5 test cases for dual-write, backfill, gradual cutover
     - Consistency validation techniques
     - Rollback strategies
 
-17. ✅ **Multi-Region Failover** (`multiRegionFailover.ts`)
+18. ✅ **Multi-Region Failover** (`multiRegionFailover.ts`)
     - 7 test cases for consensus-based failure detection
     - Gradual traffic shift (10% → 50% → 100%)
     - Split-brain prevention with fencing tokens
 
-18. ✅ **Circuit Breaker Library** (`circuitBreakerLibrary.ts`)
+19. ✅ **Circuit Breaker Library** (`circuitBreakerLibrary.ts`)
     - 7 test cases for state transitions, fast-fail, thread safety
     - State machine: Closed → Open → Half-Open → Closed
     - Sliding window metrics with deque
 
 ### ML Infrastructure
 
-19. ✅ **Model Serving Platform** (`modelServingPlatform.ts`)
+20. ✅ **Model Serving Platform** (`modelServingPlatform.ts`)
     - 7 test cases for canary deployment and batch inference
     - p99 <50ms inference latency requirement
     - GPU optimization with batching (1M predictions in <5 min)
@@ -257,9 +262,9 @@ These problems are ideal for:
 
 ## Implementation Status
 
-- ✅ **19 problems fully implemented** with test cases (up from 16!)
-- 📝 **41 problems defined** with brief descriptions
-- 🎯 **Coverage**: Developer Tools (7), Data Infrastructure (5), Observability (3), Migration (3), ML Infrastructure (2)
+- ✅ **20 problems fully implemented** with test cases (up from 19!)
+- 📝 **40 problems defined** with brief descriptions
+- 🎯 **Coverage**: Developer Tools (8), Data Infrastructure (5), Observability (3), Migration (3), ML Infrastructure (2)
 - 🔜 **Next**: Implement remaining problems across all categories
 
 ---

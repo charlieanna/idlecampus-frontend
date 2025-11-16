@@ -23,6 +23,7 @@ export { internalBuildSystemChallenge } from './internalBuildSystem';
 export { secretManagementChallenge } from './secretManagement';
 export { internalApiGatewayChallenge } from './internalApiGateway';
 export { serviceMeshControlPlaneChallenge } from './serviceMeshControlPlane';
+export { internalJobSchedulerChallenge } from './internalJobScheduler';
 
 // Data Infrastructure
 export { featureStoreChallenge } from './featureStore';
@@ -48,7 +49,7 @@ export { modelServingPlatformChallenge } from './modelServingPlatform';
  * All internal systems challenges
  */
 export const internalSystemsChallenges = [
-  // Developer Tools (7 implemented, 8 pending)
+  // Developer Tools (8 implemented, 7 pending)
   'codeReviewSystemChallenge',
   'cicdPipelineChallenge',
   'featureFlagSystemChallenge',
@@ -56,7 +57,8 @@ export const internalSystemsChallenges = [
   'secretManagementChallenge',
   'internalApiGatewayChallenge',
   'serviceMeshControlPlaneChallenge',
-  // TODO: Add remaining 8 developer tools challenges
+  'internalJobSchedulerChallenge',
+  // TODO: Add remaining 7 developer tools challenges
 
   // Data Infrastructure (5 implemented, 10 pending)
   'featureStoreChallenge',
@@ -96,6 +98,7 @@ export function getInternalSystemsChallenges() {
   const { secretManagementChallenge } = require('./secretManagement');
   const { internalApiGatewayChallenge } = require('./internalApiGateway');
   const { serviceMeshControlPlaneChallenge } = require('./serviceMeshControlPlane');
+  const { internalJobSchedulerChallenge } = require('./internalJobScheduler');
   const { featureStoreChallenge } = require('./featureStore');
   const { etlOrchestrationChallenge } = require('./etlOrchestration');
   const { logAggregationChallenge } = require('./logAggregation');
@@ -118,6 +121,7 @@ export function getInternalSystemsChallenges() {
     secretManagementChallenge,
     internalApiGatewayChallenge,
     serviceMeshControlPlaneChallenge,
+    internalJobSchedulerChallenge,
     // Data Infrastructure
     featureStoreChallenge,
     etlOrchestrationChallenge,
@@ -152,6 +156,7 @@ export function getChallengesByCategory(category: string) {
       'secret_management',
       'internal_api_gateway',
       'service_mesh_control_plane',
+      'internal_job_scheduler',
     ],
     data_infrastructure: [
       'feature_store',
