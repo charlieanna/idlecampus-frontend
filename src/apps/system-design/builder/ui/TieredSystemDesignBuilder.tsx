@@ -397,26 +397,9 @@ if __name__ == "__main__":
   // Reset graph when challenge changes
   useEffect(() => {
     if (selectedChallenge) {
-      // Initialize with client and app_server components (always add app_server for Python code)
+      // Initialize with empty canvas - users will add components themselves
       setSystemGraph({
-        components: [
-          {
-            id: 'client',
-            type: 'client',
-            config: {
-              displayName: 'Client',
-              subtitle: 'User requests',
-            },
-          },
-          {
-            id: 'app_server',
-            type: 'app_server',
-            config: {
-              displayName: 'App Server',
-              subtitle: 'Python implementation',
-            },
-          },
-        ],
+        components: [],
         connections: [],
       });
       setTestResults(new Map());
@@ -480,6 +463,11 @@ if __name__ == "__main__":
 
     if (selectedNode?.id === nodeId) {
       setSelectedNode(null);
+    }
+
+    // If deleting an app_server and Python tab is active, switch to canvas
+    if (component?.type === 'app_server' && activeTab === 'python') {
+      setActiveTab('canvas');
     }
 
     if (activeTab === nodeId) {
@@ -630,6 +618,9 @@ if __name__ == "__main__":
 
   const databaseComponents = getDatabaseComponents();
 
+  // Check if app_server component exists on canvas
+  const hasAppServer = systemGraph.components.some(comp => comp.type === 'app_server');
+
   return (
     <div className="h-screen w-screen flex flex-col bg-gray-50">
       {/* Top Bar - Matching original exactly */}
@@ -684,17 +675,19 @@ if __name__ == "__main__":
             🎨 Canvas
           </button>
 
-          {/* Python Code Tab - Always show (app_server is always added) */}
-          <button
-            onClick={() => setActiveTab('python')}
-            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-              activeTab === 'python'
-                ? 'border-blue-600 text-blue-600'
-                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
-            }`}
-          >
-            🐍 Python Application Server
-          </button>
+          {/* Python Code Tab - Only show when app_server component is on canvas */}
+          {hasAppServer && (
+            <button
+              onClick={() => setActiveTab('python')}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'python'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              🐍 Python Application Server
+            </button>
+          )}
 
           {/* APIs Reference Tab - Always show */}
           <button
