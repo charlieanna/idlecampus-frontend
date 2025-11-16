@@ -1,11 +1,48 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Discord - Gaming Chat Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 11 (Stream Processing) & Ch. 4 (Encoding)
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 11: Real-time messaging with WebSockets
+ *   - Stateful connections for low-latency message delivery
+ *   - Fan-out to all connected clients in channel
+ *   - Maintain session state per WebSocket connection
+ * - Ch. 4: Binary encoding for message protocol
+ *   - Use MessagePack or Protocol Buffers for compact messages
+ *   - ETF (Erlang Term Format) used by actual Discord
+ * - Ch. 11: Event-driven architecture
+ *   - Message sent → Store in DB → Fan-out via WebSocket
+ *   - Use message queue (Kafka) for reliable delivery
+ *
+ * Discord's Architecture (DDIA Ch. 11):
+ * - **Gateway**: WebSocket server for real-time events
+ *   - Handles 1000+ connections per server
+ *   - Sends events: MESSAGE_CREATE, TYPING_START, etc.
+ * - **ETF Encoding**: Binary protocol (Erlang Term Format)
+ *   - 30-50% smaller than JSON
+ *   - Faster serialization than JSON
+ * - **Voice**: WebRTC for peer-to-peer audio/video
+ *
+ * WebSocket Message Flow (DDIA Ch. 11):
+ * 1. Client sends message via WebSocket
+ * 2. Gateway server stores message in DB
+ * 3. Gateway fans out to all connected clients in channel
+ * 4. Use Redis Pub/Sub for cross-gateway coordination
+ *
+ * System Design Primer Concepts:
+ * - WebSockets: Persistent bidirectional connections
+ * - Load Balancing: Sticky sessions for WebSocket connections
+ * - Message Queue: Kafka for event streaming
+ * - Caching: Redis for online user presence
  */
 export const discordProblemDefinition: ProblemDefinition = {
   id: 'discord',
@@ -14,13 +51,35 @@ export const discordProblemDefinition: ProblemDefinition = {
 - Users can create servers with multiple channels
 - Users can send text messages in real-time
 - Users can join voice/video calls
-- Messages are organized by channels and threads`,
+- Messages are organized by channels and threads
+
+Learning Objectives (DDIA Ch. 4, 11):
+1. Implement real-time messaging with WebSockets (DDIA Ch. 11)
+   - Persistent bidirectional connections
+   - Fan-out to all channel members
+2. Design binary message protocol (DDIA Ch. 4)
+   - ETF/MessagePack for compact encoding
+   - Compare JSON vs binary trade-offs
+3. Build event-driven architecture (DDIA Ch. 11)
+   - Message → DB → Fan-out pipeline
+4. Handle WebSocket scaling challenges (SDP)
+   - Sticky sessions for load balancing
+   - Redis Pub/Sub for cross-gateway messaging`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can create servers with multiple channels',
     'Users can send text messages in real-time',
-    'Users can join voice/video calls'
+    'Users can join voice/video calls',
+    'Messages are organized by channels and threads'
+  ],
+
+  userFacingNFRs: [
+    'Real-time latency: < 100ms message delivery (DDIA Ch. 11: WebSockets)',
+    'Message encoding: Binary (ETF/MessagePack) for 30-50% size reduction (DDIA Ch. 4)',
+    'Fan-out: Deliver to all channel members in < 200ms (DDIA Ch. 11: Event streaming)',
+    'Connection capacity: 1000+ WebSocket connections per gateway (SDP: Load balancing)',
+    'Voice/video: WebRTC for peer-to-peer audio (SDP)',
   ],
 
   functionalRequirements: {
@@ -77,6 +136,14 @@ export const discordProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 
