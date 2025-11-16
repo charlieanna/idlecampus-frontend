@@ -7,7 +7,7 @@
  * - L5: 107 platform problems (migrations, APIs, multi-tenant, etc.)
  * - L6: 10 next-gen problems (practical modern tech)
  * - DDIA Teaching: 151 concept-focused problems (ALL CHAPTERS!)
- * - System Design Primer: 45 infrastructure & data problems
+ * - System Design Primer: 77 infrastructure & data problems
  *
  * DDIA Teaching Problems (151 total - ALL CHAPTERS):
  * - Chapter 1: Reliability, Scalability, Maintainability (15)
@@ -23,9 +23,9 @@
  * - Chapter 11: Stream Processing (15)
  * - Chapter 12: Future of Data Systems (8)
  *
- * System Design Primer (45 total):
+ * System Design Primer (77 total):
  * - Infrastructure: Performance, DNS, CDN, Load Balancers, Reverse Proxy, App Layer (41)
- * - Data & Communication: Database concepts (4)
+ * - Data & Communication: Database, Caching, Asynchronism, Communication, Security (36)
  *
  * These teaching problems focus on individual concepts, providing
  * a progressive learning path from single concepts to complex real-world systems.
@@ -484,7 +484,7 @@ export const ddiaTeachingProblems = [
 ];
 
 /**
- * System Design Primer Problems (45 total)
+ * System Design Primer Problems (77 total)
  */
 export const systemDesignPrimerProblems = [
   // Performance & Scalability (10)
@@ -545,6 +545,46 @@ export const systemDesignPrimerProblems = [
   'sdp-sql-optimization',
   'sdp-key-value-store',
   'sdp-wide-column-store',
+
+  // Caching (6)
+  'sdp-client-side-caching',
+  'sdp-web-server-caching',
+  'sdp-cache-aside',
+  'sdp-write-behind-cache',
+  'sdp-refresh-ahead-cache',
+  'sdp-cache-eviction-policies',
+
+  // Asynchronism (5)
+  'sdp-task-queues',
+  'sdp-producer-consumer',
+  'sdp-priority-queues',
+  'sdp-dead-letter-queues',
+  'sdp-back-pressure',
+
+  // Communication (12)
+  'sdp-http-methods',
+  'sdp-http-status-codes',
+  'sdp-http2',
+  'sdp-http3',
+  'sdp-grpc',
+  'sdp-thrift',
+  'sdp-json-rpc',
+  'sdp-xml-rpc',
+  'sdp-restful-api-design',
+  'sdp-hateoas',
+  'sdp-graphql',
+  'sdp-websocket',
+
+  // Security (9)
+  'sdp-https-tls',
+  'sdp-ssl-certificates',
+  'sdp-authentication',
+  'sdp-authorization',
+  'sdp-api-keys',
+  'sdp-oauth2',
+  'sdp-sql-injection-prevention',
+  'sdp-xss-prevention',
+  'sdp-csrf-prevention',
 ];
 
 /**
@@ -556,8 +596,8 @@ export const problemWhitelist = new Set([
   ...platformProblems,                // 107
   ...nextGenProblems,                 // 10
   ...ddiaTeachingProblems,            // 151 (ALL CHAPTERS!)
-  ...systemDesignPrimerProblems,      // 45
-  // Total: 388 problems (previously 250, now with full DDIA + SDP)
+  ...systemDesignPrimerProblems,      // 77
+  // Total: 420 problems (previously 250, now with full DDIA + SDP)
 ]);
 
 /**

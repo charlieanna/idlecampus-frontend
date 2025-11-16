@@ -212,7 +212,7 @@
 
 ---
 
-### 📊 System Design Primer (45/100) ✅
+### 📊 System Design Primer (77/100) ✅
 
 #### Infrastructure (41/48) ✅
 - Performance & Scalability (10) ✅
@@ -222,12 +222,12 @@
 - Reverse Proxy (4) ✅
 - Application Layer (8) ✅
 
-#### Data & Communication (4/52) - Streamlined
+#### Data & Communication (36/52) - High-Impact Subset
 - Database (4) ✅ (Note: Most database concepts covered in DDIA chapters)
-- Caching (0) (Covered in existing caching problems)
-- Asynchronism (0) (Covered in streaming/messaging problems)
-- Communication (0) (Covered in gateway/API problems)
-- Security (0) (Can be added in future iteration)
+- Caching (6) ✅ (Client-side, web server, cache-aside, write-behind, refresh-ahead, eviction policies)
+- Asynchronism (5) ✅ (Task queues, producer-consumer, priority queues, DLQs, back pressure)
+- Communication (12) ✅ (HTTP methods/status, HTTP/2, HTTP/3, gRPC, Thrift, JSON-RPC, XML-RPC, REST, HATEOAS, GraphQL, WebSocket)
+- Security (9) ✅ (HTTPS/TLS, certs, authn, authz, API keys, OAuth2, SQLi, XSS, CSRF)
 
 **Note:** Many System Design Primer concepts overlap significantly with the 151 DDIA teaching problems already implemented. The infrastructure problems (41 total) cover the unique concepts from the System Design Primer that weren't thoroughly covered in DDIA chapters.
 
@@ -249,8 +249,8 @@
 | **Chapter 10** | 10 | 0 | 10 |
 | **Chapter 11** | 15 | 0 | 15 |
 | **Chapter 12** | 8 | 0 | 8 |
-| **System Design Primer** | 45 | 55 | 100 |
-| **TOTAL** | **196** | **55** | **251** |
+| **System Design Primer** | 77 | 23 | 100 |
+| **TOTAL** | **228** | **23** | **251** |
 
 ---
 
