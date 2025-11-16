@@ -31,16 +31,19 @@ export { etlOrchestrationChallenge } from './etlOrchestration';
 export { logAggregationChallenge } from './logAggregation';
 export { metricsAggregationChallenge } from './metricsAggregation';
 export { realtimeAnalyticsPipelineChallenge } from './realtimeAnalyticsPipeline';
+export { dataLineageTrackingChallenge } from './dataLineageTracking';
 
 // Observability & Operations
 export { distributedTracingChallenge } from './distributedTracing';
 export { alertingIncidentManagementChallenge } from './alertingIncidentManagement';
 export { chaosEngineeringPlatformChallenge } from './chaosEngineeringPlatform';
+export { configurationRolloutChallenge } from './configurationRollout';
 
 // Migration & Reliability
 export { zeroDowntimeMigrationChallenge } from './zeroDowntimeMigration';
 export { multiRegionFailoverChallenge } from './multiRegionFailover';
 export { circuitBreakerLibraryChallenge } from './circuitBreakerLibrary';
+export { backupRestoreServiceChallenge } from './backupRestoreService';
 
 // ML Infrastructure
 export { modelServingPlatformChallenge } from './modelServingPlatform';
@@ -104,12 +107,15 @@ export function getInternalSystemsChallenges() {
   const { logAggregationChallenge } = require('./logAggregation');
   const { metricsAggregationChallenge } = require('./metricsAggregation');
   const { realtimeAnalyticsPipelineChallenge } = require('./realtimeAnalyticsPipeline');
+  const { dataLineageTrackingChallenge } = require('./dataLineageTracking');
   const { distributedTracingChallenge } = require('./distributedTracing');
   const { alertingIncidentManagementChallenge } = require('./alertingIncidentManagement');
   const { chaosEngineeringPlatformChallenge } = require('./chaosEngineeringPlatform');
+  const { configurationRolloutChallenge } = require('./configurationRollout');
   const { zeroDowntimeMigrationChallenge } = require('./zeroDowntimeMigration');
   const { multiRegionFailoverChallenge } = require('./multiRegionFailover');
   const { circuitBreakerLibraryChallenge } = require('./circuitBreakerLibrary');
+  const { backupRestoreServiceChallenge } = require('./backupRestoreService');
   const { modelServingPlatformChallenge } = require('./modelServingPlatform');
 
   return [
@@ -128,14 +134,17 @@ export function getInternalSystemsChallenges() {
     logAggregationChallenge,
     metricsAggregationChallenge,
     realtimeAnalyticsPipelineChallenge,
+    dataLineageTrackingChallenge,
     // Observability
     distributedTracingChallenge,
     alertingIncidentManagementChallenge,
     chaosEngineeringPlatformChallenge,
+    configurationRolloutChallenge,
     // Migration & Reliability
     zeroDowntimeMigrationChallenge,
     multiRegionFailoverChallenge,
     circuitBreakerLibraryChallenge,
+    backupRestoreServiceChallenge,
     // ML Infrastructure
     modelServingPlatformChallenge,
   ];
@@ -164,16 +173,19 @@ export function getChallengesByCategory(category: string) {
       'log_aggregation',
       'metrics_aggregation_service',
       'realtime_analytics_pipeline',
+      'data_lineage_tracking',
     ],
     observability: [
       'distributed_tracing',
       'alerting_incident_management',
       'chaos_engineering_platform',
+      'configuration_rollout',
     ],
     migration: [
       'zero_downtime_migration',
       'multi_region_failover',
       'circuit_breaker_library',
+      'backup_restore_service',
     ],
     ml_infrastructure: [
       'feature_store',
