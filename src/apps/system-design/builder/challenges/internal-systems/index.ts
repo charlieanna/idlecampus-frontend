@@ -27,12 +27,19 @@ export { internalApiGatewayChallenge } from './internalApiGateway';
 export { featureStoreChallenge } from './featureStore';
 export { etlOrchestrationChallenge } from './etlOrchestration';
 export { logAggregationChallenge } from './logAggregation';
+export { metricsAggregationChallenge } from './metricsAggregation';
 
 // Observability & Operations
 export { distributedTracingChallenge } from './distributedTracing';
+export { alertingIncidentManagementChallenge } from './alertingIncidentManagement';
+export { chaosEngineeringPlatformChallenge } from './chaosEngineeringPlatform';
 
 // Migration & Reliability
 export { zeroDowntimeMigrationChallenge } from './zeroDowntimeMigration';
+export { multiRegionFailoverChallenge } from './multiRegionFailover';
+
+// ML Infrastructure
+export { modelServingPlatformChallenge } from './modelServingPlatform';
 
 /**
  * All internal systems challenges
@@ -47,23 +54,28 @@ export const internalSystemsChallenges = [
   'internalApiGatewayChallenge',
   // TODO: Add remaining 9 developer tools challenges
 
-  // Data Infrastructure (3 implemented, 12 pending)
+  // Data Infrastructure (4 implemented, 11 pending)
   'featureStoreChallenge',
   'etlOrchestrationChallenge',
   'logAggregationChallenge',
-  // TODO: Add remaining 12 data infrastructure challenges
+  'metricsAggregationChallenge',
+  // TODO: Add remaining 11 data infrastructure challenges
 
-  // Observability (1 implemented, 11 pending)
+  // Observability (3 implemented, 9 pending)
   'distributedTracingChallenge',
-  // TODO: Add remaining 11 observability challenges
+  'alertingIncidentManagementChallenge',
+  'chaosEngineeringPlatformChallenge',
+  // TODO: Add remaining 9 observability challenges
 
-  // Migration & Reliability (1 implemented, 7 pending)
+  // Migration & Reliability (2 implemented, 6 pending)
   'zeroDowntimeMigrationChallenge',
-  // TODO: Add remaining 7 migration challenges
+  'multiRegionFailoverChallenge',
+  // TODO: Add remaining 6 migration challenges
 
-  // ML Infrastructure (1 implemented, 9 pending)
+  // ML Infrastructure (2 implemented, 8 pending)
   // featureStoreChallenge already exported in Data Infrastructure above
-  // TODO: Add remaining 9 ML infrastructure challenges
+  'modelServingPlatformChallenge',
+  // TODO: Add remaining 8 ML infrastructure challenges
 ];
 
 /**
@@ -80,8 +92,13 @@ export function getInternalSystemsChallenges() {
   const { featureStoreChallenge } = require('./featureStore');
   const { etlOrchestrationChallenge } = require('./etlOrchestration');
   const { logAggregationChallenge } = require('./logAggregation');
+  const { metricsAggregationChallenge } = require('./metricsAggregation');
   const { distributedTracingChallenge } = require('./distributedTracing');
+  const { alertingIncidentManagementChallenge } = require('./alertingIncidentManagement');
+  const { chaosEngineeringPlatformChallenge } = require('./chaosEngineeringPlatform');
   const { zeroDowntimeMigrationChallenge } = require('./zeroDowntimeMigration');
+  const { multiRegionFailoverChallenge } = require('./multiRegionFailover');
+  const { modelServingPlatformChallenge } = require('./modelServingPlatform');
 
   return [
     // Developer Tools
@@ -95,10 +112,16 @@ export function getInternalSystemsChallenges() {
     featureStoreChallenge,
     etlOrchestrationChallenge,
     logAggregationChallenge,
+    metricsAggregationChallenge,
     // Observability
     distributedTracingChallenge,
+    alertingIncidentManagementChallenge,
+    chaosEngineeringPlatformChallenge,
     // Migration & Reliability
     zeroDowntimeMigrationChallenge,
+    multiRegionFailoverChallenge,
+    // ML Infrastructure
+    modelServingPlatformChallenge,
   ];
 }
 
@@ -121,15 +144,20 @@ export function getChallengesByCategory(category: string) {
       'feature_store',
       'etl_orchestration',
       'log_aggregation',
+      'metrics_aggregation_service',
     ],
     observability: [
       'distributed_tracing',
+      'alerting_incident_management',
+      'chaos_engineering_platform',
     ],
     migration: [
       'zero_downtime_migration',
+      'multi_region_failover',
     ],
     ml_infrastructure: [
       'feature_store',
+      'model_serving_platform',
     ],
   };
 
