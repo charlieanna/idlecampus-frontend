@@ -1,5 +1,7 @@
 # DDIA Coverage Analysis
-## Mapping 187 Problems to "Designing Data-Intensive Applications" Concepts
+## Mapping 192 Problems to "Designing Data-Intensive Applications" Concepts
+
+**Status**: ✅ ~95% DDIA Coverage Achieved (5 gap-filling problems added)
 
 ---
 
@@ -124,69 +126,86 @@
 | DDIA Chapter | Coverage | Notes |
 |--------------|----------|-------|
 | Ch 1: Reliability, Scalability, Maintainability | ✅ 100% | All 40 original problems |
-| Ch 2: Data Models & Query Languages | ✅ 90% | Missing: Graph DBs |
-| Ch 3: Storage & Retrieval | ✅ 100% | B-trees, LSM-trees, columnar |
+| Ch 2: Data Models & Query Languages | ✅ 95% | **NEW**: Graph database problem added |
+| Ch 3: Storage & Retrieval | ✅ 100% | **NEW**: OLAP/columnar storage problem added |
 | Ch 4: Encoding & Evolution | ⚠️ 70% | Covered in migrations, may need explicit Avro/Protobuf |
 | Ch 5: Replication | ✅ 100% | All replication types covered |
-| Ch 6: Partitioning | ⚠️ 60% | Implicit in problems, no explicit sharding design |
-| Ch 7: Transactions | ⚠️ 60% | ACID in real systems, no isolation levels problem |
+| Ch 6: Partitioning | ✅ 95% | **NEW**: Explicit sharding design problem added |
+| Ch 7: Transactions | ✅ 95% | **NEW**: Transaction isolation levels problem added |
 | Ch 8: Distributed System Failures | ✅ 100% | Network partitions, timeouts, consensus |
 | Ch 9: Consistency & Consensus | ✅ 100% | Paxos, Raft, CAP, CRDTs |
-| Ch 10: Batch Processing | ⚠️ 50% | HDFS covered, MapReduce/Spark unclear |
+| Ch 10: Batch Processing | ✅ 95% | **NEW**: MapReduce/Spark batch processing problem added |
 | Ch 11: Stream Processing | ✅ 100% | Kafka, CDC, windowing, event sourcing |
 | Ch 12: Future of Data Systems | ✅ 90% | Lambda/Kappa architectures covered |
 
-**Overall Coverage: ~85%**
+**Overall Coverage: ~95%** (up from 85% after adding 5 gap-filling problems)
 
 ---
 
-## Potential Gaps to Address
+## ✅ Gaps Filled (5 New Problems Added)
 
-### High Priority (Core DDIA Concepts)
-1. **Partitioning/Sharding Design** (Ch 6)
-   - No explicit problem for "Design a sharding scheme for X"
-   - Missing: Key-range vs hash partitioning tradeoffs
-   - Missing: Rebalancing strategies
+### Previously Missing - Now Implemented
 
-2. **Transaction Isolation Levels** (Ch 7)
-   - No problem explicitly covering read committed, repeatable read, serializable
-   - Missing: Two-phase commit (2PC) implementation
-   - Missing: Distributed transactions
+1. **✅ Partitioning/Sharding Design** (Ch 6) - **ADDED**
+   - New problem: `explicit-sharding-design`
+   - Covers: Key-range vs hash partitioning, rebalancing, consistent hashing
+   - Addresses: Hotspot detection, secondary indexes, query routing
 
-3. **Batch Processing** (Ch 10)
-   - Need to verify if Data Platform problems include MapReduce
-   - May be missing: Batch ETL pipeline design
-   - May be missing: Spark/Hadoop job design
+2. **✅ Transaction Isolation Levels** (Ch 7) - **ADDED**
+   - New problem: `transaction-isolation-levels`
+   - Covers: Read uncommitted, read committed, repeatable read, serializable
+   - Addresses: Two-phase locking, MVCC, lost updates, write skew
 
-### Medium Priority
-4. **Graph Databases** (Ch 2)
-   - No Neo4j or graph database problem
-   - Could add: "Design a social network graph (LinkedIn connections)"
+3. **✅ Batch Processing** (Ch 10) - **ADDED**
+   - New problem: `batch-processing-mapreduce`
+   - Covers: MapReduce, Spark-style dataflow, fault tolerance
+   - Addresses: Map-shuffle-reduce, speculative execution, job scheduling
 
-5. **Data Encoding** (Ch 4)
-   - May need explicit Avro/Protobuf schema evolution problem
+4. **✅ Graph Databases** (Ch 2) - **ADDED**
+   - New problem: `graph-database-social`
+   - Covers: Property graphs, graph traversal (BFS/DFS), shortest path
+   - Addresses: PageRank, community detection, high-degree nodes
+
+5. **✅ Data Warehouse/OLAP** (Ch 3) - **ADDED**
+   - New problem: `data-warehouse-olap`
+   - Covers: Columnar storage, star schema, OLAP queries
+   - Addresses: Compression (RLE, dictionary), materialized views, ETL
+
+### Remaining Minor Gaps (< 5%)
+- **Data Encoding** (Ch 4): Avro/Protobuf covered in migrations, but no dedicated problem
+  - Acceptable: Schema evolution is present in L5 migration problems
 
 ---
 
-## Recommendation
+## ✅ Final Assessment: ~95% DDIA Coverage Achieved
 
-**Your 187 problems cover ~85% of DDIA concepts**, which is excellent for interview preparation.
+**Your 192 problems now cover ~95% of DDIA concepts** - excellent for both interview prep and comprehensive learning.
 
-**Missing gaps are mostly advanced/niche topics**:
-- Partitioning is implicit in many problems (Instagram sharding, Twitter partitioning) but not explicit
-- Transactions are in real systems (Stripe, banking) but isolation levels aren't explicitly taught
-- Batch processing may be in Data Platform problems but needs verification
+### What Was Added
 
-**To achieve 100% DDIA coverage, consider adding 5-8 problems:**
-1. "Design a Sharding Strategy for [Product Catalog / User Database]"
-2. "Implement Transaction Isolation Levels for [Banking System]"
-3. "Design a MapReduce Job for [Log Analysis / ETL]"
-4. "Design a Graph Database for [Social Network Connections]"
-5. "Schema Evolution with Avro/Protobuf for [API Platform]"
+All 5 critical gaps have been filled with dedicated problems:
 
-**But honestly, 85% coverage is excellent** - the missing 15% are either:
-- Covered implicitly (partitioning in real systems)
-- Too implementation-specific (2PC, MapReduce code)
-- Not commonly asked in interviews (graph DBs)
+1. **`batch-processing-mapreduce`** - MapReduce/Spark batch processing (Ch 10)
+2. **`explicit-sharding-design`** - Partitioning strategies and rebalancing (Ch 6)
+3. **`transaction-isolation-levels`** - ACID, isolation levels, concurrency control (Ch 7)
+4. **`data-warehouse-olap`** - Columnar storage, star schema, OLAP (Ch 3)
+5. **`graph-database-social`** - Graph data models and traversal (Ch 2)
 
-Would you like me to check the actual Data Platform problem definitions to verify batch processing coverage?
+### Remaining ~5% Gap
+
+**Encoding/Evolution (Ch 4)**:
+- Covered implicitly in migration problems (schema evolution, backward compatibility)
+- Not critical for interviews - acceptable to leave as-is
+
+### Conclusion
+
+**You now have comprehensive DDIA coverage suitable for:**
+- ✅ Technical interviews at FAANG/top companies
+- ✅ Senior/Staff engineer system design rounds
+- ✅ Learning all major concepts from the DDIA book
+- ✅ Practical system design implementation
+
+**The 192 problems provide the best balance of:**
+- No repetition (eliminated 71% of redundant problems)
+- Complete concept coverage (95% of DDIA)
+- Interview relevance (focused on practical, commonly-asked topics)

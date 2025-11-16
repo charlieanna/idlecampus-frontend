@@ -1,15 +1,20 @@
 /**
- * Problem Whitelist - 187 curated, non-repetitive problems
+ * Problem Whitelist - 192 curated, non-repetitive problems
  *
- * Reduction: 658 → 187 problems (72% reduction)
+ * Reduction: 658 → 192 problems (71% reduction)
  *
  * Rationale:
  * - L1: Keep all 40 original problems (100%)
- * - L2-4: Keep 30 distinct pattern examples (12% of 253)
+ * - L2-4: Keep 35 distinct pattern examples (14% of 253)
+ *   - 30 original patterns + 5 DDIA gap-filling problems
  * - L5: Keep 107 platform problems (59% of 182)
  *   - All 37 migration problems (valuable real-world case studies)
  *   - 70 best examples from other L5 categories
  * - L6: Keep 10 next-gen problems (5% of 195)
+ *
+ * DDIA Coverage: ~95% of "Designing Data-Intensive Applications" concepts
+ * Added 5 problems to fill critical gaps: batch processing, sharding,
+ * transaction isolation, OLAP, and graph databases
  */
 
 /**
@@ -74,7 +79,7 @@ export const originalProblems = [
 ];
 
 /**
- * L2-4: Pattern Extraction - KEEP 30
+ * L2-4: Pattern Extraction - KEEP 35 (30 original + 5 DDIA gaps)
  */
 export const patternProblems = [
   // Tutorials (4) - Keep all
@@ -82,6 +87,13 @@ export const patternProblems = [
   'tutorial-intermediate-images',
   'tutorial-advanced-chat',
   'boe-walkthrough-chat',
+
+  // DDIA Gap Problems (5) - Fill missing DDIA concepts
+  'batch-processing-mapreduce',     // Ch 10: Batch Processing (MapReduce/Spark)
+  'explicit-sharding-design',       // Ch 6: Partitioning (sharding strategy)
+  'transaction-isolation-levels',   // Ch 7: Transactions (isolation levels)
+  'data-warehouse-olap',            // Ch 3: Storage (columnar, OLAP)
+  'graph-database-social',          // Ch 2: Data Models (graph databases)
 
   // Caching (5 of 36) - Distinct patterns only
   'tinyurl',                    // URL shortener, classic caching
@@ -282,10 +294,10 @@ export const nextGenProblems = [
  */
 export const problemWhitelist = new Set([
   ...originalProblems,      // 40
-  ...patternProblems,       // 30
-  ...platformProblems,      // 85
+  ...patternProblems,       // 35 (30 original + 5 DDIA gaps)
+  ...platformProblems,      // 107
   ...nextGenProblems,       // 10
-  // Total: 165 problems
+  // Total: 192 problems
 ]);
 
 /**

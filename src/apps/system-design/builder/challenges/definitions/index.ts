@@ -1,11 +1,14 @@
 /**
  * Curated System Design Challenge Definitions
  *
- * Reduced from 658 → 187 high-quality, non-repetitive problems (72% reduction)
+ * Reduced from 658 → 192 high-quality, non-repetitive problems (71% reduction)
  * - L1: 40 original problems (Instagram, Twitter, Netflix, etc.)
- * - L2-4: 30 distinct pattern examples (caching, gateway, streaming, etc.)
+ * - L2-4: 35 distinct pattern examples (30 patterns + 5 DDIA gaps)
  * - L5: 107 platform problems (migrations, APIs, multi-tenant, etc.)
  * - L6: 10 next-gen problems (practical modern tech only)
+ *
+ * DDIA Coverage: ~95% of "Designing Data-Intensive Applications" concepts
+ * Added 5 problems for: batch processing, sharding, transactions, OLAP, graph DBs
  *
  * Each challenge has ONLY Level 1: "The Brute Force Test - Does It Even Work?"
  * Focus: Verify connectivity (Client → App → Database path exists)
@@ -98,6 +101,10 @@ export { l6PrivacyHomomorphicScaleProblemDefinition, l6PrivacyZkpInternetProblem
 export { l6EconomicCbdcProblemDefinition, l6EconomicInterplanetaryProblemDefinition, l6EconomicSystems1ProblemDefinition, l6EconomicSystems2ProblemDefinition, l6EconomicSystems3ProblemDefinition, l6EconomicSystems4ProblemDefinition, l6EconomicSystems5ProblemDefinition, l6EconomicSystems6ProblemDefinition, l6EconomicSystems7ProblemDefinition, l6EconomicSystems8ProblemDefinition, l6EconomicSystems9ProblemDefinition, l6EconomicSystems10ProblemDefinition, l6EconomicSystems11ProblemDefinition, l6EconomicSystems12ProblemDefinition, l6EconomicSystems13ProblemDefinition, l6EconomicSystems14ProblemDefinition, l6EconomicSystems15ProblemDefinition, l6EconomicSystems16ProblemDefinition, l6EconomicSystems17ProblemDefinition } from './generated-all/economic-systemsAllProblems';
 export { l6BioNeuralImplantProblemDefinition, l6BioDigitalTwinProblemDefinition, l6BioDigital1ProblemDefinition, l6BioDigital2ProblemDefinition, l6BioDigital3ProblemDefinition, l6BioDigital4ProblemDefinition, l6BioDigital5ProblemDefinition, l6BioDigital6ProblemDefinition, l6BioDigital7ProblemDefinition, l6BioDigital8ProblemDefinition, l6BioDigital9ProblemDefinition, l6BioDigital10ProblemDefinition, l6BioDigital11ProblemDefinition, l6BioDigital12ProblemDefinition, l6BioDigital13ProblemDefinition, l6BioDigital14ProblemDefinition, l6BioDigital15ProblemDefinition, l6BioDigital16ProblemDefinition, l6BioDigital17ProblemDefinition } from './generated-all/bio-digitalAllProblems';
 export { l6ExistentialNuclearResilientProblemDefinition, l6ExistentialClimateAdaptationProblemDefinition, l6ExistentialPandemicResponseProblemDefinition, l6ExistentialAsteroidDefenseProblemDefinition, l6ExistentialInfrastructure1ProblemDefinition, l6ExistentialInfrastructure2ProblemDefinition, l6ExistentialInfrastructure3ProblemDefinition, l6ExistentialInfrastructure4ProblemDefinition, l6ExistentialInfrastructure5ProblemDefinition, l6ExistentialInfrastructure6ProblemDefinition, l6ExistentialInfrastructure7ProblemDefinition, l6ExistentialInfrastructure8ProblemDefinition, l6ExistentialInfrastructure9ProblemDefinition, l6ExistentialInfrastructure10ProblemDefinition, l6ExistentialInfrastructure11ProblemDefinition, l6ExistentialInfrastructure12ProblemDefinition, l6ExistentialInfrastructure13ProblemDefinition, l6ExistentialInfrastructure14ProblemDefinition, l6ExistentialInfrastructure15ProblemDefinition, l6ExistentialInfrastructure16ProblemDefinition, l6ExistentialInfrastructure17ProblemDefinition } from './generated-all/existential-infrastructureAllProblems';
+
+// DDIA Gap Problems - Filling missing "Designing Data-Intensive Applications" concepts (5)
+export { batchProcessingMapreduceProblemDefinition, explicitShardingDesignProblemDefinition, transactionIsolationLevelsProblemDefinition, dataWarehouseOlapProblemDefinition, graphDatabaseSocialProblemDefinition } from './generated-all/ddiaGapProblems';
+
 // Extracted Problems - Tutorials (3)
 // Note: These are now imported from generated-all/tutorialAllProblems
 
@@ -190,6 +197,9 @@ import { l6PrivacyHomomorphicScaleProblemDefinition, l6PrivacyZkpInternetProblem
 import { l6EconomicCbdcProblemDefinition, l6EconomicInterplanetaryProblemDefinition, l6EconomicSystems1ProblemDefinition, l6EconomicSystems2ProblemDefinition, l6EconomicSystems3ProblemDefinition, l6EconomicSystems4ProblemDefinition, l6EconomicSystems5ProblemDefinition, l6EconomicSystems6ProblemDefinition, l6EconomicSystems7ProblemDefinition, l6EconomicSystems8ProblemDefinition, l6EconomicSystems9ProblemDefinition, l6EconomicSystems10ProblemDefinition, l6EconomicSystems11ProblemDefinition, l6EconomicSystems12ProblemDefinition, l6EconomicSystems13ProblemDefinition, l6EconomicSystems14ProblemDefinition, l6EconomicSystems15ProblemDefinition, l6EconomicSystems16ProblemDefinition, l6EconomicSystems17ProblemDefinition } from './generated-all/economic-systemsAllProblems';
 import { l6BioNeuralImplantProblemDefinition, l6BioDigitalTwinProblemDefinition, l6BioDigital1ProblemDefinition, l6BioDigital2ProblemDefinition, l6BioDigital3ProblemDefinition, l6BioDigital4ProblemDefinition, l6BioDigital5ProblemDefinition, l6BioDigital6ProblemDefinition, l6BioDigital7ProblemDefinition, l6BioDigital8ProblemDefinition, l6BioDigital9ProblemDefinition, l6BioDigital10ProblemDefinition, l6BioDigital11ProblemDefinition, l6BioDigital12ProblemDefinition, l6BioDigital13ProblemDefinition, l6BioDigital14ProblemDefinition, l6BioDigital15ProblemDefinition, l6BioDigital16ProblemDefinition, l6BioDigital17ProblemDefinition } from './generated-all/bio-digitalAllProblems';
 import { l6ExistentialNuclearResilientProblemDefinition, l6ExistentialClimateAdaptationProblemDefinition, l6ExistentialPandemicResponseProblemDefinition, l6ExistentialAsteroidDefenseProblemDefinition, l6ExistentialInfrastructure1ProblemDefinition, l6ExistentialInfrastructure2ProblemDefinition, l6ExistentialInfrastructure3ProblemDefinition, l6ExistentialInfrastructure4ProblemDefinition, l6ExistentialInfrastructure5ProblemDefinition, l6ExistentialInfrastructure6ProblemDefinition, l6ExistentialInfrastructure7ProblemDefinition, l6ExistentialInfrastructure8ProblemDefinition, l6ExistentialInfrastructure9ProblemDefinition, l6ExistentialInfrastructure10ProblemDefinition, l6ExistentialInfrastructure11ProblemDefinition, l6ExistentialInfrastructure12ProblemDefinition, l6ExistentialInfrastructure13ProblemDefinition, l6ExistentialInfrastructure14ProblemDefinition, l6ExistentialInfrastructure15ProblemDefinition, l6ExistentialInfrastructure16ProblemDefinition, l6ExistentialInfrastructure17ProblemDefinition } from './generated-all/existential-infrastructureAllProblems';
+
+// DDIA Gap Problems - Filling missing DDIA concepts
+import { batchProcessingMapreduceProblemDefinition, explicitShardingDesignProblemDefinition, transactionIsolationLevelsProblemDefinition, dataWarehouseOlapProblemDefinition, graphDatabaseSocialProblemDefinition } from './generated-all/ddiaGapProblems';
 
 // Note: Individual problem definitions that were previously imported here are now imported from generated-all files above
 
@@ -883,6 +893,12 @@ export const allProblemDefinitions: ProblemDefinition[] = [
     l6ExistentialInfrastructure15ProblemDefinition,
     l6ExistentialInfrastructure16ProblemDefinition,
     l6ExistentialInfrastructure17ProblemDefinition,
+    // DDIA Gap Problems (5)
+    batchProcessingMapreduceProblemDefinition,
+    explicitShardingDesignProblemDefinition,
+    transactionIsolationLevelsProblemDefinition,
+    dataWarehouseOlapProblemDefinition,
+    graphDatabaseSocialProblemDefinition,
 ].filter((problem, index, self) => {
   // Deduplicate by title - keep only the first occurrence of each title
   return index === self.findIndex(p => p.title === problem.title);

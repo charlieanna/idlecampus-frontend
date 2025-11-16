@@ -1,9 +1,9 @@
 # System Design Problem Reduction Plan
 
 **Current Total**: 658 problems
-**Final Count**: 187 high-quality problems
-**Reduction**: 471 problems removed (72% reduction)
-**Status**: ✅ IMPLEMENTED
+**Final Count**: 192 high-quality problems
+**Reduction**: 466 problems removed (71% reduction)
+**Status**: ✅ IMPLEMENTED + DDIA GAPS FILLED
 
 ---
 
@@ -201,12 +201,25 @@ Current problems by category:
 | Level | Current | Keep | Remove | % Kept |
 |-------|---------|------|--------|--------|
 | L1: Original Problems | 40 | 40 | 0 | 100% |
-| L2-4: Pattern Extraction | 253 | 30 | 223 | 12% |
+| L2-4: Pattern Extraction | 253 | 35 | 218 | 14% |
 | L5: Complex Platforms | 182 | 107 | 75 | 59% |
 | L6: Next-Gen/Futuristic | 195 | 10 | 185 | 5% |
-| **TOTAL** | **670** | **187** | **483** | **28%** |
+| **TOTAL** | **670** | **192** | **478** | **29%** |
 
-**Final Count**: 187 high-quality, non-repetitive problems (72% reduction)
+**Final Count**: 192 high-quality, non-repetitive problems (71% reduction)
+
+### DDIA Gap Filling (5 new problems added)
+
+After initial reduction to 187, added 5 problems to achieve ~95% DDIA coverage:
+
+1. **Batch Processing (MapReduce/Spark)** - DDIA Ch 10
+2. **Explicit Sharding Design** - DDIA Ch 6
+3. **Transaction Isolation Levels** - DDIA Ch 7
+4. **Data Warehouse (OLAP)** - DDIA Ch 3
+5. **Graph Database (Social Network)** - DDIA Ch 2
+
+These fill critical gaps in batch processing, partitioning strategies, transaction semantics,
+columnar storage, and graph data models.
 
 ---
 
