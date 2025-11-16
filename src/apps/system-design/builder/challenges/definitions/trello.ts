@@ -9,83 +9,250 @@ import { problemConfigs } from '../problemConfigs';
 
 /**
  * Trello - Project Management Platform
- * DDIA Ch. 2 (Data Models) & Ch. 3 (Storage) - Document-Oriented Model
+ * DDIA Ch. 9 (Consistency and Consensus) - CRDTs for Collaborative Board Editing
  *
  * DDIA Concepts Applied:
- * - Ch. 2: Document model for nested board/list/card hierarchy
- *   - MongoDB/document DB stores board as single denormalized document
- *   - Embedding: Lists embedded in board, cards embedded in lists
- *   - One-to-many relationships: board → lists → cards
- * - Ch. 3: Denormalization for fast board loading
- *   - Fetch entire board structure in one query (no joins)
- *   - Trade-off: Larger document size vs fewer queries
- *   - Update position atomically with single document update
- * - Ch. 3: Document versioning for real-time collaboration
- *   - Optimistic locking: version field incremented on each update
- *   - Conflict detection: reject update if version mismatch
- * - Ch. 3: Secondary indexes for board access
- *   - Index on (owner_id, created_at DESC) for "my boards"
- *   - Index on (members, updated_at DESC) for "shared boards"
+ * - Ch. 9: Conflict-free replicated data types (CRDTs) for card positions
+ *   - Multiple users moving cards concurrently without conflicts
+ *   - Convergence: All replicas eventually show same card order
+ *   - LWW-Element-Set CRDT for card positions
+ * - Ch. 9: Linearizability for card move operations
+ *   - User moves card → Sees new position immediately
+ *   - Other users see move in deterministic order
+ *   - Strong consistency for position updates
+ * - Ch. 9: Total order broadcast for board updates
+ *   - All collaborators see same sequence of card movements
+ *   - Prevents inconsistent board states across users
+ *   - Implemented via Raft consensus log
+ * - Ch. 9: Consensus for atomic card moves across lists
+ *   - Move card from List A to List B atomically
+ *   - Prevents card appearing in both lists or neither
+ *   - Two-phase protocol: Remove from A, Add to B (atomic)
+ * - Ch. 9: Causal consistency for dependent operations
+ *   - Create card → Add comment → Comment never appears before card
+ *   - Version vectors track operation dependencies
+ *   - Buffer operations until dependencies met
  *
- * Document Model Example (MongoDB):
- * {
- *   "_id": "board_123",
- *   "name": "Sprint Planning",
- *   "owner_id": "user_456",
- *   "members": ["user_456", "user_789"],
- *   "version": 42,
- *   "lists": [
- *     {
- *       "id": "list_1",
- *       "name": "To Do",
- *       "position": 0,
- *       "cards": [
- *         {
- *           "id": "card_1",
- *           "title": "Implement feature X",
- *           "description": "...",
- *           "position": 0,
- *           "assignees": ["user_789"],
- *           "comments": [
- *             {"user_id": "user_456", "text": "LGTM", "created_at": "2024-01-01"}
- *           ],
- *           "checklists": [
- *             {"text": "Write tests", "completed": false}
- *           ]
- *         }
- *       ]
+ * Collaborative Card Move Problem (DDIA Ch. 9):
+ * Scenario: Alice and Bob both move Card 1 concurrently
+ *
+ * Without CRDTs (Race Condition):
+ * T0: Card 1 is in "To Do" list at position 0
+ * T1: Alice moves Card 1 to "In Progress" position 0
+ * T2: Bob moves Card 1 to "Done" position 0 (concurrent with Alice)
+ *
+ * Server receives both:
+ * - Alice's update: {card_id: 1, list: "In Progress", position: 0, timestamp: T1}
+ * - Bob's update: {card_id: 1, list: "Done", position: 0, timestamp: T2}
+ *
+ * → Last-write-wins: Bob's update overwrites Alice's
+ * → Alice's "In Progress" move is lost!
+ *
+ * With CRDTs (LWW-Element-Set):
+ * Card state = LWW-Element-Set of (list_id, position, timestamp, user_id)
+ *
+ * Alice's operation:
+ * - Remove: ("To Do", 0, T0, system)
+ * - Add: ("In Progress", 0, T1, "alice")
+ *
+ * Bob's operation:
+ * - Remove: ("To Do", 0, T0, system)  # Same removal
+ * - Add: ("Done", 0, T2, "bob")
+ *
+ * Merge (all replicas converge to same state):
+ * - Compare timestamps: T2 > T1 → Bob's operation wins
+ * - Final state: Card 1 in "Done" position 0
+ * - Deterministic: All replicas show Card 1 in "Done"
+ *
+ * LWW-Element-Set CRDT Implementation (DDIA Ch. 9):
+ * class LWWElementSet:
+ *     def __init__(self):
+ *         self.adds = {}  # {element: (timestamp, user_id)}
+ *         self.removes = {}  # {element: (timestamp, user_id)}
+ *
+ *     def add(self, element, timestamp, user_id):
+ *         self.adds[element] = (timestamp, user_id)
+ *
+ *     def remove(self, element, timestamp, user_id):
+ *         self.removes[element] = (timestamp, user_id)
+ *
+ *     def contains(self, element):
+ *         if element not in self.adds:
+ *             return False
+ *         add_ts, add_user = self.adds[element]
+ *         if element in self.removes:
+ *             rem_ts, rem_user = self.removes[element]
+ *             if rem_ts > add_ts:
+ *                 return False  # Removed after added
+ *             elif rem_ts == add_ts and rem_user > add_user:
+ *                 return False  # Tie-breaking: Higher user_id wins for removal
+ *         return True
+ *
+ *     def merge(self, other):
+ *         # Merge adds: Keep max timestamp
+ *         for elem, (ts, user) in other.adds.items():
+ *             if elem not in self.adds or (ts, user) > self.adds[elem]:
+ *                 self.adds[elem] = (ts, user)
+ *         # Merge removes: Keep max timestamp
+ *         for elem, (ts, user) in other.removes.items():
+ *             if elem not in self.removes or (ts, user) > self.removes[elem]:
+ *                 self.removes[elem] = (ts, user)
+ *
+ * def move_card(card_id, old_list, new_list, position, timestamp, user_id):
+ *     # CRDT operations for atomic move
+ *     old_element = (card_id, old_list)
+ *     new_element = (card_id, new_list, position)
+ *     card_positions.remove(old_element, timestamp, user_id)
+ *     card_positions.add(new_element, timestamp, user_id)
+ *
+ * Linearizable Card Reads (DDIA Ch. 9):
+ * Problem: Alice moves card, refreshes board, doesn't see new position
+ *
+ * Without Linearizability:
+ * T0: Alice moves Card 1 to "Done" → Writes to leader
+ * T1: Leader acknowledges (but not yet replicated to followers)
+ * T2: Alice refreshes → Reads from follower (stale: Card still in "In Progress")
+ * → Alice confused: "Did my move work?"
+ *
+ * With Linearizable Read-Your-Writes:
+ * T0: Alice moves Card 1 → Leader assigns operation_seq = 42
+ * T1: Leader replicates to majority (2/3 servers)
+ * T2: Leader responds: "Move successful, operation_seq = 42"
+ * T3: Alice refreshes with min_operation_seq = 42
+ * T4: Follower checks: "My latest operation_seq is 40, need to catch up"
+ * T5: Follower fetches operations 41, 42, applies them
+ * T6: Follower serves read: Card 1 now in "Done"
+ *
+ * # Linearizable read implementation
+ * last_operation_seq = None
+ *
+ * def move_card_linearizable(card_id, new_list, position):
+ *     global last_operation_seq
+ *     result = raft_leader.apply_operation({
+ *         'type': 'move_card',
+ *         'card_id': card_id,
+ *         'new_list': new_list,
+ *         'position': position
+ *     })
+ *     last_operation_seq = result['operation_seq']
+ *     return result
+ *
+ * def get_board_state(board_id):
+ *     # Ensure follower has applied up to last write
+ *     return raft_follower.read_with_min_seq(board_id, last_operation_seq)
+ *
+ * Total Order Broadcast for Board Updates (DDIA Ch. 9):
+ * Scenario: 5 users collaborating on board, all making concurrent changes
+ *
+ * Operations:
+ * - Alice: Move Card 1 to "Done"
+ * - Bob: Add comment to Card 2
+ * - Charlie: Create new card in "To Do"
+ * - David: Move Card 3 to "In Progress"
+ * - Eve: Rename List "Backlog" to "Sprint Backlog"
+ *
+ * Raft assigns sequence numbers:
+ * 1. seq=100: Alice's card move
+ * 2. seq=101: Bob's comment
+ * 3. seq=102: Charlie's new card
+ * 4. seq=103: David's card move
+ * 5. seq=104: Eve's list rename
+ *
+ * All replicas apply operations in sequence order:
+ * → All users see identical board state (convergence)
+ * → No conflicts, no reordering
+ *
+ * # Total order broadcast via Raft
+ * board_operations_log = []  # Append-only, replicated via Raft
+ *
+ * def broadcast_operation(board_id, operation):
+ *     entry = {
+ *         'seq': raft.get_next_sequence(),
+ *         'board_id': board_id,
+ *         'operation': operation,
+ *         'timestamp': time.now()
  *     }
- *   ],
- *   "created_at": "2024-01-01",
- *   "updated_at": "2024-01-15"
+ *     raft.append_log(entry)  # Consensus: Replicate to majority
+ *     raft.wait_for_majority_ack()
+ *     return entry
+ *
+ * def apply_operations(board_id):
+ *     board_state = load_board(board_id)
+ *     for entry in sorted(board_operations_log, key=lambda e: e['seq']):
+ *         if entry['board_id'] == board_id:
+ *             board_state = apply(board_state, entry['operation'])
+ *     return board_state
+ *
+ * Consensus for Atomic Card Moves (DDIA Ch. 9):
+ * Problem: Move card from List A to List B atomically
+ *
+ * Without Consensus (Non-Atomic):
+ * T0: Remove card from List A → Success
+ * T1: Network failure before adding to List B
+ * → Card lost! Exists in neither list
+ *
+ * With Raft Consensus (Atomic):
+ * operation = {
+ *     'type': 'atomic_move',
+ *     'card_id': 'card_1',
+ *     'from_list': 'list_A',
+ *     'to_list': 'list_B',
+ *     'position': 2
  * }
  *
- * Document Model Benefits (DDIA Ch. 2):
- * 1. Schema flexibility: Add fields to cards without migrations
- * 2. Locality: Entire board loaded in one query (no joins)
- * 3. Natural hierarchy: JSON/BSON matches application data structure
- * 4. Atomic updates: Move card between lists atomically
+ * 1. Raft leader receives operation
+ * 2. Leader proposes to Raft log: LOG[seq] = operation
+ * 3. Majority of servers ACK (consensus achieved)
+ * 4. Leader commits operation
+ * 5. All servers apply entire operation atomically:
+ *    - Remove card_1 from list_A
+ *    - Add card_1 to list_B at position 2
+ * → Either both succeed or both fail (atomicity)
  *
- * Document Model Trade-offs (DDIA Ch. 2):
- * - ❌ Large documents: Board with 1000 cards = large document
- * - ❌ Duplication: User info duplicated in assignees/comments
- * - ✅ Fast reads: One query to load board (vs 100+ with normalized schema)
- * - ✅ Atomic updates: No transaction coordination across tables
+ * Causal Consistency for Dependent Operations (DDIA Ch. 9):
+ * Scenario: Alice creates card, then Bob adds comment
  *
- * Real-Time Collaboration (DDIA Ch. 3):
- * - Optimistic locking: version field prevents lost updates
- * - WebSocket: Push updates to all board members
- * - Conflict resolution: Last-write-wins with version check
+ * Without Causal Consistency:
+ * - Bob's comment arrives first at Server 2
+ * - Server 2 sees comment for non-existent card → Error
  *
- * Card Search Index (DDIA Ch. 3):
- * - Multi-key index on lists.cards.title for full-text search
- * - Index on lists.cards.assignees for "my tasks"
- * - Index on lists.cards.due_date for "upcoming deadlines"
+ * With Version Vectors (Causal Consistency):
+ * Alice creates card:
+ * - operation: {type: 'create_card', card_id: 'card_1'}
+ * - version_vector: {alice: 1, bob: 0}
+ *
+ * Bob adds comment (after seeing Alice's card):
+ * - operation: {type: 'add_comment', card_id: 'card_1', text: 'LGTM'}
+ * - version_vector: {alice: 1, bob: 1}  # Depends on alice: 1
+ *
+ * Server 2 receives Bob's comment first:
+ * - Checks dependency: "Do I have alice: 1?" → No
+ * - Buffers Bob's operation
+ * - Receives Alice's create_card operation
+ * - Applies Alice's operation: {alice: 1, bob: 0}
+ * - Now checks buffered operations: Bob's comment has alice: 1 ✓
+ * - Applies Bob's comment: {alice: 1, bob: 1}
+ *
+ * # Version vector implementation
+ * class VersionVector:
+ *     def __init__(self):
+ *         self.vector = {}  # {user_id: counter}
+ *
+ *     def increment(self, user_id):
+ *         self.vector[user_id] = self.vector.get(user_id, 0) + 1
+ *
+ *     def is_causally_ready(self, operation_vv):
+ *         # Check if we have all dependencies
+ *         for user_id, count in operation_vv.vector.items():
+ *             if self.vector.get(user_id, 0) < count:
+ *                 return False
+ *         return True
  *
  * System Design Primer Concepts:
- * - Document DB: MongoDB for hierarchical board structure
- * - WebSocket: Real-time updates to collaborators
- * - Caching: Redis for active board caching
+ * - CRDTs: Riak, Redis CRDT modules for conflict-free replication
+ * - Raft Consensus: etcd, Consul for operation log replication
+ * - Total Order Broadcast: Kafka for ordered operation delivery
+ * - WebSocket: Real-time operation push to all collaborators
  */
 export const trelloProblemDefinition: ProblemDefinition = {
   id: 'trello',
@@ -96,19 +263,27 @@ export const trelloProblemDefinition: ProblemDefinition = {
 - Users can collaborate on boards
 - Cards support comments, attachments, and checklists
 
-Learning Objectives (DDIA Ch. 2 & 3):
-1. Design document model for nested hierarchy (DDIA Ch. 2)
-   - Embed lists in board, cards in lists
-   - Understand one-to-many relationships in documents
-2. Implement denormalization for performance (DDIA Ch. 3)
-   - Load entire board in one query (no joins)
-   - Trade-offs: document size vs query count
-3. Handle real-time collaboration (DDIA Ch. 3)
-   - Optimistic locking with version field
-   - Detect and resolve conflicts
-4. Create multi-key indexes for card search (DDIA Ch. 3)
-   - Index on nested fields: lists.cards.title
-   - Search across all cards in all boards`,
+Learning Objectives (DDIA Ch. 9):
+1. Implement CRDTs for conflict-free collaborative editing (DDIA Ch. 9)
+   - LWW-Element-Set CRDT for card positions
+   - Multiple users moving cards concurrently without conflicts
+   - Deterministic convergence across all replicas
+2. Design linearizability for card move operations (DDIA Ch. 9)
+   - User sees card in new position immediately (read-your-writes)
+   - Strong consistency for position updates
+   - Track operation sequence numbers
+3. Implement total order broadcast for board updates (DDIA Ch. 9)
+   - All collaborators see same sequence of changes
+   - Raft consensus for operation log replication
+   - Prevents inconsistent board states
+4. Design consensus for atomic card moves (DDIA Ch. 9)
+   - Move card between lists atomically (remove + add)
+   - Prevent card loss or duplication
+   - Raft-based two-phase protocol
+5. Implement causal consistency for dependent operations (DDIA Ch. 9)
+   - Create card → Add comment (preserve order)
+   - Version vectors track operation dependencies
+   - Buffer operations until dependencies met`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
@@ -117,12 +292,15 @@ Learning Objectives (DDIA Ch. 2 & 3):
   ],
 
   userFacingNFRs: [
-    'Board load: p99 < 200ms (DDIA Ch. 2: Denormalized document, one query)',
-    'Card move: p99 < 100ms (DDIA Ch. 2: Atomic document update)',
-    'Conflict detection: < 50ms (DDIA Ch. 3: Optimistic locking version check)',
-    'Card search: p99 < 300ms (DDIA Ch. 3: Multi-key index on nested cards)',
-    'Real-time updates: < 100ms (SDP: WebSocket push to collaborators)',
-    'Board cache: > 80% hit ratio (SDP: Redis for active boards)',
+    'CRDT convergence: 100% consistency across replicas (DDIA Ch. 9: LWW-Element-Set)',
+    'Linearizability: Read-your-writes < 100ms (DDIA Ch. 9: Track operation_seq)',
+    'Total order: All users see same operation sequence (DDIA Ch. 9: Raft consensus log)',
+    'Atomic card moves: No loss or duplication (DDIA Ch. 9: Raft two-phase protocol)',
+    'Consensus latency: Operations committed < 200ms (DDIA Ch. 9: Majority ACK)',
+    'Causal consistency: Preserve operation dependencies (DDIA Ch. 9: Version vectors)',
+    'Concurrent edits: Conflict-free convergence (DDIA Ch. 9: CRDT merge)',
+    'Operation ordering: Deterministic across all clients (DDIA Ch. 9: Sequence numbers)',
+    'Freshness guarantee: Replicas catch up before read (DDIA Ch. 9: min_operation_seq)',
   ],
 
   functionalRequirements: {
