@@ -1,11 +1,42 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Yelp - Business Review Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 3 (Storage & Retrieval) - Geospatial Indexes
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 3: Geospatial indexes for location-based search
+ *   - R-tree or Quadtree for efficient proximity queries
+ *   - PostGIS extensions for PostgreSQL (geography type)
+ *   - Geohashing for partitioning and sharding by location
+ * - Ch. 3: Composite indexes for complex queries
+ *   - (lat, lng, category, rating) for filtered business search
+ * - Ch. 3: Secondary indexes for sorting
+ *   - Index on rating for "highest rated" queries
+ *   - Index on review_count for popularity sorting
+ *
+ * Geospatial Index Types (DDIA Ch. 3):
+ * - **R-tree**: Hierarchical bounding boxes, good for range queries
+ * - **Quadtree**: Recursive spatial subdivision into 4 quadrants
+ * - **Geohash**: Encode lat/lng into base32 string for partitioning
+ *
+ * Example Query (PostGIS):
+ * SELECT * FROM businesses
+ * WHERE ST_DWithin(location::geography, ST_MakePoint(-122.4, 37.7)::geography, 5000)
+ *   AND category = 'restaurant'
+ * ORDER BY rating DESC
+ * LIMIT 20;
+ *
+ * System Design Primer Concepts:
+ * - Geospatial Indexing: Use Quadtree or Geohash for driver/business proximity
+ * - Denormalization: Cache average_rating on businesses table
  */
 export const yelpProblemDefinition: ProblemDefinition = {
   id: 'yelp',
@@ -14,12 +45,33 @@ export const yelpProblemDefinition: ProblemDefinition = {
 - Users can search for local businesses
 - Users can write reviews and upload photos
 - Businesses are ranked by rating and relevance
-- Platform supports geospatial search`,
+- Platform supports geospatial search
+
+Learning Objectives (DDIA Ch. 3):
+1. Implement geospatial indexes for location-based search (DDIA Ch. 3)
+   - Use R-tree or Quadtree for proximity queries
+   - Support "find businesses within 5km" efficiently
+2. Design composite indexes for filtered queries (DDIA Ch. 3)
+   - Combine location, category, rating in single index
+3. Optimize sorting with secondary indexes (DDIA Ch. 3)
+   - Index on rating for "highest rated" view
+4. Partition by geography for horizontal scaling (DDIA Ch. 6)
+   - Use geohashing to shard by city/region`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can search for local businesses',
-    'Users can write reviews and upload photos'
+    'Users can write reviews and upload photos',
+    'Businesses are ranked by rating and relevance',
+    'Platform supports geospatial search'
+  ],
+
+  userFacingNFRs: [
+    'Proximity search: p99 < 100ms for 5km radius (DDIA Ch. 3: Geospatial index)',
+    'Geospatial query: Return results in O(log n + k) time (DDIA Ch. 3: R-tree)',
+    'Search with filters: < 200ms for location + category + rating (DDIA Ch. 3: Composite index)',
+    'Review aggregation: < 50ms (DDIA Ch. 3: Denormalized average_rating)',
+    'Partitioning: Partition by geohash for data locality (DDIA Ch. 6)',
   ],
 
   functionalRequirements: {
@@ -77,6 +129,14 @@ export const yelpProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

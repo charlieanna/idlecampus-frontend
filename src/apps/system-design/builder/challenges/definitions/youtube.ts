@@ -1,11 +1,34 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  highAvailabilityValidator,
+  costOptimizationValidator,
+} from '../../validation/validators/commonValidators';
+import {
+  cacheStrategyConsistencyValidator,
+} from '../../validation/validators/cachingValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * YouTube - Video Sharing Platform
- * Comprehensive FR and NFR scenarios
+ * Comprehensive FR and NFR scenarios with DDIA/SDP concepts
+ *
+ * DDIA Concepts Applied:
+ * - Chapter 5 (Replication): Multi-region replication for global video availability
+ * - Chapter 6 (Partitioning): Partition videos by video_id, users by user_id
+ * - Chapter 11 (Stream Processing): Real-time view count updates, trending videos
+ * - Chapter 10 (Batch Processing): Video transcoding pipeline (async job processing)
+ *
+ * System Design Primer Concepts (Similar to Netflix but with UGC):
+ * - CDN: Global edge caching for video chunks (similar to Netflix)
+ * - Object Storage: S3 for video files (master copies + transcoded versions)
+ * - Async Job Processing: Video transcoding (multiple formats, resolutions)
+ * - Message Queue: Async upload processing, notification fan-out for subscribers
+ * - Caching: Metadata caching (video info, comments, channel data)
+ * - Load Balancing: Distribute upload/streaming traffic
  */
 export const youtubeProblemDefinition: ProblemDefinition = {
   id: 'youtube',
@@ -14,13 +37,35 @@ export const youtubeProblemDefinition: ProblemDefinition = {
 - Users can upload and share videos
 - Users can watch, like, comment on videos
 - Users can subscribe to channels
-- Videos are recommended based on viewing history`,
+- Videos are recommended based on viewing history
+
+Learning Objectives (DDIA/SDP):
+1. Use CDN for global video distribution (SDP - CDN)
+2. Async video transcoding with message queues (DDIA Ch. 10: Batch processing)
+3. Partition data by video_id and user_id (DDIA Ch. 6)
+4. Real-time view count updates via stream processing (DDIA Ch. 11)
+5. Replicate metadata across regions (DDIA Ch. 5)
+6. Handle eventual consistency for view counts/likes (DDIA Ch. 9)
+7. Notification fan-out for new video uploads (similar to Twitter fan-out)`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can upload and share videos',
     'Users can watch, like, comment on videos',
     'Users can subscribe to channels'
+  ],
+
+  // DDIA/SDP Non-Functional Requirements
+  userFacingNFRs: [
+    'Upload processing: Transcode to 3+ formats within 5 minutes (DDIA Ch. 10: Batch jobs)',
+    'Video start time: p99 < 2s (SDP: CDN edge serving)',
+    'Buffering ratio: < 0.1% of playback time (SDP: Adaptive bitrate)',
+    'CDN cache hit ratio: > 90% for popular videos (SDP: Edge caching)',
+    'View count update lag: < 30s (DDIA Ch. 11: Stream processing)',
+    'Availability: 99.9% uptime (DDIA Ch. 5: Multi-region replication)',
+    'Metadata latency: p99 < 200ms (SDP: Metadata caching)',
+    'Scalability: 500+ hours of video uploaded per minute (DDIA Ch. 6: Partitioning)',
+    'Subscriber notification: < 5 minutes for new video alerts (SDP: Message queue fan-out)',
   ],
 
   functionalRequirements: {
@@ -78,6 +123,26 @@ export const youtubeProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
+    },
+    {
+      name: 'High Availability (DDIA Ch. 5)',
+      validate: highAvailabilityValidator,
+    },
+    {
+      name: 'Cache Strategy Consistency (SDP - Caching)',
+      validate: cacheStrategyConsistencyValidator,
+    },
+    {
+      name: 'Cost Optimization (DDIA - Trade-offs)',
+      validate: costOptimizationValidator,
     },
   ],
 

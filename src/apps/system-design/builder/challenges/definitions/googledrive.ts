@@ -1,11 +1,30 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Google Drive - Cloud Storage Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 3 (Storage Engines) - B-Trees for Read-Heavy Workload
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 3: B-trees for file metadata (read-optimized)
+ *   - Read-heavy: Users browse, search, access files frequently
+ *   - B-trees provide fast point queries and range scans
+ *   - In-place updates (no compaction needed like LSM)
+ * - Ch. 3: Full-text search indexes for file content
+ * - Ch. 2: Hierarchical folder structure (tree model)
+ * - Ch. 11: Real-time collaboration with OT (Operational Transform)
+ *
+ * Why B-trees for Google Drive (DDIA Ch. 3):
+ * - Read-heavy workload: Users access files more than upload
+ * - Fast file lookups by name, path, or ID (O(log n))
+ * - Efficient range queries for folder listings
+ * - In-place updates suitable for infrequent metadata changes
  */
 export const googledriveProblemDefinition: ProblemDefinition = {
   id: 'googledrive',
@@ -14,12 +33,29 @@ export const googledriveProblemDefinition: ProblemDefinition = {
 - Users can upload, store, and organize files
 - Users can collaborate on documents in real-time
 - Files can be shared with specific permissions
-- Platform supports searching across all files`,
+- Platform supports searching across all files
 
-  // User-facing requirements (interview-style)
+Learning Objectives (DDIA Ch. 3, 11):
+1. Use B-trees for read-heavy file metadata (DDIA Ch. 3)
+   - Fast point queries for file lookup
+   - Efficient range scans for folder listings
+2. Implement hierarchical folder structure (DDIA Ch. 2: Tree model)
+3. Full-text search with inverted indexes (DDIA Ch. 3)
+4. Real-time collaboration with Operational Transform (DDIA Ch. 11)`,
+
   userFacingFRs: [
     'Users can upload, store, and organize files',
-    'Users can collaborate on documents in real-time'
+    'Users can collaborate on documents in real-time',
+    'Files can be shared with specific permissions',
+    'Platform supports searching across all files'
+  ],
+
+  userFacingNFRs: [
+    'File lookup: p99 < 50ms (DDIA Ch. 3: B-tree O(log n))',
+    'Folder listing: < 100ms for 1000 files (DDIA Ch. 3: Range scan)',
+    'Search latency: < 300ms (DDIA Ch. 3: Full-text index)',
+    'Read throughput: 100K+ file accesses/sec (DDIA Ch. 3: B-tree read optimization)',
+    'Collaboration sync: < 100ms (DDIA Ch. 11: Operational Transform)',
   ],
 
   functionalRequirements: {
@@ -77,6 +113,14 @@ export const googledriveProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 
