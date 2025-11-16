@@ -1,11 +1,85 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  transactionConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Ticketmaster - Event Ticketing Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 7 (Transactions) - CANONICAL EXAMPLE for Preventing Double-Booking
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 7: Pessimistic locking (SELECT FOR UPDATE) to prevent double-booking
+ *   - Lock seat row when user attempts to purchase
+ *   - Other transactions wait until lock is released
+ *   - Prevents write skew (two users buying same seat)
+ * - Ch. 7: Snapshot isolation for browsing available seats
+ *   - Users see consistent seat map during selection
+ *   - Prevents phantom reads (seats disappearing mid-selection)
+ * - Ch. 7: Optimistic locking alternative with version numbers
+ *   - seat.version incremented on each booking
+ *   - Purchase fails if version changed (retry logic)
+ * - Ch. 7: Serializable isolation for high-demand events
+ *   - Prevent write skew when last seat is purchased
+ *   - Two concurrent purchases: only one succeeds
+ * - Ch. 7: Temporary seat reservations with timeout
+ *   - Reserve seat for 10 minutes during checkout
+ *   - Release if payment not completed (compensating transaction)
+ *
+ * Write Skew Problem (DDIA Ch. 7 - Classic Example):
+ * Scenario: Last seat available, two users try to buy simultaneously
+ *
+ * Without Serializable Isolation:
+ * T1: SELECT COUNT(*) FROM tickets WHERE seat_id = 'A1' AND status = 'sold'  -- Returns 0
+ * T2: SELECT COUNT(*) FROM tickets WHERE seat_id = 'A1' AND status = 'sold'  -- Returns 0
+ * T1: INSERT INTO tickets (seat_id, user_id, status) VALUES ('A1', 'user_1', 'sold')
+ * T2: INSERT INTO tickets (seat_id, user_id, status) VALUES ('A1', 'user_2', 'sold')
+ * → BOTH SUCCEED! Double-booking occurred.
+ *
+ * Solution 1: Pessimistic Locking (SELECT FOR UPDATE)
+ * BEGIN TRANSACTION;
+ * SELECT * FROM seats WHERE id = 'A1' FOR UPDATE;  -- Exclusive lock
+ * -- Check if seat is available
+ * INSERT INTO tickets (seat_id, user_id, status) VALUES ('A1', user_id, 'sold');
+ * COMMIT;
+ *
+ * T1 acquires lock → T2 waits → T1 commits → T2 fails (seat unavailable)
+ *
+ * Solution 2: Optimistic Locking (Version Numbers)
+ * Seats table: [id, section, row, number, version, last_updated]
+ *
+ * BEGIN TRANSACTION;
+ * SELECT version FROM seats WHERE id = 'A1';  -- Read version = 5
+ * INSERT INTO tickets (seat_id, user_id);
+ * UPDATE seats SET version = version + 1, last_updated = NOW()
+ *   WHERE id = 'A1' AND version = 5;  -- Only succeeds if version unchanged
+ * IF (affected_rows == 0) THEN ROLLBACK;  -- Version changed, retry
+ * COMMIT;
+ *
+ * Solution 3: Unique Constraint (Database-level)
+ * CREATE UNIQUE INDEX ON tickets (seat_id, event_id) WHERE status != 'cancelled';
+ * -- Second concurrent insert fails with unique constraint violation
+ *
+ * Temporary Reservation Pattern (DDIA Ch. 7):
+ * Step 1: Reserve seat (status = 'reserved', reserved_until = NOW() + 10 minutes)
+ * Step 2: User completes payment within 10 minutes
+ * Step 3a: Payment success → UPDATE status = 'sold'
+ * Step 3b: Payment timeout → Compensating transaction: UPDATE status = 'available'
+ *
+ * Isolation Levels for Different Operations (DDIA Ch. 7):
+ * - Browse seats: Read Committed (fast, allow dirty reads OK)
+ * - Select seat: Snapshot Isolation (consistent view during selection)
+ * - Purchase seat: Serializable (prevent double-booking, critical)
+ * - View ticket history: Read Committed (eventual consistency OK)
+ *
+ * System Design Primer Concepts:
+ * - Database Constraints: Unique constraint on (seat_id, event_id)
+ * - Pessimistic Locking: SELECT FOR UPDATE
+ * - Optimistic Locking: Version field
  */
 export const ticketmasterProblemDefinition: ProblemDefinition = {
   id: 'ticketmaster',
@@ -14,12 +88,41 @@ export const ticketmasterProblemDefinition: ProblemDefinition = {
 - Users can browse and search for events
 - Users can purchase tickets with seat selection
 - Platform prevents double-booking of seats
-- Tickets are delivered digitally`,
+- Tickets are delivered digitally
+
+Learning Objectives (DDIA Ch. 7):
+1. Prevent double-booking with pessimistic locking (DDIA Ch. 7)
+   - SELECT FOR UPDATE to lock seat row during purchase
+   - Understand exclusive locks vs shared locks
+2. Implement optimistic locking with version numbers (DDIA Ch. 7)
+   - Compare-and-set pattern for seat reservations
+   - Retry logic on version conflict
+3. Use snapshot isolation for browsing seats (DDIA Ch. 7)
+   - Consistent seat map view during selection
+   - Prevent phantom reads
+4. Handle write skew for last-seat scenarios (DDIA Ch. 7)
+   - Serializable isolation for high-demand events
+   - Only one concurrent purchase succeeds
+5. Design temporary reservations with timeout (DDIA Ch. 7)
+   - Reserve seat for checkout duration
+   - Compensating transaction on timeout`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can browse and search for events',
     'Users can purchase tickets with seat selection'
+  ],
+
+  userFacingNFRs: [
+    'No double-booking: 100% guarantee (DDIA Ch. 7: SELECT FOR UPDATE)',
+    'Isolation level: Serializable for purchases (DDIA Ch. 7: Prevent write skew)',
+    'Pessimistic locking: Seat locked during checkout (DDIA Ch. 7)',
+    'Optimistic locking: Version-based conflict detection (DDIA Ch. 7)',
+    'Snapshot isolation: Consistent seat map (DDIA Ch. 7: No phantom reads)',
+    'Temporary reservation: 10-minute timeout (DDIA Ch. 7: Compensating txn)',
+    'Unique constraint: (seat_id, event_id) index (DDIA Ch. 7)',
+    'Purchase latency: p99 < 500ms (DDIA Ch. 7: Lock wait time)',
+    'Concurrent bookings: Handle gracefully (DDIA Ch. 7: Serialization failure retry)',
   ],
 
   functionalRequirements: {
@@ -68,6 +171,18 @@ export const ticketmasterProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Transaction Configuration (DDIA Ch. 7)',
+      validate: transactionConfigValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

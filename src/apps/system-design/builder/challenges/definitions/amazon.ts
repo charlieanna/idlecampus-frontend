@@ -10,20 +10,137 @@ import { problemConfigs } from '../problemConfigs';
 
 /**
  * Amazon - E-commerce Marketplace
- * DDIA Ch. 2 (NoSQL Data Models) & Ch. 7 (Transactions for Inventory)
+ * DDIA Ch. 7 (Transactions) - Multi-Warehouse Inventory Management
  *
  * DDIA Concepts Applied:
- * - Ch. 2: NoSQL key-value store (DynamoDB) for shopping cart (session data)
- * - Ch. 2: Document model for product catalog (flexible schema)
- * - Ch. 7: ACID transactions for inventory management (prevent overselling)
- * - Ch. 7: Lost update prevention - optimistic locking for inventory
- * - Ch. 6: Partitioning by user_id for cart, product_id for catalog
+ * - Ch. 7: Lost update prevention for inventory across multiple warehouses
+ *   - Compare-and-set (CAS) for atomic inventory deduction
+ *   - UPDATE inventory SET quantity = quantity - qty WHERE id = ? AND quantity >= qty
+ *   - Prevents overselling when multiple orders compete for same inventory
+ * - Ch. 7: Distributed transactions for order processing
+ *   - Order creation + inventory deduction + payment authorization
+ *   - Two-phase commit across multiple databases/services
+ *   - All three must succeed or all rollback (atomicity)
+ * - Ch. 7: Optimistic locking with version numbers for concurrent updates
+ *   - Inventory table includes version field
+ *   - Update only succeeds if version unchanged since read
+ *   - Retry logic on version conflict
+ * - Ch. 7: Isolation levels by operation type
+ *   - Browsing products: Read Committed (fast, eventual consistency OK)
+ *   - Checkout: Serializable (prevent inventory race conditions)
+ *   - Order history: Read Committed (stale data acceptable)
+ * - Ch. 7: Multi-warehouse inventory allocation
+ *   - Check multiple warehouses for availability
+ *   - Prefer closest warehouse to customer
+ *   - Lock inventory atomically during checkout
  *
- * Key Design Patterns:
- * - Shopping Cart: DynamoDB with TTL for session expiry
- * - Product Catalog: Document store (MongoDB/DynamoDB) for flexible attributes
- * - Inventory: ACID transactions to prevent overselling (compare-and-swap)
- * - Order Processing: Two-phase commit (reserve inventory + create order)
+ * Lost Update Problem (DDIA Ch. 7):
+ * Scenario: Product has 10 units in warehouse, two orders for 7 units each
+ *
+ * Without Atomic Decrement:
+ * T1: SELECT quantity FROM inventory WHERE product_id = 'prod_123' AND warehouse_id = 'wh_1'  -- Returns 10
+ * T2: SELECT quantity FROM inventory WHERE product_id = 'prod_123' AND warehouse_id = 'wh_1'  -- Returns 10
+ * T1: UPDATE inventory SET quantity = 10 - 7 WHERE product_id = 'prod_123'  -- quantity = 3
+ * T2: UPDATE inventory SET quantity = 10 - 7 WHERE product_id = 'prod_123'  -- quantity = 3 (LOST UPDATE!)
+ * → Final quantity = 3, but should be -4 (oversold by 4 units)
+ *
+ * Solution 1: Compare-and-Set (Atomic Decrement)
+ * UPDATE inventory SET quantity = quantity - 7
+ *   WHERE product_id = 'prod_123' AND warehouse_id = 'wh_1' AND quantity >= 7;
+ * -- Returns 1 row updated if successful, 0 if insufficient inventory
+ * -- Database guarantees atomicity: read-modify-write in single operation
+ *
+ * Solution 2: Pessimistic Locking (SELECT FOR UPDATE)
+ * BEGIN TRANSACTION;
+ * SELECT quantity FROM inventory
+ *   WHERE product_id = 'prod_123' AND warehouse_id = 'wh_1' FOR UPDATE;
+ * -- Exclusive lock acquired, T2 waits
+ * IF (quantity >= 7) THEN
+ *   UPDATE inventory SET quantity = quantity - 7;
+ *   COMMIT;
+ * ELSE
+ *   ROLLBACK;  -- Insufficient inventory
+ * END IF;
+ *
+ * Solution 3: Optimistic Locking (Version Numbers)
+ * inventory table: [product_id, warehouse_id, quantity, version, last_updated]
+ *
+ * BEGIN TRANSACTION;
+ * SELECT quantity, version FROM inventory
+ *   WHERE product_id = 'prod_123' AND warehouse_id = 'wh_1';  -- version = 42
+ * IF (quantity >= 7) THEN
+ *   UPDATE inventory SET quantity = quantity - 7, version = version + 1
+ *     WHERE product_id = 'prod_123' AND warehouse_id = 'wh_1' AND version = 42;
+ *   IF (affected_rows == 0) THEN
+ *     ROLLBACK;  -- Version changed by T2, retry entire transaction
+ *   ELSE
+ *     COMMIT;
+ *   END IF;
+ * END IF;
+ *
+ * Distributed Transaction (DDIA Ch. 7 - Two-Phase Commit):
+ * Order processing requires coordinating: Order DB + Inventory DB + Payment Service
+ *
+ * Phase 1 - Prepare:
+ * BEGIN TRANSACTION;
+ * -- Step 1a: Reserve inventory (Inventory DB)
+ * UPDATE inventory SET quantity = quantity - 7, reserved = reserved + 7
+ *   WHERE product_id = 'prod_123' AND warehouse_id = 'wh_1' AND quantity >= 7;
+ * IF (affected_rows == 0) THEN ROLLBACK;  -- Insufficient inventory
+ *
+ * -- Step 1b: Create order record (Order DB)
+ * INSERT INTO orders (id, user_id, total, status) VALUES ('order_123', 'user_1', 299.99, 'pending');
+ *
+ * -- Step 1c: Authorize payment (Payment Service - external)
+ * payment_result = payment_service.authorize(user_id='user_1', amount=299.99);
+ * IF (payment_result.status != 'authorized') THEN ROLLBACK;
+ *
+ * -- All three prepared successfully → PREPARE
+ * PREPARE TRANSACTION 'order_123_txn';
+ *
+ * Phase 2 - Commit:
+ * -- Step 2a: Capture payment
+ * payment_service.capture(authorization_id=payment_result.auth_id);
+ *
+ * -- Step 2b: Finalize inventory (convert reserved → sold)
+ * UPDATE inventory SET reserved = reserved - 7
+ *   WHERE product_id = 'prod_123' AND warehouse_id = 'wh_1';
+ *
+ * -- Step 2c: Update order status
+ * UPDATE orders SET status = 'confirmed' WHERE id = 'order_123';
+ *
+ * COMMIT PREPARED 'order_123_txn';
+ *
+ * Multi-Warehouse Inventory Allocation (DDIA Ch. 7):
+ * Query: Customer in NYC needs 10 units, check warehouses by proximity
+ *
+ * BEGIN TRANSACTION;
+ * -- Get warehouses sorted by distance
+ * SELECT warehouse_id, quantity FROM inventory
+ *   WHERE product_id = 'prod_123' AND quantity > 0
+ *   ORDER BY distance_from('NYC', warehouse_id) ASC
+ *   FOR UPDATE;  -- Lock all warehouse inventory rows
+ *
+ * -- Try to allocate from closest warehouse first
+ * IF (warehouse_1.quantity >= 10) THEN
+ *   UPDATE inventory SET quantity = quantity - 10 WHERE warehouse_id = 'wh_1';
+ * ELSE
+ *   -- Split order across warehouses (7 from wh_1, 3 from wh_2)
+ *   UPDATE inventory SET quantity = 0 WHERE warehouse_id = 'wh_1';
+ *   UPDATE inventory SET quantity = quantity - 3 WHERE warehouse_id = 'wh_2';
+ * END IF;
+ * COMMIT;
+ *
+ * Isolation Levels by Operation (DDIA Ch. 7):
+ * - Browse products: Read Committed (allow concurrent updates, fast)
+ * - View cart: Read Committed (soft data, no locks)
+ * - Checkout: Serializable (critical - prevent overselling)
+ * - Order history: Read Committed (eventual consistency acceptable)
+ *
+ * System Design Primer Concepts:
+ * - Compare-and-Set: Atomic inventory updates
+ * - Optimistic Locking: Version field for conflict detection
+ * - Two-Phase Commit: Distributed transaction coordination
  */
 export const amazonProblemDefinition: ProblemDefinition = {
   id: 'amazon',
@@ -34,12 +151,22 @@ export const amazonProblemDefinition: ProblemDefinition = {
 - Users can track orders and view order history
 - Sellers can list and manage products
 
-Learning Objectives (DDIA Ch. 2, 7):
-1. Use NoSQL (DynamoDB) for shopping cart (DDIA Ch. 2: Key-value model)
-2. Prevent inventory overselling with transactions (DDIA Ch. 7: Lost updates)
-3. Implement optimistic locking for inventory (DDIA Ch. 7: Compare-and-swap)
-4. Use document model for product catalog (DDIA Ch. 2: Flexible schema)
-5. Ensure atomicity for order + inventory (DDIA Ch. 7)`,
+Learning Objectives (DDIA Ch. 7):
+1. Prevent inventory overselling with compare-and-set (DDIA Ch. 7)
+   - Atomic decrement: WHERE quantity >= qty
+   - Prevents lost updates when orders compete for inventory
+2. Implement optimistic locking with version numbers (DDIA Ch. 7)
+   - Update only succeeds if version unchanged
+   - Retry logic on concurrent modification
+3. Coordinate distributed transactions (DDIA Ch. 7)
+   - Two-phase commit: Order + Inventory + Payment
+   - All succeed or all rollback (atomicity)
+4. Handle multi-warehouse inventory allocation (DDIA Ch. 7)
+   - Lock multiple warehouse rows atomically
+   - Prefer closest warehouse, split orders if needed
+5. Use appropriate isolation levels (DDIA Ch. 7)
+   - Browsing: Read Committed (fast)
+   - Checkout: Serializable (prevent race conditions)`,
 
   userFacingFRs: [
     'Users can browse and search for products',
@@ -49,11 +176,15 @@ Learning Objectives (DDIA Ch. 2, 7):
   ],
 
   userFacingNFRs: [
-    'No overselling: 100% guarantee (DDIA Ch. 7: Optimistic locking on inventory)',
-    'Cart operations: < 50ms (DDIA Ch. 2: DynamoDB key-value access)',
-    'Order atomicity: Inventory + order together (DDIA Ch. 7: ACID transaction)',
-    'Product search: < 300ms (DDIA Ch. 3: Secondary indexes)',
-    'Inventory consistency: Strong consistency (DDIA Ch. 7: Serializable)',
+    'No overselling: 100% guarantee (DDIA Ch. 7: Compare-and-set WHERE quantity >= qty)',
+    'Lost update prevention: Atomic decrement (DDIA Ch. 7: Read-modify-write in single op)',
+    'Optimistic locking: Version-based concurrency control (DDIA Ch. 7: Retry on conflict)',
+    'Distributed transaction: Order + Inventory + Payment (DDIA Ch. 7: Two-phase commit)',
+    'Isolation level: Serializable for checkout (DDIA Ch. 7: Prevent inventory race)',
+    'Isolation level: Read Committed for browsing (DDIA Ch. 7: Fast, eventual consistency)',
+    'Multi-warehouse allocation: Atomic lock on all warehouses (DDIA Ch. 7: SELECT FOR UPDATE)',
+    'Order atomicity: All-or-nothing commit (DDIA Ch. 7: Rollback on payment failure)',
+    'Checkout latency: p99 < 500ms (DDIA Ch. 7: Minimize 2PC coordinator overhead)',
   ],
 
   functionalRequirements: {
