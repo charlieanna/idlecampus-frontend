@@ -68,7 +68,7 @@ export function convertProblemDefinitionToChallenge(
   // Extract functional requirements as strings
   // Use user-facing FRs if provided, otherwise fall back to component reasons
   const functionalReqs = def.userFacingFRs ||
-    def.functionalRequirements.mustHave.map((req) => req.reason);
+    (def.functionalRequirements?.mustHave?.map((req) => req.reason) || []);
 
   // Determine available components based on requirements
   const availableComponents = determineAvailableComponents(def);
@@ -106,8 +106,13 @@ function determineDifficulty(
     return 'advanced';
   }
 
-  const componentCount = def.functionalRequirements.mustHave.length;
-  const connectionCount = def.functionalRequirements.mustConnect.length;
+  // Safety check for functionalRequirements
+  if (!def.functionalRequirements) {
+    return 'intermediate'; // Default to intermediate if no requirements defined
+  }
+
+  const componentCount = def.functionalRequirements.mustHave?.length || 0;
+  const connectionCount = def.functionalRequirements.mustConnect?.length || 0;
 
   // Balanced heuristic for better problem distribution
   // Beginner: Simple connectivity (2-3 components)
@@ -138,7 +143,7 @@ function determineAvailableComponents(def: ProblemDefinition): string[] {
 
   // Add specific components based on requirements
   const required: string[] = [];
-  def.functionalRequirements.mustHave.forEach((req) => {
+  def.functionalRequirements?.mustHave?.forEach((req) => {
     switch (req.type) {
       case 'compute':
         required.push('app_server');
@@ -181,7 +186,7 @@ function createLearningObjectives(def: ProblemDefinition): string[] {
 
   // Add objectives based on required components
   const componentTypesMap: { [key: string]: boolean } = {};
-  def.functionalRequirements.mustHave.forEach((req) => {
+  def.functionalRequirements?.mustHave?.forEach((req) => {
     componentTypesMap[req.type] = true;
   });
 
@@ -208,7 +213,7 @@ function createLearningObjectives(def: ProblemDefinition): string[] {
   }
 
   // Add data modeling objective if defined
-  if (def.functionalRequirements.dataModel) {
+  if (def.functionalRequirements?.dataModel) {
     objectives.push('Design appropriate data models');
   }
 

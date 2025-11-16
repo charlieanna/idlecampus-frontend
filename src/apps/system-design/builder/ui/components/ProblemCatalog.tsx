@@ -152,7 +152,7 @@ export function ProblemCatalog() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'difficulty' | 'category'>('difficulty');
-  const [trackFilter, setTrackFilter] = useState<'all' | 'core'>('all');
+  const [trackFilter, setTrackFilter] = useState<'all' | 'core' | 'ddia' | 'sdp'>('all');
 
   // Enrich challenges with metadata and filter out tutorials
   const enrichedChallenges = useMemo(() => {
@@ -167,6 +167,16 @@ export function ProblemCatalog() {
       }));
   }, []);
 
+  const ddiaCount = useMemo(
+    () => enrichedChallenges.filter(c => c.id.startsWith('ddia-')).length,
+    [enrichedChallenges],
+  );
+
+  const sdpCount = useMemo(
+    () => enrichedChallenges.filter(c => c.id.startsWith('sdp-')).length,
+    [enrichedChallenges],
+  );
+
   // Get unique values for categories
   const categories = useMemo(() => {
     const cats = new Set(enrichedChallenges.map(c => c.category));
@@ -179,6 +189,10 @@ export function ProblemCatalog() {
 
     if (trackFilter === 'core') {
       list = list.filter(c => c.isCore);
+    } else if (trackFilter === 'ddia') {
+      list = list.filter(c => c.id.startsWith('ddia-'));
+    } else if (trackFilter === 'sdp') {
+      list = list.filter(c => c.id.startsWith('sdp-'));
     }
 
     if (!searchTerm) return list;
@@ -254,6 +268,26 @@ export function ProblemCatalog() {
                   }`}
                 >
                   Core Track
+                </button>
+                <button
+                  onClick={() => setTrackFilter('ddia')}
+                  className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+                    trackFilter === 'ddia'
+                      ? 'bg-emerald-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  DDIA Teaching ({ddiaCount})
+                </button>
+                <button
+                  onClick={() => setTrackFilter('sdp')}
+                  className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+                    trackFilter === 'sdp'
+                      ? 'bg-indigo-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  System Design Primer ({sdpCount})
                 </button>
               </div>
 
