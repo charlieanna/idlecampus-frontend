@@ -49,7 +49,7 @@ These problems differ from the existing challenges by focusing on:
 | 24 | **Data Access Control** | Row/column security, dynamic masking, audits | Google IAM/Ranger, policy evaluation, compliance |
 | 25 | **Batch Processing Framework** | Distributed MapReduce, shuffle optimization | Google Dataflow/Spark, data locality, checkpointing |
 | 26 | **Internal Data Catalog** | Metadata search, popularity, discovery | Google Data Catalog/Amundsen, auto-tagging, lineage viz |
-| 27 | **Change Data Capture (CDC)** | DB log tailing, event streaming, dedup | Ordering guarantees, backpressure, schema changes |
+| ✅ | **Change Data Capture (CDC)** | DB log tailing, event streaming, dedup | Ordering guarantees, backpressure, schema changes |
 | 28 | **Data Replication Service** | Cross-region replication, consistency | Network partitions, replication lag, conflict resolution |
 | 29 | **Data Retention & Archival** | Hot/warm/cold tiering, compression | Cost optimization, legal holds, restore testing |
 | 30 | **Query Cache** | Result caching, invalidation, partial hits | Presto/Druid style, cache key design, TTL policies |
@@ -64,7 +64,7 @@ These problems differ from the existing challenges by focusing on:
 | ✅ | **Log Aggregation** | Log ingestion, structured logging, retention | Google Cloud Logging/Splunk, high volume, PII redaction, multi-tier storage |
 | ✅ | **Alerting & Incident Mgmt** | Alert routing, escalation, on-call | Google SRE/PagerDuty, deduplication, alert fatigue |
 | 34 | **Monitoring Dashboard** | Metrics visualization, anomaly detection, SLO | Grafana style, real-time updates, cardinality explosion |
-| 35 | **Service Health Checker** | Active probing, synthetic transactions | Multi-region checks, false positives, dependency modeling |
+| ✅ | **Service Health Checker** | Active probing, synthetic transactions | Multi-region checks, false positives, dependency modeling |
 | ✅ | **Chaos Engineering Platform** | Failure injection, blast radius control | Netflix Chaos Monkey, safety controls, impact measurement |
 | ✅ | **Capacity Planning System** | Resource forecasting, growth modeling | Seasonality, traffic spikes, multi-dimensional resources |
 | 38 | **SLO/SLI Reporting** | Error budget tracking, burn rate alerts | Multi-service SLOs, user-journey based SLIs |
@@ -97,7 +97,7 @@ These problems differ from the existing challenges by focusing on:
 | ✅ | **Feature Store** | Uber Michelangelo/Airbnb Zipline | Online/offline consistency, point-in-time correctness, <10ms serving |
 | 52 | **Model Training Pipeline** | Distributed training, hyperparameter tuning | GPU scheduling, checkpoint recovery, experiment tracking |
 | ✅ | **Model Serving Platform** | Model deployment, A/B testing, canary | TFServing style, latency requirements, batching |
-| 54 | **ML Experiment Tracking** | Experiment metadata, artifact storage | MLflow style, large artifacts, reproducibility |
+| ✅ | **ML Experiment Tracking** | Experiment metadata, artifact storage | MLflow style, large artifacts, reproducibility |
 | 55 | **Data Labeling Platform** | Task assignment, quality control, performance | Inter-annotator agreement, active learning, cost |
 | 56 | **Online Inference Cache** | Feature/prediction caching, invalidation | Cache key design, TTL policies, freshness vs latency |
 | 57 | **Model Monitoring & Drift** | Performance tracking, data drift, concept drift | Real-time monitoring, alerting, retraining triggers |
@@ -262,9 +262,9 @@ These problems are ideal for:
 
 ## Implementation Status
 
-- ✅ **26 problems fully implemented** with test cases (up from 23!)
-- 📝 **34 problems defined** with brief descriptions
-- 🎯 **Coverage**: Developer Tools (9), Data Infrastructure (7), Observability (5), Migration (4), ML Infrastructure (2)
+- ✅ **29 problems fully implemented** with test cases (up from 26!)
+- 📝 **31 problems defined** with brief descriptions
+- 🎯 **Coverage**: Developer Tools (9), Data Infrastructure (8), Observability (6), Migration (4), ML Infrastructure (3)
 - 🔜 **Next**: Implement remaining problems across all categories
 
 ---

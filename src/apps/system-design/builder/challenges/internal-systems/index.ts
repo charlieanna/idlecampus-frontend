@@ -34,6 +34,7 @@ export { metricsAggregationChallenge } from './metricsAggregation';
 export { realtimeAnalyticsPipelineChallenge } from './realtimeAnalyticsPipeline';
 export { dataLineageTrackingChallenge } from './dataLineageTracking';
 export { dataQualityMonitoringChallenge } from './dataQualityMonitoring';
+export { changeDataCaptureChallenge } from './changeDataCapture';
 
 // Observability & Operations
 export { distributedTracingChallenge } from './distributedTracing';
@@ -41,6 +42,7 @@ export { alertingIncidentManagementChallenge } from './alertingIncidentManagemen
 export { chaosEngineeringPlatformChallenge } from './chaosEngineeringPlatform';
 export { configurationRolloutChallenge } from './configurationRollout';
 export { capacityPlanningSystemChallenge } from './capacityPlanningSystem';
+export { serviceHealthCheckerChallenge } from './serviceHealthChecker';
 
 // Migration & Reliability
 export { zeroDowntimeMigrationChallenge } from './zeroDowntimeMigration';
@@ -50,6 +52,7 @@ export { backupRestoreServiceChallenge } from './backupRestoreService';
 
 // ML Infrastructure
 export { modelServingPlatformChallenge } from './modelServingPlatform';
+export { mlExperimentTrackingChallenge } from './mlExperimentTracking';
 
 /**
  * All internal systems challenges
@@ -113,16 +116,19 @@ export function getInternalSystemsChallenges() {
   const { realtimeAnalyticsPipelineChallenge } = require('./realtimeAnalyticsPipeline');
   const { dataLineageTrackingChallenge } = require('./dataLineageTracking');
   const { dataQualityMonitoringChallenge } = require('./dataQualityMonitoring');
+  const { changeDataCaptureChallenge } = require('./changeDataCapture');
   const { distributedTracingChallenge } = require('./distributedTracing');
   const { alertingIncidentManagementChallenge } = require('./alertingIncidentManagement');
   const { chaosEngineeringPlatformChallenge } = require('./chaosEngineeringPlatform');
   const { configurationRolloutChallenge } = require('./configurationRollout');
   const { capacityPlanningSystemChallenge } = require('./capacityPlanningSystem');
+  const { serviceHealthCheckerChallenge } = require('./serviceHealthChecker');
   const { zeroDowntimeMigrationChallenge } = require('./zeroDowntimeMigration');
   const { multiRegionFailoverChallenge } = require('./multiRegionFailover');
   const { circuitBreakerLibraryChallenge } = require('./circuitBreakerLibrary');
   const { backupRestoreServiceChallenge } = require('./backupRestoreService');
   const { modelServingPlatformChallenge } = require('./modelServingPlatform');
+  const { mlExperimentTrackingChallenge } = require('./mlExperimentTracking');
 
   return [
     // Developer Tools
@@ -143,12 +149,14 @@ export function getInternalSystemsChallenges() {
     realtimeAnalyticsPipelineChallenge,
     dataLineageTrackingChallenge,
     dataQualityMonitoringChallenge,
+    changeDataCaptureChallenge,
     // Observability
     distributedTracingChallenge,
     alertingIncidentManagementChallenge,
     chaosEngineeringPlatformChallenge,
     configurationRolloutChallenge,
     capacityPlanningSystemChallenge,
+    serviceHealthCheckerChallenge,
     // Migration & Reliability
     zeroDowntimeMigrationChallenge,
     multiRegionFailoverChallenge,
@@ -156,6 +164,7 @@ export function getInternalSystemsChallenges() {
     backupRestoreServiceChallenge,
     // ML Infrastructure
     modelServingPlatformChallenge,
+    mlExperimentTrackingChallenge,
   ];
 }
 
@@ -185,6 +194,7 @@ export function getChallengesByCategory(category: string) {
       'realtime_analytics_pipeline',
       'data_lineage_tracking',
       'data_quality_monitoring',
+      'change_data_capture',
     ],
     observability: [
       'distributed_tracing',
@@ -192,6 +202,7 @@ export function getChallengesByCategory(category: string) {
       'chaos_engineering_platform',
       'configuration_rollout',
       'capacity_planning_system',
+      'service_health_checker',
     ],
     migration: [
       'zero_downtime_migration',
@@ -202,6 +213,7 @@ export function getChallengesByCategory(category: string) {
     ml_infrastructure: [
       'feature_store',
       'model_serving_platform',
+      'ml_experiment_tracking',
     ],
   };
 
