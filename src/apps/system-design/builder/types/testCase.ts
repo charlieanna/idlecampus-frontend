@@ -69,7 +69,10 @@ export interface TestCase {
  */
 export interface TestMetrics {
   p50Latency: number;
+  p90Latency?: number; // Optional for backward compatibility
+  p95Latency?: number; // Optional for backward compatibility
   p99Latency: number;
+  p999Latency?: number; // Optional for backward compatibility
   errorRate: number;
   monthlyCost: number;
   availability: number;

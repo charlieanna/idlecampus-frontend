@@ -4,6 +4,7 @@ import { TestCase, TestMetrics } from '../types/testCase';
 import { FlowVisualization } from '../types/request';
 import { TrafficFlowEngine } from './trafficFlowEngine';
 import { isDatabaseComponentType } from '../utils/database';
+import { findHandlingServers, getServerDisplayName } from '../utils/apiRouting';
 import {
   Component,
   Client,
@@ -108,6 +109,26 @@ export class SimulationEngine {
       if (comp.type === type) return comp.id;
     }
     return undefined;
+  }
+
+  /**
+   * Find app servers that can handle specific API patterns
+   * Returns IDs of app servers that handle the given method and path
+   */
+  private findAppServersForAPI(method: string, path: string, graph: SystemGraph): string[] {
+    const nodes = graph.components.filter(node => node.type === 'app_server');
+
+    const handlingServers = findHandlingServers(nodes, method, path);
+
+    // If no servers have API patterns defined, return all app servers (backward compatibility)
+    if (handlingServers.length === 0) {
+      const defaultServers = nodes.filter(node =>
+        !node.config.handledAPIs || node.config.handledAPIs.length === 0
+      );
+      return defaultServers.map(s => s.id);
+    }
+
+    return handlingServers.map(s => s.id);
   }
 
   /**
@@ -228,7 +249,20 @@ export class SimulationEngine {
       this.findNodeIdByType('load_balancer') ||
       this.findNodeIdByType('app_server');
 
-    const appId = this.findNodeIdByType('app_server');
+    // Find app servers based on API patterns (if specified)
+    // For simulation, we'll distribute traffic among capable servers
+    // In MVP, we'll assume read operations go to servers handling GET requests
+    // and write operations go to servers handling POST/PUT/DELETE
+    const readAppServerIds = this.findAppServersForAPI('GET', '/api/v1/*', graph);
+    const writeAppServerIds = this.findAppServersForAPI('POST', '/api/v1/*', graph);
+
+    // For backward compatibility, if no API-specific servers found, use any app server
+    const appId = readAppServerIds.length > 0
+      ? readAppServerIds[0]
+      : writeAppServerIds.length > 0
+        ? writeAppServerIds[0]
+        : this.findNodeIdByType('app_server');
+
     const dbId = this.findNodeIdByType('database') ||
       this.findNodeIdByType('postgresql') ||
       this.findNodeIdByType('mongodb') ||
@@ -268,7 +302,10 @@ export class SimulationEngine {
       return {
         metrics: {
           p50Latency: 0,
+          p90Latency: 0,
+          p95Latency: 0,
           p99Latency: 0,
+          p999Latency: 0,
           errorRate: 1.0,
           monthlyCost: 0,
           availability: 0,
@@ -368,7 +405,13 @@ export class SimulationEngine {
       totalRps > 0
         ? (readRps * readLatency + writeRps * writeLatency) / totalRps
         : 0;
-    const p99Latency = p50Latency * 1.5; // Approximate (p99 ≈ 1.5x p50)
+
+    // Calculate full percentile distribution using realistic multipliers
+    // Based on typical distributed system characteristics
+    const p90Latency = p50Latency * 1.3;  // 90th percentile ~1.3x median
+    const p95Latency = p50Latency * 1.4;  // 95th percentile ~1.4x median
+    const p99Latency = p50Latency * 1.8;  // 99th percentile ~1.8x median (was 1.5x)
+    const p999Latency = p50Latency * 3.0; // 99.9th percentile ~3x median (tail latency)
 
     // Get flow visualization (components and traffic flow engine already built)
     // Note: Flow visualization is optional and runs on a sample of requests
@@ -385,7 +428,10 @@ export class SimulationEngine {
     return {
       metrics: {
         p50Latency,
+        p90Latency,
+        p95Latency,
         p99Latency,
+        p999Latency,
         errorRate: combinedErrorRate,
         monthlyCost: totalCost,
         availability,

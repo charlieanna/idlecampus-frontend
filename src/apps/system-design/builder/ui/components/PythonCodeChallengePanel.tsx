@@ -4,6 +4,8 @@ import type { Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { SystemGraph } from '../../types/graph';
 import { APIConnectionStatus } from './APIConnectionStatus';
+import { getServerDisplayName } from '../../utils/apiRouting';
+import { pythonExecutor } from '../../services/pythonExecutor';
 
 interface TestCase {
   id: string;
@@ -117,9 +119,110 @@ export function PythonCodeChallengePanel({
   const [testResults, setTestResults] = useState<TestResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [showTestResultsPanel, setShowTestResultsPanel] = useState(false);
+  const [selectedServiceId, setSelectedServiceId] = useState<string | null>(null);
+  const [serviceCodes, setServiceCodes] = useState<Record<string, string>>({});
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null);
   const editorContainerRef = useRef<HTMLDivElement | null>(null);
   const resizeObserverRef = useRef<ResizeObserver | null>(null);
+
+  // Get app servers with APIs assigned (these are microservices)
+  const getAppServersWithAPIs = () => {
+    if (!systemGraph) return [];
+
+    return systemGraph.components.filter(comp =>
+      comp.type === 'app_server' &&
+      comp.config.handledAPIs &&
+      comp.config.handledAPIs.length > 0
+    );
+  };
+
+  const appServersWithAPIs = getAppServersWithAPIs();
+
+  // Initialize service codes and selection
+  useEffect(() => {
+    if (appServersWithAPIs.length > 0) {
+      const codes: Record<string, string> = {};
+
+      // Initialize codes for each service
+      appServersWithAPIs.forEach(server => {
+        const existingCode = pythonExecutor.getServiceCode(server.id);
+        codes[server.id] = existingCode || pythonCode || getDefaultCodeForService(server);
+      });
+
+      setServiceCodes(codes);
+
+      // Select first service if none selected
+      if (!selectedServiceId || !codes[selectedServiceId]) {
+        setSelectedServiceId(appServersWithAPIs[0].id);
+      }
+    } else {
+      // No microservices, use global code
+      setSelectedServiceId(null);
+      setServiceCodes({});
+    }
+  }, [systemGraph, appServersWithAPIs.length]);
+
+  // Get default code template for a service based on its APIs
+  const getDefaultCodeForService = (server: any) => {
+    const serviceName = getServerDisplayName(server);
+    const apis = server.config.handledAPIs || [];
+
+    // Generate functions based on API patterns
+    const functions: string[] = [];
+
+    if (apis.some((api: string) => api.includes('/urls') && api.includes('POST'))) {
+      functions.push(`def shorten(long_url):
+    \"\"\"Shorten a URL - ${serviceName}\"\"\"
+    # Generate a unique short code
+    short_code = str(context.db.get_next_id())
+    context.db.set(short_code, long_url)
+    return short_code`);
+    }
+
+    if (apis.some((api: string) => api.includes('/urls') && api.includes('GET'))) {
+      functions.push(`def expand(short_code):
+    \"\"\"Expand a URL - ${serviceName}\"\"\"
+    # Look up the long URL
+    long_url = context.db.get(short_code)
+    return long_url`);
+    }
+
+    if (functions.length === 0) {
+      functions.push(`def process_request(data):
+    \"\"\"Process request for ${serviceName}\"\"\"
+    # Implement your logic here
+    return {"status": "success", "service": "${serviceName}"}`);
+    }
+
+    return `# ${serviceName} Service Code
+# Handles APIs: ${apis.join(', ')}
+
+${functions.join('\n\n')}
+`;
+  };
+
+  // Update current service code when editor changes
+  const handleCodeChange = (value: string | undefined) => {
+    if (value !== undefined) {
+      if (selectedServiceId) {
+        // Update service-specific code
+        const newCodes = { ...serviceCodes, [selectedServiceId]: value };
+        setServiceCodes(newCodes);
+        pythonExecutor.setServiceCode(selectedServiceId, value);
+      } else {
+        // Update global code
+        setPythonCode(value);
+      }
+    }
+  };
+
+  // Get current code based on selection
+  const getCurrentCode = () => {
+    if (selectedServiceId && serviceCodes[selectedServiceId]) {
+      return serviceCodes[selectedServiceId];
+    }
+    return pythonCode;
+  };
 
   const formatTestResultsAsText = (results: TestResult[]): string => {
     if (results.length === 0) {
@@ -340,7 +443,34 @@ export function PythonCodeChallengePanel({
         {/* Code Editor - Full width */}
         <div className="flex-1 flex flex-col bg-white min-w-0">
           <div className="p-3 border-b border-gray-200 bg-gray-50 flex-shrink-0">
-            <h3 className="font-semibold text-gray-900">Code Editor</h3>
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-gray-900">Code Editor</h3>
+
+              {/* Service Selector for Microservices */}
+              {appServersWithAPIs.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-600">Service:</span>
+                  <select
+                    value={selectedServiceId || ''}
+                    onChange={(e) => setSelectedServiceId(e.target.value || null)}
+                    className="px-3 py-1 text-sm border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  >
+                    {appServersWithAPIs.map(server => {
+                      const displayName = server.config.serviceName || getServerDisplayName(server);
+                      const apis = server.config.handledAPIs || [];
+                      return (
+                        <option key={server.id} value={server.id}>
+                          {displayName} ({apis.length} APIs)
+                        </option>
+                      );
+                    })}
+                  </select>
+                  <div className="text-xs text-gray-500">
+                    Editing: {appServersWithAPIs.find(s => s.id === selectedServiceId)?.config.serviceName || 'Service'}
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
           <div 
             ref={editorContainerRef}
@@ -350,8 +480,8 @@ export function PythonCodeChallengePanel({
             <Editor
               height="100%"
               defaultLanguage="python"
-              value={pythonCode}
-              onChange={(value) => setPythonCode(value || '')}
+              value={getCurrentCode()}
+              onChange={handleCodeChange}
               onMount={handleEditorDidMount}
               theme="vs-light"
               options={{

@@ -102,9 +102,26 @@ export type ComponentType =
   | 's3';
 
 /**
+ * API Route pattern for app servers
+ */
+export interface APIRoute {
+  method: string | '*'; // GET, POST, PUT, DELETE, PATCH, HEAD, OPTIONS, or *
+  path: string; // /api/v1/urls/* or exact path
+  description?: string; // Optional description
+}
+
+/**
  * Component configuration (user-defined)
  */
 export interface ComponentConfig {
+  // App server specific configurations
+  serviceName?: string; // Display name for the service
+  handledAPIs?: string[]; // List of API patterns like "GET /api/v1/urls/*"
+  apiRoutes?: APIRoute[]; // Structured API routes (alternative to handledAPIs)
+  instances?: number;
+  capacityPerInstance?: number;
+
+  // Other configurations
   [key: string]: any;
 }
 
@@ -113,6 +130,7 @@ export interface ComponentConfig {
  */
 export interface CustomLogic {
   enabled: boolean;
+  pythonCode?: string; // Inline Python code for this specific service
   pythonFile?: string; // Path to Python file
   functionName?: string; // Entry point function
   benchmarkedLatency?: number; // Measured latency from benchmarking

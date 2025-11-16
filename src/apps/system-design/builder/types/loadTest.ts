@@ -37,10 +37,12 @@ export interface LoadTestMetrics {
 
   minLatency: number;
   maxLatency: number;
-  avgLatency: number;
+  avgLatency: number; // Kept for backward compatibility but SHOULD NOT be used per L6 standards
   p50Latency: number;
+  p90Latency?: number; // Optional for backward compatibility
   p95Latency: number;
   p99Latency: number;
+  p999Latency?: number; // Optional for backward compatibility
 
   throughput: number; // Requests per second
   duration: number; // Actual test duration in seconds

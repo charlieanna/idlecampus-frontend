@@ -66,17 +66,74 @@ export function ResultsPanel({ results, challenge, onClose }: ResultsPanelProps)
 
               {/* Metrics */}
               <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">p99 Latency:</span>
-                  <span
-                    className={`font-medium ${
-                      result.passed ? 'text-green-700' : 'text-red-700'
-                    }`}
-                  >
-                    {result.metrics.p99Latency.toFixed(1)}ms
-                    {testCase?.passCriteria.maxP99Latency &&
-                      ` (target: ${testCase.passCriteria.maxP99Latency}ms)`}
-                  </span>
+                {/* Latency Percentiles - L6 Compliant (NEVER use average!) */}
+                <div className="mb-2">
+                  <div className="text-gray-600 font-medium mb-1">Latency Percentiles:</div>
+                  <div className="ml-2 space-y-0.5">
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">P50 (Median):</span>
+                      <span className="font-medium text-gray-700">
+                        {result.metrics.p50Latency.toFixed(1)}ms
+                        {testCase?.passCriteria.maxP50Latency &&
+                          ` (target: ${testCase.passCriteria.maxP50Latency}ms)`}
+                      </span>
+                    </div>
+                    {result.metrics.p90Latency !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">P90:</span>
+                        <span className="font-medium text-gray-700">
+                          {result.metrics.p90Latency.toFixed(1)}ms
+                          {testCase?.passCriteria.maxP90Latency &&
+                            ` (target: ${testCase.passCriteria.maxP90Latency}ms)`}
+                        </span>
+                      </div>
+                    )}
+                    {result.metrics.p95Latency !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">P95:</span>
+                        <span className="font-medium text-gray-700">
+                          {result.metrics.p95Latency.toFixed(1)}ms
+                          {testCase?.passCriteria.maxP95Latency &&
+                            ` (target: ${testCase.passCriteria.maxP95Latency}ms)`}
+                        </span>
+                      </div>
+                    )}
+                    <div className="flex justify-between">
+                      <span className="text-gray-500">P99:</span>
+                      <span
+                        className={`font-medium ${
+                          result.passed ? 'text-green-700' : 'text-red-700'
+                        }`}
+                      >
+                        {result.metrics.p99Latency.toFixed(1)}ms
+                        {testCase?.passCriteria.maxP99Latency &&
+                          ` (target: ${testCase.passCriteria.maxP99Latency}ms)`}
+                      </span>
+                    </div>
+                    {result.metrics.p999Latency !== undefined && (
+                      <div className="flex justify-between">
+                        <span className="text-gray-500">P99.9 (Tail):</span>
+                        <span className="font-medium text-orange-600">
+                          {result.metrics.p999Latency.toFixed(1)}ms
+                          {testCase?.passCriteria.maxP999Latency &&
+                            ` (target: ${testCase.passCriteria.maxP999Latency}ms)`}
+                        </span>
+                      </div>
+                    )}
+                    {/* Show tail amplification if P999 exists */}
+                    {result.metrics.p999Latency !== undefined && result.metrics.p50Latency > 0 && (
+                      <div className="flex justify-between mt-1 pt-1 border-t border-gray-100">
+                        <span className="text-gray-500 text-[10px]">Tail Amplification (P99/P50):</span>
+                        <span className={`font-medium text-[10px] ${
+                          (result.metrics.p99Latency / result.metrics.p50Latency) > 3
+                            ? 'text-orange-600'
+                            : 'text-gray-600'
+                        }`}>
+                          {(result.metrics.p99Latency / result.metrics.p50Latency).toFixed(1)}x
+                        </span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="flex justify-between">

@@ -53,6 +53,15 @@ class UnifiedStorage {
 }
 
 /**
+ * Service metadata for context
+ */
+export interface ServiceContext {
+  serviceName?: string;
+  handledAPIs?: string[];
+  currentAPI?: { method: string; path: string };
+}
+
+/**
  * Execution context provided to Python code
  * All APIs (db, cache, direct context) use the same unified storage
  */
@@ -61,6 +70,7 @@ export interface ExecutionContext extends Record<string, any> {
   cache: MockRedisCache;
   queue: MockMessageQueue;
   config: Record<string, any>;
+  service?: ServiceContext; // Service-specific metadata
   // Also supports direct access: context['key'] = value
   [key: string]: any;
 }
@@ -181,6 +191,9 @@ export class PythonExecutor {
   private pyodideReady = false;
   private simulationMode = true; // For MVP, we simulate execution
 
+  // Store Python code for different services
+  private servicePythonCode: Map<string, string> = new Map();
+
   private constructor() {}
 
   static getInstance(): PythonExecutor {
@@ -194,7 +207,7 @@ export class PythonExecutor {
    * Create execution context with unified storage
    * All APIs (db, cache, direct context) share the same in-memory storage
    */
-  createContext(): ExecutionContext {
+  createContext(serviceContext?: ServiceContext): ExecutionContext {
     const storage = new UnifiedStorage();
 
     // Create a proxy that allows direct context['key'] = value access
@@ -204,6 +217,20 @@ export class PythonExecutor {
       cache: new MockRedisCache(storage),
       queue: new MockMessageQueue(),
       config: {},
+      service: serviceContext || {},
+      // Helper method to check if this service should handle a request
+      should_handle: (method: string, path: string) => {
+        if (!serviceContext?.handledAPIs || serviceContext.handledAPIs.length === 0) {
+          return true; // No restrictions, handle everything
+        }
+        // Check if the request matches any handled API pattern
+        const requestPattern = `${method} ${path}`;
+        return serviceContext.handledAPIs.some(api => {
+          // Simple pattern matching (can be enhanced)
+          const pattern = api.replace(/\*/g, '.*');
+          return new RegExp(pattern).test(requestPattern);
+        });
+      },
     }, {
       get(target, prop: string) {
         // First check if it's a built-in property
@@ -237,6 +264,27 @@ export class PythonExecutor {
     });
 
     return context as ExecutionContext;
+  }
+
+  /**
+   * Set Python code for a specific service
+   */
+  setServiceCode(serviceId: string, pythonCode: string): void {
+    this.servicePythonCode.set(serviceId, pythonCode);
+  }
+
+  /**
+   * Get Python code for a specific service
+   */
+  getServiceCode(serviceId: string): string | undefined {
+    return this.servicePythonCode.get(serviceId);
+  }
+
+  /**
+   * Clear all service codes (for reset)
+   */
+  clearServiceCodes(): void {
+    this.servicePythonCode.clear();
   }
 
   /**

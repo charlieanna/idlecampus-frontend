@@ -111,9 +111,11 @@ export function LoadTestResults({ metrics, onReset }: LoadTestResultsProps) {
         </div>
       </div>
 
-      {/* Detailed Stats */}
+      {/* Detailed Stats - L6 Compliant (NO AVERAGES!) */}
       <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-        <h4 className="text-sm font-semibold text-gray-900 mb-3">Detailed Statistics</h4>
+        <h4 className="text-sm font-semibold text-gray-900 mb-3">
+          Latency Distribution (L6 Standards - Percentiles Only)
+        </h4>
         <div className="space-y-2 text-sm">
           <div className="flex justify-between">
             <span className="text-gray-600">Min Latency:</span>
@@ -122,11 +124,19 @@ export function LoadTestResults({ metrics, onReset }: LoadTestResultsProps) {
             </span>
           </div>
           <div className="flex justify-between">
-            <span className="text-gray-600">Avg Latency:</span>
+            <span className="text-gray-600">P50 (Median):</span>
             <span className="font-mono font-medium text-gray-900">
-              {formatLatency(metrics.avgLatency)}
+              {formatLatency(metrics.p50Latency)}
             </span>
           </div>
+          {metrics.p90Latency !== undefined && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">P90 Latency:</span>
+              <span className="font-mono font-medium text-gray-900">
+                {formatLatency(metrics.p90Latency)}
+              </span>
+            </div>
+          )}
           <div className="flex justify-between">
             <span className="text-gray-600">P95 Latency:</span>
             <span className="font-mono font-medium text-gray-900">
@@ -134,11 +144,38 @@ export function LoadTestResults({ metrics, onReset }: LoadTestResultsProps) {
             </span>
           </div>
           <div className="flex justify-between">
+            <span className="text-gray-600">P99 Latency:</span>
+            <span className="font-mono font-medium text-gray-900">
+              {formatLatency(metrics.p99Latency)}
+            </span>
+          </div>
+          {metrics.p999Latency !== undefined && (
+            <div className="flex justify-between">
+              <span className="text-gray-600">P99.9 (Tail):</span>
+              <span className="font-mono font-medium text-orange-600">
+                {formatLatency(metrics.p999Latency)}
+              </span>
+            </div>
+          )}
+          <div className="flex justify-between">
             <span className="text-gray-600">Max Latency:</span>
             <span className="font-mono font-medium text-gray-900">
               {formatLatency(metrics.maxLatency)}
             </span>
           </div>
+          {/* Tail amplification metric */}
+          {metrics.p99Latency > 0 && metrics.p50Latency > 0 && (
+            <div className="flex justify-between pt-2 border-t border-gray-300">
+              <span className="text-gray-600">Tail Amplification (P99/P50):</span>
+              <span className={`font-mono font-medium ${
+                (metrics.p99Latency / metrics.p50Latency) > 3
+                  ? 'text-orange-600'
+                  : 'text-gray-900'
+              }`}>
+                {(metrics.p99Latency / metrics.p50Latency).toFixed(1)}x
+              </span>
+            </div>
+          )}
           <div className="border-t border-gray-300 my-2" />
           <div className="flex justify-between">
             <span className="text-gray-600">Total Requests:</span>

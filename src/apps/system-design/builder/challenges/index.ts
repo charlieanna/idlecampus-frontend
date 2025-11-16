@@ -1,12 +1,14 @@
 import { tinyUrlChallenge } from './tinyUrl';
+import { tinyUrlL6Challenge } from './tinyUrlL6';
 import { foodBlogChallenge } from './foodBlog';
 import { todoAppChallenge } from './todoApp';
 import { webCrawlerChallenge } from './webCrawler';
 import { generatedChallenges } from './generatedChallenges';
 import { Challenge } from '../types/testCase';
+import { L6TestGenerator } from '../services/l6TestGeneratorFixed';
 
-// Export all challenges (3 manually created + 40 generated from definitions)
-export const challenges: Challenge[] = [
+// Base challenges before L6 enhancement
+const baseChallenges: Challenge[] = [
   // Manually created challenges with full test suites
   tinyUrlChallenge,
   foodBlogChallenge,
@@ -17,7 +19,22 @@ export const challenges: Challenge[] = [
   ...generatedChallenges,
 ];
 
-export { tinyUrlChallenge, foodBlogChallenge, todoAppChallenge, webCrawlerChallenge };
+// Apply L6 enhancement to all challenges automatically
+// This adds Google L6-level NFR test cases to each challenge
+const l6EnhancedChallenges = baseChallenges.map(challenge =>
+  L6TestGenerator.enhanceChallenge(challenge)
+);
+
+// Export all challenges with L6 enhancements
+export const challenges: Challenge[] = [
+  // Keep the manually created L6 challenge as an example
+  tinyUrlL6Challenge, // Google L6-level version (manually created example)
+
+  // All other challenges with automatic L6 enhancement
+  ...l6EnhancedChallenges,
+];
+
+export { tinyUrlChallenge, tinyUrlL6Challenge, foodBlogChallenge, todoAppChallenge, webCrawlerChallenge };
 
 // Re-export all generated challenges
 export * from './generatedChallenges';
