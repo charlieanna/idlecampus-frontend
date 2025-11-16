@@ -1,11 +1,30 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Dropbox - File Storage and Sync
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 3 (Storage Engines) - LSM-Trees for Write-Heavy Workload
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 3: LSM-trees (Log-Structured Merge-Trees) for file metadata
+ *   - Write-optimized: File uploads generate many metadata writes
+ *   - Sequential writes to memtable, flushed to SSTables
+ *   - Background compaction to merge SSTables
+ * - Ch. 3: Bloom filters for quick file existence checks
+ * - Ch. 4: Delta encoding for efficient sync (only send changes)
+ * - Ch. 4: Chunking and content-defined chunking for deduplication
+ *
+ * Why LSM-trees for Dropbox (DDIA Ch. 3):
+ * - File uploads are write-heavy (metadata: name, size, version, hash, timestamps)
+ * - LSM-trees handle high write throughput better than B-trees
+ * - Compaction runs in background without blocking writes
+ * - Perfect for append-heavy file version history
  */
 export const dropboxProblemDefinition: ProblemDefinition = {
   id: 'dropbox',
@@ -14,12 +33,30 @@ export const dropboxProblemDefinition: ProblemDefinition = {
 - Users can upload and download files
 - Files sync across multiple devices
 - Users can share files and folders
-- Platform supports file versioning`,
+- Platform supports file versioning
 
-  // User-facing requirements (interview-style)
+Learning Objectives (DDIA Ch. 3, 4):
+1. Use LSM-trees for write-heavy file metadata (DDIA Ch. 3)
+   - Fast sequential writes to memtable
+   - Background compaction for read optimization
+2. Implement delta sync with chunking (DDIA Ch. 4)
+   - Only sync changed file chunks, not entire files
+3. Use Bloom filters for existence checks (DDIA Ch. 3)
+4. Content-defined chunking for deduplication (DDIA Ch. 4)`,
+
   userFacingFRs: [
     'Users can upload and download files',
-    'Users can share files and folders'
+    'Files sync across multiple devices',
+    'Users can share files and folders',
+    'Platform supports file versioning'
+  ],
+
+  userFacingNFRs: [
+    'Upload throughput: 10K+ files/sec (DDIA Ch. 3: LSM-tree write optimization)',
+    'Sync latency: < 1s for small changes (DDIA Ch. 4: Delta sync)',
+    'Metadata write latency: < 10ms (DDIA Ch. 3: LSM memtable)',
+    'Deduplication: 50%+ storage savings (DDIA Ch. 4: Content-defined chunking)',
+    'Compaction: Background without blocking (DDIA Ch. 3: LSM compaction)',
   ],
 
   functionalRequirements: {
@@ -77,6 +114,14 @@ export const dropboxProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

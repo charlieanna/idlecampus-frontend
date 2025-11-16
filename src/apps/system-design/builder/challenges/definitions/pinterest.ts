@@ -1,11 +1,52 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Pinterest - Visual Bookmarking Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 3 (Storage & Retrieval) - Full-text Search & Composite Indexes
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 3: Full-text search with inverted indexes
+ *   - Elasticsearch/inverted index for pin title + description search
+ *   - TF-IDF or BM25 ranking for relevance
+ *   - Support keyword, phrase, and visual similarity search
+ * - Ch. 3: Composite indexes for multi-dimensional queries
+ *   - Index on (user_id, board_id, created_at) for "my boards" view
+ *   - Index on (category, popularity_score DESC) for discovery feed
+ * - Ch. 3: Image metadata indexing
+ *   - Store image features (color palette, tags, OCR text) for search
+ *   - Perceptual hashing for duplicate detection
+ *
+ * Full-Text Search Architecture (DDIA Ch. 3):
+ * - **Inverted Index**: Map terms to document IDs
+ *   - Term: "recipe" → Pin IDs: [123, 456, 789]
+ *   - Supports prefix matching: "rec*" matches "recipe", "recycling"
+ * - **Relevance Scoring**: TF-IDF (Term Frequency-Inverse Document Frequency)
+ *   - High TF: Term appears frequently in document
+ *   - High IDF: Term is rare across all documents
+ *   - Combines to prioritize specific, relevant content
+ *
+ * Example Full-Text Query (Elasticsearch):
+ * {
+ *   "query": {
+ *     "multi_match": {
+ *       "query": "chocolate cake recipe",
+ *       "fields": ["title^2", "description", "tags"],
+ *       "type": "best_fields"
+ *     }
+ *   }
+ * }
+ *
+ * System Design Primer Concepts:
+ * - Search: Elasticsearch cluster for full-text pin search
+ * - CDN: Cache popular pin images at edge locations
+ * - Recommendation Engine: Collaborative filtering based on boards
  */
 export const pinterestProblemDefinition: ProblemDefinition = {
   id: 'pinterest',
@@ -14,13 +55,33 @@ export const pinterestProblemDefinition: ProblemDefinition = {
 - Users can create boards and pin images
 - Users can browse and search for pins
 - Users can follow boards and users
-- Images are organized into categories`,
+- Images are organized into categories
+
+Learning Objectives (DDIA Ch. 3):
+1. Implement full-text search with inverted indexes (DDIA Ch. 3)
+   - Use Elasticsearch for pin title/description/tag search
+   - Understand TF-IDF relevance scoring
+2. Design composite indexes for discovery feed (DDIA Ch. 3)
+   - Index on (category, popularity_score DESC)
+3. Index image metadata for visual search (DDIA Ch. 3)
+   - Store color palette, tags, OCR text
+4. Handle high read volume with caching (SDP)
+   - CDN for images, Redis for search results`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can create boards and pin images',
     'Users can browse and search for pins',
-    'Users can follow boards and users'
+    'Users can follow boards and users',
+    'Images are organized into categories'
+  ],
+
+  userFacingNFRs: [
+    'Search latency: p99 < 300ms (DDIA Ch. 3: Inverted index with Elasticsearch)',
+    'Relevance scoring: TF-IDF or BM25 ranking (DDIA Ch. 3)',
+    'Visual search: < 500ms for image similarity (DDIA Ch. 3: Perceptual hashing)',
+    'Discovery feed: < 200ms (DDIA Ch. 3: Composite index on category + popularity)',
+    'Image CDN: > 95% cache hit ratio (SDP: CloudFront/Akamai)',
   ],
 
   functionalRequirements: {
@@ -77,6 +138,14 @@ export const pinterestProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

@@ -1,11 +1,61 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Twitch - Live Streaming Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 3 (Storage & Retrieval) - Time-Series Chat & Log-Structured Storage
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 3: Log-structured storage for chat messages (append-only)
+ *   - LSM-tree (Log-Structured Merge-tree) for write-heavy chat
+ *   - SSTables for efficient time-range queries
+ *   - Compaction to remove old chat messages (TTL-based)
+ * - Ch. 3: Time-series indexing for live chat
+ *   - Index on (stream_id, timestamp DESC) for chat history
+ *   - Partitioning by stream_id for horizontal scaling
+ *   - Efficient range queries: "Last 10 minutes of chat"
+ * - Ch. 3: Full-text search on chat history
+ *   - Elasticsearch for searching past chat messages
+ *   - Highlight toxic messages, emotes, user mentions
+ * - Ch. 3: B-tree indexes for stream metadata
+ *   - Index on (category, viewer_count DESC) for discovery
+ *   - Index on (streamer_id, is_live) for "followed streams"
+ *
+ * Log-Structured Storage Benefits for Chat (DDIA Ch. 3):
+ * - Write throughput: 10,000+ messages/sec per stream
+ * - Append-only: No in-place updates, fast writes
+ * - Compaction: Automatically delete messages older than 30 days
+ * - Crash recovery: Replay log from last checkpoint
+ *
+ * Time-Series Query Example:
+ * SELECT * FROM chat_messages
+ * WHERE stream_id = 'xqc_live_123'
+ *   AND timestamp >= NOW() - INTERVAL '10 minutes'
+ * ORDER BY timestamp DESC
+ * LIMIT 100;
+ *
+ * LSM-Tree Write Path (DDIA Ch. 3):
+ * 1. Chat message arrives → Write to in-memory memtable
+ * 2. Memtable full (64MB) → Flush to disk as SSTable
+ * 3. Background compaction merges SSTables
+ * 4. Old SSTables (> 30 days) deleted during compaction
+ *
+ * Real-Time Chat Architecture:
+ * - WebSocket: Persistent connections for sub-100ms latency
+ * - Pub/Sub: Redis for broadcasting chat to viewers
+ * - Batching: Group chat messages in 100ms windows to reduce DB writes
+ *
+ * System Design Primer Concepts:
+ * - CDN: Video chunk delivery (HLS/DASH adaptive streaming)
+ * - WebSocket: Real-time chat delivery
+ * - Pub/Sub: Redis for chat message fanout to viewers
+ * - Time-Series DB: InfluxDB/TimescaleDB for chat storage
  */
 export const twitchProblemDefinition: ProblemDefinition = {
   id: 'twitch',
@@ -14,11 +64,33 @@ export const twitchProblemDefinition: ProblemDefinition = {
 - Streamers can broadcast live video
 - Viewers can watch live streams
 - Users can chat in real-time during streams
-- Platform supports VOD (Video on Demand) playback`,
+- Platform supports VOD (Video on Demand) playback
+
+Learning Objectives (DDIA Ch. 3):
+1. Design log-structured storage for chat messages (DDIA Ch. 3)
+   - LSM-tree for append-only write-heavy workload
+   - Understand SSTables and compaction strategies
+2. Implement time-series indexing for chat history (DDIA Ch. 3)
+   - Efficient range queries on (stream_id, timestamp)
+   - Partition by stream_id for horizontal scaling
+3. Build full-text search on chat history (DDIA Ch. 3)
+   - Search past chat for emotes, mentions, keywords
+4. Optimize for write-heavy workload (DDIA Ch. 3)
+   - 10,000+ chat messages/sec per popular stream
+   - Batching and async writes to reduce latency`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can chat in real-time during streams'
+  ],
+
+  userFacingNFRs: [
+    'Chat latency: p99 < 100ms (SDP: WebSocket + Redis Pub/Sub)',
+    'Chat write throughput: 10,000+ msg/sec per stream (DDIA Ch. 3: LSM-tree)',
+    'Chat history query: p99 < 200ms (DDIA Ch. 3: Time-series index on timestamp)',
+    'Chat search: p99 < 500ms (DDIA Ch. 3: Elasticsearch on chat logs)',
+    'Video start time: p99 < 2s (SDP: CDN edge serving, HLS adaptive streaming)',
+    'Stream discovery: < 300ms (DDIA Ch. 3: B-tree index on category + viewer_count)',
   ],
 
   functionalRequirements: {
@@ -84,6 +156,14 @@ export const twitchProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

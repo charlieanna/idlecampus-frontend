@@ -1,11 +1,29 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * GitHub - Code Hosting Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 2 (Graph Data Models) & Ch. 3 (Git Object Storage)
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 2: Graph database for repository relationships
+ *   - Nodes: users, repos, commits, pull requests, issues
+ *   - Edges: forks, stars, follows, PR references, commit parents
+ * - Ch. 2: Git's DAG (Directed Acyclic Graph) for commit history
+ * - Ch. 3: Content-addressable storage (SHA-1 hashing for git objects)
+ * - Ch. 3: Pack files for efficient storage compression
+ *
+ * Key Graph Queries (DDIA Ch. 2):
+ * - Find all forks of a repository (graph traversal)
+ * - Find contributors to a project (multi-hop query)
+ * - Dependency graph between repositories
+ * - Social graph: followers, following, collaborators
  */
 export const githubProblemDefinition: ProblemDefinition = {
   id: 'github',
@@ -14,13 +32,28 @@ export const githubProblemDefinition: ProblemDefinition = {
 - Users can host Git repositories
 - Users can create pull requests and issues
 - Platform supports code review and collaboration
-- Users can fork and star repositories`,
+- Users can fork and star repositories
 
-  // User-facing requirements (interview-style)
+Learning Objectives (DDIA Ch. 2, 3):
+1. Model relationships with graph database (DDIA Ch. 2)
+   - Repository forks, stars, follows form a social graph
+2. Understand Git's DAG structure (DDIA Ch. 2: Graph models)
+   - Commits as nodes, parent commits as edges
+3. Content-addressable storage with SHA hashing (DDIA Ch. 3)
+4. Traverse dependency graphs efficiently (DDIA Ch. 2)`,
+
   userFacingFRs: [
     'Users can host Git repositories',
     'Users can create pull requests and issues',
-    'Users can fork and star repositories'
+    'Users can fork and star repositories',
+    'Platform supports code review and collaboration'
+  ],
+
+  userFacingNFRs: [
+    'Fork traversal: < 100ms for 3-hop queries (DDIA Ch. 2: Graph queries)',
+    'Content-addressable lookup: O(1) with SHA (DDIA Ch. 3)',
+    'Git push: Handle 1000+ objects efficiently (DDIA Ch. 3: Pack files)',
+    'Social graph queries: < 200ms (DDIA Ch. 2: Graph indexes)',
   ],
 
   functionalRequirements: {
@@ -78,6 +111,14 @@ export const githubProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

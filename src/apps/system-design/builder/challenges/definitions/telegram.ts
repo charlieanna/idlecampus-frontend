@@ -1,11 +1,62 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Telegram - Cloud Messaging Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 4 (Encoding & Evolution) - MTProto Binary Protocol
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 4: Binary encoding for efficient messaging (MTProto)
+ *   - Custom binary protocol optimized for mobile networks
+ *   - 30-50% smaller than JSON for typical messages
+ *   - TLV (Type-Length-Value) encoding structure
+ * - Ch. 4: Schema evolution for protocol versioning
+ *   - Forward compatibility: Old clients ignore new fields
+ *   - Backward compatibility: New servers support old clients
+ *   - Field tags allow adding features without breaking clients
+ * - Ch. 4: Protocol Buffers comparison
+ *   - MTProto uses similar field numbering scheme
+ *   - But custom-designed for Telegram's security model
+ *
+ * MTProto Message Format (Simplified):
+ * [message_id: int64] [seq_no: int32] [body_length: int32] [body: bytes]
+ *
+ * Example Message Encoding:
+ * JSON (90 bytes):
+ * {
+ *   "message_id": 123456789,
+ *   "user_id": 987654321,
+ *   "text": "Hello!",
+ *   "timestamp": 1704067200
+ * }
+ *
+ * MTProto (45 bytes):
+ * 0x15cd5b07 0x3ade68b1 0x06 "Hello!" 0x65a8c800
+ *
+ * Schema Evolution Example (DDIA Ch. 4):
+ * Version 1: [message_id, user_id, text]
+ * Version 2: [message_id, user_id, text, reply_to_id (new)]
+ * Version 3: [message_id, user_id, text, reply_to_id, reactions (new)]
+ *
+ * Old clients ignore new fields (forward compatibility)
+ * New servers fill defaults for missing fields (backward compatibility)
+ *
+ * Binary Encoding Benefits (DDIA Ch. 4):
+ * 1. Bandwidth: 30-50% reduction vs JSON (critical for mobile)
+ * 2. Parse speed: No UTF-8 decoding or JSON parsing overhead
+ * 3. Schema enforcement: Type safety at protocol level
+ * 4. Compactness: Variable-length integers (varint) for small values
+ *
+ * System Design Primer Concepts:
+ * - WebSocket: Persistent connections for real-time messaging
+ * - Message Queue: Async processing for offline message delivery
+ * - CDN: Media file distribution (photos, videos)
  */
 export const telegramProblemDefinition: ProblemDefinition = {
   id: 'telegram',
@@ -14,12 +65,35 @@ export const telegramProblemDefinition: ProblemDefinition = {
 - Users can send messages, photos, and videos
 - Messages are stored in the cloud (accessible from any device)
 - Users can create channels for broadcasting
-- Platform supports bots and automation`,
+- Platform supports bots and automation
+
+Learning Objectives (DDIA Ch. 4):
+1. Implement binary encoding with MTProto protocol (DDIA Ch. 4)
+   - Understand TLV (Type-Length-Value) structure
+   - Achieve 30-50% bandwidth savings over JSON
+2. Design schema evolution for messaging protocol (DDIA Ch. 4)
+   - Forward compatibility: Old clients ignore new fields
+   - Backward compatibility: New servers support old clients
+3. Compare binary formats (DDIA Ch. 4)
+   - MTProto vs Protocol Buffers vs MessagePack
+   - Trade-offs: compactness vs human-readability
+4. Optimize for mobile networks (DDIA Ch. 4)
+   - Variable-length integers (varint) for efficiency
+   - Minimize payload size for low-bandwidth scenarios`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can send messages, photos, and videos',
     'Users can create channels for broadcasting'
+  ],
+
+  userFacingNFRs: [
+    'Message encoding: 30-50% smaller than JSON (DDIA Ch. 4: MTProto binary)',
+    'Parse speed: < 1ms for typical message (DDIA Ch. 4: Binary vs JSON)',
+    'Schema evolution: Support 3+ protocol versions simultaneously (DDIA Ch. 4)',
+    'Mobile efficiency: < 5KB for typical chat sync (DDIA Ch. 4: Compact encoding)',
+    'Message delivery: p99 < 200ms in same region (SDP: WebSocket)',
+    'Cloud sync: < 1s to sync messages across devices (SDP: Message queue)',
   ],
 
   functionalRequirements: {
@@ -86,6 +160,14 @@ export const telegramProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

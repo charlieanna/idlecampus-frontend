@@ -1,11 +1,42 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Reddit - Discussion Forum Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 3 (Storage & Retrieval) - Secondary Indexes for Ranking
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 3: Secondary indexes for sorting by score
+ *   - Index on (subreddit_id, score DESC, created_at DESC) for "Hot" feed
+ *   - Index on (subreddit_id, created_at DESC) for "New" feed
+ *   - Index on (subreddit_id, comment_count DESC) for "Top" feed
+ * - Ch. 3: Covering indexes to avoid table lookups
+ *   - Include (title, author_id, thumbnail) in index for feed queries
+ * - Ch. 2: Adjacency list model for nested comments
+ *   - parent_comment_id references parent in same table
+ *   - Recursive queries to fetch comment trees
+ *
+ * Reddit's Ranking Algorithm (DDIA Ch. 3 - Custom Scoring):
+ * - **Hot**: score = log10(upvotes - downvotes) + (created_at / 45000)
+ *   - Balances vote count with recency
+ *   - Older posts decay over time
+ * - **Top**: Simple sort by score (upvotes - downvotes)
+ * - **New**: Sort by created_at DESC
+ *
+ * Indexing Strategy (DDIA Ch. 3):
+ * - Composite index: (subreddit_id, hot_score DESC) for hot feed
+ * - Materialized view: Pre-compute hot_score on write
+ * - Denormalize: Cache comment_count on posts table
+ *
+ * System Design Primer Concepts:
+ * - Database Indexing: Use composite indexes for efficient sorting
+ * - Caching: Cache top posts per subreddit in Redis (TTL: 5 minutes)
  */
 export const redditProblemDefinition: ProblemDefinition = {
   id: 'reddit',
@@ -14,13 +45,33 @@ export const redditProblemDefinition: ProblemDefinition = {
 - Users can create posts in different subreddits
 - Users can comment on posts (nested comments)
 - Users can upvote and downvote posts and comments
-- Posts are ranked by votes and recency`,
+- Posts are ranked by votes and recency
+
+Learning Objectives (DDIA Ch. 3):
+1. Design secondary indexes for sorting/ranking (DDIA Ch. 3)
+   - Composite index: (subreddit_id, score DESC, created_at DESC)
+   - Covering index to avoid extra lookups
+2. Implement custom ranking algorithms (DDIA Ch. 3)
+   - Reddit's "Hot" algorithm: balance votes and time decay
+3. Model nested comments with adjacency list (DDIA Ch. 2)
+   - Recursive queries for comment trees
+4. Optimize read-heavy workload with denormalization (DDIA Ch. 3)
+   - Cache comment_count, score on posts table`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can create posts in different subreddits',
     'Users can comment on posts (nested comments)',
-    'Users can upvote and downvote posts and comments'
+    'Users can upvote and downvote posts and comments',
+    'Posts are ranked by votes and recency'
+  ],
+
+  userFacingNFRs: [
+    'Feed latency: p99 < 200ms for "Hot" feed (DDIA Ch. 3: Composite index)',
+    'Sorting performance: Index scan, not table scan (DDIA Ch. 3: Secondary index)',
+    'Comment tree query: < 100ms for 500 comments (DDIA Ch. 2: Adjacency list)',
+    'Vote update: < 50ms with denormalized score (DDIA Ch. 3)',
+    'Partitioning: Partition by subreddit for data locality (DDIA Ch. 6)',
   ],
 
   functionalRequirements: {
@@ -68,6 +119,14 @@ export const redditProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

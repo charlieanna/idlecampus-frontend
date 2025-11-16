@@ -1,11 +1,28 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Stack Overflow - Q&A Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 2 (Data Models) & Ch. 3 (Storage/Indexing)
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 2: Complex SQL joins (questions → answers → votes → users)
+ * - Ch. 3: Secondary indexes for sorting by votes/views/date
+ * - Ch. 3: Composite indexes for efficient tag-based queries
+ * - Ch. 3: Full-text search indexes for question/answer search
+ * - Ch. 2: Denormalization - cache vote counts on questions/answers
+ *
+ * Key Indexing Strategies (DDIA Ch. 3):
+ * - Composite index: (tag_id, score DESC, created_at DESC) for tag pages
+ * - Secondary index: (score DESC) for "Hot Questions"
+ * - Full-text index: (title, body) for search
+ * - Covering index: Include commonly queried columns to avoid lookups
  */
 export const stackoverflowProblemDefinition: ProblemDefinition = {
   id: 'stackoverflow',
@@ -14,11 +31,27 @@ export const stackoverflowProblemDefinition: ProblemDefinition = {
 - Users can ask and answer questions
 - Questions and answers can be upvoted/downvoted
 - Users earn reputation points
-- Questions have tags for categorization`,
+- Questions have tags for categorization
 
-  // User-facing requirements (interview-style)
+Learning Objectives (DDIA Ch. 2, 3):
+1. Design SQL schema with vote aggregation (DDIA Ch. 2)
+2. Create secondary indexes for sorting by score/views (DDIA Ch. 3)
+3. Implement composite indexes for tag queries (DDIA Ch. 3)
+4. Denormalize vote counts for performance (DDIA Ch. 2)
+5. Use full-text search indexes (DDIA Ch. 3)`,
+
   userFacingFRs: [
-    'Users can ask and answer questions'
+    'Users can ask and answer questions',
+    'Questions and answers can be upvoted/downvoted',
+    'Users earn reputation points',
+    'Questions have tags for categorization'
+  ],
+
+  userFacingNFRs: [
+    'Vote count update: < 50ms (DDIA Ch. 2: Denormalized score column)',
+    'Tag page query: < 100ms (DDIA Ch. 3: Composite index on tag_id + score)',
+    'Search latency: < 300ms (DDIA Ch. 3: Full-text search index)',
+    'Hot questions: < 100ms (DDIA Ch. 3: Secondary index on score)',
   ],
 
   functionalRequirements: {
@@ -67,6 +100,14 @@ export const stackoverflowProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

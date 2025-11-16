@@ -1,11 +1,55 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Medium - Blogging Platform
- * Comprehensive FR and NFR scenarios
+ * DDIA Ch. 3 (Storage & Retrieval) - Full-text Search for Articles
+ *
+ * DDIA Concepts Applied:
+ * - Ch. 3: Full-text search with Elasticsearch
+ *   - Inverted index for article content, title, subtitle
+ *   - Analyze text: tokenization, stemming, stop word removal
+ *   - Relevance ranking with BM25 (better than TF-IDF for long documents)
+ * - Ch. 3: Secondary indexes for filtering
+ *   - Index on (author_id, published_at DESC) for author's articles
+ *   - Index on (topic_id, claps DESC) for topic ranking
+ * - Ch. 3: Read-time estimation index
+ *   - Pre-compute read_time based on word count
+ *   - Index on (read_time, quality_score) for "quick reads"
+ *
+ * Full-Text Search Example (Elasticsearch):
+ * {
+ *   "query": {
+ *     "bool": {
+ *       "must": [
+ *         {"multi_match": {
+ *           "query": "machine learning tutorial",
+ *           "fields": ["title^3", "subtitle^2", "content"]
+ *         }}
+ *       ],
+ *       "filter": [
+ *         {"range": {"read_time": {"lte": 10}}},
+ *         {"term": {"topic": "technology"}}
+ *       ]
+ *     }
+ *   },
+ *   "sort": [{"_score": "desc"}, {"claps": "desc"}]
+ * }
+ *
+ * BM25 vs TF-IDF (DDIA Ch. 3):
+ * - BM25 handles document length better (long articles don't dominate)
+ * - Saturates term frequency (diminishing returns for repeated terms)
+ * - Better for articles with varying lengths
+ *
+ * System Design Primer Concepts:
+ * - Search: Elasticsearch for article full-text search
+ * - Caching: Redis for trending articles cache
  */
 export const mediumProblemDefinition: ProblemDefinition = {
   id: 'medium',
@@ -14,13 +58,32 @@ export const mediumProblemDefinition: ProblemDefinition = {
 - Users can write and publish articles
 - Users can follow authors and topics
 - Users can clap (like) and comment on articles
-- Articles are ranked by popularity and engagement`,
+- Articles are ranked by popularity and engagement
+
+Learning Objectives (DDIA Ch. 3):
+1. Implement full-text search with Elasticsearch (DDIA Ch. 3)
+   - Use BM25 ranking for article relevance
+   - Text analysis: tokenization, stemming, synonyms
+2. Design secondary indexes for filtering (DDIA Ch. 3)
+   - Index on (author_id, published_at) for chronological feed
+3. Optimize read-heavy workload (DDIA Ch. 3)
+   - Denormalize clap count on articles table
+4. Handle long-form content search (DDIA Ch. 3)
+   - BM25 handles document length better than TF-IDF`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can write and publish articles',
     'Users can follow authors and topics',
-    'Users can clap (like) and comment on articles'
+    'Users can clap (like) and comment on articles',
+    'Articles are ranked by popularity and engagement'
+  ],
+
+  userFacingNFRs: [
+    'Search latency: p99 < 400ms (DDIA Ch. 3: Elasticsearch with BM25)',
+    'Article ranking: BM25 for long-form content (DDIA Ch. 3)',
+    'Feed generation: < 200ms (DDIA Ch. 3: Secondary index on author_id)',
+    'Trending articles: < 100ms (SDP: Redis cache with TTL)',
   ],
 
   functionalRequirements: {
@@ -69,6 +132,14 @@ export const mediumProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
     },
   ],
 

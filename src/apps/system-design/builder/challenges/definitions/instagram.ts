@@ -1,11 +1,33 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  highAvailabilityValidator,
+  costOptimizationValidator,
+} from '../../validation/validators/commonValidators';
+import {
+  cacheStrategyConsistencyValidator,
+  cacheInvalidationValidator,
+} from '../../validation/validators/cachingValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Instagram - Photo Sharing Platform
- * Comprehensive FR and NFR scenarios
+ * Comprehensive FR and NFR scenarios with DDIA/SDP concepts
+ *
+ * DDIA Concepts Applied:
+ * - Chapter 5 (Replication): Read replicas for scaling read traffic on feed/profile views
+ * - Chapter 6 (Partitioning): Partition users and posts by user_id for horizontal scaling
+ * - Chapter 7 (Transactions): Ensure atomicity for like/comment operations
+ * - Chapter 9 (Consistency): Eventual consistency for feed updates (acceptable lag)
+ *
+ * System Design Primer Concepts:
+ * - CDN: Global distribution of images/videos (static content)
+ * - Caching: Redis/Memcached for feed caching (hot data)
+ * - Load Balancing: Distribute traffic across app servers
+ * - Object Storage: S3-compatible storage for photos/videos
  */
 export const instagramProblemDefinition: ProblemDefinition = {
   id: 'instagram',
@@ -14,7 +36,15 @@ export const instagramProblemDefinition: ProblemDefinition = {
 - Users can upload photos and videos
 - Users can view a feed of photos from people they follow
 - Users can like and comment on photos
-- Users can search for other users and content`,
+- Users can search for other users and content
+
+Learning Objectives (DDIA/SDP):
+1. Scale read-heavy workloads with read replicas (DDIA Ch. 5)
+2. Partition data by user_id for horizontal scaling (DDIA Ch. 6)
+3. Use CDN for global image delivery (SDP - CDN)
+4. Implement caching strategy for feed performance (SDP - Caching)
+5. Handle eventual consistency in social feeds (DDIA Ch. 9)
+6. Design for high availability with replication (DDIA Ch. 5)`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
@@ -22,6 +52,18 @@ export const instagramProblemDefinition: ProblemDefinition = {
     'Users can view a feed of photos from people they follow',
     'Users can like and comment on photos',
     'Users can search for other users and content'
+  ],
+
+  // DDIA/SDP Non-Functional Requirements
+  userFacingNFRs: [
+    'Feed latency: p99 < 200ms (DDIA Ch. 5: Read replicas + caching)',
+    'Upload latency: p99 < 1s (SDP: Direct upload to object storage)',
+    'Replication lag: < 500ms average (DDIA Ch. 5: Async replication)',
+    'Cache hit ratio: > 80% for feed requests (SDP: Cache-aside pattern)',
+    'Availability: 99.9% uptime (DDIA Ch. 5: Multi-replica setup)',
+    'Global image delivery: CDN edge latency < 100ms (SDP: CDN)',
+    'Consistency: Eventual consistency acceptable for feeds (DDIA Ch. 9)',
+    'Scalability: Partition by user_id to handle 100M+ users (DDIA Ch. 6)',
   ],
 
   functionalRequirements: {
@@ -97,6 +139,30 @@ export const instagramProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
+    },
+    {
+      name: 'High Availability (DDIA Ch. 5)',
+      validate: highAvailabilityValidator,
+    },
+    {
+      name: 'Cache Strategy Consistency (SDP - Caching)',
+      validate: cacheStrategyConsistencyValidator,
+    },
+    {
+      name: 'Cache Invalidation (SDP - Caching)',
+      validate: cacheInvalidationValidator,
+    },
+    {
+      name: 'Cost Optimization (DDIA - Trade-offs)',
+      validate: costOptimizationValidator,
     },
   ],
 
