@@ -1,11 +1,36 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  highAvailabilityValidator,
+  costOptimizationValidator,
+} from '../../validation/validators/commonValidators';
+import {
+  cacheStrategyConsistencyValidator,
+} from '../../validation/validators/cachingValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Netflix - Video Streaming Platform
- * Comprehensive FR and NFR scenarios
+ * Comprehensive FR and NFR scenarios with DDIA/SDP concepts
+ *
+ * DDIA Concepts Applied:
+ * - Chapter 5 (Replication): Multi-region replication for global content availability
+ * - Chapter 6 (Partitioning): Partition content by region/popularity for efficient distribution
+ * - Chapter 8 (Distributed Systems): Eventual consistency for watch history sync across devices
+ * - Chapter 11 (Stream Processing): Real-time analytics for viewing metrics
+ *
+ * System Design Primer Concepts (CANONICAL EXAMPLE for CDN):
+ * - CDN: Global edge caching for video chunks (Netflix Open Connect)
+ *   - Pre-position popular content at edge locations
+ *   - Adaptive bitrate streaming (HLS/DASH)
+ *   - Reduce origin load by 95%+ through edge serving
+ * - Object Storage: S3 for video files (master copies)
+ * - Caching: Metadata caching (catalog, thumbnails, user preferences)
+ * - Load Balancing: Distribute API requests across availability zones
+ * - Encoding: Transcode videos to multiple bitrates/formats
  */
 export const netflixProblemDefinition: ProblemDefinition = {
   id: 'netflix',
@@ -14,12 +39,36 @@ export const netflixProblemDefinition: ProblemDefinition = {
 - Users can browse movies and TV shows
 - Users can stream videos on-demand
 - Platform recommends content based on viewing history
-- Videos are available in multiple qualities (SD, HD, 4K)`,
+- Videos are available in multiple qualities (SD, HD, 4K)
+
+Learning Objectives (DDIA/SDP):
+1. Use CDN for global video distribution (SDP - CDN, Netflix Open Connect)
+   - Pre-position popular content at edge servers
+   - Adaptive bitrate streaming based on network conditions
+2. Partition content by region/popularity (DDIA Ch. 6)
+3. Replicate metadata across regions for low latency (DDIA Ch. 5)
+4. Handle eventual consistency for watch history sync (DDIA Ch. 8)
+5. Transcode videos to multiple formats/bitrates (SDP - Encoding)
+6. Cache catalog metadata for fast browsing (SDP - Caching)
+7. Design for high availability across regions (DDIA Ch. 5)`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can browse movies and TV shows',
     'Users can stream videos on-demand'
+  ],
+
+  // DDIA/SDP Non-Functional Requirements
+  userFacingNFRs: [
+    'Video start time: p99 < 2s (SDP: CDN edge serving)',
+    'Buffering ratio: < 0.1% of playback time (SDP: Adaptive bitrate streaming)',
+    'Browse latency: p99 < 300ms (SDP: Metadata caching)',
+    'CDN cache hit ratio: > 95% for video chunks (SDP: Pre-positioning popular content)',
+    'Availability: 99.99% uptime across all regions (DDIA Ch. 5: Multi-region)',
+    'Global edge latency: < 50ms to nearest CDN node (SDP: CDN)',
+    'Consistency: Eventual consistency for watch history (DDIA Ch. 8)',
+    'Encoding: Support 3+ bitrates (480p, 720p, 1080p, 4K) (SDP)',
+    'Scalability: 200M+ concurrent streams globally (DDIA Ch. 6: Partitioning)',
   ],
 
   functionalRequirements: {
@@ -76,6 +125,26 @@ export const netflixProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
+    },
+    {
+      name: 'High Availability (DDIA Ch. 5)',
+      validate: highAvailabilityValidator,
+    },
+    {
+      name: 'Cache Strategy Consistency (SDP - Caching)',
+      validate: cacheStrategyConsistencyValidator,
+    },
+    {
+      name: 'Cost Optimization (DDIA - Trade-offs)',
+      validate: costOptimizationValidator,
     },
   ],
 

@@ -1,11 +1,34 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  highAvailabilityValidator,
+  costOptimizationValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Uber - Ride Sharing Platform
- * Comprehensive FR and NFR scenarios
+ * Comprehensive FR and NFR scenarios with DDIA/SDP concepts
+ *
+ * DDIA Concepts Applied:
+ * - Chapter 6 (Partitioning): Geo-partitioning by city/region for horizontal scaling
+ *   - Partition drivers by geohash for efficient proximity search
+ *   - Co-locate rider and driver data in the same region
+ * - Chapter 11 (Stream Processing): Real-time location updates via streaming
+ *   - Process high-frequency location pings (every 4 seconds)
+ *   - Update driver availability in real-time
+ * - Chapter 5 (Replication): Multi-region replication for global service
+ * - Chapter 9 (Consistency): Eventual consistency for location updates (acceptable lag)
+ *
+ * System Design Primer Concepts:
+ * - Geospatial Indexing: QuadTree or Geohash for driver proximity search
+ * - WebSocket/SSE: Real-time location updates and ride matching notifications
+ * - Load Balancing: Geographic load balancing to route to nearest data center
+ * - Caching: Cache driver locations in memory (Redis Geo)
+ * - Message Queue: Async processing for ride matching, surge pricing calculations
  */
 export const uberProblemDefinition: ProblemDefinition = {
   id: 'uber',
@@ -14,7 +37,33 @@ export const uberProblemDefinition: ProblemDefinition = {
 - Riders can request rides
 - Drivers can accept ride requests
 - Platform matches riders with nearby drivers
-- Real-time location tracking during rides`,
+- Real-time location tracking during rides
+
+Learning Objectives (DDIA/SDP):
+1. Geo-partition data by city/region for horizontal scaling (DDIA Ch. 6)
+   - Use geohashing to partition driver locations
+   - Co-locate rider and driver data in same region
+2. Handle high-frequency location updates via stream processing (DDIA Ch. 11)
+   - Process 1M+ location updates per second
+   - Update driver availability in real-time
+3. Use geospatial indexing for proximity search (SDP - QuadTree/Geohash)
+   - Find drivers within 5km radius in < 100ms
+4. Real-time communication with WebSockets (SDP - Real-time)
+5. Handle eventual consistency for location data (DDIA Ch. 9)
+6. Multi-region replication for global availability (DDIA Ch. 5)`,
+
+  // DDIA/SDP Non-Functional Requirements
+  userFacingNFRs: [
+    'Driver search latency: p99 < 100ms (SDP: Geospatial indexing with Geohash/QuadTree)',
+    'Location update frequency: Every 4 seconds (DDIA Ch. 11: Stream processing)',
+    'Ride matching latency: p99 < 1s (SDP: In-memory driver cache)',
+    'Real-time updates: < 500ms delay (SDP: WebSocket/SSE)',
+    'Availability: 99.99% uptime per region (DDIA Ch. 5: Multi-region)',
+    'Consistency: Eventual consistency for location (DDIA Ch. 9: < 2s lag acceptable)',
+    'Geospatial query performance: < 50ms for 5km radius search (SDP: QuadTree)',
+    'Scalability: 1M+ location updates/sec globally (DDIA Ch. 6: Geo-partitioning)',
+    'Partitioning: Partition by city/geohash for data locality (DDIA Ch. 6)',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -62,6 +111,22 @@ export const uberProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
+    },
+    {
+      name: 'High Availability (DDIA Ch. 5)',
+      validate: highAvailabilityValidator,
+    },
+    {
+      name: 'Cost Optimization (DDIA - Trade-offs)',
+      validate: costOptimizationValidator,
     },
   ],
 

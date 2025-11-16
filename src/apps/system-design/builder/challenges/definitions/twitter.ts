@@ -1,11 +1,37 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  highAvailabilityValidator,
+  costOptimizationValidator,
+} from '../../validation/validators/commonValidators';
+import {
+  cacheStrategyConsistencyValidator,
+  cacheInvalidationValidator,
+} from '../../validation/validators/cachingValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * Twitter - Microblogging Platform
- * Comprehensive FR and NFR scenarios
+ * Comprehensive FR and NFR scenarios with DDIA/SDP concepts
+ *
+ * DDIA Concepts Applied (CANONICAL EXAMPLE from DDIA Chapter 1):
+ * - Chapter 1 (Intro): Fan-out problem - Timeline generation strategies
+ *   - Fan-out on write: Pre-compute timelines when tweet is posted (write-heavy)
+ *   - Fan-out on read: Compute timeline when user requests it (read-heavy)
+ *   - Hybrid: Fan-out on write for most users, fan-out on read for celebrities
+ * - Chapter 5 (Replication): Read replicas for scaling timeline reads
+ * - Chapter 6 (Partitioning): Partition tweets by user_id or tweet_id for horizontal scaling
+ * - Chapter 7 (Transactions): Ensure consistency for like/retweet counts
+ * - Chapter 9 (Consistency): Eventual consistency acceptable for timelines
+ *
+ * System Design Primer Concepts:
+ * - Caching: Redis for timeline caching (pre-computed timelines)
+ * - Load Balancing: Distribute read/write traffic across app servers
+ * - Message Queue: Async processing for fan-out on write
+ * - Search: Elasticsearch for tweet/user search
  */
 export const twitterProblemDefinition: ProblemDefinition = {
   id: 'twitter',
@@ -14,7 +40,18 @@ export const twitterProblemDefinition: ProblemDefinition = {
 - Users can post short messages (tweets) up to 280 characters
 - Users can follow other users and see their tweets in a timeline
 - Users can like and retweet posts
-- Users can search for tweets and users`,
+- Users can search for tweets and users
+
+Learning Objectives (DDIA/SDP):
+1. Solve the fan-out problem for timeline generation (DDIA Ch. 1)
+   - Fan-out on write: Pre-compute timelines (faster reads, slower writes)
+   - Fan-out on read: Compute on demand (faster writes, slower reads)
+   - Hybrid approach: Different strategies for different user scales
+2. Scale read-heavy timeline requests with read replicas (DDIA Ch. 5)
+3. Partition tweets by user_id for horizontal scaling (DDIA Ch. 6)
+4. Use caching for pre-computed timelines (SDP - Caching)
+5. Handle eventual consistency in timelines (DDIA Ch. 9)
+6. Async processing with message queues for fan-out (SDP - Message Queue)`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
@@ -23,6 +60,19 @@ export const twitterProblemDefinition: ProblemDefinition = {
     'Users can view personalized timelines from followed accounts',
     'Users can like or retweet posts',
     'Users can search for tweets and users'
+  ],
+
+  // DDIA/SDP Non-Functional Requirements
+  userFacingNFRs: [
+    'Timeline latency: p99 < 200ms (DDIA Ch. 1: Fan-out on write + caching)',
+    'Tweet post latency: p99 < 500ms (DDIA Ch. 1: Async fan-out with message queue)',
+    'Replication lag: < 1s average (DDIA Ch. 5: Async replication)',
+    'Cache hit ratio: > 90% for timeline requests (SDP: Cache pre-computed timelines)',
+    'Availability: 99.9% uptime (DDIA Ch. 5: Multi-replica setup)',
+    'Consistency: Eventual consistency for timelines acceptable (DDIA Ch. 9)',
+    'Fan-out write: < 5s to update all followers (DDIA Ch. 1: Async message queue)',
+    'Scalability: Support 100M users, 500M tweets/day (DDIA Ch. 6: Partition by user_id)',
+    'Search latency: p99 < 300ms (SDP: Elasticsearch for full-text search)',
   ],
 
   // Single locked client for compact canvas
@@ -78,6 +128,30 @@ export const twitterProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
+    },
+    {
+      name: 'High Availability (DDIA Ch. 5)',
+      validate: highAvailabilityValidator,
+    },
+    {
+      name: 'Cache Strategy Consistency (SDP - Caching)',
+      validate: cacheStrategyConsistencyValidator,
+    },
+    {
+      name: 'Cache Invalidation (SDP - Caching)',
+      validate: cacheInvalidationValidator,
+    },
+    {
+      name: 'Cost Optimization (DDIA - Trade-offs)',
+      validate: costOptimizationValidator,
     },
   ],
 

@@ -1,11 +1,32 @@
 import { ProblemDefinition } from '../../types/problemDefinition';
-import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
+import {
+  validConnectionFlowValidator,
+  replicationConfigValidator,
+  partitioningConfigValidator,
+  highAvailabilityValidator,
+  costOptimizationValidator,
+} from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 
 /**
  * WhatsApp - Messaging Platform
- * Comprehensive FR and NFR scenarios
+ * Comprehensive FR and NFR scenarios with DDIA/SDP concepts
+ *
+ * DDIA Concepts Applied:
+ * - Chapter 5 (Replication): Multi-region replication for global message delivery
+ * - Chapter 6 (Partitioning): Partition messages by user_id or chat_id
+ * - Chapter 7 (Transactions): Ensure exactly-once message delivery
+ * - Chapter 9 (Consistency): Eventual consistency for message ordering (causal consistency)
+ * - Chapter 11 (Stream Processing): Real-time message delivery pipeline
+ *
+ * System Design Primer Concepts:
+ * - WebSocket: Persistent connections for real-time messaging
+ * - Message Queue: Reliable message delivery (Kafka/RabbitMQ)
+ * - End-to-End Encryption: Signal Protocol for message encryption
+ * - Object Storage: S3 for media files (photos, videos, voice messages)
+ * - Load Balancing: Distribute WebSocket connections across servers
+ * - Presence Service: Real-time "last seen" and "online" status
  */
 export const whatsappProblemDefinition: ProblemDefinition = {
   id: 'whatsapp',
@@ -14,13 +35,35 @@ export const whatsappProblemDefinition: ProblemDefinition = {
 - Users can send text messages in real-time
 - Users can send photos, videos, and voice messages
 - Messages are end-to-end encrypted
-- Users can create group chats`,
+- Users can create group chats
+
+Learning Objectives (DDIA/SDP):
+1. Real-time messaging with WebSockets (SDP - WebSocket)
+2. Ensure exactly-once message delivery (DDIA Ch. 7: Transactions)
+3. Partition messages by user_id/chat_id (DDIA Ch. 6)
+4. Handle causal consistency for message ordering (DDIA Ch. 9)
+5. Multi-region replication for global availability (DDIA Ch. 5)
+6. End-to-end encryption (SDP - Signal Protocol)
+7. Reliable message delivery with message queues (SDP - Message Queue)`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
     'Users can send text messages in real-time',
     'Users can send photos, videos, and voice messages',
     'Users can create group chats'
+  ],
+
+  // DDIA/SDP Non-Functional Requirements
+  userFacingNFRs: [
+    'Message delivery latency: p99 < 100ms (SDP: WebSocket)',
+    'Message delivery guarantee: Exactly-once (DDIA Ch. 7: Idempotent writes)',
+    'Message ordering: Causal consistency within chat (DDIA Ch. 9)',
+    'Availability: 99.99% uptime (DDIA Ch. 5: Multi-region replication)',
+    'Encryption: End-to-end encryption for all messages (SDP: Signal Protocol)',
+    'Media upload: p99 < 2s (SDP: Direct upload to object storage)',
+    'Group message fan-out: < 1s for 256 members (SDP: Message queue)',
+    'Scalability: 100B+ messages per day (DDIA Ch. 6: Partitioning)',
+    'Connection recovery: Automatic reconnect with message replay (DDIA Ch. 11)',
   ],
 
   functionalRequirements: {
@@ -86,6 +129,22 @@ export const whatsappProblemDefinition: ProblemDefinition = {
     {
       name: 'Valid Connection Flow',
       validate: validConnectionFlowValidator,
+    },
+    {
+      name: 'Replication Configuration (DDIA Ch. 5)',
+      validate: replicationConfigValidator,
+    },
+    {
+      name: 'Partitioning Configuration (DDIA Ch. 6)',
+      validate: partitioningConfigValidator,
+    },
+    {
+      name: 'High Availability (DDIA Ch. 5)',
+      validate: highAvailabilityValidator,
+    },
+    {
+      name: 'Cost Optimization (DDIA - Trade-offs)',
+      validate: costOptimizationValidator,
     },
   ],
 
