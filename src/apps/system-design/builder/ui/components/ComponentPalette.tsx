@@ -57,7 +57,7 @@ export function ComponentPalette({
     setDraggingComponent(null);
   };
 
-  const handleComponentClick = (componentType: string, event?: React.MouseEvent) => {
+  const handleComponentClick = (componentType: string) => {
     if (componentType === 'database') {
       // Always add with smart default - Relational for most use cases
       // User can right-click on the canvas node to change data model
