@@ -134,6 +134,11 @@ export { ddiaChapter10Problems } from './generated-all/ddiaTeachingChapter10';
 export { ddiaChapter11Problems } from './generated-all/ddiaTeachingChapter11';
 export { ddiaChapter12Problems } from './generated-all/ddiaTeachingChapter12';
 
+// System Design Primer - Infrastructure & Data Concepts (45 total)
+// Source: https://github.com/donnemartin/system-design-primer
+export { systemDesignPrimerInfrastructureProblems } from './systemDesignPrimerInfrastructure';
+export { systemDesignPrimerDataProblems } from './systemDesignPrimerData';
+
 // Extracted Problems - Tutorials (3)
 // Note: These are now imported from generated-all/tutorialAllProblems
 
@@ -955,6 +960,9 @@ export const allProblemDefinitions: ProblemDefinition[] = [
     ...ddiaChapter10Problems,
     ...ddiaChapter11Problems,
     ...ddiaChapter12Problems,
+    // System Design Primer Problems (45 total - Infrastructure + Data)
+    ...systemDesignPrimerInfrastructureProblems,
+    ...systemDesignPrimerDataProblems,
 ].filter((problem, index, self) => {
   // Deduplicate by title - keep only the first occurrence of each title
   return index === self.findIndex(p => p.title === problem.title);
