@@ -8,7 +8,6 @@ interface SubmissionResultsPanelProps {
   currentTestIndex: number;
   onEditDesign: () => void;
   onShowSolution: () => void;
-  onTryAgain: () => void;
 }
 
 export function SubmissionResultsPanel({
@@ -18,7 +17,6 @@ export function SubmissionResultsPanel({
   currentTestIndex,
   onEditDesign,
   onShowSolution,
-  onTryAgain,
 }: SubmissionResultsPanelProps) {
   // Calculate overall results
   const totalTests = testCases.length;
@@ -283,15 +281,6 @@ export function SubmissionResultsPanel({
               💡 Solution
             </button>
           </div>
-
-          {!allTestsPassed && (
-            <button
-              onClick={onTryAgain}
-              className="w-full px-4 py-3 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded transition-colors"
-            >
-              🔄 Submit Again
-            </button>
-          )}
         </div>
       )}
     </div>

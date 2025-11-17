@@ -840,7 +840,6 @@ if __name__ == "__main__":
                   setCurrentTestIndex(0);
                 }}
                 onShowSolution={() => {}}
-                onTryAgain={handleSubmit}
               />
             ) : (
               <ProblemDescriptionPanel challenge={selectedChallenge} />

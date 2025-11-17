@@ -29,9 +29,17 @@ export class L6TestGenerator {
 
     return {
       name,
-      totalRps,
-      readRps,
-      writeRps,
+      type: 'performance' as const,
+      requirement: 'NFR-L6',
+      description: `L6-level test: ${name}`,
+      traffic: {
+        type: 'mixed' as const,
+        rps: totalRps,
+        readRatio,
+        readRps,
+        writeRps,
+      },
+      duration: 60, // 60 seconds for L6 tests
       passCriteria,
       ...additionalFields,
     };
