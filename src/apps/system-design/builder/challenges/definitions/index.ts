@@ -120,7 +120,10 @@ export { l6ExistentialNuclearResilientProblemDefinition, l6ExistentialClimateAda
 // DDIA Gap Problems - Filling missing "Designing Data-Intensive Applications" concepts (5)
 export { batchProcessingMapreduceProblemDefinition, explicitShardingDesignProblemDefinition, transactionIsolationLevelsProblemDefinition, dataWarehouseOlapProblemDefinition, graphDatabaseSocialProblemDefinition } from './generated-all/ddiaGapProblems';
 
-// NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (3 problems)
+// NFR Teaching Problems - Introduction: Framework & Methodology (1 problem)
+export { nfrTeachingIntroProblems } from './generated-all/nfrTeachingIntro';
+
+// NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (16 problems)
 export { nfrTeachingChapter0Problems } from './generated-all/nfrTeachingChapter0';
 
 // DDIA Teaching Problems - Concept-focused learning problems (151 total - ALL CHAPTERS)
@@ -240,7 +243,10 @@ import { l6ExistentialNuclearResilientProblemDefinition, l6ExistentialClimateAda
 // DDIA Gap Problems - Filling missing DDIA concepts
 import { batchProcessingMapreduceProblemDefinition, explicitShardingDesignProblemDefinition, transactionIsolationLevelsProblemDefinition, dataWarehouseOlapProblemDefinition, graphDatabaseSocialProblemDefinition } from './generated-all/ddiaGapProblems';
 
-// NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (3 problems)
+// NFR Teaching Problems - Introduction: Framework & Methodology (1 problem)
+import { nfrTeachingIntroProblems } from './generated-all/nfrTeachingIntro';
+
+// NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (16 problems)
 import { nfrTeachingChapter0Problems } from './generated-all/nfrTeachingChapter0';
 
 // DDIA Teaching Problems - Concept-focused learning (151 total)
@@ -955,7 +961,9 @@ export const allProblemDefinitions: ProblemDefinition[] = [
     transactionIsolationLevelsProblemDefinition,
     dataWarehouseOlapProblemDefinition,
     graphDatabaseSocialProblemDefinition,
-    // NFR Teaching Problems - Chapter 0: Systems Thinking (3 problems)
+    // NFR Teaching Problems - Introduction: Framework & Methodology (1 problem - MUST BE FIRST)
+    ...nfrTeachingIntroProblems,
+    // NFR Teaching Problems - Chapter 0: Systems Thinking (16 problems)
     ...nfrTeachingChapter0Problems,
     // DDIA Teaching Problems (151 - ALL CHAPTERS)
     ...ddiaChapter1Problems,
