@@ -304,7 +304,7 @@ export const nextGenProblems = [
 ];
 
 /**
- * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (10 total)
+ * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (12 total)
  */
 export const nfrTeachingProblems = [
   // Module 1: Throughput & Horizontal Scaling (4)
@@ -320,6 +320,9 @@ export const nfrTeachingProblems = [
   'nfr-ch0-data-processing-latency',
   'nfr-ch0-caching-strategies',
   'nfr-ch0-replication-patterns',
+  // Module 4: Data Durability & Persistence (2)
+  'nfr-ch0-durability-requirement',
+  'nfr-ch0-durability-levels',
 ];
 
 /**
@@ -614,10 +617,10 @@ export const problemWhitelist = new Set([
   ...patternProblems,                 // 35 (30 original + 5 DDIA gaps)
   ...platformProblems,                // 107
   ...nextGenProblems,                 // 10
-  ...nfrTeachingProblems,             // 10 (Chapter 0: Modules 1-3)
+  ...nfrTeachingProblems,             // 12 (Chapter 0: Modules 1-4)
   ...ddiaTeachingProblems,            // 151 (ALL CHAPTERS!)
   ...systemDesignPrimerProblems,      // 77
-  // Total: 430 problems
+  // Total: 432 problems
 ]);
 
 /**

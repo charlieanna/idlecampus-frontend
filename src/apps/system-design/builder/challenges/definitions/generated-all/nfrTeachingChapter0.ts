@@ -2304,6 +2304,603 @@ Client → LB → AppServer → Cache (Redis)
   ],
 };
 
+// ============================================================================
+// Module 4: Data Durability & Persistence (RISKIEST Axis)
+// ============================================================================
+
+/**
+ * Problem 10: When to Add a Database - Durability Requirement Analysis
+ *
+ * Teaches:
+ * - When in-memory data is acceptable vs when persistence is required
+ * - Impact of data loss on user experience and business
+ * - Recovery Point Objective (RPO) and Recovery Time Objective (RTO)
+ * - Starting with Client → AppServer (NO DATABASE) and adding DB only when needed
+ *
+ * Learning Flow:
+ * 1. Start: Client → LB → AppServer (in-memory only)
+ * 2. Ask: What happens if your server crashes?
+ * 3. Analyze: Can you afford to lose this data?
+ * 4. Decision: Add database only if data loss is unacceptable
+ */
+export const durabilityRequirementProblem: ProblemDefinition = {
+  id: 'nfr-ch0-durability-requirement',
+  title: 'Data Durability: When to Add a Database',
+  description: `You're building a web application. Every tutorial says "add a database," but WHY? Let's think about durability requirements first.
+
+**The NFR Framework - RISKIEST Axis:**
+- **Slowest:** Latency (covered in Module 3)
+- **RISKIEST:** What happens if we LOSE data?
+- **Largest:** Dataset size (covered in Module 1)
+
+**Starting Point: No Database!**
+\`\`\`
+Client → Load Balancer → AppServer Pool (in-memory only)
+\`\`\`
+
+Your AppServers store all data in memory (RAM):
+- User sessions: HashMap<userId, sessionData>
+- Cache: HashMap<key, value>
+- Metrics: counters, gauges in memory
+
+**The Question: What Happens If a Server Crashes?**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Scenario 1: View Counter (Data Loss = Acceptable)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Feature: Article view counter (how many times an article was viewed)
+
+**What Happens If Server Crashes?**
+- In-memory counters are lost
+- Counter resets to 0
+- Impact: Minor inaccuracy in view count
+
+**Impact Analysis:**
+- ❓ Is it critical to product experience? **NO** - Users don't care if count is 100% accurate
+- ❓ Is it a security issue? **NO**
+- ❓ Must we reconstruct on loss? **NO** - Can rebuild from scratch
+- ❓ How long do we keep it? **Forever, but accuracy doesn't matter**
+
+**Decision:** ✅ **In-memory is fine, NO DATABASE needed**
+- Save cost (no DB to maintain)
+- Faster (no disk I/O)
+- Simpler architecture
+
+**Architecture:**
+\`\`\`
+Client → LB → AppServer (in-memory counters)
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Scenario 2: User Sessions (Data Loss = Annoying)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Feature: User login sessions (who is logged in)
+
+**What Happens If Server Crashes?**
+- In-memory sessions are lost
+- Users are logged out
+- Must re-login
+
+**Impact Analysis:**
+- ❓ Is it critical to product experience? **ANNOYING** - Users hate re-logging in
+- ❓ Is it a security issue? **Moderate** - Could be session hijacking vector
+- ❓ Must we reconstruct on loss? **NO** - Users can re-login
+- ❓ How long do we keep it? **30 minutes - 7 days**
+
+**Decision:** ⚠️ **In-memory with session store (Redis, Memcached)**
+- Use persistent cache (Redis with AOF/RDB snapshots)
+- Not a full database (overkill for ephemeral data)
+- TTL = session expiry (auto-cleanup)
+
+**Architecture:**
+\`\`\`
+Client → LB → AppServer → Redis (persistent cache, session store)
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Scenario 3: E-commerce Orders (Data Loss = UNACCEPTABLE)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Feature: Customer orders (purchase history, payments)
+
+**What Happens If Server Crashes?**
+- In-memory orders are lost
+- Customer paid but order is gone
+- Revenue loss, legal liability
+
+**Impact Analysis:**
+- ❓ Is it critical to product experience? **YES** - Customers lose their purchases
+- ❓ Is it a security issue? **YES** - Financial transactions, PCI compliance
+- ❓ Must we reconstruct on loss? **YES** - Legal requirement (financial records)
+- ❓ How long do we keep it? **7 years** (tax/legal compliance)
+
+**Decision:** ❌ **MUST HAVE DATABASE**
+- PostgreSQL, MySQL (ACID transactions)
+- Durability guarantees (fsync, WAL)
+- Backup and disaster recovery
+
+**Architecture:**
+\`\`\`
+Client → LB → AppServer → PostgreSQL (durable storage)
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Decision Matrix: When to Add a Database?**
+
+| Data Type           | Loss Impact       | Security Risk | Must Reconstruct? | Database Needed? |
+|---------------------|-------------------|---------------|-------------------|------------------|
+| View counters       | Negligible        | No            | No                | ❌ In-memory     |
+| Page views analytics| Low               | No            | No (approximate)  | ⚠️ Time-series DB|
+| User sessions       | Annoying          | Moderate      | No (can re-login) | ⚠️ Redis/Memcached|
+| Shopping cart       | Moderate          | Low           | Annoying          | ⚠️ Redis (persist)|
+| User profiles       | High              | Moderate      | Yes (backup)      | ✅ Database      |
+| Financial txns      | Critical          | High          | Yes (legal)       | ✅ Database + WAL|
+| Medical records     | Critical          | Critical      | Yes (HIPAA)       | ✅ Database + encryption|
+
+**Your Task:**
+
+You're building a **URL shortener** service (like bit.ly):
+- Users submit long URLs → get back short codes
+- Example: \`https://example.com/very/long/url\` → \`short.ly/abc123\`
+- Visitors click short links → redirect to original URL
+
+**Durability Analysis:**
+- What happens if you lose the URL mapping?
+- Impact: All short links break (404 errors)
+- Security: No PII, but reputation damage
+- Must reconstruct? **YES** - Users shared these links everywhere
+- How long to keep? **Forever** (links should never expire)
+
+**Decision:** ✅ **Database Required**
+
+**Expected Architecture:**
+\`\`\`
+Client → Load Balancer → AppServer Pool → Database (PostgreSQL)
+                                             ↓
+                                          Store: (short_code, long_url)
+\`\`\`
+
+**Learning Objectives:**
+1. Start with in-memory, add database ONLY when durability is required
+2. Analyze data loss impact (product experience, security, legal)
+3. Understand RPO (Recovery Point Objective): How much data loss is acceptable?
+4. Understand RTO (Recovery Time Objective): How fast must we recover?
+5. Choose storage based on durability requirements, not habit`,
+
+  userFacingFRs: [
+    'Users can create short URLs',
+    'Users can access short URLs (redirect to original)',
+    'Short URLs should never expire',
+  ],
+
+  userFacingNFRs: [
+    'Data loss is UNACCEPTABLE (shared links must work forever)',
+    'Recovery Point Objective (RPO): 0 seconds (no data loss)',
+    'Recovery Time Objective (RTO): < 5 minutes (failover)',
+    'Data retention: Forever (links never expire)',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'URL Creator',
+      subtitle: 'Create short URLs',
+      id: 'creator_client',
+    },
+    {
+      name: 'URL Visitor',
+      subtitle: 'Click short URLs',
+      id: 'visitor_client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Traffic distribution',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServer pool',
+      },
+      {
+        type: 'storage',
+        reason: 'Database REQUIRED for durability. URL mappings must survive server crashes. Data loss is unacceptable.',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Distribute traffic',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Persist URL mappings (short_code → long_url)',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-durability-requirement', problemConfigs['nfr-ch0-durability-requirement'] || {
+    baseRps: 5000,
+    readRatio: 0.95, // Mostly redirects (reads), few creates (writes)
+    maxLatency: 100,
+    availability: 0.999,
+  }, [
+    'Ensure URL mappings survive server crashes',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Database Required for Durability',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (storageNodes.length === 0) {
+          return {
+            valid: false,
+            hint: 'URL mappings must survive crashes. If you lose the mapping, all short links break (404s). This is UNACCEPTABLE. Add a database for durability.',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+    {
+      name: 'Direct AppServer to Database Connection',
+      validate: (graph, scenario, problem) => {
+        const computeNodes = graph.components.filter(n => n.type === 'compute');
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (storageNodes.length === 0) return { valid: true }; // Skip if no storage
+
+        const computeToStorage = graph.connections.some(
+          c => computeNodes.some(comp => comp.id === c.from) &&
+               storageNodes.some(db => db.id === c.to)
+        );
+
+        if (!computeToStorage) {
+          return {
+            valid: false,
+            hint: 'AppServers must connect to database to persist URL mappings. Flow: AppServer → Database.',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
+/**
+ * Problem 11: Durability Levels - fsync, WAL, Replication Trade-offs
+ *
+ * Teaches:
+ * - Different levels of durability guarantees
+ * - Write-Ahead Log (WAL) for crash recovery
+ * - fsync trade-offs (durability vs latency)
+ * - Replication for disaster recovery
+ * - RPO and RTO requirements
+ *
+ * Learning Flow:
+ * 1. You've decided you need a database (from Problem 10)
+ * 2. Ask: How durable does it need to be?
+ * 3. Trade-off: Durability vs Performance
+ * 4. Solution: Choose durability level based on data criticality
+ */
+export const durabilityLevelsProblem: ProblemDefinition = {
+  id: 'nfr-ch0-durability-levels',
+  title: 'Durability Levels: fsync, WAL, and Replication Trade-offs',
+  description: `You've added a database (from Module 4 Problem 1). But databases have DIFFERENT durability levels. Which level do you need?
+
+**The Durability Spectrum:**
+\`\`\`
+Faster ←────────────────────────────────────→ More Durable
+        (higher data loss risk)              (lower data loss risk)
+
+Level 0: In-memory only (0% durable)
+Level 1: Async writes to disk (99% durable)
+Level 2: fsync on commit (99.99% durable)
+Level 3: WAL + fsync (99.999% durable)
+Level 4: Replication to 2+ servers (99.9999% durable)
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Level 1: Async Writes (Fastest, Least Durable)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**How It Works:**
+\`\`\`
+1. Client writes data to database
+2. Database writes to page cache (RAM)
+3. Database returns "success" immediately
+4. OS flushes to disk "eventually" (every 30s)
+\`\`\`
+
+**Performance:**
+- Write latency: **1-5ms** (in-memory)
+- Throughput: **50,000 writes/sec**
+
+**Durability:**
+- RPO (data loss): **Up to 30 seconds** (unflushed data)
+- What if server crashes? Lose last 30s of writes
+
+**When to Use:**
+- Analytics, logs, metrics (approximate data OK)
+- Gaming leaderboards (can rebuild)
+- Session data (users can re-login)
+
+**Example (PostgreSQL):**
+\`\`\`sql
+-- Turn off fsync (NOT RECOMMENDED FOR PRODUCTION!)
+ALTER SYSTEM SET fsync = off;
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Level 2: fsync on Commit (Balanced)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**How It Works:**
+\`\`\`
+1. Client writes data
+2. Database writes to page cache
+3. Database calls fsync() to force disk write
+4. Disk confirms write is on platter
+5. Database returns "success"
+\`\`\`
+
+**Performance:**
+- Write latency: **5-20ms** (disk I/O)
+- Throughput: **3,000-5,000 writes/sec** (disk-bound)
+
+**Durability:**
+- RPO: **0 seconds** (every commit is on disk)
+- What if server crashes? No data loss (last commit is safe)
+
+**When to Use:**
+- E-commerce orders, payments
+- User profiles, account settings
+- **Most production databases use this by default**
+
+**Example (PostgreSQL):**
+\`\`\`sql
+-- fsync = on (default)
+BEGIN;
+  INSERT INTO orders VALUES (...);
+COMMIT;  -- Waits for disk fsync before returning
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Level 3: Write-Ahead Log (WAL) + fsync (More Durable)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**How It Works:**
+\`\`\`
+1. Client writes data
+2. Database writes to WAL (append-only log)
+3. Database fsyncs WAL to disk
+4. Database returns "success"
+5. Later: Background process applies WAL to data files
+\`\`\`
+
+**Why WAL?**
+- Faster: Append-only sequential writes (vs random writes to data pages)
+- Crash recovery: Replay WAL to reconstruct state
+- Point-in-time recovery: WAL archive = full history
+
+**Performance:**
+- Write latency: **3-10ms** (sequential disk write)
+- Throughput: **10,000 writes/sec**
+
+**Durability:**
+- RPO: **0 seconds** (WAL persisted)
+- Crash recovery: Replay WAL (RTO = 30s-5min)
+
+**When to Use:**
+- Financial transactions (need audit log)
+- Compliance (SOX, HIPAA require WAL archiving)
+- Disaster recovery (can rebuild from WAL)
+
+**Example (PostgreSQL):**
+\`\`\`sql
+-- WAL enabled by default
+-- Archive WAL for point-in-time recovery
+ALTER SYSTEM SET wal_level = 'replica';
+ALTER SYSTEM SET archive_mode = on;
+ALTER SYSTEM SET archive_command = 'cp %p /backup/wal/%f';
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Level 4: Synchronous Replication (Highest Durability)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**How It Works:**
+\`\`\`
+1. Client writes data
+2. Primary DB writes to WAL + fsync
+3. Primary replicates to 2 replicas (sync)
+4. Both replicas fsync WAL
+5. Primary returns "success" (all 3 have data)
+\`\`\`
+
+**Performance:**
+- Write latency: **10-50ms** (network + 2× disk I/O)
+- Throughput: **1,000-3,000 writes/sec**
+
+**Durability:**
+- RPO: **0 seconds** (data on 3 servers)
+- RTO: **< 1 minute** (automatic failover to replica)
+- Survives: Data center failure
+
+**When to Use:**
+- Banking, payment processing
+- Medical records (HIPAA)
+- Any zero-data-loss requirement
+
+**Example (PostgreSQL):**
+\`\`\`sql
+-- Require 2 synchronous replicas before commit
+ALTER SYSTEM SET synchronous_commit = 'on';
+ALTER SYSTEM SET synchronous_standby_names = 'replica1,replica2';
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Trade-off Matrix:**
+
+| Level | Write Latency | Throughput | RPO        | RTO       | Use Case                  |
+|-------|---------------|------------|------------|-----------|---------------------------|
+| 1     | 1-5ms         | 50k/sec    | 30 seconds | Hours     | Logs, analytics           |
+| 2     | 5-20ms        | 5k/sec     | 0 seconds  | 30min     | E-commerce, SaaS          |
+| 3     | 3-10ms        | 10k/sec    | 0 seconds  | 5min      | Financial, compliance     |
+| 4     | 10-50ms       | 3k/sec     | 0 seconds  | <1min     | Banking, medical          |
+
+**Your Task:**
+
+You're building a **banking application** with these features:
+1. Account balance updates (deposits, withdrawals)
+2. Transaction history
+3. Regulatory compliance (must keep records for 7 years)
+
+**Requirements:**
+- Data loss is **COMPLETELY UNACCEPTABLE** (customer money!)
+- Compliance: Must survive data center failure
+- RTO: < 1 minute (customers can't access money = emergency)
+- RPO: 0 seconds (even 1 second of data loss = lost money)
+
+**Which durability level?** Level 4: Synchronous Replication
+
+**Expected Architecture:**
+\`\`\`
+Client → LB → AppServer → Primary DB (fsync + WAL)
+                              ├─(sync repl)─> Replica 1 (same region)
+                              └─(sync repl)─> Replica 2 (different region)
+\`\`\`
+
+**Learning Objectives:**
+1. Understand durability trade-offs (performance vs data safety)
+2. Know when to use fsync, WAL, replication
+3. Map RPO/RTO requirements to durability level
+4. Choose appropriate level based on data criticality`,
+
+  userFacingFRs: [
+    'Users can deposit/withdraw money',
+    'Users can view transaction history',
+    'System must survive data center failures',
+  ],
+
+  userFacingNFRs: [
+    'RPO: 0 seconds (zero data loss acceptable)',
+    'RTO: < 1 minute (automatic failover)',
+    'Durability: Must survive data center failure',
+    'Compliance: 7-year audit trail (WAL archiving)',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'Banking Client',
+      subtitle: 'Deposits & withdrawals',
+      id: 'client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Traffic distribution',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServer pool',
+      },
+      {
+        type: 'storage',
+        reason: 'Primary + Replicas (PostgreSQL with sync replication). Need multiple storage nodes for zero data loss.',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Distribute traffic',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'AppServer writes to primary DB (synchronous replication to replicas)',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-durability-levels', problemConfigs['nfr-ch0-durability-levels'] || {
+    baseRps: 2000,
+    readRatio: 0.7, // 70% reads (check balance), 30% writes (transactions)
+    maxLatency: 100,
+    availability: 0.9999, // 99.99% uptime
+  }, [
+    'Zero data loss with synchronous replication',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Multiple Storage Nodes for Replication',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (storageNodes.length < 2) {
+          return {
+            valid: false,
+            hint: 'Banking requires zero data loss. Single database = single point of failure. Add synchronous replication (primary + at least 2 replicas).',
+          };
+        }
+
+        return {
+          valid: true,
+          details: {
+            storageNodes: storageNodes.length,
+            durabilityLevel: 'Level 4: Synchronous Replication',
+          },
+        };
+      },
+    },
+    {
+      name: 'Sufficient Replicas for Data Center Failure',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        // For data center failure, need at least 3 nodes (1 primary + 2 replicas)
+        if (storageNodes.length < 3) {
+          return {
+            valid: false,
+            hint: 'To survive data center failure, need at least 3 storage nodes (1 primary + 2 sync replicas in different regions). You have ${storageNodes.length} nodes.',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
 // Export all Chapter 0 problems
 export const nfrTeachingChapter0Problems = [
   // Module 1: Throughput & Horizontal Scaling (4 problems)
@@ -2319,4 +2916,7 @@ export const nfrTeachingChapter0Problems = [
   dataProcessingLatencyProblem,
   cachingStrategiesProblem,
   replicationPatternsProblem,
+  // Module 4: Data Durability & Persistence (2 problems)
+  durabilityRequirementProblem,
+  durabilityLevelsProblem,
 ];
