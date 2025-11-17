@@ -53,6 +53,7 @@ export { backupRestoreServiceChallenge } from './backupRestoreService';
 // ML Infrastructure
 export { modelServingPlatformChallenge } from './modelServingPlatform';
 export { mlExperimentTrackingChallenge } from './mlExperimentTracking';
+export { modelTrainingPipelineChallenge } from './modelTrainingPipeline';
 
 /**
  * All internal systems challenges
@@ -129,6 +130,7 @@ export function getInternalSystemsChallenges() {
   const { backupRestoreServiceChallenge } = require('./backupRestoreService');
   const { modelServingPlatformChallenge } = require('./modelServingPlatform');
   const { mlExperimentTrackingChallenge } = require('./mlExperimentTracking');
+  const { modelTrainingPipelineChallenge } = require('./modelTrainingPipeline');
 
   return [
     // Developer Tools
@@ -165,6 +167,7 @@ export function getInternalSystemsChallenges() {
     // ML Infrastructure
     modelServingPlatformChallenge,
     mlExperimentTrackingChallenge,
+    modelTrainingPipelineChallenge,
   ];
 }
 
@@ -214,6 +217,7 @@ export function getChallengesByCategory(category: string) {
       'feature_store',
       'model_serving_platform',
       'ml_experiment_tracking',
+      'model_training_pipeline',
     ],
   };
 
