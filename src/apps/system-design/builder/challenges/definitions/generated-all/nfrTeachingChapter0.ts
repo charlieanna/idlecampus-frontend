@@ -1954,7 +1954,7 @@ Result: 0 dropped requests, users see "processing..." instead of errors
             description: 'Queue buffers burst while workers scale up',
             consequence: '✅ BEST! Queue accepts all requests (0 drops), workers scale up, queue drains in 2-3 min.',
           },
-        },
+        ],
         whyItMatters: 'Autoscaling has 2-3 minute boot time. During flash sales, you drop thousands of requests before new servers are ready! Queues bridge this gap.',
         commonMistakes: [
           'Relying solely on autoscaling (ignoring boot lag)',
@@ -4537,7 +4537,7 @@ Client → LB → AppServer → Cache (Redis)
         if (storageNodes.length < replicasNeeded) {
           return {
             valid: false,
-            hint: \`Read-heavy workload (47.5k read RPS) needs \${replicasNeeded} read replicas at 10k reads/sec each. You have \${storageNodes.length} database nodes. Add more replicas.\`,
+            hint: `Read-heavy workload (47.5k read RPS) needs ${replicasNeeded} read replicas at 10k reads/sec each. You have ${storageNodes.length} database nodes. Add more replicas.`,
           };
         }
 
@@ -4627,7 +4627,7 @@ Client → LB → AppServer → Cache (Redis)
             recommendation: 'Quorum writes (W=3/5) + quorum reads (R=2/5)',
             reasoning: 'Best for: High availability > consistency. No single point of failure.',
           },
-        },
+        ],
         whyItMatters: 'Single-leader = simple (95% of apps). Multi-leader = multi-region writes. Leaderless = extreme high availability. Choose based on requirements!',
         commonMistakes: [
           'Using multi-leader for single-region (unnecessary complexity)',
@@ -4786,7 +4786,7 @@ Client → LB → AppServer → Cache (Redis)
             description: 'Multiple leaders = better fault tolerance',
             consequence: '⚠️ Leaderless is better for availability! Multi-leader = conflict resolution complexity. Use Cassandra/DynamoDB instead.',
           },
-        },
+        ],
         whyItMatters: 'Multi-leader = ONLY when you need multi-region writes! Single region → single-leader. Global writes → multi-leader. High availability → leaderless.',
         commonMistakes: [
           'Using multi-leader for single-region (unnecessary)',
@@ -8357,7 +8357,7 @@ Asia Users → Asia Region:
             description: 'Reads may see stale product info briefly',
             consequence: '✅ BEST! Read-heavy (99.99%) + stale OK + global scale = eventual consistency. Fast writes (1-10ms), high availability.',
           },
-        },
+        ],
         whyItMatters: 'Amazon catalog: Read-heavy (99.99%), stale OK (product prices change slowly), global (need low latency everywhere). Eventual consistency = perfect fit!',
         commonMistakes: [
           'Using strong consistency for catalogs (wasted performance)',
