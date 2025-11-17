@@ -1,0 +1,60 @@
+
+bad89670-db75-45a9-81a8-0dfcb71735c5-00-2qqc1h1yvj41m.janeway.replit.dev/api/v1/courses:1  Failed to load resource: the server responded with a status of 404 (Not Found)Understand this error
+injected.js:27 Failed to fetch courses: Error: Endpoint not found
+(anonymous) @ injected.js:27Understand this error
+bad89670-db75-45a9-81a8-0dfcb71735c5-00-2qqc1h1yvj41m.janeway.replit.dev/api/v1/courses:1  Failed to load resource: the server responded with a status of 404 (Not Found)Understand this error
+injected.js:27 Failed to fetch courses: Error: Endpoint not found
+(anonymous) @ injected.js:27Understand this error
+4fbbaf65eab2ca8a9e7a1848520ee23d:1  Failed to load resource: the server responded with a status of 404 ()Understand this error
+4fbbaf65eab2ca8a9e7a1848520ee23d:1  Failed to load resource: the server responded with a status of 404 ()Understand this error
+gravatar.com/avatar/d8a94b5cc0c9cb55961335f7f82da717?d=404:1  Failed to load resource: the server responded with a status of 404 ()Understand this error
+4fbbaf65eab2ca8a9e7a1848520ee23d:1  Failed to load resource: the server responded with a status of 404 ()Understand this error
+gravatar.com/avatar/d8a94b5cc0c9cb55961335f7f82da717?d=404:1  Failed to load resource: the server responded with a status of 404 ()Understand this error
+injected.js:27 API_BASE_URL = /api/v1
+injected.js:27 📊 Challenge Distribution:
+injected.js:27    Total challenges: 424
+injected.js:27    All with Python templates for Tier 1 (write code)
+injected.js:27    Sample challenges: URL Shortener (L6 Standards), Tiny URL Shortener, Food Blog with Images, Collaborative Todo App, Web Crawler
+injected.js:27 Course API Base URL: /api/v1
+6engine.ts:362 Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'rps')
+    at SimulationEngine.simulateTraffic (engine.ts:362:37)
+    at TestRunner.runTestCase (testRunner.ts:21:64)
+    at testRunner.ts:59:45
+    at Array.map (<anonymous>)
+    at TestRunner.runAllTestCases (testRunner.ts:59:22)
+    at handleSubmit (TieredSystemDesignBuilder.tsx:652:41)
+    at HTMLUnknownElement.callCallback2 (chunk-BCXODTBQ.js?v=96e4ba8f:3672:22)
+    at Object.invokeGuardedCallbackDev (chunk-BCXODTBQ.js?v=96e4ba8f:3697:24)
+    at invokeGuardedCallback (chunk-BCXODTBQ.js?v=96e4ba8f:3731:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-BCXODTBQ.js?v=96e4ba8f:3734:33)Understand this error
+engine.ts:362 Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'rps')
+    at SimulationEngine.simulateTraffic (engine.ts:362:37)
+    at TestRunner.runTestCase (testRunner.ts:21:64)
+    at testRunner.ts:59:45
+    at Array.map (<anonymous>)
+    at TestRunner.runAllTestCases (testRunner.ts:59:22)
+    at handleSubmit (TieredSystemDesignBuilder.tsx:652:41)
+    at HTMLUnknownElement.callCallback2 (chunk-BCXODTBQ.js?v=96e4ba8f:3672:22)
+    at Object.invokeGuardedCallbackDev (chunk-BCXODTBQ.js?v=96e4ba8f:3697:24)
+    at invokeGuardedCallback (chunk-BCXODTBQ.js?v=96e4ba8f:3731:39)
+    at invokeGuardedCallbackAndCatchFirstError (chunk-BCXODTBQ.js?v=96e4ba8f:3734:33)
+simulateTraffic @ engine.ts:362
+runTestCase @ testRunner.ts:21
+(anonymous) @ testRunner.ts:59
+runAllTestCases @ testRunner.ts:59
+handleSubmit @ TieredSystemDesignBuilder.tsx:652
+callCallback2 @ chunk-BCXODTBQ.js?v=96e4ba8f:3672
+invokeGuardedCallbackDev @ chunk-BCXODTBQ.js?v=96e4ba8f:3697
+invokeGuardedCallback @ chunk-BCXODTBQ.js?v=96e4ba8f:3731
+invokeGuardedCallbackAndCatchFirstError @ chunk-BCXODTBQ.js?v=96e4ba8f:3734
+executeDispatch @ chunk-BCXODTBQ.js?v=96e4ba8f:7012
+processDispatchQueueItemsInOrder @ chunk-BCXODTBQ.js?v=96e4ba8f:7032
+processDispatchQueue @ chunk-BCXODTBQ.js?v=96e4ba8f:7041
+dispatchEventsForPlugins @ chunk-BCXODTBQ.js?v=96e4ba8f:7049
+(anonymous) @ chunk-BCXODTBQ.js?v=96e4ba8f:7172
+batchedUpdates$1 @ chunk-BCXODTBQ.js?v=96e4ba8f:18911
+batchedUpdates @ chunk-BCXODTBQ.js?v=96e4ba8f:3577
+dispatchEventForPluginEventSystem @ chunk-BCXODTBQ.js?v=96e4ba8f:7171
+dispatchEventWithEnableCapturePhaseSelectiveHydrationWithoutDiscreteEventReplay @ chunk-BCXODTBQ.js?v=96e4ba8f:5476
+dispatchEvent @ chunk-BCXODTBQ.js?v=96e4ba8f:5470
+dispatchDiscreteEvent @ chunk-BCXODTBQ.js?v=96e4ba8f:5447Understand this error
