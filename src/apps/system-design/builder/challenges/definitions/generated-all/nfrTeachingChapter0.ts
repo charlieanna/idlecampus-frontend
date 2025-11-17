@@ -3549,6 +3549,769 @@ AP Users → AP-South LB → AP AppServers → AP Shards (4 shards)
   ],
 };
 
+// ============================================================================
+// Module 6: Consistency Models & Guarantees
+// ============================================================================
+
+/**
+ * Problem 14: Read-After-Write Consistency & Session Guarantees
+ *
+ * Teaches:
+ * - Read-after-write consistency (user sees their own writes)
+ * - Monotonic reads (time doesn't go backward)
+ * - Monotonic writes (writes happen in order)
+ * - Consistent prefix reads (see causally related writes)
+ * - Techniques: sticky sessions, read-from-leader, version tracking
+ *
+ * Learning Flow:
+ * 1. User has: Client → LB → AppServers → Primary + Replicas
+ * 2. Problem: User writes data, immediately reads → sees stale data
+ * 3. Why: Replica lag (100ms-1s)
+ * 4. Solution: Read-after-write consistency techniques
+ */
+export const readAfterWriteConsistencyProblem: ProblemDefinition = {
+  id: 'nfr-ch0-read-after-write',
+  title: 'Read-After-Write Consistency: Solving the Stale Read Problem',
+  description: `You've added read replicas to scale reads (from Module 3). But users are reporting a strange bug: "I just updated my profile, but when I refresh, I see the old data!"
+
+**The Problem: Replication Lag**
+
+**Current Architecture:**
+\`\`\`
+Client → LB → AppServer Pool → Primary DB (writes)
+                                    ├─(async repl, 500ms lag)─> Replica 1 (reads)
+                                    ├─(async repl, 500ms lag)─> Replica 2 (reads)
+                                    └─(async repl, 500ms lag)─> Replica 3 (reads)
+\`\`\`
+
+**What Happens:**
+\`\`\`
+12:00:00.000 - User updates profile: "New bio text"
+12:00:00.010 - Write goes to Primary DB ✅
+12:00:00.020 - User refreshes page
+12:00:00.030 - Read from Replica 1 (still has old data) ❌
+12:00:00.500 - Replication completes, Replica 1 gets new data
+
+User sees OLD bio for 500ms! 😡
+\`\`\`
+
+**Why This Happens:**
+- Writes go to PRIMARY (strong consistency)
+- Reads go to REPLICAS (eventual consistency, 100ms-1s lag)
+- User's read happens BEFORE replication completes
+
+**Four Session Guarantees to Fix This:**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**1. Read-After-Write Consistency (Read Your Own Writes)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Guarantee:** Users ALWAYS see data they just wrote (but may see stale data from other users)
+
+**Technique 1: Read-From-Leader After Write**
+\`\`\`python
+def update_profile(user_id, new_bio):
+    # Write to primary
+    primary_db.write(user_id, new_bio)
+
+    # Mark this user to read from primary for next 1 second
+    redis.set(f"read_from_leader:{user_id}", "true", ttl=1)
+
+def get_profile(user_id):
+    # Check if user just wrote
+    if redis.get(f"read_from_leader:{user_id}"):
+        return primary_db.read(user_id)  # Read from leader
+    else:
+        return replica_db.read(user_id)  # Read from replica (cheaper)
+\`\`\`
+
+**Pros:**
+- ✅ User always sees their own writes
+- ✅ Only affects users who just wrote (doesn't overload primary)
+
+**Cons:**
+- ⚠️ Need to track "last write time" per user
+- ⚠️ More load on primary for recent writers
+
+**Technique 2: Sticky Sessions (Same Replica)**
+\`\`\`python
+def get_replica_for_user(user_id):
+    # Always route same user to same replica
+    return replicas[hash(user_id) % len(replicas)]
+
+def update_profile(user_id, new_bio):
+    primary_db.write(user_id, new_bio)
+    # User's next read goes to their sticky replica
+    # (will see new data once replication completes)
+\`\`\`
+
+**Pros:**
+- ✅ Simple (just hash user_id)
+- ✅ Helps with cache locality
+
+**Cons:**
+- ❌ Doesn't guarantee immediate consistency (still 500ms lag)
+- ❌ Only helps if user keeps hitting same replica
+
+**Technique 3: Version Tracking (Wait for Replica to Catch Up)**
+\`\`\`python
+def update_profile(user_id, new_bio):
+    # Write returns version number (LSN = log sequence number)
+    version = primary_db.write(user_id, new_bio)
+
+    # Store user's last write version in session
+    session.set("last_write_version", version)
+
+def get_profile(user_id):
+    last_write_version = session.get("last_write_version")
+
+    # Read from replica, but WAIT until it's caught up
+    replica = get_replica()
+    while replica.current_version < last_write_version:
+        time.sleep(0.01)  # Wait 10ms
+
+    return replica.read(user_id)
+\`\`\`
+
+**Pros:**
+- ✅ Guarantees read-after-write consistency
+- ✅ Still uses replicas (doesn't overload primary)
+
+**Cons:**
+- ⚠️ Adds latency (up to replication lag)
+- ⚠️ Need version tracking in replicas
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**2. Monotonic Reads (Time Never Goes Backward)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Problem:**
+\`\`\`
+12:00:00.000 - User reads from Replica 1 (has version 100)
+12:00:00.500 - User reads from Replica 2 (has version 95) ❌
+User sees OLDER data! Time went backward!
+\`\`\`
+
+**Guarantee:** Once a user reads version N, all future reads are ≥ version N
+
+**Solution: Sticky Sessions (Same Replica)**
+\`\`\`python
+# Always route user to same replica
+def get_replica(user_id):
+    return replicas[hash(user_id) % len(replicas)]
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**3. Monotonic Writes (Writes Happen in Order)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Problem (Multi-Leader Replication):**
+\`\`\`
+US Region: User writes "Post 1" at 12:00:00.000
+US Region: User writes "Post 2" at 12:00:00.100
+
+EU Region receives Post 2 BEFORE Post 1 (network delay)
+EU users see posts in wrong order! ❌
+\`\`\`
+
+**Guarantee:** User's writes appear in the order they were submitted
+
+**Solution: Causality Tracking**
+\`\`\`python
+def write_post(user_id, content):
+    # Include previous post ID to maintain order
+    last_post_id = get_user_last_post_id(user_id)
+
+    new_post = {
+        "id": generate_id(),
+        "user_id": user_id,
+        "content": content,
+        "previous_post_id": last_post_id,  # Causal dependency
+    }
+
+    db.write(new_post)
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**4. Consistent Prefix Reads (See Causally Related Writes)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Problem (Sharded Database):**
+\`\`\`
+User A writes: "I love dogs!" → Shard 1
+User B replies: "Me too!"    → Shard 2 (faster replication)
+
+Observer sees:
+- User B: "Me too!" (from Shard 2, fast replica)
+- User A: ??? (from Shard 1, slow replica)
+
+Observer sees reply BEFORE original message! ❌
+\`\`\`
+
+**Guarantee:** If write B causally depends on write A, everyone sees A before B
+
+**Solution: Global Ordering (Lamport Timestamps)**
+\`\`\`python
+def write_with_timestamp(data):
+    timestamp = get_lamport_timestamp()  # Globally ordered
+    db.write(data, timestamp)
+
+def read_consistent_prefix():
+    # Read from all shards, sort by timestamp
+    results = []
+    for shard in shards:
+        results.extend(shard.read())
+
+    return sorted(results, key=lambda x: x.timestamp)
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Comparison Matrix:**
+
+| Guarantee              | What It Fixes                     | Technique                     | Cost              |
+|------------------------|-----------------------------------|-------------------------------|-------------------|
+| Read-After-Write       | User sees their own writes        | Read-from-leader, versions    | Medium (1s delay) |
+| Monotonic Reads        | Time doesn't go backward          | Sticky sessions               | Low (routing)     |
+| Monotonic Writes       | Writes in order                   | Causality tracking            | Medium (metadata) |
+| Consistent Prefix      | Causally related writes in order  | Global ordering (Lamport)     | High (coordination) |
+
+**Your Task:**
+
+You're building **Twitter**:
+- Users post tweets
+- Users immediately see their own tweets in their feed
+- Users refresh → should ALWAYS see tweets they just posted
+
+**Problem:**
+- Writes → Primary DB
+- Reads → Replicas (500ms lag)
+- User posts tweet, refreshes, tweet is missing ❌
+
+**Which technique?** ✅ **Read-From-Leader After Write**
+
+**Expected Architecture:**
+\`\`\`
+Client → LB → AppServer → Cache (track recent writers)
+                             ↓
+                          Primary DB (writes + reads for recent writers)
+                             ↓
+                    ┌────────┼────────┐
+                    ▼        ▼        ▼
+              Replica 1  Replica 2  Replica 3 (reads for everyone else)
+\`\`\`
+
+**Implementation:**
+\`\`\`python
+def post_tweet(user_id, content):
+    # Write to primary
+    primary_db.write(user_id, content)
+
+    # Mark user to read from primary for next 2 seconds
+    redis.set(f"recent_writer:{user_id}", "true", ttl=2)
+
+def get_feed(user_id):
+    # Check if user just wrote
+    if redis.get(f"recent_writer:{user_id}"):
+        return primary_db.read_feed(user_id)  # Read from leader
+    else:
+        return replica_db.read_feed(user_id)  # Read from replica
+\`\`\`
+
+**Learning Objectives:**
+1. Understand the 4 session guarantees
+2. Know when to read from leader vs replica
+3. Implement read-after-write consistency
+4. Trade-off: consistency vs performance`,
+
+  userFacingFRs: [
+    'Users can post tweets',
+    'Users can view their feed',
+    'Users must immediately see their own tweets',
+  ],
+
+  userFacingNFRs: [
+    'Read-after-write consistency: User always sees their own writes',
+    'Replication lag: 500ms (async replication to replicas)',
+    'Read latency: P99 < 100ms',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'Twitter Client',
+      subtitle: 'Post & view tweets',
+      id: 'client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Traffic distribution',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServer pool (tracks recent writers)',
+      },
+      {
+        type: 'cache',
+        reason: 'Redis to track recent writers (read-from-leader flag)',
+      },
+      {
+        type: 'storage',
+        reason: 'Primary + Replicas. Need multiple storage nodes for read scaling + read-after-write consistency.',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Distribute traffic',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Check if user recently wrote (read-from-leader flag)',
+      },
+      {
+        from: 'cache',
+        to: 'storage',
+        reason: 'If recent writer → read from primary, else → read from replica',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-read-after-write', problemConfigs['nfr-ch0-read-after-write'] || {
+    baseRps: 20000,
+    readRatio: 0.9, // 90% reads, 10% writes
+    maxLatency: 100,
+    availability: 0.999,
+  }, [
+    'Ensure read-after-write consistency',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Cache for Recent Writer Tracking',
+      validate: (graph, scenario, problem) => {
+        const cacheNodes = graph.components.filter(n => n.type === 'cache');
+
+        if (cacheNodes.length === 0) {
+          return {
+            valid: false,
+            hint: 'To implement read-after-write consistency, you need to track recent writers. Add Redis cache to store "recent_writer:{user_id}" flags with 1-2s TTL.',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+    {
+      name: 'Primary + Replicas for Read-After-Write',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (storageNodes.length < 2) {
+          return {
+            valid: false,
+            hint: 'Read-after-write consistency requires: (1) Primary DB for writes + recent reader reads, (2) Replicas for everyone else. Add at least 1 primary + 1 replica.',
+          };
+        }
+
+        return {
+          valid: true,
+          details: {
+            pattern: 'Read-from-leader after write',
+            storageNodes: storageNodes.length,
+          },
+        };
+      },
+    },
+  ],
+};
+
+/**
+ * Problem 15: Consistency Levels - Strong vs Eventual vs Causal
+ *
+ * Teaches:
+ * - Consistency spectrum: Strong → Causal → Eventual
+ * - Linearizability (strongest consistency)
+ * - Eventual consistency (weakest, highest performance)
+ * - Causal consistency (middle ground)
+ * - Trade-offs: consistency vs availability vs latency
+ * - CAP theorem implications
+ *
+ * Learning Flow:
+ * 1. User has distributed system with replicas
+ * 2. Ask: How consistent should reads be?
+ * 3. Trade-off: Consistency vs Performance vs Availability
+ * 4. Solution: Choose consistency level based on use case
+ */
+export const consistencyLevelsProblem: ProblemDefinition = {
+  id: 'nfr-ch0-consistency-levels',
+  title: 'Consistency Levels: Strong vs Eventual vs Causal Trade-offs',
+  description: `You've built a distributed system with replicas. Now: How consistent should it be?
+
+**The Consistency Spectrum:**
+
+\`\`\`
+Stronger Consistency ←──────────────────────────→ Weaker Consistency
+(slower, less available)                      (faster, more available)
+
+Linearizable > Sequential > Causal > Eventual > No Guarantees
+\`\`\`
+
+**Three Main Consistency Levels:**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Level 1: Strong Consistency (Linearizability)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Guarantee:** All operations appear to execute atomically in some sequential order that respects real-time ordering.
+
+**In Simple Terms:**
+- Every read sees the most recent write
+- System behaves like a single copy of data
+- As if there's only ONE database (even though there are replicas)
+
+**How It Works:**
+\`\`\`
+1. Write goes to primary
+2. Primary synchronously replicates to ALL replicas
+3. Write returns success ONLY after all replicas acknowledge
+4. Any subsequent read (from ANY replica) sees the new value
+\`\`\`
+
+**Example (Banking):**
+\`\`\`
+12:00:00.000 - User deposits $100 → Primary
+12:00:00.010 - Primary replicates to Replica 1, 2, 3 (sync)
+12:00:00.050 - All replicas acknowledge
+12:00:00.060 - Write returns success
+12:00:00.061 - ANY read from ANY replica sees new balance ✅
+\`\`\`
+
+**Performance:**
+- Write latency: **50-200ms** (wait for all replicas)
+- Read latency: **5-20ms** (can read from any replica)
+- Throughput: **Lower** (synchronous replication bottleneck)
+
+**Pros:**
+- ✅ No stale reads (always see latest data)
+- ✅ Easier to reason about (behaves like single machine)
+- ✅ Safe for critical data (money, inventory)
+
+**Cons:**
+- ❌ Slower writes (wait for replication)
+- ❌ Lower availability (if any replica down, can't write)
+- ❌ Network partitions block writes (CAP theorem: CP system)
+
+**When to Use:**
+- Banking, payment processing
+- Inventory management (can't oversell)
+- Coordination services (locks, leader election)
+
+**Technologies:**
+- Google Spanner (global strong consistency)
+- etcd, ZooKeeper (consensus-based)
+- PostgreSQL synchronous replication
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Level 2: Causal Consistency (Middle Ground)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Guarantee:** Operations that are causally related appear in the same order to all nodes.
+
+**In Simple Terms:**
+- If Event B depends on Event A, everyone sees A before B
+- Independent events can be seen in any order
+
+**Example (Social Media):**
+\`\`\`
+Alice posts: "Check out this photo!" → Post A
+Bob replies: "Nice photo!"          → Post B (depends on A)
+Carol posts: "What's for lunch?"    → Post C (independent)
+
+Causal Consistency Guarantees:
+- Everyone sees Post A before Post B ✅ (causal dependency)
+- Post C can appear anywhere ⚠️ (independent)
+\`\`\`
+
+**How It Works:**
+\`\`\`
+1. Track causality with vector clocks or Lamport timestamps
+2. Replicas apply writes respecting causal order
+3. Independent writes can happen in any order
+\`\`\`
+
+**Performance:**
+- Write latency: **10-50ms** (async replication + causality tracking)
+- Read latency: **5-20ms**
+- Throughput: **High** (async replication)
+
+**Pros:**
+- ✅ Captures "happens-before" relationships
+- ✅ Better performance than strong consistency
+- ✅ More intuitive than eventual consistency
+
+**Cons:**
+- ⚠️ Complex implementation (vector clocks, causality tracking)
+- ⚠️ Still possible to see stale data (if not causally related)
+
+**When to Use:**
+- Social media (comments, replies)
+- Collaborative editing (Google Docs)
+- Chat applications
+
+**Technologies:**
+- Riak (optional causal consistency)
+- Azure Cosmos DB (session consistency level)
+- COPS (Causal+ consistency system)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Level 3: Eventual Consistency (Weakest, Fastest)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Guarantee:** If no new writes, all replicas EVENTUALLY converge to the same value.
+
+**In Simple Terms:**
+- Writes propagate asynchronously
+- Reads may see stale data
+- Eventually (seconds to minutes), all replicas agree
+
+**Example (DNS):**
+\`\`\`
+12:00:00.000 - Update DNS: example.com → 1.2.3.4
+12:00:01.000 - Some users resolve to OLD IP (stale cache)
+12:00:05.000 - Some users resolve to NEW IP
+12:05:00.000 - All users eventually see NEW IP ✅
+\`\`\`
+
+**How It Works:**
+\`\`\`
+1. Write to any replica (or primary)
+2. Replica returns success immediately
+3. Background process replicates to other replicas
+4. Reads from different replicas may return different values
+\`\`\`
+
+**Performance:**
+- Write latency: **1-10ms** (no waiting for replication)
+- Read latency: **1-10ms**
+- Throughput: **Very High** (no synchronization)
+
+**Pros:**
+- ✅ Fastest writes (async replication)
+- ✅ Highest availability (works during partitions)
+- ✅ Best performance (CAP theorem: AP system)
+
+**Cons:**
+- ❌ Stale reads (may see old data)
+- ❌ Write conflicts (concurrent writes to different replicas)
+- ❌ Hard to reason about (non-deterministic)
+
+**When to Use:**
+- Read-heavy workloads (product catalog, news feeds)
+- High availability critical (DNS, CDN)
+- Approximate data OK (view counts, likes)
+
+**Technologies:**
+- DynamoDB (eventual consistency default)
+- Cassandra (tunable consistency)
+- DNS, CDNs
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Trade-off Matrix:**
+
+| Level              | Write Latency | Read Staleness | Availability | Use Case              |
+|--------------------|---------------|----------------|--------------|------------------------|
+| Linearizable       | 50-200ms      | Never stale    | Low (CP)     | Banking, inventory     |
+| Causal             | 10-50ms       | Causally fresh | Medium       | Social media, chat     |
+| Eventual           | 1-10ms        | May be stale   | High (AP)    | Catalogs, feeds        |
+
+**CAP Theorem:**
+- **Strong consistency:** Choose Consistency + Partition Tolerance (CP)
+  - Sacrifice Availability during partitions
+- **Eventual consistency:** Choose Availability + Partition Tolerance (AP)
+  - Sacrifice Consistency for availability
+
+**Your Task:**
+
+You're building **Amazon Product Catalog**:
+- 10 million products
+- 100k writes/day (product updates)
+- 1 billion reads/day (users browsing)
+- Global users (US, Europe, Asia)
+- Occasional stale data is acceptable (user sees old price for a few seconds)
+
+**Analysis:**
+- Read-heavy: 99.99% reads
+- Write frequency: Low
+- Stale reads: ✅ Acceptable (product info changes slowly)
+- Availability: ✅ Critical (can't block browsing)
+- Global scale: ✅ Need low latency everywhere
+
+**Which consistency level?** ✅ **Eventual Consistency**
+
+**Why:**
+- Reads are 99.99% → optimize for read performance
+- Stale data OK (price changes don't need instant propagation)
+- High availability > strong consistency
+- Global replicas with async replication
+
+**Expected Architecture:**
+\`\`\`
+US Users → US Region:
+             Primary DB (writes)
+                ├─(async repl)─> Replica 1 (reads)
+                └─(async repl)─> Replica 2 (reads)
+
+EU Users → EU Region:
+             Replica 3 (reads, async from US primary)
+             Replica 4 (reads, async from US primary)
+
+Asia Users → Asia Region:
+             Replica 5 (reads, async from US primary)
+             Replica 6 (reads, async from US primary)
+\`\`\`
+
+**Learning Objectives:**
+1. Understand the consistency spectrum
+2. Map use cases to consistency levels
+3. Know CAP theorem trade-offs
+4. Choose consistency based on requirements`,
+
+  userFacingFRs: [
+    'Global product catalog (Amazon-like)',
+    'Users browse products (read-heavy)',
+    'Admins update product info (low write frequency)',
+  ],
+
+  userFacingNFRs: [
+    'Dataset: 10M products',
+    'Reads: 1B/day (99.99% of traffic)',
+    'Writes: 100k/day (0.01% of traffic)',
+    'Stale reads acceptable (eventual consistency OK)',
+    'Global latency: P99 < 200ms',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'US Client',
+      subtitle: 'Browse products',
+      id: 'us_client',
+    },
+    {
+      name: 'EU Client',
+      subtitle: 'Browse products',
+      id: 'eu_client',
+    },
+    {
+      name: 'Asia Client',
+      subtitle: 'Browse products',
+      id: 'asia_client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Regional traffic distribution',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServer pool',
+      },
+      {
+        type: 'storage',
+        reason: 'Primary DB + multiple global replicas (eventual consistency). Need many storage nodes for global read scaling.',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Distribute traffic',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'Reads from regional replicas (eventual consistency)',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-consistency-levels', problemConfigs['nfr-ch0-consistency-levels'] || {
+    baseRps: 100000,
+    readRatio: 0.9999, // 99.99% reads
+    maxLatency: 200,
+    availability: 0.999,
+  }, [
+    'Global catalog with eventual consistency',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Multiple Regional Replicas',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (storageNodes.length < 3) {
+          return {
+            valid: false,
+            hint: 'For global eventual consistency, need replicas in multiple regions (US, EU, Asia). Add at least 3-6 storage nodes for regional replication.',
+          };
+        }
+
+        return {
+          valid: true,
+          details: {
+            storageNodes: storageNodes.length,
+            consistencyLevel: 'Eventual consistency (AP system)',
+          },
+        };
+      },
+    },
+    {
+      name: 'Sufficient Replicas for Global Scale',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        // For 100k RPS globally, need enough replicas (~10 at 10k reads/sec each)
+        const readRps = 100000;
+        const readsPerReplica = 10000;
+        const replicasNeeded = Math.ceil(readRps / readsPerReplica);
+
+        if (storageNodes.length < replicasNeeded) {
+          return {
+            valid: false,
+            hint: `For 100k global read RPS, need at least ${replicasNeeded} replicas at 10k reads/sec each. You have ${storageNodes.length} storage nodes. Add more regional replicas.`,
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
 // Export all Chapter 0 problems
 export const nfrTeachingChapter0Problems = [
   // Module 1: Throughput & Horizontal Scaling (4 problems)
@@ -3570,4 +4333,7 @@ export const nfrTeachingChapter0Problems = [
   // Module 5: Dataset Size & Sharding (2 problems)
   shardingRequirementProblem,
   shardingStrategiesProblem,
+  // Module 6: Consistency Models & Guarantees (2 problems)
+  readAfterWriteConsistencyProblem,
+  consistencyLevelsProblem,
 ];

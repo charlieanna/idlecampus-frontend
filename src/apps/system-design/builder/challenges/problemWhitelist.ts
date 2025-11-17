@@ -304,7 +304,7 @@ export const nextGenProblems = [
 ];
 
 /**
- * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (14 total)
+ * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (16 total)
  */
 export const nfrTeachingProblems = [
   // Module 1: Throughput & Horizontal Scaling (4)
@@ -326,6 +326,9 @@ export const nfrTeachingProblems = [
   // Module 5: Dataset Size & Sharding (2)
   'nfr-ch0-sharding-requirement',
   'nfr-ch0-sharding-strategies',
+  // Module 6: Consistency Models & Guarantees (2)
+  'nfr-ch0-read-after-write',
+  'nfr-ch0-consistency-levels',
 ];
 
 /**
@@ -620,10 +623,10 @@ export const problemWhitelist = new Set([
   ...patternProblems,                 // 35 (30 original + 5 DDIA gaps)
   ...platformProblems,                // 107
   ...nextGenProblems,                 // 10
-  ...nfrTeachingProblems,             // 14 (Chapter 0: Modules 1-5)
+  ...nfrTeachingProblems,             // 16 (Chapter 0: Modules 1-6)
   ...ddiaTeachingProblems,            // 151 (ALL CHAPTERS!)
   ...systemDesignPrimerProblems,      // 77
-  // Total: 434 problems
+  // Total: 436 problems
 ]);
 
 /**
