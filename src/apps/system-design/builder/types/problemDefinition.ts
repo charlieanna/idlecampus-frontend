@@ -1,6 +1,7 @@
 import { SystemGraph } from './graph';
 import { TestCase } from './testCase';
 import { CacheStrategy } from './advancedConfig';
+import { NFRWizardFlow } from './nfrWizard';
 
 /**
  * Problem Definition - Defines how to validate any system design problem
@@ -126,4 +127,7 @@ export interface ProblemDefinition {
 
   // Naive Python implementation template
   pythonTemplate?: string;
+
+  // NFR Wizard - Interactive teaching flow (optional)
+  wizardFlow?: NFRWizardFlow;
 }

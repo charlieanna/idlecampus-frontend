@@ -191,6 +191,211 @@ Client → Load Balancer → [AppServer 1]
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Server Capacity Planning',
+    subtitle: 'Learn to calculate servers from throughput (RPS)',
+
+    objectives: [
+      'Calculate server capacity accounting for OS overhead',
+      'Design for PEAK load, not average load',
+      'Understand when horizontal scaling is needed',
+      'Learn why load balancers are essential for multi-server architectures',
+    ],
+
+    questions: [
+      {
+        id: 'avg_rps',
+        step: 1,
+        category: 'throughput',
+        title: 'What is your average traffic?',
+        description: 'This is the FIRST question we always ask! Traffic determines our baseline capacity needs.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter average RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 1000000,
+          suggestedValue: 2000,
+        },
+        whyItMatters: 'Average RPS tells us the steady-state load. However, we NEVER design just for average - that would cause failures during peak hours! This is just our starting point.',
+        commonMistakes: [
+          'Designing only for average load (causes peak-hour failures)',
+          'Forgetting to account for OS overhead (30% capacity loss)',
+          'Not planning for growth (always add 20-30% buffer)',
+        ],
+        onAnswer: (answer) => {
+          return [
+            {
+              action: 'highlight',
+              reason: `Your API receives ${answer} requests per second on average. But we need to know about peak traffic too!`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'peak_rps',
+        step: 2,
+        category: 'throughput',
+        title: 'What is your PEAK traffic?',
+        description: 'Peak traffic occurs during busy hours (e.g., morning commute, lunch, Black Friday). We MUST design for peak, not average.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter peak RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 1000000,
+          suggestedValue: 10000,
+        },
+        whyItMatters: 'Peak load determines your server count. If you design for average and peak is 5× higher, your service will crash during busy hours. Always design for peak with 20% buffer!',
+        commonMistakes: [
+          'Using average RPS for capacity planning',
+          'Peak is typically 2-10× average (depends on your service)',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const avgRps = previousAnswers.avg_rps || 2000;
+          const peakMultiplier = (answer / avgRps).toFixed(1);
+          return [
+            {
+              action: 'highlight',
+              reason: `Peak traffic is ${answer} RPS (${peakMultiplier}× average). This is what we'll design for!`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'server_capacity',
+        step: 3,
+        category: 'throughput',
+        title: 'Capacity Calculation',
+        description: 'Each server can theoretically handle 2,000 RPS. But we need to account for OS overhead!',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Effective Capacity = Theoretical Capacity × 0.7',
+          explanation: 'Why 30% overhead? Operating system (15%), health checks (5%), network I/O (5%), GC pauses (5%).',
+          exampleInputs: {
+            'Theoretical Capacity': 2000,
+            'OS Overhead': 0.3,
+          },
+          exampleOutput: '2,000 × 0.7 = 1,400 RPS per server',
+        },
+        whyItMatters: 'OS overhead is REAL! If you design assuming 100% capacity, servers will be overloaded at 70% theoretical load. Always account for 30% overhead in production systems.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Each server can handle 1,400 RPS effectively (2,000 theoretical - 30% overhead).',
+            },
+          ];
+        },
+      },
+      {
+        id: 'calculate_servers',
+        step: 4,
+        category: 'throughput',
+        title: 'How many servers do you need?',
+        description: 'Calculate based on peak RPS and effective capacity per server.',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Servers Needed = Peak RPS / (Server Capacity × 0.7)',
+          explanation: 'We divide peak load by effective capacity, then round UP for safety.',
+          exampleInputs: {
+            'Peak RPS': 10000,
+            'Server Capacity': 2000,
+            'Effective Capacity': 1400,
+          },
+          exampleOutput: '10,000 / 1,400 = 7.14 → 8 servers (round up)',
+        },
+        whyItMatters: 'Always round UP, never down! 7.14 servers means you need 8. Running at 100% capacity leaves no room for failures or traffic spikes.',
+        commonMistakes: [
+          'Rounding down (causes overload)',
+          'Not adding buffer for growth',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const peakRps = previousAnswers.peak_rps || 10000;
+          const serversNeeded = Math.ceil(peakRps / 1400);
+          return [
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: serversNeeded },
+              reason: `Adding ${serversNeeded} app servers to handle ${peakRps} peak RPS with 30% overhead buffer.`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'need_load_balancer',
+        step: 5,
+        category: 'throughput',
+        title: 'Do you need a load balancer?',
+        description: 'You have 8 app servers. How does traffic get distributed across them?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'yes',
+            label: 'Yes, add a load balancer',
+            description: 'Load balancer distributes traffic across all 8 servers',
+            consequence: 'Load balancer will route requests evenly across servers using round-robin or least-connections algorithm.',
+          },
+          {
+            id: 'no',
+            label: 'No, clients connect directly',
+            description: 'Each client picks a random server',
+            consequence: '⚠️ Without LB, you cannot guarantee even distribution. Some servers will be overloaded while others idle.',
+          },
+        ],
+        whyItMatters: 'Load balancers are ESSENTIAL for horizontal scaling. They provide: 1) Even traffic distribution, 2) Health checking (route away from failed servers), 3) Single entry point for clients.',
+        commonMistakes: [
+          'Thinking DNS round-robin is sufficient (it has 60s+ caching)',
+          'Client-side load balancing (adds complexity, not recommended)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'yes') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'load_balancer',
+                reason: 'Load balancer distributes 10k peak RPS evenly across 8 app servers.',
+              },
+              {
+                action: 'add_connection',
+                from: 'client',
+                to: 'load_balancer',
+                reason: 'All client traffic goes through load balancer first.',
+              },
+              {
+                action: 'add_connection',
+                from: 'load_balancer',
+                to: 'compute',
+                reason: 'Load balancer distributes to app server pool.',
+              },
+            ];
+          } else {
+            return [
+              {
+                action: 'highlight',
+                reason: '⚠️ Without a load balancer, traffic distribution will be uneven and you cannot handle server failures gracefully. Reconsider!',
+              },
+            ];
+          }
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Server Capacity Planning Complete!',
+      keyTakeaways: [
+        'Always design for PEAK load, not average load',
+        'Account for 30% OS overhead (effective capacity = theoretical × 0.7)',
+        'Round UP when calculating server count (safety buffer)',
+        'Load balancers are essential for horizontal scaling (>1 server)',
+        'Formula: Servers = Peak RPS / (Single Server Capacity × 0.7)',
+      ],
+      nextSteps: 'Now that you understand throughput calculation, try the next problem: Peak vs Average Load Planning!',
+    },
+  },
 };
 
 /**
@@ -318,6 +523,208 @@ Servers needed: 15,000 / 1,400 = 10.7 → 11 servers
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Peak vs Average Load Planning',
+    subtitle: 'Learn why you must ALWAYS design for peak, not average',
+
+    objectives: [
+      'Understand traffic patterns (average, daily peak, weekend peak)',
+      'Calculate the cost of under-provisioning',
+      'Learn the difference between static and autoscaling approaches',
+      'Design for worst-case, not typical case',
+    ],
+
+    questions: [
+      {
+        id: 'avg_load',
+        step: 1,
+        category: 'throughput',
+        title: 'What is your average load?',
+        description: 'Your e-commerce API handles steady traffic most of the day.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter average RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 100000,
+          suggestedValue: 1000,
+        },
+        whyItMatters: 'Average load tells us the baseline. But here\'s the trap: many engineers provision for average and then wonder why their service crashes during lunch hour!',
+        commonMistakes: [
+          'Provisioning only for average load (causes peak-hour failures)',
+          'Not measuring traffic patterns over a full week/month',
+        ],
+        onAnswer: (answer) => {
+          return [
+            {
+              action: 'highlight',
+              reason: `Average load: ${answer} RPS. But wait - what about peak hours?`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'daily_peak',
+        step: 2,
+        category: 'throughput',
+        title: 'What is your daily peak load?',
+        description: 'E-commerce sites typically see peak traffic during lunch (12pm-1pm) and evening (7pm-9pm).',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter daily peak RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 100000,
+          suggestedValue: 8000,
+        },
+        whyItMatters: 'Daily peaks are predictable and recurring. Your service MUST handle this load every single day, or you lose customers during your busiest hours.',
+        commonMistakes: [
+          'Thinking autoscaling will save you (it has 2-3 min lag)',
+          'Not planning for daily peaks (only thinking about average)',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const avg = previousAnswers.avg_load || 1000;
+          const multiplier = (answer / avg).toFixed(1);
+          return [
+            {
+              action: 'highlight',
+              reason: `Daily peak is ${answer} RPS (${multiplier}× average). This happens EVERY day at lunch!`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'weekend_peak',
+        step: 3,
+        category: 'throughput',
+        title: 'What about weekend flash sales?',
+        description: 'Your marketing team runs flash sales every Saturday morning. Traffic can spike 10-15× normal.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter weekend peak RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 100000,
+          suggestedValue: 15000,
+        },
+        whyItMatters: 'Weekend peaks and flash sales are your TRUE worst-case scenario. You must design for the absolute peak, or accept losing revenue during high-value sales events.',
+        commonMistakes: [
+          'Thinking "flash sales only happen once a week, we can afford downtime"',
+          'Not testing architecture at peak load before launch',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const avg = previousAnswers.avg_load || 1000;
+          const multiplier = (answer / avg).toFixed(1);
+          return [
+            {
+              action: 'highlight',
+              reason: `Weekend peak: ${answer} RPS (${multiplier}× average). THIS is what you design for!`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'under_provision_scenario',
+        step: 4,
+        category: 'throughput',
+        title: 'What if you provision for average?',
+        description: 'Let\'s calculate what happens if you design for average load instead of peak.',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Provision for average (1,000 RPS)',
+            recommendation: '1 server ($100/mo)',
+            reasoning: 'At 15k RPS weekend peak → 14k requests/sec DROPPED',
+          },
+          {
+            condition: 'Provision for daily peak (8,000 RPS)',
+            recommendation: '6 servers ($600/mo)',
+            reasoning: 'Weekend flash sale → 7k requests/sec DROPPED',
+          },
+          {
+            condition: 'Provision for weekend peak (15,000 RPS)',
+            recommendation: '11 servers ($1,100/mo)',
+            reasoning: '✅ Handles all traffic, zero dropped requests',
+          },
+        ],
+        whyItMatters: 'Under-provisioning saves money short-term but costs you MUCH more in lost sales, customer frustration, and reputation damage during your most valuable traffic spikes.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'You must provision for the HIGHEST peak, or accept dropping requests during high-value events.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'calculate_servers',
+        step: 5,
+        category: 'throughput',
+        title: 'How many servers for weekend peak?',
+        description: 'Calculate servers needed for 15,000 RPS weekend peak.',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Servers = Peak RPS / (Server Capacity × 0.7)',
+          explanation: 'Weekend peak is the worst-case. Design for this!',
+          exampleInputs: {
+            'Weekend Peak RPS': 15000,
+            'Server Capacity': 2000,
+            'Effective Capacity': 1400,
+          },
+          exampleOutput: '15,000 / 1,400 = 10.7 → 11 servers',
+        },
+        whyItMatters: 'You need 11 servers to handle weekend peak. Yes, they\'ll be underutilized most of the time (only 7% utilization at average load), but that\'s the price of reliability.',
+        commonMistakes: [
+          'Thinking "11 servers is wasteful, let\'s use autoscaling"',
+          'Not accounting for autoscaling lag (2-3 minutes)',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const peakRps = previousAnswers.weekend_peak || 15000;
+          const serversNeeded = Math.ceil(peakRps / 1400);
+          return [
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: serversNeeded },
+              reason: `Adding ${serversNeeded} app servers to handle ${peakRps} RPS weekend peak.`,
+            },
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer to distribute traffic across all servers.',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client sends all requests to LB.',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes to server pool.',
+            },
+          ];
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Peak Load Planning Complete!',
+      keyTakeaways: [
+        'ALWAYS design for PEAK load, not average load',
+        'Traffic patterns: average < daily peak < weekend/event peak',
+        'Under-provisioning costs MORE than over-provisioning (lost revenue + reputation)',
+        'Autoscaling is NOT a solution for predictable daily peaks (2-3 min lag)',
+        'Your servers will be "underutilized" most of the time - that\'s OK!',
+      ],
+      nextSteps: 'Next problem: Learn how read/write ratio affects capacity planning!',
+    },
+  },
 };
 
 /**
@@ -602,6 +1009,318 @@ Result: Client → LB → AppServer → Write Queue → Batching Workers → DB 
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Read/Write Ratio Analysis',
+    subtitle: 'Learn why reads and writes have asymmetric costs',
+
+    objectives: [
+      'Understand read vs write performance characteristics',
+      'Calculate server capacity for mixed workloads',
+      'Learn why writes are the bottleneck',
+      'Know when to add caching vs write queues',
+    ],
+
+    questions: [
+      {
+        id: 'total_rps',
+        step: 1,
+        category: 'throughput',
+        title: 'What is your total traffic?',
+        description: 'You\'re building a social media or e-commerce API. Start with total RPS.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter total RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 100000,
+          suggestedValue: 10000,
+        },
+        whyItMatters: 'Total RPS is the starting point, but it\'s NOT enough! We need to know the read/write split because they have VERY different costs.',
+        onAnswer: (answer) => {
+          return [
+            {
+              action: 'highlight',
+              reason: `Total traffic: ${answer} RPS. But wait - how many are reads vs writes?`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'read_write_ratio',
+        step: 2,
+        category: 'throughput',
+        title: 'What is your read/write ratio?',
+        description: 'Different applications have different read/write patterns.',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'read_heavy_95_5',
+            label: '95% Reads / 5% Writes (Read-Heavy)',
+            description: 'E-commerce browsing, social feeds, news sites',
+            consequence: 'Bottleneck will be READS (database queries). Solution: Add caching + read replicas.',
+          },
+          {
+            id: 'balanced_50_50',
+            label: '50% Reads / 50% Writes (Balanced)',
+            description: 'Collaborative tools, messaging apps',
+            consequence: 'Both reads and writes matter. Need caching AND write optimization.',
+          },
+          {
+            id: 'write_heavy_10_90',
+            label: '10% Reads / 90% Writes (Write-Heavy)',
+            description: 'Logging systems, IoT sensors, analytics ingestion',
+            consequence: 'Bottleneck will be WRITES (database cannot keep up). Solution: Write queues + batching.',
+          },
+        ],
+        whyItMatters: 'Read/write ratio determines your architecture! Read-heavy → add caching. Write-heavy → add queues.',
+        commonMistakes: [
+          'Treating all RPS the same (reads are 4× faster than writes)',
+          'Not measuring actual read/write ratio in production',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const totalRps = previousAnswers.total_rps || 10000;
+          let readPercent, writePercent;
+
+          if (answer === 'read_heavy_95_5') {
+            readPercent = 0.95;
+            writePercent = 0.05;
+          } else if (answer === 'balanced_50_50') {
+            readPercent = 0.5;
+            writePercent = 0.5;
+          } else {
+            readPercent = 0.1;
+            writePercent = 0.9;
+          }
+
+          const readRps = Math.round(totalRps * readPercent);
+          const writeRps = Math.round(totalRps * writePercent);
+
+          return [
+            {
+              action: 'highlight',
+              reason: `Your workload: ${readRps} read RPS + ${writeRps} write RPS = ${totalRps} total RPS`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'asymmetric_costs',
+        step: 3,
+        category: 'throughput',
+        title: 'Asymmetric Performance',
+        description: 'Reads and writes have VERY different performance characteristics:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Read Operations',
+            recommendation: '2,000 RPS per server',
+            reasoning: 'Can be cached (5ms), read from replicas, scaled horizontally',
+          },
+          {
+            condition: 'Write Operations',
+            recommendation: '500 RPS per server',
+            reasoning: 'Must hit PRIMARY DB (50ms), cannot be cached, limited by DB',
+          },
+          {
+            condition: 'Performance Difference',
+            recommendation: 'Writes are 4× slower!',
+            reasoning: 'Database writes require: fsync, WAL, transaction log, indexes',
+          },
+        ],
+        whyItMatters: 'Writes are 4× more expensive than reads! This is why read-heavy apps are easier to scale than write-heavy apps.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Key insight: Reads (2000 RPS/server) vs Writes (500 RPS/server) = 4× difference!',
+            },
+          ];
+        },
+      },
+      {
+        id: 'server_calculation',
+        step: 4,
+        category: 'throughput',
+        title: 'Calculate Servers Needed',
+        description: 'For mixed workloads, calculate servers for EACH operation type, then take the MAX.',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Servers = MAX(Read Servers, Write Servers)',
+          explanation: 'Calculate servers for reads and writes separately, then deploy enough for the BOTTLENECK.',
+          exampleInputs: {
+            'Total RPS': 10000,
+            'Read/Write': '95:5',
+            'Read RPS': 9500,
+            'Write RPS': 500,
+            'Read Capacity': '2000 RPS/server',
+            'Write Capacity': '500 RPS/server',
+          },
+          exampleOutput: 'Read servers: 9500/2000 = 5\nWrite servers: 500/500 = 1\nDeploy: MAX(5, 1) = 5 servers',
+        },
+        whyItMatters: 'You deploy enough servers for whichever operation (read or write) needs MORE capacity. The bottleneck determines your server count!',
+        commonMistakes: [
+          'Adding read and write servers (wrong! they\'re the same physical servers)',
+          'Not accounting for the 4× difference in capacity',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const totalRps = previousAnswers.total_rps || 10000;
+          const ratio = previousAnswers.read_write_ratio;
+
+          let readRps, writeRps;
+          if (ratio === 'read_heavy_95_5') {
+            readRps = 9500;
+            writeRps = 500;
+          } else if (ratio === 'balanced_50_50') {
+            readRps = 5000;
+            writeRps = 5000;
+          } else {
+            readRps = 1000;
+            writeRps = 9000;
+          }
+
+          const readServers = Math.ceil(readRps / 2000);
+          const writeServers = Math.ceil(writeRps / 500);
+          const serversNeeded = Math.max(readServers, writeServers);
+
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer to distribute traffic.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: serversNeeded },
+              reason: `Deploying ${serversNeeded} servers (Read: ${readServers} needed, Write: ${writeServers} needed, Bottleneck: ${readServers > writeServers ? 'Reads' : 'Writes'})`,
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client → LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB → App Servers',
+            },
+          ];
+        },
+      },
+      {
+        id: 'architecture_implications',
+        step: 5,
+        category: 'throughput',
+        title: 'Architecture Based on Read/Write Ratio',
+        description: 'Different ratios require different architectures:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Read-Heavy (95:5)',
+            recommendation: 'Add: Cache + Read Replicas',
+            reasoning: 'Reads are bottleneck → cache 95% of reads (5ms) + read replicas for scale',
+          },
+          {
+            condition: 'Balanced (50:50)',
+            recommendation: 'Add: Cache + Write Queues',
+            reasoning: 'Both matter → cache reads + batch writes for efficiency',
+          },
+          {
+            condition: 'Write-Heavy (10:90)',
+            recommendation: 'Add: Write Queues + Batching + Sharding',
+            reasoning: 'Writes are bottleneck → queue for burst, batch for throughput, shard for scale',
+          },
+        ],
+        whyItMatters: 'Read/write ratio is a DECISION DRIVER! It tells you which components to add next.',
+        onAnswer: (answer, previousAnswers) => {
+          const ratio = previousAnswers.read_write_ratio;
+
+          if (ratio === 'read_heavy_95_5') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'storage',
+                reason: 'PostgreSQL for persistent storage.',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'storage',
+                reason: 'App Servers → Database (write 500 RPS, read 9500 RPS)',
+              },
+              {
+                action: 'highlight',
+                reason: 'Next module: Add CACHE layer to handle 9,500 read RPS with 95% hit ratio!',
+              },
+            ];
+          } else if (ratio === 'write_heavy_10_90') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'message_queue',
+                reason: 'Message queue to buffer 9,000 write RPS.',
+              },
+              {
+                action: 'add_component',
+                componentType: 'storage',
+                reason: 'PostgreSQL for persistent storage.',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'message_queue',
+                reason: 'App Servers → Queue (buffer writes)',
+              },
+              {
+                action: 'add_connection',
+                from: 'message_queue',
+                to: 'storage',
+                reason: 'Queue → Database (batch writes)',
+              },
+              {
+                action: 'highlight',
+                reason: 'Write-heavy workload requires QUEUES + BATCHING to handle 9,000 writes/sec!',
+              },
+            ];
+          } else {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'storage',
+                reason: 'PostgreSQL for persistent storage.',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'storage',
+                reason: 'App Servers → Database (balanced read/write)',
+              },
+              {
+                action: 'highlight',
+                reason: 'Balanced workload: Need both cache (for reads) AND write optimization!',
+              },
+            ];
+          }
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Read/Write Ratio Analysis Complete!',
+      keyTakeaways: [
+        'Reads and writes have ASYMMETRIC costs (4× difference)',
+        'Read capacity: 2,000 RPS/server | Write capacity: 500 RPS/server',
+        'Server calculation: MAX(Read Servers, Write Servers)',
+        'Read-heavy → Add caching + read replicas',
+        'Write-heavy → Add write queues + batching + sharding',
+      ],
+      nextSteps: 'Next: Learn about caching strategies to handle read-heavy workloads!',
+    },
+  },
 };
 
 /**
@@ -957,6 +1676,237 @@ Result: 0 dropped requests, users see "processing..." instead of errors
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Burst QPS Handling',
+    subtitle: 'Learn how to handle traffic spikes with request queues',
+
+    objectives: [
+      'Understand burst vs sustained load',
+      'Learn why autoscaling alone fails (2-3 min lag)',
+      'Calculate queue depth and drain rate',
+      'Design request queue + worker pool architecture',
+    ],
+
+    questions: [
+      {
+        id: 'burst_scenario',
+        step: 1,
+        category: 'throughput',
+        title: 'The Flash Sale Problem',
+        description: 'Your e-commerce site has a flash sale at 12pm. Normal traffic: 5,000 RPS. Flash sale: 20,000 RPS burst!',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'static_provision',
+            label: 'Provision for 20k RPS all day',
+            description: 'Deploy 15 servers 24/7',
+            consequence: '⚠️ Works but EXPENSIVE! $15,000/month for capacity you use 30 min/day.',
+          },
+          {
+            id: 'autoscaling',
+            label: 'Use autoscaling',
+            description: 'Scale from 5 → 15 servers when needed',
+            consequence: '❌ FAILS! Autoscaling has 2-3 min lag. Flash sale drops 15k requests before servers boot.',
+          },
+          {
+            id: 'request_queue',
+            label: 'Add request queue',
+            description: 'Queue buffers burst while workers scale up',
+            consequence: '✅ BEST! Queue accepts all requests (0 drops), workers scale up, queue drains in 2-3 min.',
+          },
+        },
+        whyItMatters: 'Autoscaling has 2-3 minute boot time. During flash sales, you drop thousands of requests before new servers are ready! Queues bridge this gap.',
+        commonMistakes: [
+          'Relying solely on autoscaling (ignoring boot lag)',
+          'Not testing flash sale scenarios before launch',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Autoscaling lag is 2-3 minutes. Flash sales last seconds. You NEED a buffer!',
+            },
+          ];
+        },
+      },
+      {
+        id: 'queue_depth_calculation',
+        step: 2,
+        category: 'throughput',
+        title: 'Calculate Queue Depth',
+        description: 'How many requests will queue up during the 3-minute autoscaling lag?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Queue Depth = (Burst RPS - Worker Capacity) × Lag Time',
+          explanation: 'During autoscaling lag, requests arrive faster than workers can process.',
+          exampleInputs: {
+            'Burst RPS': 20000,
+            'Initial Workers': '5 servers × 1,400 RPS = 7,000 RPS',
+            'Overflow Rate': '20,000 - 7,000 = 13,000 RPS',
+            'Autoscaling Lag': '3 minutes = 180 seconds',
+          },
+          exampleOutput: 'Queue Depth = 13,000 RPS × 180s = 2.34 million requests',
+        },
+        whyItMatters: 'You must provision a queue large enough to buffer ALL requests during autoscaling lag. Kafka/SQS can handle millions of messages.',
+        commonMistakes: [
+          'Underestimating queue capacity (queue fills up, drops requests)',
+          'Not monitoring queue depth in production',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Queue must hold 2.34M requests during 3-min autoscaling lag!',
+            },
+          ];
+        },
+      },
+      {
+        id: 'drain_rate',
+        step: 3,
+        category: 'throughput',
+        title: 'Calculate Drain Rate',
+        description: 'After autoscaling, how long to drain the queue?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Drain Time = Queue Depth / (Worker Capacity - Burst RPS)',
+          explanation: 'Once workers scale up, they process the queue faster than new requests arrive.',
+          exampleInputs: {
+            'Queue Depth': '2.34M requests',
+            'Scaled Workers': '15 servers × 1,400 RPS = 21,000 RPS',
+            'Burst RPS': '20,000 RPS (still ongoing)',
+            'Net Drain Rate': '21,000 - 20,000 = 1,000 RPS',
+          },
+          exampleOutput: 'Drain Time = 2.34M / 1,000 = 2,340 seconds = 39 minutes',
+        },
+        whyItMatters: 'Queue drain time determines user experience. 39 minutes is too long! Need more workers or burst must end.',
+        commonMistakes: [
+          'Not accounting for continued burst traffic while draining',
+          'Assuming queue drains instantly after scale-up',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer accepts all requests immediately.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'message_queue',
+              reason: 'Kafka queue buffers 2.34M requests during autoscaling lag.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 5 },
+              reason: 'Initial: 5 workers (7k RPS capacity). Will scale to 15.',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client → LB (accepts all requests, returns 202 Accepted)',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'message_queue',
+              reason: 'LB → Queue (enqueue all requests)',
+            },
+            {
+              action: 'add_connection',
+              from: 'message_queue',
+              to: 'compute',
+              reason: 'Queue → Workers (dequeue and process)',
+            },
+          ];
+        },
+      },
+      {
+        id: 'user_experience',
+        step: 4,
+        category: 'throughput',
+        title: '202 Accepted Pattern',
+        description: 'How do users experience queued requests?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Without Queue',
+            recommendation: 'User sees: 503 Service Unavailable',
+            reasoning: 'Dropped requests = angry customers + lost revenue',
+          },
+          {
+            condition: 'With Queue (202 Accepted)',
+            recommendation: 'User sees: "Processing your order..."',
+            reasoning: 'Request accepted, processing async, user polls status',
+          },
+          {
+            condition: 'Trade-off',
+            recommendation: 'Latency: 30-120 seconds vs instant',
+            reasoning: 'Users wait but don\'t lose their order',
+          },
+        ],
+        whyItMatters: 'The 202 Accepted HTTP status tells clients "request accepted, processing asynchronously". Users see progress instead of errors!',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: '202 Accepted: Request queued successfully. User polls /order/{id}/status for completion.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'when_to_use_queues',
+        step: 5,
+        category: 'throughput',
+        title: 'When to Use Request Queues',
+        description: 'Decision matrix for request queuing:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Predictable daily peaks',
+            recommendation: 'NO queue needed (static provision)',
+            reasoning: 'Provision for peak, use all day (Module 1 Problem 2)',
+          },
+          {
+            condition: 'Unpredictable bursts (flash sales, viral posts)',
+            recommendation: 'YES use queue',
+            reasoning: 'Burst duration unknown, queue absorbs spike',
+          },
+          {
+            condition: 'Burst > 5× normal load',
+            recommendation: 'YES use queue',
+            reasoning: 'Autoscaling cannot keep up with sudden 5× spike',
+          },
+        ],
+        whyItMatters: 'Queues add complexity. Only use when bursts are unpredictable OR >5× normal load. For predictable peaks, static provisioning is simpler.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Flash sales are unpredictable + >5× burst → Request queue is the right solution!',
+            },
+          ];
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Burst QPS Handling Complete!',
+      keyTakeaways: [
+        'Autoscaling has 2-3 min lag (AWS EC2 boot time)',
+        'Queue depth = (Burst RPS - Worker Capacity) × Lag Time',
+        'Request queue + 202 Accepted pattern for async processing',
+        'Trade-off: Latency (30-120s wait) vs dropped requests (0%)',
+        'Use queues for unpredictable bursts >5× normal load',
+      ],
+      nextSteps: 'Next: Learn about write queues and batching for database bottlenecks!',
+    },
+  },
 };
 
 /**
@@ -1944,6 +2894,259 @@ def update_post(post_id, content):
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Caching Strategies',
+    subtitle: 'Learn Cache-Aside, Write-Through, and Write-Behind patterns',
+
+    objectives: [
+      'Understand 3 caching strategies and their trade-offs',
+      'Learn when to use Cache-Aside (most common)',
+      'Know Write-Through for strong consistency',
+      'Understand Write-Behind for write-heavy workloads',
+    ],
+
+    questions: [
+      {
+        id: 'caching_problem',
+        step: 1,
+        category: 'latency',
+        title: 'Why Add Caching?',
+        description: 'Your social media API has 10,000 RPS with 90% reads. Database queries are slow (P99 = 450ms).',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'reduce_latency',
+            label: 'Reduce latency (speed up reads)',
+            description: 'Cache stores frequently accessed data in memory (5ms vs 50ms)',
+            consequence: '✅ CORRECT! Caching reduces read latency by 10×.',
+          },
+          {
+            id: 'reduce_db_load',
+            label: 'Reduce database load',
+            description: 'Cache handles 90% of reads, only 10% hit database',
+            consequence: '✅ ALSO CORRECT! With 90% cache hit ratio, DB load drops by 9×.',
+          },
+          {
+            id: 'both',
+            label: 'Both of the above',
+            description: 'Caching provides both faster reads AND lower DB load',
+            consequence: '✅ BEST ANSWER! Caching is a latency AND throughput optimization.',
+          },
+        ],
+        whyItMatters: 'Caching is one of the MOST impactful optimizations. It reduces latency (5ms vs 50ms) AND database load (90% cache hit = 10× fewer DB queries).',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Caching reduces P99 latency from 450ms → 50ms and DB load by 90%!',
+            },
+          ];
+        },
+      },
+      {
+        id: 'consistency_requirement',
+        step: 2,
+        category: 'consistency',
+        title: 'What consistency do you need?',
+        description: 'Different caching strategies offer different consistency guarantees.',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'eventual',
+            label: 'Eventual Consistency (OK if cache is stale for a few seconds)',
+            description: 'Social feeds, product listings, view counts',
+            consequence: 'Use Cache-Aside: Writes invalidate cache, next read reloads from DB.',
+          },
+          {
+            id: 'strong',
+            label: 'Strong Consistency (cache must ALWAYS match database)',
+            description: 'Bank balances, inventory counts, user profiles',
+            consequence: 'Use Write-Through: Writes update BOTH cache and DB synchronously.',
+          },
+          {
+            id: 'write_heavy',
+            label: 'Write-Heavy Workload (optimize write latency)',
+            description: 'Logging systems, analytics, time-series data',
+            consequence: 'Use Write-Behind: Writes go to cache first, async to DB.',
+          },
+        ],
+        whyItMatters: 'Consistency requirement determines your caching strategy! Eventual consistency → Cache-Aside. Strong consistency → Write-Through.',
+        commonMistakes: [
+          'Using Cache-Aside for financial data (can have stale cache)',
+          'Using Write-Through for read-heavy workloads (unnecessary complexity)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Consistency requirement is the PRIMARY decision driver for caching strategy.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'cache_aside_pattern',
+        step: 3,
+        category: 'latency',
+        title: 'Cache-Aside Pattern (Most Common)',
+        description: 'Cache-Aside is used by 90% of applications. Learn how it works:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Read Flow',
+            recommendation: '1. Check cache\n2. Miss → Read DB\n3. Write to cache\n4. Return',
+            reasoning: 'Lazy loading: Only cache what is actually read',
+          },
+          {
+            condition: 'Write Flow',
+            recommendation: '1. Write to DB\n2. Invalidate cache (delete key)\n3. Next read reloads',
+            reasoning: 'Invalidation prevents stale cache',
+          },
+          {
+            condition: 'Consistency',
+            recommendation: 'Eventual (stale for ~1 read)',
+            reasoning: 'After invalidation, next read sees latest data',
+          },
+        ],
+        whyItMatters: 'Cache-Aside is simple and works for 90% of use cases. Reads check cache first (fast path), writes invalidate cache (simple consistency).',
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer to distribute traffic.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 3 },
+              reason: 'App servers handle read/write logic.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'cache',
+              reason: 'Redis cache for Cache-Aside pattern (check cache first, load on miss).',
+            },
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              reason: 'PostgreSQL database (source of truth).',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client → LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB → App Servers',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'cache',
+              reason: 'App Server checks cache first.',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'storage',
+              reason: 'App Server reads from DB on cache miss.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'write_through_pattern',
+        step: 4,
+        category: 'consistency',
+        title: 'Write-Through Pattern (Strong Consistency)',
+        description: 'Write-Through ensures cache and database are ALWAYS in sync.',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Read Flow',
+            recommendation: '1. Check cache\n2. Miss → Read DB\n3. Write to cache\n4. Return',
+            reasoning: 'Same as Cache-Aside',
+          },
+          {
+            condition: 'Write Flow',
+            recommendation: '1. Write to cache\n2. Write to DB (sync)\n3. Return after BOTH complete',
+            reasoning: 'Cache and DB updated together (strong consistency)',
+          },
+          {
+            condition: 'Consistency',
+            recommendation: 'Strong (cache = DB always)',
+            reasoning: 'Writes are synchronous to both cache and DB',
+          },
+        ],
+        whyItMatters: 'Write-Through guarantees strong consistency but adds write latency (must write to cache AND DB). Use for critical data like bank balances.',
+        commonMistakes: [
+          'Using Write-Through for read-heavy workloads (adds complexity for little benefit)',
+          'Not considering write latency impact (2× slower writes)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Write-Through: Writes update BOTH cache and DB synchronously. Strong consistency but slower writes.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'strategy_decision',
+        step: 5,
+        category: 'latency',
+        title: 'Choose Your Strategy',
+        description: 'Decision matrix for caching strategies:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Read-Heavy + Eventual Consistency OK',
+            recommendation: 'Cache-Aside (90% of use cases)',
+            reasoning: 'Social feeds, news, product listings → simple and fast',
+          },
+          {
+            condition: 'Strong Consistency Required',
+            recommendation: 'Write-Through',
+            reasoning: 'Bank balances, inventory, user profiles → cache = DB always',
+          },
+          {
+            condition: 'Write-Heavy Workload',
+            recommendation: 'Write-Behind (async)',
+            reasoning: 'Logging, analytics, time-series → fast writes, batch to DB',
+          },
+        ],
+        whyItMatters: 'Most applications should start with Cache-Aside. Only use Write-Through if you need strong consistency. Write-Behind is for specialized write-heavy workloads.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Cache-Aside is the default choice. Only switch to Write-Through/Write-Behind when you have specific consistency or write-heavy requirements.',
+            },
+          ];
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Caching Strategies Complete!',
+      keyTakeaways: [
+        'Cache-Aside (90% of apps): Check cache → Miss → Load from DB → Write to cache',
+        'Write-Through (strong consistency): Write to cache + DB synchronously',
+        'Write-Behind (write-heavy): Write to cache → Async batch to DB',
+        'Cache-Aside invalidates on write (eventual consistency)',
+        'Cache hit ratio of 90% = 10× reduction in DB load',
+      ],
+      nextSteps: 'Next: Learn about replication patterns to scale database reads!',
+    },
+  },
 };
 
 /**
@@ -2581,6 +3784,281 @@ Client → Load Balancer → AppServer Pool → Database (PostgreSQL)
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'When to Add a Database',
+    subtitle: 'Learn the RISKIEST axis: What happens if we LOSE data?',
+
+    objectives: [
+      'Start with NO database (in-memory first)',
+      'Ask: What happens if we lose this data?',
+      'Decision matrix: In-memory vs Cache vs Database',
+      'Understand RPO (Recovery Point Objective) requirements',
+    ],
+
+    questions: [
+      {
+        id: 'intro_durability',
+        step: 1,
+        category: 'durability',
+        title: 'The RISKIEST Question',
+        description: 'Every tutorial says "add a database," but let\'s think critically: What happens if your server crashes and you LOSE data?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Risk = Impact of Data Loss × Probability of Loss',
+          explanation: 'Before adding a database, ask: How risky is data loss for THIS specific data?',
+          exampleInputs: {
+            'View Counter': 'Low impact (minor inaccuracy)',
+            'User Sessions': 'Medium impact (annoying re-login)',
+            'E-commerce Orders': 'CRITICAL impact (revenue loss, legal liability)',
+          },
+          exampleOutput: 'Data criticality determines storage strategy',
+        },
+        whyItMatters: 'Databases add cost, complexity, and latency. Start with in-memory and only add persistence when data loss is UNACCEPTABLE.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 3 },
+              reason: 'Starting with AppServers (in-memory only) - NO database yet!',
+            },
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer for traffic distribution.',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client → LB → AppServers (in-memory)',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes to app server pool.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'scenario_selection',
+        step: 2,
+        category: 'durability',
+        title: 'What are you building?',
+        description: 'Choose your scenario to understand durability requirements:',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'view_counter',
+            label: 'Article View Counter',
+            description: 'Track how many times articles are viewed',
+            consequence: 'Data loss impact: LOW - Users don\'t care if count is 100% accurate',
+          },
+          {
+            id: 'user_sessions',
+            label: 'User Login Sessions',
+            description: 'Track who is currently logged in',
+            consequence: 'Data loss impact: MEDIUM - Users hate re-logging in',
+          },
+          {
+            id: 'ecommerce_orders',
+            label: 'E-commerce Orders',
+            description: 'Store customer purchases and payments',
+            consequence: 'Data loss impact: CRITICAL - Revenue loss, legal liability',
+          },
+        ],
+        whyItMatters: 'Different data has different durability requirements. View counters can be approximate, but financial transactions must be durable!',
+        onAnswer: (answer) => {
+          return [
+            {
+              action: 'highlight',
+              reason: `You chose: ${answer}. Let's analyze durability requirements...`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'impact_analysis',
+        step: 3,
+        category: 'durability',
+        title: 'Impact Analysis',
+        description: 'Ask these 4 questions about your data:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Is it critical to product experience?',
+            recommendation: 'View Counter: NO | Sessions: ANNOYING | Orders: YES',
+            reasoning: 'How much do users care if this data is lost?',
+          },
+          {
+            condition: 'Is it a security/compliance issue?',
+            recommendation: 'View Counter: NO | Sessions: MODERATE | Orders: YES (PCI)',
+            reasoning: 'Legal requirements? Financial regulations?',
+          },
+          {
+            condition: 'Must we reconstruct on loss?',
+            recommendation: 'View Counter: NO | Sessions: NO | Orders: YES (7yr retention)',
+            reasoning: 'Can we rebuild from other sources?',
+          },
+          {
+            condition: 'What is acceptable RPO?',
+            recommendation: 'View Counter: ∞ | Sessions: 5min | Orders: 0 seconds',
+            reasoning: 'RPO = Recovery Point Objective (how much data loss OK?)',
+          },
+        ],
+        whyItMatters: 'RPO (Recovery Point Objective) determines your storage strategy. RPO = 0 means ZERO data loss acceptable → need database with ACID transactions!',
+        onAnswer: (answer, previousAnswers) => {
+          const scenario = previousAnswers.scenario_selection;
+          if (scenario === 'view_counter') {
+            return [
+              {
+                action: 'highlight',
+                reason: '✅ View counters: In-memory is FINE! Data loss is acceptable. NO database needed.',
+              },
+            ];
+          } else if (scenario === 'user_sessions') {
+            return [
+              {
+                action: 'highlight',
+                reason: '⚠️ User sessions: Use Redis/Memcached (persistent cache). Not a full database, but provides snapshots.',
+              },
+            ];
+          } else {
+            return [
+              {
+                action: 'highlight',
+                reason: '❌ E-commerce orders: MUST HAVE DATABASE! Data loss is unacceptable.',
+              },
+            ];
+          }
+        },
+      },
+      {
+        id: 'storage_decision',
+        step: 4,
+        category: 'durability',
+        title: 'Choose Your Storage Strategy',
+        description: 'Based on your durability requirements, select the right storage:',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'in_memory',
+            label: 'In-Memory Only (HashMap)',
+            description: 'No persistence, fastest, cheapest',
+            consequence: 'Data lost on crash. Good for: view counters, temporary data, caches',
+          },
+          {
+            id: 'persistent_cache',
+            label: 'Persistent Cache (Redis/Memcached)',
+            description: 'Periodic snapshots, TTL expiry',
+            consequence: 'Small data loss window (last 5 min). Good for: sessions, recent activity',
+          },
+          {
+            id: 'database',
+            label: 'ACID Database (PostgreSQL/MySQL)',
+            description: 'Full durability, ACID transactions',
+            consequence: 'Zero data loss. Good for: financial data, user accounts, orders',
+          },
+        ],
+        whyItMatters: 'This is the core trade-off: Durability vs Speed vs Cost. Choose based on data criticality, not what tutorials say!',
+        commonMistakes: [
+          'Adding a database "just because" (overkill for temporary data)',
+          'Using in-memory for financial data (legal liability)',
+          'Not considering Redis for session data (simpler than PostgreSQL)',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const scenario = previousAnswers.scenario_selection;
+
+          if (answer === 'database') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'storage',
+                reason: 'Adding PostgreSQL for durable storage (ACID guarantees).',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'storage',
+                reason: 'AppServers persist critical data to database.',
+              },
+            ];
+          } else if (answer === 'persistent_cache') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'cache',
+                reason: 'Adding Redis for persistent session storage (AOF/RDB snapshots).',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'cache',
+                reason: 'AppServers store sessions in Redis.',
+              },
+            ];
+          } else {
+            return [
+              {
+                action: 'highlight',
+                reason: 'In-memory only - NO additional components! Data stored in AppServer RAM.',
+              },
+            ];
+          }
+        },
+      },
+      {
+        id: 'decision_summary',
+        step: 5,
+        category: 'durability',
+        title: 'Decision Matrix Summary',
+        description: 'Here\'s the complete decision framework for durability:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'RPO = ∞ (data loss OK)',
+            recommendation: 'In-Memory (HashMap)',
+            reasoning: 'View counters, temporary caches, metrics',
+          },
+          {
+            condition: 'RPO = 1-5 minutes',
+            recommendation: 'Persistent Cache (Redis)',
+            reasoning: 'User sessions, recent activity, leaderboards',
+          },
+          {
+            condition: 'RPO = 0 (zero data loss)',
+            recommendation: 'ACID Database (PostgreSQL)',
+            reasoning: 'Financial transactions, user accounts, orders',
+          },
+        ],
+        whyItMatters: 'RPO (Recovery Point Objective) is the KEY metric. It tells you how much data loss is acceptable, which determines your storage choice.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Remember: Start with NO database and only add when RPO requires it!',
+            },
+          ];
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Durability Requirements Complete!',
+      keyTakeaways: [
+        'START with NO database - use in-memory storage first',
+        'Ask: What happens if we LOSE this data? (RISKIEST axis)',
+        'RPO = Recovery Point Objective (how much data loss OK?)',
+        'Decision matrix: RPO = ∞ → In-memory | RPO = 5min → Redis | RPO = 0 → Database',
+        'Databases add cost/complexity - only use when data loss is UNACCEPTABLE',
+      ],
+      nextSteps: 'Next: Learn about durability LEVELS (fsync, WAL, replication)!',
+    },
+  },
 };
 
 /**
@@ -2899,6 +4377,279 @@ Client → LB → AppServer → Primary DB (fsync + WAL)
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Durability Levels: Performance vs Data Safety',
+    subtitle: 'Learn fsync, WAL, and replication trade-offs',
+    objectives: [
+      'Understand the durability spectrum (async → fsync → WAL → replication)',
+      'Map RPO/RTO requirements to durability level',
+      'Calculate performance impact of each level',
+      'Choose appropriate level based on data criticality',
+    ],
+    questions: [
+      {
+        id: 'data_criticality',
+        step: 1,
+        category: 'durability',
+        title: 'What type of data are you storing?',
+        description: 'Different data types have different durability requirements. Let\'s identify yours.',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'financial',
+            label: 'Financial transactions (banking, payments)',
+            description: 'Customer money - ZERO data loss acceptable',
+            consequence: 'Required: Level 4 (Synchronous Replication). RPO = 0, RTO < 1min.',
+          },
+          {
+            id: 'user_data',
+            label: 'User profiles and e-commerce orders',
+            description: 'Important but not life-critical',
+            consequence: 'Required: Level 2-3 (fsync or WAL). RPO = 0, RTO = 5-30min OK.',
+          },
+          {
+            id: 'analytics',
+            label: 'Analytics, logs, and metrics',
+            description: 'Approximate data is acceptable',
+            consequence: 'Required: Level 1 (Async). RPO = 30s OK (can rebuild from sources).',
+          },
+        ],
+        whyItMatters: 'Data criticality determines durability level! Banking = 0 data loss (Level 4 replication). Logs = approximate OK (Level 1 async).',
+        commonMistakes: [
+          'Using async writes for financial data (ILLEGAL! Lose customer money on crash)',
+          'Using sync replication for logs (10× slower, not worth it)',
+          'Not considering regulatory requirements (HIPAA, SOX require WAL)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'financial') {
+            return [{
+              action: 'highlight',
+              reason: 'Banking → Level 4 Synchronous Replication! Data written to 3 servers before "success". Survives data center failure.',
+            }];
+          } else if (answer === 'user_data') {
+            return [{
+              action: 'highlight',
+              reason: 'User data → Level 2 fsync (default for most DBs). Every commit waits for disk write. No data loss on crash.',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: 'Analytics → Level 1 Async! Write to RAM, return immediately. 50k writes/sec. 30s data loss OK (can rebuild).',
+            }];
+          }
+        },
+      },
+      {
+        id: 'rpo_rto_requirements',
+        step: 2,
+        category: 'durability',
+        title: 'RPO & RTO Requirements',
+        description: 'What are your Recovery Point Objective (data loss) and Recovery Time Objective (downtime) requirements?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'RPO = 30s, RTO = Hours',
+            recommendation: 'Level 1: Async writes (50k writes/sec, 1-5ms latency)',
+            reasoning: 'Logs, metrics, gaming leaderboards. Can tolerate data loss and rebuild.',
+          },
+          {
+            condition: 'RPO = 0s, RTO = 30min',
+            recommendation: 'Level 2: fsync on commit (5k writes/sec, 5-20ms latency)',
+            reasoning: 'E-commerce, SaaS. Standard production database. Default PostgreSQL config.',
+          },
+          {
+            condition: 'RPO = 0s, RTO = 5min',
+            recommendation: 'Level 3: WAL + fsync (10k writes/sec, 3-10ms latency)',
+            reasoning: 'Financial, compliance. WAL = point-in-time recovery. Faster crash recovery.',
+          },
+          {
+            condition: 'RPO = 0s, RTO < 1min',
+            recommendation: 'Level 4: Sync replication (3k writes/sec, 10-50ms latency)',
+            reasoning: 'Banking, medical. ZERO data loss, automatic failover. Survives data center failure.',
+          },
+        ],
+        whyItMatters: 'RPO/RTO drive architecture! RPO = 0 → need fsync or replication. RTO < 1min → need automatic failover (replication).',
+        commonMistakes: [
+          'Confusing RPO and RTO (RPO = data loss, RTO = downtime)',
+          'Not testing recovery time (claimed RTO = 5min, actual = 2 hours)',
+          'Forgetting about correlated failures (same data center = both servers down)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer for high availability',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 3 },
+              reason: 'App servers (stateless)',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes to app servers',
+            },
+          ];
+        },
+      },
+      {
+        id: 'performance_impact',
+        step: 3,
+        category: 'durability',
+        title: 'Performance Trade-offs',
+        description: 'Each durability level has different performance characteristics.',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Throughput Reduction = (Disk I/O Time) / (Total Transaction Time)',
+          explanation: 'fsync adds disk I/O latency to every transaction. More durable = slower.',
+          exampleInputs: {
+            'Level 1 (Async)': '50,000 writes/sec (in-memory only)',
+            'Level 2 (fsync)': '5,000 writes/sec (10× slower - disk I/O)',
+            'Level 3 (WAL+fsync)': '10,000 writes/sec (5× slower - sequential writes)',
+            'Level 4 (Sync Repl)': '3,000 writes/sec (16× slower - network + 2× disk)',
+          },
+          exampleOutput: 'Trade-off: 10× performance drop for zero data loss (async → fsync)',
+        },
+        whyItMatters: 'Durability costs performance! Async = 50k writes/sec. Sync replication = 3k writes/sec (16× slower). But you get zero data loss + automatic failover.',
+        commonMistakes: [
+          'Not load testing with fsync enabled (dev = fsync off, prod = 10× slower)',
+          'Assuming disk = fast (SSD fsync = 5ms, HDD = 20ms)',
+          'Forgetting about network latency in replication (cross-region = +100ms)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 1 },
+              reason: 'Primary database with fsync + WAL enabled',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'storage',
+              reason: 'App servers write to primary DB',
+            },
+          ];
+        },
+      },
+      {
+        id: 'wal_deep_dive',
+        step: 4,
+        category: 'durability',
+        title: 'Write-Ahead Log (WAL) Benefits',
+        description: 'Why is WAL faster than direct disk writes?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'sequential_writes',
+            label: 'Sequential writes are faster than random writes',
+            description: 'WAL = append-only log (sequential). Data pages = random writes.',
+            consequence: '✅ CORRECT! SSD: Sequential = 500 MB/s, Random = 50 MB/s (10× faster). WAL exploits sequential I/O.',
+          },
+          {
+            id: 'compression',
+            label: 'WAL compresses data',
+            description: 'Compression reduces disk I/O',
+            consequence: '❌ WRONG! WAL is about write pattern, not compression. Sequential writes are the key.',
+          },
+          {
+            id: 'caching',
+            label: 'WAL uses a cache',
+            description: 'Cache avoids disk writes',
+            consequence: '❌ WRONG! WAL still writes to disk (fsync). But it uses sequential I/O which is 10× faster.',
+          },
+        ],
+        whyItMatters: 'WAL enables 2× better throughput vs direct data page updates. Sequential writes (WAL) = 10× faster than random writes (data pages). Plus crash recovery and point-in-time restore!',
+        commonMistakes: [
+          'Thinking WAL is "just a backup" (it\'s a performance optimization + recovery tool)',
+          'Not archiving WAL (lose point-in-time recovery capability)',
+          'Putting WAL on same disk as data (single failure point)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'sequential_writes') {
+            return [{
+              action: 'highlight',
+              reason: '✅ WAL = Sequential writes! Append-only log is 10× faster than random data page updates. Plus: crash recovery + point-in-time restore.',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: '❌ WAL speed comes from sequential I/O, not compression or caching. Sequential disk writes = 10× faster than random!',
+            }];
+          }
+        },
+      },
+      {
+        id: 'replication_architecture',
+        step: 5,
+        category: 'durability',
+        title: 'Synchronous Replication Architecture',
+        description: 'For banking (RPO=0, RTO<1min), you need Level 4. How many replicas?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: '1 Primary + 1 Replica (same region)',
+            recommendation: '❌ RISKY! Single region = data center failure takes down both.',
+            reasoning: 'Correlated failure: Power outage, network split, natural disaster.',
+          },
+          {
+            condition: '1 Primary + 2 Replicas (same region)',
+            recommendation: '⚠️ BETTER but still regional risk',
+            reasoning: 'Survives 1 server failure, but not regional outage.',
+          },
+          {
+            condition: '1 Primary + 2 Replicas (different regions)',
+            recommendation: '✅ BEST! Survives data center failure.',
+            reasoning: 'Primary + Replica 1 (same region, <1ms) + Replica 2 (cross-region, +50ms). RTO < 1min via automatic failover.',
+          },
+        ],
+        whyItMatters: 'For zero data loss + automatic failover, need 3 nodes across 2+ regions. Same-region replica = fast (<1ms). Cross-region replica = survives data center failure.',
+        commonMistakes: [
+          'All replicas in same data center (correlated failure)',
+          'Not testing failover (claimed RTO = 1min, actual = 30min manual recovery)',
+          'Forgetting about split-brain (2 nodes both think they\'re primary)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 2 },
+              reason: '2 synchronous replicas (1 same-region, 1 cross-region) for RPO=0, RTO<1min',
+            },
+            {
+              action: 'highlight',
+              reason: 'Final architecture: Primary + 2 sync replicas. Write waits for all 3 to fsync. Automatic failover on primary failure. Survives data center outage!',
+            },
+          ];
+        },
+      },
+    ],
+    summary: {
+      title: 'Durability Levels Mastered!',
+      keyTakeaways: [
+        'Level 1 (Async): 50k writes/sec, RPO=30s. Use for: Logs, analytics.',
+        'Level 2 (fsync): 5k writes/sec, RPO=0s. Use for: E-commerce, SaaS (default).',
+        'Level 3 (WAL+fsync): 10k writes/sec, RPO=0s, faster recovery. Use for: Finance, compliance.',
+        'Level 4 (Sync Repl): 3k writes/sec, RPO=0s, RTO<1min. Use for: Banking, medical.',
+        'Trade-off: 16× performance drop (async → sync repl) for zero data loss + failover.',
+      ],
+      nextSteps: 'Next: Learn when to shard your database (Module 5 - Dataset Size)!',
+    },
+  },
 };
 
 // ============================================================================
@@ -3212,6 +4963,274 @@ Client → LB → AppServer Pool → Shard Router
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'When to Shard Your Database',
+    subtitle: 'Learn the decision framework: Optimize → Vertical Scale → Shard',
+    objectives: [
+      'Understand when to optimize vs scale vertically vs shard',
+      'Learn the dataset size thresholds for each approach',
+      'Calculate shard count based on dataset size',
+      'Identify good sharding keys (user_id, tenant_id, region)',
+    ],
+    questions: [
+      {
+        id: 'dataset_size',
+        step: 1,
+        category: 'dataset_size',
+        title: 'What is your current dataset size?',
+        description: 'Your multi-tenant SaaS platform has grown significantly. Let\'s analyze if you need sharding.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter dataset size',
+          unit: 'TB',
+          min: 1,
+          max: 1000,
+          suggestedValue: 50,
+        },
+        whyItMatters: 'Dataset size is the PRIMARY factor in deciding sharding. Small datasets (<5TB) should avoid sharding complexity. Large datasets (>10TB) REQUIRE sharding because single servers have hard limits (AWS largest: 4TB RAM, 100TB disk).',
+        commonMistakes: [
+          'Sharding prematurely when dataset is <1TB (massive complexity for no gain)',
+          'Waiting too long to shard (migration becomes painful at 50TB+)',
+          'Not accounting for growth rate (if growing 10TB/year, shard NOW)',
+        ],
+        onAnswer: (answer) => {
+          const datasetSizeTB = answer;
+
+          if (datasetSizeTB < 5) {
+            return [{
+              action: 'highlight',
+              reason: `Dataset: ${datasetSizeTB}TB. This is small enough for a single server. Do NOT shard yet! Try optimization and vertical scaling first.`,
+            }];
+          } else if (datasetSizeTB < 20) {
+            return [{
+              action: 'highlight',
+              reason: `Dataset: ${datasetSizeTB}TB. You're in the gray zone. Sharding may be needed soon, but consider vertical scaling first if queries can be optimized.`,
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `Dataset: ${datasetSizeTB}TB. This REQUIRES sharding! Single servers max out at ~20TB. You need horizontal scaling.`,
+            }];
+          }
+        },
+      },
+      {
+        id: 'decision_framework',
+        step: 2,
+        category: 'dataset_size',
+        title: 'Decision Framework: When to Shard',
+        description: 'Before sharding, exhaust simpler solutions. Sharding adds massive complexity!',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Dataset < 100GB',
+            recommendation: '✅ Single server + optimization',
+            reasoning: 'Add indexes, optimize queries, partition tables. No sharding needed.',
+          },
+          {
+            condition: 'Dataset 100GB - 5TB',
+            recommendation: '✅ Vertical scale (buy bigger server)',
+            reasoning: 'Upgrade to 1TB RAM server. No code changes. Cost: $8k/month.',
+          },
+          {
+            condition: 'Dataset 5TB - 20TB',
+            recommendation: '⚠️ Consider sharding (depends on query pattern)',
+            reasoning: 'If queries are partitionable (e.g., by tenant_id), shard. Otherwise, vertical scale + partitioning.',
+          },
+          {
+            condition: 'Dataset > 20TB',
+            recommendation: '✅ Sharding required',
+            reasoning: 'Exceeds single-server limits. Must shard horizontally.',
+          },
+        ],
+        whyItMatters: 'Sharding is the LAST RESORT! It breaks ACID transactions, prevents cross-shard joins, and requires complex routing logic. Only shard when dataset size or growth rate forces it.',
+        commonMistakes: [
+          'Sharding too early (premature optimization)',
+          'Not trying vertical scaling first (often solves problem for 1/4 the complexity)',
+          'Sharding when queries need cross-shard joins (sharding won\'t help)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer distributes traffic to app servers',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 8 },
+              reason: 'App servers handle routing logic (determine which shard to query)',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes to app servers',
+            },
+          ];
+        },
+      },
+      {
+        id: 'shard_count_calculation',
+        step: 3,
+        category: 'dataset_size',
+        title: 'Calculate Shard Count',
+        description: 'How many shards do you need for a 50TB dataset?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Shards Needed = Dataset Size / Shard Capacity',
+          explanation: 'Each shard should hold ~10TB (AWS RDS max: 64TB, but 10TB is optimal for performance). For 50TB dataset, you need 5 shards.',
+          exampleInputs: {
+            'Dataset Size': 50,
+            'Shard Capacity': 10,
+          },
+          exampleOutput: 'Shards Needed = 50TB / 10TB = 5 shards',
+        },
+        whyItMatters: 'Each shard is a separate database server. Too few shards → each shard too large (slow queries). Too many shards → expensive and complex.',
+        commonMistakes: [
+          'Using too many shards (100 shards for 50TB = overkill)',
+          'Making shards too small (<1TB per shard = wasted overhead)',
+          'Not planning for growth (if growing 10TB/year, add buffer capacity)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 5 },
+              reason: '5 database shards (10TB each) to hold 50TB total dataset',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'storage',
+              reason: 'App servers route queries to correct shard based on sharding key',
+            },
+          ];
+        },
+      },
+      {
+        id: 'sharding_key',
+        step: 4,
+        category: 'dataset_size',
+        title: 'Choose Sharding Key',
+        description: 'For a multi-tenant SaaS platform, what should you shard by?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'tenant_id',
+            label: 'tenant_id (each store gets routed to specific shard)',
+            description: 'Tenant A → Shard 0, Tenant B → Shard 1, etc.',
+            consequence: '✅ BEST! 99% of queries are single-tenant (users only see their own store). All data for a tenant lives on one shard → no cross-shard joins!',
+          },
+          {
+            id: 'user_id',
+            label: 'user_id (each user gets routed to specific shard)',
+            description: 'User 1 → Shard 0, User 2 → Shard 1, etc.',
+            consequence: '❌ BAD! A single tenant\'s users would be scattered across shards. Queries like "get all users for tenant X" would require cross-shard joins.',
+          },
+          {
+            id: 'product_id',
+            label: 'product_id (each product gets routed to specific shard)',
+            description: 'Product A → Shard 0, Product B → Shard 1, etc.',
+            consequence: '❌ BAD! Queries like "get all products for tenant X" would require cross-shard joins. Tenant data should live together.',
+          },
+          {
+            id: 'timestamp',
+            label: 'timestamp (shard by time, e.g., recent data on Shard 0)',
+            description: 'Recent data → Shard 0, old data → Shard 1, etc.',
+            consequence: '❌ BAD for SaaS! Creates hot shards (all writes go to latest shard). Good for time-series data (logs), bad for transactional data.',
+          },
+        ],
+        whyItMatters: 'The sharding key determines which shard holds each row. CRITICAL: Choose a key where most queries are "single-shard" (don\'t need to query multiple shards). For multi-tenant SaaS, tenant_id is almost always the right choice.',
+        commonMistakes: [
+          'Sharding by user_id in multi-tenant systems (scatters tenant data)',
+          'Sharding by timestamp for transactional data (creates hot shards)',
+          'Choosing a key that requires cross-shard joins (defeats the purpose)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'tenant_id') {
+            return [{
+              action: 'highlight',
+              reason: '✅ Sharding by tenant_id! Each tenant\'s data lives on ONE shard. Queries like "get orders for Tenant X" hit a single shard → fast!',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `❌ Sharding by ${answer} would require cross-shard queries! For multi-tenant SaaS, always shard by tenant_id to keep tenant data together.`,
+            }];
+          }
+        },
+      },
+      {
+        id: 'sharding_tradeoffs',
+        step: 5,
+        category: 'cost',
+        title: 'Sharding Trade-offs',
+        description: 'Sharding gives you scalability, but at a cost. What do you lose?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'ACID Transactions',
+            recommendation: '❌ Lost (no cross-shard transactions)',
+            reasoning: 'Can\'t do transactions across shards. E.g., can\'t transfer money between users on different shards atomically.',
+          },
+          {
+            condition: 'Cross-Shard Joins',
+            recommendation: '❌ Lost (no joins across shards)',
+            reasoning: 'Can\'t JOIN tables on different shards. E.g., can\'t do "SELECT * FROM tenants JOIN orders" if they\'re on different shards.',
+          },
+          {
+            condition: 'Complexity',
+            recommendation: '❌ Massive increase',
+            reasoning: 'App code needs routing logic (which shard to query?). Migrations are complex. Rebalancing shards is painful.',
+          },
+          {
+            condition: 'Scalability',
+            recommendation: '✅ Gained (linear scaling)',
+            reasoning: 'Can scale to 100+ shards. No hard limits on dataset size.',
+          },
+          {
+            condition: 'Cost',
+            recommendation: '✅ Cost-effective vs vertical scaling',
+            reasoning: '5 × $2k servers ($10k total) vs 1 × $20k big server. Sharding is cheaper at scale.',
+          },
+        ],
+        whyItMatters: 'Sharding is a TRADE-OFF. You gain unlimited scalability but lose simplicity. Only shard when the benefits (handling >10TB datasets) outweigh the costs (complexity).',
+        commonMistakes: [
+          'Thinking sharding is "free" (it\'s NOT - massive code changes required)',
+          'Not planning for cross-shard queries (analytics, reporting need special handling)',
+          'Forgetting about rebalancing (what if Tenant X grows to 20TB?)',
+        ],
+        onAnswer: () => {
+          return [{
+            action: 'highlight',
+            reason: 'Architecture complete! 5 shards (10TB each) = 50TB capacity. Each tenant\'s data lives on ONE shard. Cross-shard queries avoided by sharding by tenant_id.',
+          }];
+        },
+      },
+    ],
+    summary: {
+      title: 'Sharding Decision Framework Complete!',
+      keyTakeaways: [
+        'Sharding Hierarchy: Optimize first → Vertical scale → Shard (last resort)',
+        'Dataset size thresholds: <5TB = single server, 5-20TB = vertical scale, >20TB = shard',
+        'Shard count = Dataset Size / 10TB (e.g., 50TB → 5 shards)',
+        'Sharding key: Choose what keeps related data together (tenant_id for SaaS)',
+        'Trade-offs: Gain scalability, lose ACID transactions & cross-shard joins',
+      ],
+      nextSteps: 'Next: Learn sharding STRATEGIES (hash vs range vs geo-based) in Problem 14!',
+    },
+  },
 };
 
 /**
@@ -3547,6 +5566,273 @@ AP Users → AP-South LB → AP AppServers → AP Shards (4 shards)
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Sharding Strategies: Hash vs Range vs Geo',
+    subtitle: 'Learn which sharding strategy fits your access patterns',
+    objectives: [
+      'Understand hash-based sharding (uniform distribution)',
+      'Learn range-based sharding (time-series optimization)',
+      'Master geo-based sharding (regional data sovereignty)',
+      'Choose strategy based on query patterns and requirements',
+    ],
+    questions: [
+      {
+        id: 'use_case',
+        step: 1,
+        category: 'dataset_size',
+        title: 'What type of application are you building?',
+        description: 'Different applications have different access patterns. Let\'s identify yours.',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'global_social',
+            label: 'Global social media app (Instagram/Twitter)',
+            description: 'Users worldwide, need low latency, GDPR compliance',
+            consequence: 'Access pattern: Regional (users mostly see content from same region). Best: Geo-based sharding.',
+          },
+          {
+            id: 'user_data',
+            label: 'User profile system (random access by user_id)',
+            description: 'Lookup users by ID, need uniform distribution',
+            consequence: 'Access pattern: Random access (by user_id). Best: Hash-based sharding.',
+          },
+          {
+            id: 'timeseries',
+            label: 'Log aggregation / Analytics (time-series data)',
+            description: 'Most queries are recent data, can archive old data',
+            consequence: 'Access pattern: Time-based (recent data hot). Best: Range-based sharding by timestamp.',
+          },
+        ],
+        whyItMatters: 'Your access pattern determines the sharding strategy! Social apps need geo-sharding for latency. User lookups need hash-sharding for uniform distribution. Logs need range-sharding for time-based queries.',
+        commonMistakes: [
+          'Using hash-based for time-series data (can\'t query date ranges efficiently)',
+          'Using range-based for user data (creates hot spots)',
+          'Ignoring GDPR requirements (geo-based sharding required for compliance)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'global_social') {
+            return [{
+              action: 'highlight',
+              reason: 'Global app → Geo-based sharding! Users in US hit US shards, EU users hit EU shards (low latency + GDPR compliance).',
+            }];
+          } else if (answer === 'user_data') {
+            return [{
+              action: 'highlight',
+              reason: 'Random access → Hash-based sharding! hash(user_id) % num_shards ensures uniform distribution.',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: 'Time-series → Range-based sharding! Shard by date ranges (recent data on hot shards, archive old shards).',
+            }];
+          }
+        },
+      },
+      {
+        id: 'strategy_comparison',
+        step: 2,
+        category: 'dataset_size',
+        title: 'Sharding Strategy Comparison',
+        description: 'Let\'s compare the 3 main strategies and their trade-offs.',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Hash-Based (user_id % N)',
+            recommendation: '✅ Uniform distribution | ❌ Expensive range queries',
+            reasoning: 'Best for: User profiles, session storage, random access. Avoids hot spots.',
+          },
+          {
+            condition: 'Range-Based (date ranges)',
+            recommendation: '✅ Fast range queries | ❌ Hot spots on recent data',
+            reasoning: 'Best for: Logs, metrics, analytics. Can archive old shards to cold storage.',
+          },
+          {
+            condition: 'Geo-Based (region)',
+            recommendation: '✅ Low latency + GDPR | ❌ Uneven distribution',
+            reasoning: 'Best for: Global apps. US has 50% of users, Asia 10% → unbalanced shards.',
+          },
+        ],
+        whyItMatters: 'Each strategy optimizes for different things. Hash → uniform distribution. Range → efficient time queries. Geo → low latency + compliance.',
+        commonMistakes: [
+          'Thinking one strategy is "best" for all cases (it depends on access patterns!)',
+          'Not considering compliance requirements (GDPR may FORCE geo-based sharding)',
+          'Ignoring hot spot risks (range-based creates hot shards for recent data)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer routes traffic based on sharding strategy',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 12 },
+              reason: 'App servers contain shard routing logic',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes to app servers',
+            },
+          ];
+        },
+      },
+      {
+        id: 'hash_based_deep_dive',
+        step: 3,
+        category: 'dataset_size',
+        title: 'Hash-Based Sharding (Most Common)',
+        description: 'How does hash-based sharding work?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Shard = hash(user_id) % num_shards',
+          explanation: 'Hash function distributes user IDs uniformly across shards.',
+          exampleInputs: {
+            'User ID': 12345,
+            'Hash Result': 'hash(12345) = 789654',
+            'Num Shards': 4,
+          },
+          exampleOutput: 'Shard = 789654 % 4 = 2 → Route to Shard 2',
+        },
+        whyItMatters: 'Hash-based sharding is the MOST COMMON strategy (90% of use cases). It guarantees uniform distribution and avoids hot spots (assuming good hash function).',
+        commonMistakes: [
+          'Using simple modulo without hashing (user_id % N creates patterns)',
+          'Not using consistent hashing (adding shards reshuffles ALL data)',
+          'Trying to do range queries on hashed data (requires querying ALL shards)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 4 },
+              reason: '4 database shards with uniform distribution via hash(user_id) % 4',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'storage',
+              reason: 'App servers route to shard based on hash(user_id) % 4',
+            },
+          ];
+        },
+      },
+      {
+        id: 'range_based_deep_dive',
+        step: 4,
+        category: 'dataset_size',
+        title: 'Range-Based Sharding (Time-Series)',
+        description: 'When do you use range-based sharding?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'logs_analytics',
+            label: 'Log aggregation and analytics',
+            description: 'Shard by date: 2022 data → Shard 0, 2023 → Shard 1, 2024 → Shard 2',
+            consequence: '✅ BEST! Range queries like "logs from Jan-Mar 2024" hit ONE shard. Old shards can be archived.',
+          },
+          {
+            id: 'user_profiles',
+            label: 'User profiles and authentication',
+            description: 'Shard by user_id ranges: 0-250k → Shard 0, 250k-500k → Shard 1',
+            consequence: '❌ BAD! Creates hot spots if new users cluster. Hash-based is better for random access.',
+          },
+          {
+            id: 'ecommerce_products',
+            label: 'E-commerce product catalog',
+            description: 'Shard by product_id ranges: 0-10M → Shard 0, 10M-20M → Shard 1',
+            consequence: '⚠️ RISKY! Hot spots if new products are popular. Hash-based safer unless you query by ranges.',
+          },
+        ],
+        whyItMatters: 'Range-based sharding optimizes for RANGE QUERIES (e.g., "all logs from Jan-Mar"). But it creates HOT SPOTS because recent data gets all writes!',
+        commonMistakes: [
+          'Using range-based for random access (defeats uniform distribution)',
+          'Not handling hot shards (recent data shard is overloaded)',
+          'Forgetting to archive old shards (wasted capacity on cold data)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'logs_analytics') {
+            return [{
+              action: 'highlight',
+              reason: '✅ Range-based for logs! Query "logs from Q1 2024" hits ONE shard. Archive 2022 shard to S3 (cold storage).',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `⚠️ Range-based for ${answer} creates hot spots! New users/products cluster in latest shard. Hash-based is safer.`,
+            }];
+          }
+        },
+      },
+      {
+        id: 'geo_based_deep_dive',
+        step: 5,
+        category: 'latency',
+        title: 'Geo-Based Sharding (Global Apps)',
+        description: 'You\'re building Instagram (500TB, 2B users: 50% US, 30% EU, 20% Asia). How to shard?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'US Region (50% of data)',
+            recommendation: 'US-East: 10 shards × 25TB = 250TB',
+            reasoning: 'Shard by region, then by hash(user_id) within region',
+          },
+          {
+            condition: 'EU Region (30% of data)',
+            recommendation: 'EU-West: 6 shards × 25TB = 150TB',
+            reasoning: 'GDPR requires EU data stays in EU (data sovereignty)',
+          },
+          {
+            condition: 'Asia Region (20% of data)',
+            recommendation: 'AP-South: 4 shards × 25TB = 100TB',
+            reasoning: 'Low latency for Asia-Pacific users',
+          },
+        ],
+        whyItMatters: 'Geo-based sharding solves 2 problems: (1) Low latency (data close to users), (2) Compliance (GDPR, CCPA require regional data storage). Trade-off: Uneven distribution (US has 50% of data).',
+        commonMistakes: [
+          'Not planning for uneven distribution (US has 5× more shards than Asia)',
+          'Trying to do cross-region queries synchronously (use async jobs instead)',
+          'Ignoring data sovereignty laws (GDPR fines up to 4% of revenue!)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 20 },
+              reason: '20 total shards: 10 (US) + 6 (EU) + 4 (Asia) for geo-based + hash sharding',
+            },
+            {
+              action: 'highlight',
+              reason: 'Architecture: 3 regional clusters. Within each region, hash-based sharding by user_id. US users hit US shards (low latency), EU data stays in EU (GDPR).',
+            },
+          ];
+        },
+      },
+    ],
+    summary: {
+      title: 'Sharding Strategies Mastered!',
+      keyTakeaways: [
+        'Hash-based (90% of cases): Uniform distribution, good for random access (user profiles)',
+        'Range-based (time-series): Fast range queries, but creates hot spots on recent data (logs)',
+        'Geo-based (global apps): Low latency + GDPR compliance, but uneven distribution (Instagram)',
+        'Formula: hash(key) % num_shards for uniform distribution',
+        'Trade-off: Uniform distribution (hash) vs Query efficiency (range) vs Latency (geo)',
+      ],
+      nextSteps: 'Next: Learn consistency models (read-after-write, monotonic reads) in Module 6!',
+    },
+  },
 };
 
 // ============================================================================
@@ -3936,6 +6222,272 @@ def get_feed(user_id):
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Read-After-Write Consistency',
+    subtitle: 'Learn session guarantees and how to implement them',
+
+    objectives: [
+      'Understand the 4 session guarantees',
+      'Learn 3 techniques: read-from-leader, sticky sessions, version tracking',
+      'Implement read-after-write consistency with Redis',
+      'Know when read-after-write is needed vs eventual consistency',
+    ],
+
+    questions: [
+      {
+        id: 'consistency_problem',
+        step: 1,
+        category: 'consistency',
+        title: 'The Consistency Problem',
+        description: 'User posts a tweet and immediately refreshes. Will they see their own tweet?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'always_yes',
+            label: 'Always YES (by default)',
+            description: 'Databases automatically show you what you wrote',
+            consequence: '❌ WRONG! With replicas, your read might go to a replica that hasn\'t synced yet.',
+          },
+          {
+            id: 'maybe',
+            label: 'MAYBE (depends on architecture)',
+            description: 'You might or might not see your write',
+            consequence: '✅ CORRECT! With replication lag, you might read from a stale replica.',
+          },
+          {
+            id: 'always_no',
+            label: 'Always NO',
+            description: 'Distributed systems never show your own writes',
+            consequence: '❌ WRONG! We can implement read-after-write with the right techniques.',
+          },
+        ],
+        whyItMatters: 'This is the READ-AFTER-WRITE problem. With database replication, writes go to the PRIMARY but reads can go to REPLICAS. Replication lag = stale data!',
+        commonMistakes: [
+          'Assuming databases "just work" (ignoring replication lag)',
+          'Not testing consistency in distributed environments',
+        ],
+        onAnswer: (answer) => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'With replicas, replication lag can cause users to NOT see their own writes immediately!',
+            },
+          ];
+        },
+      },
+      {
+        id: 'session_guarantees',
+        step: 2,
+        category: 'consistency',
+        title: 'The 4 Session Guarantees',
+        description: 'There are 4 types of consistency guarantees for user sessions:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: '1. Read-After-Write',
+            recommendation: 'User sees their own writes',
+            reasoning: 'After I post a tweet, I MUST see it when I refresh',
+          },
+          {
+            condition: '2. Monotonic Reads',
+            recommendation: 'Reads never go backwards in time',
+            reasoning: 'If I saw a tweet once, I will ALWAYS see it (no time travel)',
+          },
+          {
+            condition: '3. Monotonic Writes',
+            recommendation: 'Writes happen in order',
+            reasoning: 'If I post Tweet A then Tweet B, they appear in that order',
+          },
+          {
+            condition: '4. Consistent Prefix Reads',
+            recommendation: 'See writes in causal order',
+            reasoning: 'If someone replies to Tweet A, you see Tweet A first',
+          },
+        ],
+        whyItMatters: 'Read-after-write is the MOST important guarantee. Users expect to see their own writes immediately!',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Today we\'re implementing Read-After-Write consistency (guarantee #1).',
+            },
+          ];
+        },
+      },
+      {
+        id: 'implementation_choice',
+        step: 3,
+        category: 'consistency',
+        title: 'Choose Implementation Technique',
+        description: 'There are 3 ways to implement read-after-write consistency:',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'read_from_leader',
+            label: '1. Read-from-Leader (after write)',
+            description: 'Track recent writers, route their reads to PRIMARY',
+            consequence: '✅ Best approach! Use Redis to track recent writers (30s TTL). If user wrote recently → read from PRIMARY, else → read from REPLICA.',
+          },
+          {
+            id: 'sticky_sessions',
+            label: '2. Sticky Sessions',
+            description: 'Route user to same replica always',
+            consequence: '⚠️ Doesn\'t guarantee read-after-write (replica might still be stale). Use for monotonic reads instead.',
+          },
+          {
+            id: 'version_tracking',
+            label: '3. Version Tracking',
+            description: 'Client tracks version, waits for replica to catch up',
+            consequence: '⚠️ Complex! Client must track versions and retry. Only use for strict ordering requirements.',
+          },
+        ],
+        whyItMatters: 'Read-from-leader is the simplest and most reliable approach. Track who wrote recently, route their reads to the PRIMARY (source of truth).',
+        commonMistakes: [
+          'Using sticky sessions (doesn\'t solve read-after-write)',
+          'Always reading from PRIMARY (defeats the purpose of replicas)',
+          'Not setting TTL on writer tracking (memory leak)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'read_from_leader') {
+            return [
+              {
+                action: 'highlight',
+                reason: 'Read-from-leader: We\'ll use Redis to track recent writers for 30 seconds!',
+              },
+            ];
+          } else {
+            return [
+              {
+                action: 'highlight',
+                reason: 'Consider read-from-leader instead - it\'s simpler and more reliable!',
+              },
+            ];
+          }
+        },
+      },
+      {
+        id: 'architecture_design',
+        step: 4,
+        category: 'consistency',
+        title: 'Build the Architecture',
+        description: 'Let\'s implement read-from-leader with Redis tracking:',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'if (redis.exists("recent_writer:" + user_id)) { read from PRIMARY } else { read from REPLICA }',
+          explanation: 'After a write, set Redis key with 30s TTL. Reads check Redis first.',
+          exampleInputs: {
+            'On Write': 'redis.setex("recent_writer:user123", 30, "1")',
+            'On Read': 'if (redis.exists("recent_writer:user123")) → PRIMARY else → REPLICA',
+            'After 30s': 'TTL expires → back to REPLICA (faster reads)',
+          },
+          exampleOutput: 'Read-after-write guaranteed for 30 seconds post-write',
+        },
+        whyItMatters: '30-second TTL is enough for users to see their own write immediately, then we route back to replicas for performance.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer to route traffic.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 3 },
+              reason: 'App servers to handle requests.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'cache',
+              reason: 'Redis to track recent writers (recent_writer:{user_id} with 30s TTL).',
+            },
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              reason: 'PostgreSQL Primary (writes + recent-writer reads).',
+            },
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              reason: 'PostgreSQL Replica (regular reads).',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client → LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB → App Servers',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'cache',
+              reason: 'App Server checks Redis for recent writer flag.',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'storage',
+              reason: 'App Server writes to PRIMARY, reads from PRIMARY if recent writer.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'flow_walkthrough',
+        step: 5,
+        category: 'consistency',
+        title: 'Read-After-Write Flow',
+        description: 'Here\'s how read-after-write works step-by-step:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'User posts tweet (WRITE)',
+            recommendation: '1. Write to PRIMARY\n2. Set Redis: recent_writer:user123 = 1 (30s TTL)',
+            reasoning: 'Mark this user as a recent writer',
+          },
+          {
+            condition: 'User refreshes immediately (READ)',
+            recommendation: '1. Check Redis: recent_writer:user123 exists\n2. READ FROM PRIMARY',
+            reasoning: 'Recent writer → read from source of truth',
+          },
+          {
+            condition: 'User refreshes after 31 seconds (READ)',
+            recommendation: '1. Check Redis: recent_writer:user123 expired\n2. READ FROM REPLICA',
+            reasoning: 'Not recent anymore → use fast replica reads',
+          },
+        ],
+        whyItMatters: 'This pattern gives you consistency when you need it (immediately after write) and performance when you don\'t (regular reads).',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Read-from-leader pattern: Recent writers → PRIMARY, everyone else → REPLICA!',
+            },
+          ];
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Read-After-Write Consistency Complete!',
+      keyTakeaways: [
+        '4 session guarantees: Read-after-write, Monotonic reads, Monotonic writes, Consistent prefix',
+        'Read-after-write = users see their own writes immediately',
+        'Implementation: Track recent writers in Redis (30s TTL)',
+        'Read flow: Recent writer → PRIMARY, else → REPLICA',
+        'Trade-off: Consistency for recent writers, performance for everyone else',
+      ],
+      nextSteps: 'Next: Learn about consistency LEVELS (Linearizability, Causal, Eventual)!',
+    },
+  },
 };
 
 /**
