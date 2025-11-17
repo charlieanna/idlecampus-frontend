@@ -1465,6 +1465,244 @@ Social media API with highly variable traffic:
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Autoscaling: Dynamic Capacity for Variable Load',
+    subtitle: 'Learn how to configure autoscaling policies and handle scale-up lag',
+    objectives: [
+      'Understand static vs dynamic provisioning cost tradeoffs',
+      'Configure autoscaling min/max and scaling triggers',
+      'Handle scale-up lag (2-3 min boot time)',
+      'Prevent scale-down thrashing with cooldown periods',
+    ],
+    questions: [
+      {
+        id: 'static_vs_autoscaling',
+        step: 1,
+        category: 'cost',
+        title: 'Static Provisioning Waste',
+        description: 'Your social media API: 500 RPS overnight, 20k RPS peak (event spikes). Static provisioning for peak = 15 servers 24/7.',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Utilization = Actual RPS / (Servers × Capacity per Server)',
+          explanation: 'Static provisioning for peak wastes money during low traffic.',
+          exampleInputs: {
+            'Overnight RPS': 500,
+            'Static Servers': '15 servers (for 20k peak)',
+            'Capacity per Server': '1,400 RPS',
+          },
+          exampleOutput: 'Utilization = 500 / (15 × 1,400) = 2.4% ❌ (97.6% waste!)',
+        },
+        whyItMatters: 'Static provisioning for peak = wasted capacity during off-peak. At 500 RPS overnight, 15 servers are 97.6% idle! Autoscaling = pay for what you use.',
+        commonMistakes: [
+          'Provisioning for peak 24/7 (massive waste during low traffic)',
+          'Not measuring traffic patterns (need data to size autoscaling)',
+          'Ignoring cost (autoscaling can save 70-80% vs static)',
+        ],
+        onAnswer: () => {
+          return [{
+            action: 'highlight',
+            reason: 'Static provisioning waste: Overnight = 2.4% utilization! Autoscaling: Min 2 servers (baseline), max 15 (peak). Saves 70% cost.',
+          }];
+        },
+      },
+      {
+        id: 'min_max_configuration',
+        step: 2,
+        category: 'throughput',
+        title: 'Configure Min/Max Instances',
+        description: 'How many min/max instances for 500 RPS baseline and 20k RPS peak?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Minimum Instances',
+            recommendation: 'Min = 2 servers (covers 500 RPS baseline)',
+            reasoning: 'Never scale below baseline load. 2 servers × 1,400 RPS = 2,800 capacity > 500 RPS.',
+          },
+          {
+            condition: 'Maximum Instances',
+            recommendation: 'Max = 15 servers (covers 20k RPS spike)',
+            reasoning: '15 servers × 1,400 RPS = 21,000 capacity. Handles 20k spike + 5% headroom.',
+          },
+          {
+            condition: 'Cost Savings',
+            recommendation: 'Avg 5 servers (vs 15 static) = 67% cost reduction',
+            reasoning: 'Pay for average (5 servers), not peak (15 servers). Autoscaling saves $1,000/month!',
+          },
+        ],
+        whyItMatters: 'Min = always-on baseline. Max = peak capacity. Autoscaling scales between min and max based on load. Set min too high = waste. Set max too low = can\'t handle peak.',
+        commonMistakes: [
+          'Setting min = max (defeats autoscaling purpose)',
+          'Setting min = 0 (cold start kills latency)',
+          'Setting max too low (can\'t handle peak spikes)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer distributes to dynamic server pool',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 5 },
+              reason: 'Autoscaling pool: Min 2, currently 5, max 15 servers',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes to autoscaling pool',
+            },
+          ];
+        },
+      },
+      {
+        id: 'scaling_metrics',
+        step: 3,
+        category: 'throughput',
+        title: 'Choose Scaling Metrics',
+        description: 'What metrics should trigger autoscaling: scale up when...',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'cpu_only',
+            label: 'CPU > 70%',
+            description: 'Scale based on CPU utilization',
+            consequence: '⚠️ CPU lags actual load! Spike hits → CPU spikes → scale triggered → 3 min lag → requests already dropped.',
+          },
+          {
+            id: 'rps_only',
+            label: 'RPS > 1,000 per server',
+            description: 'Scale based on requests per second',
+            consequence: '✅ BETTER! RPS is leading indicator. Spike → immediate scale trigger → still has 3 min lag but starts sooner.',
+          },
+          {
+            id: 'cpu_or_rps',
+            label: 'CPU > 70% OR RPS > 1,000 per server',
+            description: 'Scale based on either metric',
+            consequence: '✅ BEST! Redundancy: CPU handles compute-heavy, RPS handles traffic spikes. Whichever hits threshold first triggers scale.',
+          },
+        ],
+        whyItMatters: 'Scaling metrics determine WHEN to scale. CPU = lagging indicator (reacts to load). RPS = leading indicator (predicts load). Use both for redundancy!',
+        commonMistakes: [
+          'Using CPU only (lags actual traffic, slow to react)',
+          'Setting threshold too high (90% = already overloaded)',
+          'Not using multiple metrics (single metric can miss edge cases)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'cpu_or_rps') {
+            return [{
+              action: 'highlight',
+              reason: '✅ Multi-metric scaling! CPU OR RPS triggers scale. Whichever hits first wins. Best practice: redundant triggers catch all scenarios.',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `${answer} misses edge cases! Best: CPU > 70% OR RPS > 1,000. Multiple triggers = faster reaction to different load patterns.`,
+            }];
+          }
+        },
+      },
+      {
+        id: 'scale_up_lag',
+        step: 4,
+        category: 'latency',
+        title: 'Handle Scale-Up Lag',
+        description: '20k RPS spike hits. Autoscaling triggers. New servers take 3 minutes to boot. What happens?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Dropped Requests = (Spike RPS - Current Capacity) × Lag Time',
+          explanation: 'During 3-min lag, requests exceed capacity.',
+          exampleInputs: {
+            'Spike RPS': 20000,
+            'Current Capacity': '5 servers × 1,400 = 7,000 RPS',
+            'Overflow': '20,000 - 7,000 = 13,000 RPS',
+            'Scale-up Lag': '3 minutes = 180 seconds',
+          },
+          exampleOutput: 'Dropped = 13,000 × 180 = 2.34 million requests ❌',
+        },
+        whyItMatters: 'Autoscaling has 2-3 min boot lag (AWS EC2). During spike, requests overflow capacity → dropped! Solutions: (1) Scale proactively (at 60% not 100%), (2) Add request queue.',
+        commonMistakes: [
+          'Expecting instant scaling (autoscaling takes 2-3 min)',
+          'Scaling at 100% capacity (already dropping requests)',
+          'Not using queue for burst (autoscaling alone can\'t handle sudden spikes)',
+        ],
+        onAnswer: () => {
+          return [{
+            action: 'highlight',
+            reason: 'Scale-up lag = 3 min → 2.34M dropped requests! Solutions: Scale at 60-70% (proactive) or add request queue for burst buffering.',
+          }];
+        },
+      },
+      {
+        id: 'scale_down_delay',
+        step: 5,
+        category: 'cost',
+        title: 'Prevent Scale-Down Thrashing',
+        description: 'Traffic drops from 8k → 2k RPS. Should you scale down immediately?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'immediate',
+            label: 'Scale down immediately (save money)',
+            description: 'Traffic drops → remove servers instantly',
+            consequence: '❌ THRASHING! Traffic fluctuates → scale up/down constantly → boot lag kills performance.',
+          },
+          {
+            id: 'cooldown_10min',
+            label: 'Wait 10 minutes before scale down',
+            description: 'Cooldown period prevents thrashing',
+            consequence: '✅ BEST! Wait 10 min to confirm traffic is sustained low. Prevents rapid up/down cycling.',
+          },
+          {
+            id: 'never',
+            label: 'Never scale down (keep capacity)',
+            description: 'Scale up only',
+            consequence: '⚠️ Wastes money! Evening peak ends → keeps 15 servers overnight (only need 2). Defeats autoscaling purpose.',
+          },
+        ],
+        whyItMatters: 'Scale-down delay prevents thrashing (rapid up/down). Traffic fluctuates → wait 10 min before removing servers. Confirms sustained drop, not temporary dip.',
+        commonMistakes: [
+          'Scaling down too quickly (thrashing wastes boot time)',
+          'Never scaling down (wastes money on idle servers)',
+          'Using same trigger for up and down (asymmetric delays needed)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'cooldown_10min') {
+            return [{
+              action: 'highlight',
+              reason: '✅ Cooldown period! Wait 10 min before scale-down. Prevents thrashing. Asymmetric: Scale up fast (1 min), scale down slow (10 min).',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `${answer} causes problems! Best: 10 min cooldown before scale-down. Confirms sustained low traffic, prevents rapid up/down cycling.`,
+            }];
+          }
+        },
+      },
+    ],
+    summary: {
+      title: 'Autoscaling Mastered!',
+      keyTakeaways: [
+        'Static provisioning waste: 97.6% idle overnight! Autoscaling saves 67% cost.',
+        'Min/max config: Min = baseline (2 servers), max = peak (15 servers).',
+        'Scaling metrics: CPU > 70% OR RPS > 1,000 per server (multi-metric = best).',
+        'Scale-up lag: 2-3 min boot time → 2.34M dropped requests during spike. Solution: Scale proactively or add queue.',
+        'Scale-down delay: 10 min cooldown prevents thrashing. Asymmetric: Up fast, down slow.',
+      ],
+      nextSteps: 'Module 1 complete! Next: Module 2 - Burst handling with request queues.',
+    },
+  },
 };
 
 // ============================================================================
@@ -2128,6 +2366,272 @@ Client → LB → AppServer → Write Queue (Kafka)
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Write Queue Batching: 30× Throughput Improvement',
+    subtitle: 'Learn how batching amortizes transaction costs for write-heavy workloads',
+    objectives: [
+      'Identify write bottlenecks (DB transaction overhead)',
+      'Calculate batching efficiency gains (30× improvement)',
+      'Design 202 Accepted async write pattern',
+      'Know when queues work vs don\'t work (async vs sync writes)',
+    ],
+    questions: [
+      {
+        id: 'write_bottleneck',
+        step: 1,
+        category: 'throughput',
+        title: 'The Write Bottleneck',
+        description: 'Your e-commerce platform: 10k writes/sec (orders, reviews). Database capacity: 3k writes/sec. Why?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'cpu_limited',
+            label: 'CPU is maxed out',
+            description: 'Database CPU at 100%',
+            consequence: '❌ WRONG! CPU is only 30%. Problem is disk fsync latency, not CPU.',
+          },
+          {
+            id: 'transaction_overhead',
+            label: 'Each write = separate transaction = disk fsync',
+            description: 'fsync costs 0.3ms per write',
+            consequence: '✅ CORRECT! 1 write per txn → 1 fsync → 0.3ms → max 3k writes/sec. Transaction overhead is the bottleneck!',
+          },
+          {
+            id: 'network_latency',
+            label: 'Network latency between app and DB',
+            description: 'Network adds latency',
+            consequence: '❌ WRONG! Same data center = <1ms network. Problem is disk fsync (0.3ms), not network.',
+          },
+        ],
+        whyItMatters: 'Each write is a transaction: BEGIN → INSERT → COMMIT (fsync). Disk fsync = 0.3ms = max 3k writes/sec. This is the bottleneck, not CPU or network!',
+        commonMistakes: [
+          'Blaming CPU when disk is the bottleneck',
+          'Adding more database servers (won\'t help - each still 3k writes/sec)',
+          'Not understanding transaction overhead (fsync cost)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'transaction_overhead') {
+            return [{
+              action: 'highlight',
+              reason: '✅ Transaction overhead! Each write = BEGIN + INSERT + COMMIT (fsync 0.3ms). Max throughput = 1 / 0.3ms = 3,333 writes/sec.',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: 'Not CPU or network! Problem: Disk fsync per transaction. Each commit waits for disk → 0.3ms → max 3k writes/sec.',
+            }];
+          }
+        },
+      },
+      {
+        id: 'batching_insight',
+        step: 2,
+        category: 'throughput',
+        title: 'The Batching Insight',
+        description: 'Instead of 1 write per transaction, batch 100 writes. What throughput can you achieve?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Throughput = Batch Size / Transaction Time',
+          explanation: 'Batch 100 writes in one transaction → 1 fsync for 100 writes → 100× fewer fsyncs!',
+          exampleInputs: {
+            'Batch Size': '100 writes',
+            'Transaction Time': '1ms (100 INSERTs + 1 COMMIT)',
+            'fsync Time': '0.3ms (same as before, but amortized)',
+          },
+          exampleOutput: 'Throughput = 100 writes / 1ms = 100,000 writes/sec (30× improvement!)',
+        },
+        whyItMatters: 'Batching amortizes expensive fsync across many writes! 1 fsync for 100 writes = 100× fewer disk operations = 30× throughput improvement.',
+        commonMistakes: [
+          'Thinking batching doesn\'t help (it\'s the KEY optimization!)',
+          'Batching too small (batch 10 = only 3× improvement)',
+          'Batching too large (batch 10k = high latency, memory issues)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer for traffic distribution',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 10 },
+              reason: 'App servers validate and enqueue writes',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes traffic',
+            },
+          ];
+        },
+      },
+      {
+        id: 'write_queue_design',
+        step: 3,
+        category: 'throughput',
+        title: 'Write Queue Architecture',
+        description: 'How do you implement batching? You need a write queue to accumulate writes before batching.',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'AppServer',
+            recommendation: 'Validate input → Enqueue to Kafka → Return 202 Accepted',
+            reasoning: 'Immediate response (no waiting for DB). User sees "Processing your order".',
+          },
+          {
+            condition: 'Write Queue (Kafka)',
+            recommendation: 'Buffer writes until batch size or timeout',
+            reasoning: 'Accumulate 100 messages OR 200ms timeout (whichever first).',
+          },
+          {
+            condition: 'Batching Workers',
+            recommendation: 'Pull 100 writes → BEGIN; INSERT × 100; COMMIT;',
+            reasoning: 'One transaction for 100 writes = 1 fsync (amortized cost).',
+          },
+        ],
+        whyItMatters: 'Write queue decouples write spikes from DB. AppServers enqueue instantly (202 Accepted). Workers batch writes asynchronously. Queue absorbs bursts!',
+        commonMistakes: [
+          'Batching in app servers (can\'t accumulate across multiple requests)',
+          'No timeout (if only 50 writes arrive, waits forever for 100)',
+          'Writing directly to DB (no buffering = can\'t batch effectively)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'message_queue',
+              config: { count: 1 },
+              reason: 'Kafka write queue buffers writes for batching',
+            },
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 1 },
+              reason: 'PostgreSQL receives batched writes',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'message_queue',
+              reason: 'App servers enqueue writes (return 202 Accepted)',
+            },
+            {
+              action: 'add_connection',
+              from: 'message_queue',
+              to: 'storage',
+              reason: 'Batching workers: Pull 100 writes → Batch INSERT → COMMIT',
+            },
+          ];
+        },
+      },
+      {
+        id: 'batch_size_tradeoff',
+        step: 4,
+        category: 'latency',
+        title: 'Batch Size Trade-off',
+        description: 'Larger batch = higher throughput but higher latency. What batch size?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'batch_10',
+            label: 'Batch 10 writes (low latency)',
+            description: 'Timeout: 50ms',
+            consequence: '⚠️ Only 3× improvement (30k writes/sec). Need 100× for 10k writes/sec requirement.',
+          },
+          {
+            id: 'batch_100',
+            label: 'Batch 100 writes (balanced)',
+            description: 'Timeout: 200ms',
+            consequence: '✅ BEST! 30× improvement (100k writes/sec). P99 latency < 500ms (acceptable for async). Meets requirements!',
+          },
+          {
+            id: 'batch_10000',
+            label: 'Batch 10,000 writes (max throughput)',
+            description: 'Timeout: 10 seconds',
+            consequence: '❌ Latency too high! Users wait 10+ seconds. Memory issues (10k writes in RAM). Over-optimization.',
+          },
+        ],
+        whyItMatters: 'Batch size tradeoff: Larger = higher throughput, higher latency. Batch 100 = sweet spot (30× improvement, <500ms latency). Batch 10k = overkill.',
+        commonMistakes: [
+          'Optimizing for max throughput (ignoring latency)',
+          'Batch 10k = memory issues + high latency',
+          'Batch 1 = defeats batching purpose',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'batch_100') {
+            return [{
+              action: 'highlight',
+              reason: '✅ Batch 100! Throughput: 100k writes/sec. Latency: P99 < 500ms. Perfect balance for async writes (orders, logs, analytics).',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `${answer} has issues! Batch 100 = sweet spot. 30× throughput improvement, reasonable latency (<500ms).`,
+            }];
+          }
+        },
+      },
+      {
+        id: 'when_not_to_queue',
+        step: 5,
+        category: 'consistency',
+        title: 'When NOT to Use Write Queues',
+        description: 'Write queues are async (202 Accepted). When is this unacceptable?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: '✅ Async-tolerant writes',
+            recommendation: 'Orders, reviews, logs, analytics, emails',
+            reasoning: 'Users accept "Processing" status. 500ms latency OK.',
+          },
+          {
+            condition: '❌ Real-time critical writes',
+            recommendation: 'Stock trading, payment auth, inventory reservation',
+            reasoning: 'Need immediate confirmation. Can\'t tolerate async delay.',
+          },
+          {
+            condition: '❌ Read-heavy workloads',
+            recommendation: 'Search queries, product browsing',
+            reasoning: 'Users won\'t wait 200ms for search results! Use caching instead (Module 3).',
+          },
+        ],
+        whyItMatters: 'Write queues = async (202 Accepted). Good for: orders, logs. Bad for: stock trading (need sync confirmation), reads (use cache instead!).',
+        commonMistakes: [
+          'Using queues for reads (users won\'t wait - use cache!)',
+          'Using queues for sync-critical writes (payment auth needs immediate response)',
+          'Thinking all writes are async-tolerant (some need immediate confirmation)',
+        ],
+        onAnswer: () => {
+          return [{
+            action: 'highlight',
+            reason: '✅ Write queues for async writes only! Orders/logs = OK. Stock trading/payments = NO (need sync). Reads = NO (use cache).',
+          }];
+        },
+      },
+    ],
+    summary: {
+      title: 'Write Queue Batching Mastered!',
+      keyTakeaways: [
+        'Write bottleneck: Each transaction = fsync (0.3ms) → max 3k writes/sec.',
+        'Batching: 100 writes per txn → 1 fsync for 100 writes → 100k writes/sec (30× improvement).',
+        'Architecture: AppServer → Queue (Kafka) → Batching workers → DB.',
+        '202 Accepted pattern: Enqueue immediately, return "Processing", batch asynchronously.',
+        'When to use: Async-tolerant writes (orders, logs). NOT for: sync-critical (payments), reads (use cache).',
+      ],
+      nextSteps: 'Module 2 complete! Next: Module 3 - Latency optimization (P99, caching, CDC pipelines).',
+    },
+  },
 };
 
 // ============================================================================
@@ -2333,6 +2837,269 @@ Weighted average P99:            ~50ms ✅
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'P99 Latency & Latency Budgets',
+    subtitle: 'Learn why averages lie and how to allocate latency budgets',
+    objectives: [
+      'Understand percentiles (P50, P95, P99, P999) vs averages',
+      'Learn why P99 matters more than average latency',
+      'Allocate latency budgets across system hops',
+      'Identify when caching is needed to fix tail latency',
+    ],
+    questions: [
+      {
+        id: 'percentile_basics',
+        step: 1,
+        category: 'latency',
+        title: 'Why P99 Matters More Than Average',
+        description: 'Your API has average latency of 120ms, but users complain it\'s slow. What\'s happening?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Average Latency',
+            recommendation: '120ms ✅ Looks good!',
+            reasoning: 'But averages LIE! They hide tail latency (worst-case performance).',
+          },
+          {
+            condition: 'P50 (Median)',
+            recommendation: '80ms ✅ Half of requests under 80ms',
+            reasoning: '50% of users see fast responses, but what about the other 50%?',
+          },
+          {
+            condition: 'P99 (99th percentile)',
+            recommendation: '450ms ❌ 1 in 100 requests take 450ms!',
+            reasoning: 'This is the problem! P99 violations = bad user experience for 1% of requests.',
+          },
+          {
+            condition: 'P999 (99.9th percentile)',
+            recommendation: '2,100ms ❌ 1 in 1,000 requests take 2+ seconds!',
+            reasoning: 'Worst-case latency. At 10k RPS, 10 requests/sec see this terrible performance.',
+          },
+        ],
+        whyItMatters: 'Averages hide problems! P99 = 450ms means 1 in 100 requests are slow. At 10k RPS, that\'s 100 slow requests per second! P99 is your SLO target, not average.',
+        commonMistakes: [
+          'Optimizing for average latency instead of P99 (leaves tail latency unfixed)',
+          'Not measuring percentiles (you can\'t fix what you don\'t measure)',
+          'Thinking "1% is acceptable" (at scale, 1% = millions of angry users)',
+        ],
+        onAnswer: () => {
+          return [{
+            action: 'highlight',
+            reason: 'P99 = 450ms (target 200ms). Problem: Database queries taking 380ms at P99. Need to add caching!',
+          }];
+        },
+      },
+      {
+        id: 'fanout_amplification',
+        step: 2,
+        category: 'latency',
+        title: 'Fan-Out Amplification',
+        description: 'If your API calls 10 downstream services, what\'s the probability of hitting P99 latency?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'P(hit P99) = 1 - (0.99)^N',
+          explanation: 'Each downstream call has 1% chance of P99. With N calls, probability compounds.',
+          exampleInputs: {
+            'Downstream calls (N)': 10,
+            'P99 probability per call': '1% = 0.01',
+          },
+          exampleOutput: 'P(hit P99) = 1 - (0.99)^10 = 1 - 0.904 = 9.6% ❌',
+        },
+        whyItMatters: 'Fan-out amplifies tail latency! With 10 downstream calls, 9.6% of requests hit P99 somewhere (not 1%). This is why microservices struggle with latency - every service adds P99 risk.',
+        commonMistakes: [
+          'Assuming P99 stays at 1% with fan-out (it compounds!)',
+          'Not budgeting for fan-out (10 services × 20ms each = 200ms baseline)',
+          'Adding services without considering latency impact',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer for traffic distribution',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 10 },
+              reason: 'App servers (10 servers handling 10k RPS)',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes traffic',
+            },
+          ];
+        },
+      },
+      {
+        id: 'latency_budget_breakdown',
+        step: 3,
+        category: 'latency',
+        title: 'Latency Budget Allocation',
+        description: 'You have a 200ms P99 budget. How do you allocate it across system hops?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Network (client → LB)',
+            recommendation: '20ms allocated',
+            reasoning: 'Internet latency varies. Reserve 20ms for network jitter.',
+          },
+          {
+            condition: 'Load Balancer',
+            recommendation: '10ms allocated',
+            reasoning: 'LB processing is fast (L7 routing, health checks).',
+          },
+          {
+            condition: 'AppServer Processing',
+            recommendation: '40ms allocated',
+            reasoning: 'Business logic, JSON serialization, validation. Keep this light!',
+          },
+          {
+            condition: 'Database Query',
+            recommendation: '130ms allocated (65% of budget!)',
+            reasoning: 'Database is usually the slowest component. This is your optimization target.',
+          },
+        ],
+        whyItMatters: 'Latency budget = 200ms total. Allocate across hops: Network (20ms) + LB (10ms) + App (40ms) + DB (130ms). If DB takes 380ms at P99, you\'re 250ms OVER budget!',
+        commonMistakes: [
+          'Not allocating budgets (everything takes "as long as it needs")',
+          'Making app logic too heavy (50+ ms processing steals from DB budget)',
+          'Forgetting network latency (mobile users have 100+ ms networks)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 1 },
+              reason: 'PostgreSQL database - current P99 query latency = 380ms ❌',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'storage',
+              reason: 'App servers query database (380ms P99 - exceeds 130ms budget)',
+            },
+          ];
+        },
+      },
+      {
+        id: 'identify_bottleneck',
+        step: 4,
+        category: 'latency',
+        title: 'Identify the Bottleneck',
+        description: 'Current P99 breakdown: Network (20ms) + LB (10ms) + App (40ms) + DB (380ms) = 450ms. What\'s the fix?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'faster_cpu',
+            label: 'Upgrade app servers to faster CPUs',
+            description: 'Reduce app processing from 40ms to 20ms',
+            consequence: '❌ Saves 20ms, but DB still takes 380ms. Total = 430ms (still over budget).',
+          },
+          {
+            id: 'add_cache',
+            label: 'Add Redis cache to reduce DB load',
+            description: 'Cache hit (95%) = 5ms, Cache miss (5%) = 380ms',
+            consequence: '✅ BEST! P99 cache hit = 5ms. Total latency = 20+10+40+5 = 75ms ✅ Well under 200ms!',
+          },
+          {
+            id: 'database_sharding',
+            label: 'Shard the database',
+            description: 'Split data across multiple DBs',
+            consequence: '⚠️ OVERKILL! Dataset is only 100GB (fits on one DB). Sharding won\'t help latency here. Cache is simpler.',
+          },
+        ],
+        whyItMatters: 'DB is the bottleneck (380ms). Fix bottlenecks, not fast components! Adding cache reduces DB load 95% → P99 drops to 5ms (75× faster).',
+        commonMistakes: [
+          'Optimizing the wrong thing (e.g., shaving 10ms off LB when DB takes 380ms)',
+          'Not fixing the bottleneck first (80/20 rule: fix the slowest hop)',
+          'Over-engineering (sharding when caching would suffice)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'add_cache') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'cache',
+                config: { count: 1 },
+                reason: 'Redis cache for read-heavy workload (95% hit ratio)',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'cache',
+                reason: 'Check cache BEFORE hitting database',
+              },
+              {
+                action: 'add_connection',
+                from: 'cache',
+                to: 'storage',
+                reason: 'Cache miss → read from database',
+              },
+            ];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `${answer} doesn't fix the bottleneck! DB takes 380ms. Add cache to reduce P99 to 5ms.`,
+            }];
+          }
+        },
+      },
+      {
+        id: 'cache_hit_ratio',
+        step: 5,
+        category: 'latency',
+        title: 'Cache Hit Ratio Impact',
+        description: 'With cache added, what\'s the new P99 latency?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'P99 Latency = Network + LB + App + Cache Hit',
+          explanation: 'Cache hit ratio = 95%. At P99, request hits cache (not DB).',
+          exampleInputs: {
+            'Network': '20ms',
+            'Load Balancer': '10ms',
+            'AppServer': '40ms',
+            'Cache Hit (95%)': '5ms',
+          },
+          exampleOutput: 'P99 = 20 + 10 + 40 + 5 = 75ms ✅ (well under 200ms target)',
+        },
+        whyItMatters: 'Cache hit ratio determines latency! 95% hit ratio → P99 = 75ms. 80% hit ratio → P99 = 200ms (still acceptable). 50% hit ratio → P99 = 450ms (cache doesn\'t help).',
+        commonMistakes: [
+          'Low cache hit ratio (<80%) makes cache ineffective',
+          'Not warming cache (cold start = 0% hit ratio)',
+          'Caching wrong data (e.g., writes - cache is for reads!)',
+        ],
+        onAnswer: () => {
+          return [{
+            action: 'highlight',
+            reason: 'Final P99: 75ms ✅ Target met! Cache reduced DB load from 380ms → 5ms (95% hit ratio). Latency budget: 75ms used of 200ms available.',
+          }];
+        },
+      },
+    ],
+    summary: {
+      title: 'P99 Latency & Latency Budgets Mastered!',
+      keyTakeaways: [
+        'P99 matters more than average! At 10k RPS, P99=450ms = 100 slow requests/sec.',
+        'Fan-out amplifies tail latency: 10 downstream calls → 9.6% hit P99 (not 1%).',
+        'Latency budget allocation: Network (20ms) + LB (10ms) + App (40ms) + DB (130ms).',
+        'Fix bottlenecks first! DB at 380ms → Add cache → P99 drops to 5ms.',
+        'Cache hit ratio critical: 95% hit ratio = 75× faster (380ms → 5ms).',
+      ],
+      nextSteps: 'Next: Learn data processing latency (CDC pipelines for real-time indexing)!',
+    },
+  },
 };
 
 /**
@@ -2568,6 +3335,279 @@ TOTAL:                              25s ✅ (under 30s target!)
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Data Processing Latency & CDC Pipelines',
+    subtitle: 'Learn request-response vs freshness latency and real-time data pipelines',
+    objectives: [
+      'Distinguish request-response latency from data processing latency',
+      'Set freshness SLOs for derived data (search indexes, analytics)',
+      'Understand CDC (Change Data Capture) patterns',
+      'Design event-driven architectures with Kafka',
+    ],
+    questions: [
+      {
+        id: 'two_types_of_latency',
+        step: 1,
+        category: 'latency',
+        title: 'Two Types of Latency',
+        description: 'You added product search. Users query in 100ms (fast!), but new products take 5 minutes to appear. What\'s wrong?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Request-Response Latency',
+            recommendation: 'P99 = 100ms ✅ (user query → search results)',
+            reasoning: 'User-facing latency is fast! Search queries return quickly.',
+          },
+          {
+            condition: 'Data Processing Latency (Freshness)',
+            recommendation: 'P99 = 5 minutes ❌ (new product → searchable)',
+            reasoning: 'Derived data is stale! Batch job runs every 5 minutes to update search index.',
+          },
+        ],
+        whyItMatters: 'Request-response latency ≠ Data processing latency! Search queries are fast (100ms), but search index freshness is slow (5 min). These are SEPARATE SLOs!',
+        commonMistakes: [
+          'Confusing the two types of latency (fast queries ≠ fresh data)',
+          'Not setting freshness SLOs for derived data (search, analytics, ML models)',
+          'Thinking batch jobs are "real-time" (5 min batch = 5 min stale data)',
+        ],
+        onAnswer: () => {
+          return [{
+            action: 'highlight',
+            reason: 'Problem: Batch job polls DB every 5 min → Data processing latency = 5 min. Target: P99 freshness < 30 seconds. Need real-time CDC!',
+          }];
+        },
+      },
+      {
+        id: 'batch_vs_cdc',
+        step: 2,
+        category: 'latency',
+        title: 'Batch Processing vs CDC',
+        description: 'Current approach: Batch job polls PostgreSQL every 5 minutes. Why is this bad?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'slow_freshness',
+            label: 'Slow freshness (5 min avg, 10 min worst-case)',
+            description: 'Product added at 2:00pm, indexed at 2:05pm',
+            consequence: '✅ CORRECT! Batch frequency determines freshness. 5 min batch = 5 min stale. Can\'t do better without increasing batch frequency (expensive!).',
+          },
+          {
+            id: 'db_load_spikes',
+            label: 'DB load spikes every 5 minutes',
+            description: 'Full table scan every 5 min',
+            consequence: '✅ ALSO CORRECT! Batch job scans entire products table (100GB). Causes DB CPU spikes every 5 min.',
+          },
+          {
+            id: 'both',
+            label: 'Both of the above',
+            description: 'Slow freshness + DB load spikes',
+            consequence: '✅ BEST ANSWER! Batch processing has TWO problems: (1) Stale data, (2) Inefficient full-table scans.',
+          },
+        ],
+        whyItMatters: 'Batch processing doesn\'t scale! 5 min batch = 5 min staleness + full table scans. Real-time CDC captures ONLY changes (inserts/updates/deletes) immediately.',
+        commonMistakes: [
+          'Running batch more frequently (1 min batch = 60× DB load, still not real-time)',
+          'Not considering DB load impact (full table scans kill performance)',
+          'Thinking polling = real-time (polling has inherent lag)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer for traffic distribution',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 5 },
+              reason: 'App servers',
+            },
+            {
+              action: 'add_component',
+              componentType: 'cache',
+              config: { count: 1 },
+              reason: 'Redis cache for fast reads',
+            },
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 1 },
+              reason: 'PostgreSQL (source of truth)',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes traffic',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'cache',
+              reason: 'Check cache first',
+            },
+            {
+              action: 'add_connection',
+              from: 'cache',
+              to: 'storage',
+              reason: 'Cache miss → database',
+            },
+          ];
+        },
+      },
+      {
+        id: 'cdc_introduction',
+        step: 3,
+        category: 'latency',
+        title: 'Change Data Capture (CDC)',
+        description: 'How does CDC achieve real-time freshness (<30 seconds)?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Freshness = CDC Capture + Transport + Processing + Indexing',
+          explanation: 'CDC captures DB changes from transaction log (not polling!)',
+          exampleInputs: {
+            'CDC capture (DB → Kafka)': '2s (monitors transaction log)',
+            'Kafka transport': '1s (event stream)',
+            'Search indexer processing': '8s (consumer processes event)',
+            'Elasticsearch indexing': '12s (index update)',
+            'Cache invalidation': '2s (parallel)',
+          },
+          exampleOutput: 'Total freshness = 2 + 1 + 8 + 12 = 23s ✅ (under 30s target)',
+        },
+        whyItMatters: 'CDC monitors PostgreSQL transaction log in real-time (not polling!). Every INSERT/UPDATE/DELETE triggers event → Kafka → Consumers. Freshness = 23s (not 5 min).',
+        commonMistakes: [
+          'Thinking CDC polls the database (it reads transaction logs!)',
+          'Not budgeting time for each pipeline stage (CDC + transport + processing + indexing)',
+          'Forgetting about consumer lag (Kafka consumer can fall behind)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'message_queue',
+              config: { count: 1 },
+              reason: 'Kafka for CDC event stream',
+            },
+            {
+              action: 'add_connection',
+              from: 'storage',
+              to: 'message_queue',
+              reason: 'CDC connector (Debezium) captures DB changes → Kafka',
+            },
+          ];
+        },
+      },
+      {
+        id: 'cdc_benefits',
+        step: 4,
+        category: 'latency',
+        title: 'Why CDC > Batch',
+        description: 'What are the key benefits of CDC over batch processing?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Freshness',
+            recommendation: 'CDC: 23s | Batch: 5 min (13× faster)',
+            reasoning: 'Real-time event capture vs periodic polling',
+          },
+          {
+            condition: 'Efficiency',
+            recommendation: 'CDC: Only changes | Batch: Full table scan',
+            reasoning: '1 insert = 1 event (KB) vs scanning 100GB table',
+          },
+          {
+            condition: 'Scalability',
+            recommendation: 'CDC: Multiple consumers | Batch: Single job',
+            reasoning: 'Kafka event → search indexer + cache invalidator + analytics (parallel)',
+          },
+          {
+            condition: 'Decoupling',
+            recommendation: 'CDC: Event-driven | Batch: Tight coupling',
+            reasoning: 'Add new consumers without changing DB or existing consumers',
+          },
+        ],
+        whyItMatters: 'CDC = Real-time (23s) + Efficient (only changes) + Scalable (multi-consumer) + Decoupled (event-driven). Batch = Slow (5 min) + Wasteful (full scans) + Single-purpose.',
+        commonMistakes: [
+          'Not leveraging multi-consumer pattern (Kafka → search + cache + analytics)',
+          'Treating CDC as "just faster batch" (it\'s a paradigm shift!)',
+          'Adding CDC without removing batch jobs (maintain both = technical debt)',
+        ],
+        onAnswer: () => {
+          return [{
+            action: 'highlight',
+            reason: 'CDC architecture complete! PostgreSQL → Debezium CDC → Kafka → Consumers (search indexer, cache invalidator, analytics). Freshness: 23s vs 5 min (13× improvement).',
+          }];
+        },
+      },
+      {
+        id: 'freshness_slo',
+        step: 5,
+        category: 'latency',
+        title: 'Freshness SLO',
+        description: 'How do you set a freshness SLO for search index?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'p99_30s',
+            label: 'P99 freshness < 30 seconds',
+            description: '99% of products indexed within 30s',
+            consequence: '✅ CORRECT! Freshness SLO = time from DB write to index update. P99 accounts for pipeline lag spikes.',
+          },
+          {
+            id: 'average_30s',
+            label: 'Average freshness < 30 seconds',
+            description: 'Mean time to index',
+            consequence: '❌ Averages hide tail latency! P99 = 5 min even if average = 30s (outliers).',
+          },
+          {
+            id: 'p50_30s',
+            label: 'P50 freshness < 30 seconds',
+            description: 'Median time to index',
+            consequence: '⚠️ Too lenient! 50% of products can take >30s. Users notice stale results. Use P99.',
+          },
+        ],
+        whyItMatters: 'Freshness SLO = P99 time from DB write → derived data update. Just like request-response latency, use P99 (not average) to catch tail latency!',
+        commonMistakes: [
+          'Using average instead of P99 for freshness (hides outliers)',
+          'Not monitoring freshness at all (can\'t improve what you don\'t measure)',
+          'Setting same SLO for all derived data (search = 30s, analytics = 5 min OK)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'p99_30s') {
+            return [{
+              action: 'highlight',
+              reason: '✅ P99 freshness < 30s! Measure: timestamp(DB write) - timestamp(index update). CDC pipeline achieves 23s P99. Monitor Kafka consumer lag!',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `${answer} hides tail latency! Use P99 for freshness SLO (just like request-response latency). Catch outliers before users notice.`,
+            }];
+          }
+        },
+      },
+    ],
+    summary: {
+      title: 'Data Processing Latency & CDC Mastered!',
+      keyTakeaways: [
+        'Request-response latency ≠ Data processing latency (freshness). Set SEPARATE SLOs!',
+        'Batch processing: 5 min freshness + full table scans. Doesn\'t scale.',
+        'CDC (Change Data Capture): Monitors transaction log → Kafka → Consumers. Real-time!',
+        'Freshness formula: CDC (2s) + Transport (1s) + Processing (8s) + Indexing (12s) = 23s.',
+        'CDC benefits: 13× faster + efficient (only changes) + multi-consumer (search + cache + analytics).',
+      ],
+      nextSteps: 'Next: Learn caching strategies (cache-aside vs write-through vs write-behind)!',
+    },
+  },
 };
 
 /**
@@ -3505,6 +4545,281 @@ Client → LB → AppServer → Cache (Redis)
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Replication Patterns: Single vs Multi vs Leaderless',
+    subtitle: 'Learn when to use each replication pattern based on requirements',
+    objectives: [
+      'Understand single-leader, multi-leader, and leaderless replication',
+      'Map consistency and latency requirements to replication strategy',
+      'Handle replication lag and read-after-write consistency',
+      'Know trade-offs: availability vs consistency vs complexity',
+    ],
+    questions: [
+      {
+        id: 'replication_need',
+        step: 1,
+        category: 'throughput',
+        title: 'Why Do You Need Replication?',
+        description: 'Your e-commerce API has 50k RPS (47.5k reads, 2.5k writes). Single PostgreSQL DB is overloaded. What do you need?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'scale_reads',
+            label: 'Scale reads (95% of traffic)',
+            description: 'Add read replicas to distribute read load',
+            consequence: '✅ CORRECT! Read-heavy workload (95%) → Add read replicas. Writes (5%) stay on primary.',
+          },
+          {
+            id: 'scale_writes',
+            label: 'Scale writes (5% of traffic)',
+            description: 'Add write sharding',
+            consequence: '❌ Premature! Writes are only 2.5k RPS (low). Single primary handles this easily. Focus on scaling reads.',
+          },
+          {
+            id: 'both',
+            label: 'Scale both reads and writes',
+            description: 'Full sharding + replication',
+            consequence: '⚠️ Overkill! Writes (2.5k RPS) don\'t need scaling yet. Read replicas solve the bottleneck.',
+          },
+        ],
+        whyItMatters: 'Identify bottleneck FIRST! Read-heavy (95%) → replicate for reads. Write-heavy → shard for writes. Don\'t over-engineer.',
+        commonMistakes: [
+          'Sharding when replication would suffice (premature optimization)',
+          'Not measuring read/write ratio (blindly adding complexity)',
+          'Scaling writes when reads are the bottleneck',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'scale_reads') {
+            return [{
+              action: 'highlight',
+              reason: 'Read-heavy (95%) → Single-leader replication! Writes go to primary, reads distributed across replicas. Simple and effective.',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: 'Writes are only 2.5k RPS (5%). Focus on scaling READS (47.5k RPS). Read replicas solve this!',
+            }];
+          }
+        },
+      },
+      {
+        id: 'pattern_comparison',
+        step: 2,
+        category: 'throughput',
+        title: 'Three Replication Patterns',
+        description: 'Which replication pattern fits your requirements?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Single-Leader (95% of use cases)',
+            recommendation: 'Writes → Primary | Reads → Replicas',
+            reasoning: 'Best for: Read-heavy, single-region, simple. PostgreSQL, MySQL built-in.',
+          },
+          {
+            condition: 'Multi-Leader (multi-region writes)',
+            recommendation: 'Each region has leader accepting writes',
+            reasoning: 'Best for: Global app, low write latency everywhere. Conflicts possible!',
+          },
+          {
+            condition: 'Leaderless (Cassandra, DynamoDB)',
+            recommendation: 'Quorum writes (W=3/5) + quorum reads (R=2/5)',
+            reasoning: 'Best for: High availability > consistency. No single point of failure.',
+          },
+        },
+        whyItMatters: 'Single-leader = simple (95% of apps). Multi-leader = multi-region writes. Leaderless = extreme high availability. Choose based on requirements!',
+        commonMistakes: [
+          'Using multi-leader for single-region (unnecessary complexity)',
+          'Using leaderless when consistency matters (eventual consistency issues)',
+          'Not considering operational complexity (multi-leader = harder to debug)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer for traffic distribution',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 10 },
+              reason: 'App servers handling 50k RPS',
+            },
+            {
+              action: 'add_component',
+              componentType: 'cache',
+              config: { count: 1 },
+              reason: 'Redis cache reduces DB load',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes traffic',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'cache',
+              reason: 'Check cache first',
+            },
+          ];
+        },
+      },
+      {
+        id: 'replica_count',
+        step: 3,
+        category: 'throughput',
+        title: 'Calculate Replica Count',
+        description: 'How many read replicas do you need for 47.5k read RPS?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Read Replicas = Read RPS / Reads Per Replica',
+          explanation: 'Each PostgreSQL replica handles ~10k reads/sec. Need 5 replicas for 47.5k RPS.',
+          exampleInputs: {
+            'Read RPS': 47500,
+            'Reads Per Replica': '10,000 RPS/replica',
+          },
+          exampleOutput: 'Read Replicas = 47,500 / 10,000 = 4.75 ≈ 5 replicas',
+        },
+        whyItMatters: 'Replica count = traffic ÷ capacity per replica. Underprovisioning = overloaded replicas. Overprovisioning = wasted cost.',
+        commonMistakes: [
+          'Not accounting for peak traffic (need headroom for bursts)',
+          'Assuming all replicas are healthy (plan for failures)',
+          'Forgetting replication lag (stale replicas serve reads)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 6 },
+              reason: '1 primary + 5 read replicas (5 replicas × 10k reads/sec = 50k capacity)',
+            },
+            {
+              action: 'add_connection',
+              from: 'cache',
+              to: 'storage',
+              reason: 'Cache miss → read from replicas (load-balanced)',
+            },
+          ];
+        },
+      },
+      {
+        id: 'replication_lag',
+        step: 4,
+        category: 'consistency',
+        title: 'Handling Replication Lag',
+        description: 'User updates profile → reads immediately → sees old data! Replication lag = 500ms. How to fix?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'read_from_primary',
+            label: 'Read from primary after write (for that user)',
+            description: 'Sticky session: User\'s reads go to primary temporarily',
+            consequence: '✅ BEST! Read-after-write consistency: User always sees their own writes. Other users may see stale (acceptable).',
+          },
+          {
+            id: 'sync_replication',
+            label: 'Use synchronous replication (wait for replicas)',
+            description: 'Wait for all replicas to confirm before returning',
+            consequence: '⚠️ Solves staleness but SLOW! Write latency increases 5× (wait for 5 replicas). Use only if strong consistency required.',
+          },
+          {
+            id: 'ignore',
+            label: 'Ignore the problem (eventual consistency)',
+            description: 'Users tolerate seeing stale data briefly',
+            consequence: '❌ Bad UX! User sees old profile for 500ms. Confusing. Always fix read-after-write for user\'s own data.',
+          },
+        ],
+        whyItMatters: 'Read-after-write consistency: Users MUST see their own writes immediately. Solution: Read from primary after write (or track write timestamp).',
+        commonMistakes: [
+          'Forcing sync replication everywhere (kills performance)',
+          'Not handling read-after-write (users see stale own data)',
+          'Assuming eventual consistency is acceptable for all reads (not for user\'s own data!)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'read_from_primary') {
+            return [{
+              action: 'highlight',
+              reason: '✅ Read-after-write pattern! User writes → reads from primary for 1-2 seconds → then reads from replicas. Other users read from replicas (eventual consistency OK).',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `${answer} has trade-offs! Sync replication = slow writes. Ignoring = bad UX. Best: Read from primary after user writes.`,
+            }];
+          }
+        },
+      },
+      {
+        id: 'multi_region_decision',
+        step: 5,
+        category: 'latency',
+        title: 'When to Use Multi-Leader',
+        description: 'Would multi-leader replication help this e-commerce app (single-region, US-East)?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'no',
+            label: 'No - single-leader is better',
+            description: 'Single region + read-heavy = single-leader perfect',
+            consequence: '✅ CORRECT! Multi-leader helps multi-region WRITES. Single region → single-leader is simpler and sufficient.',
+          },
+          {
+            id: 'yes_latency',
+            label: 'Yes - for better latency',
+            description: 'Multi-leader reduces write latency',
+            consequence: '❌ WRONG! Single region = writes already fast (no network lag). Multi-leader adds complexity without benefit.',
+          },
+          {
+            id: 'yes_availability',
+            label: 'Yes - for higher availability',
+            description: 'Multiple leaders = better fault tolerance',
+            consequence: '⚠️ Leaderless is better for availability! Multi-leader = conflict resolution complexity. Use Cassandra/DynamoDB instead.',
+          },
+        },
+        whyItMatters: 'Multi-leader = ONLY when you need multi-region writes! Single region → single-leader. Global writes → multi-leader. High availability → leaderless.',
+        commonMistakes: [
+          'Using multi-leader for single-region (unnecessary)',
+          'Thinking multi-leader = better availability (leaderless is better)',
+          'Not considering conflict resolution complexity',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'no') {
+            return [{
+              action: 'highlight',
+              reason: '✅ Single-leader is perfect! Single region + read-heavy = simple replication. Final architecture: 1 primary (writes) + 5 replicas (reads).',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: 'Multi-leader ONLY for multi-region writes! Single region → single-leader is simpler. Save multi-leader for global apps.',
+            }];
+          }
+        },
+      },
+    ],
+    summary: {
+      title: 'Replication Patterns Mastered!',
+      keyTakeaways: [
+        'Single-leader: Writes → primary, reads → replicas. Best for read-heavy, single-region (95% of apps).',
+        'Multi-leader: Each region has leader. Best for multi-region writes (conflicts possible!).',
+        'Leaderless: Quorum (W+R>N). Best for high availability > consistency.',
+        'Replica count = Read RPS / 10k. Example: 47.5k reads → 5 replicas.',
+        'Read-after-write: User writes → read from primary temporarily. Other users read replicas.',
+      ],
+      nextSteps: 'Module 3 complete! Next: Module 4 - Data Durability (when to add database, RPO/RTO).',
+    },
+  },
 };
 
 // ============================================================================
@@ -6862,6 +8177,261 @@ Asia Users → Asia Region:
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Consistency Levels: Strong vs Causal vs Eventual',
+    subtitle: 'Learn CAP theorem trade-offs and choose consistency based on requirements',
+    objectives: [
+      'Understand the consistency spectrum (linearizable → eventual)',
+      'Map use cases to consistency levels',
+      'Learn CAP theorem: Consistency vs Availability vs Partition Tolerance',
+      'Choose consistency based on requirements',
+    ],
+    questions: [
+      {
+        id: 'consistency_spectrum',
+        step: 1,
+        category: 'consistency',
+        title: 'The Consistency Spectrum',
+        description: 'Distributed systems offer different consistency guarantees. What\'s the trade-off?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Strong Consistency (Linearizable)',
+            recommendation: 'All reads see latest write | Slow writes (50-200ms) | Low availability',
+            reasoning: 'Synchronous replication to ALL replicas before success. Behaves like single machine.',
+          },
+          {
+            condition: 'Causal Consistency (Middle Ground)',
+            recommendation: 'Causally-related ops ordered | Medium writes (10-50ms) | Medium availability',
+            reasoning: 'Tracks "happens-before" relationships. Comments appear after posts.',
+          },
+          {
+            condition: 'Eventual Consistency (Weakest)',
+            recommendation: 'May see stale data | Fast writes (1-10ms) | High availability',
+            reasoning: 'Async replication. Replicas converge eventually. Fastest but least consistent.',
+          },
+        ],
+        whyItMatters: 'Consistency = trade-off! Strong = slow + less available. Eventual = fast + highly available. Choose based on use case!',
+        commonMistakes: [
+          'Using strong consistency everywhere (kills performance)',
+          'Using eventual consistency for critical data (banking, inventory)',
+          'Not understanding CAP theorem (can\'t have all three!)',
+        ],
+        onAnswer: () => {
+          return [{
+            action: 'highlight',
+            reason: 'Consistency spectrum: Strong (banking) → Causal (social media) → Eventual (catalogs). Stronger = slower but safer.',
+          }];
+        },
+      },
+      {
+        id: 'strong_consistency_example',
+        step: 2,
+        category: 'consistency',
+        title: 'Strong Consistency: Banking Example',
+        description: 'User deposits $100. How does strong consistency guarantee all replicas see the new balance?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'async_replication',
+            label: 'Async replication (fast but stale)',
+            description: 'Write to primary → return success → replicate in background',
+            consequence: '❌ WRONG! This is eventual consistency. Another user reading from replica sees OLD balance.',
+          },
+          {
+            id: 'sync_replication',
+            label: 'Synchronous replication (wait for ALL replicas)',
+            description: 'Write to primary → replicate to ALL → return success',
+            consequence: '✅ CORRECT! Strong consistency: Write succeeds ONLY after all replicas acknowledge. ANY read sees new balance.',
+          },
+          {
+            id: 'primary_only',
+            label: 'Write to primary only, no replication',
+            description: 'Primary is source of truth',
+            consequence: '❌ WRONG! Single point of failure. If primary crashes, data lost. Need replication for durability.',
+          },
+        ],
+        whyItMatters: 'Strong consistency = synchronous replication to ALL replicas BEFORE returning success. Slow (50-200ms) but guarantees NO stale reads!',
+        commonMistakes: [
+          'Confusing sync and async replication (sync = wait, async = fire-and-forget)',
+          'Not accounting for write latency cost (sync repl = 10× slower)',
+          'Using strong consistency when eventual is acceptable (performance waste)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'sync_replication') {
+            return [{
+              action: 'highlight',
+              reason: '✅ Synchronous replication! Write → Primary → ALL replicas (sync) → Success. Write latency: 50-200ms. But: NO stale reads!',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: 'Strong consistency requires synchronous replication! Async = eventual consistency (stale reads possible).',
+            }];
+          }
+        },
+      },
+      {
+        id: 'cap_theorem',
+        step: 3,
+        category: 'consistency',
+        title: 'CAP Theorem: Pick Two',
+        description: 'CAP Theorem: Consistency, Availability, Partition Tolerance. You can only have TWO. What do you choose?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'CP (Consistency + Partition Tolerance)',
+            recommendation: 'Strong consistency, sacrifice availability during network partitions',
+            reasoning: 'Banking, inventory. Prefer correctness over availability. Blocks writes during partition.',
+          },
+          {
+            condition: 'AP (Availability + Partition Tolerance)',
+            recommendation: 'Eventual consistency, always available',
+            reasoning: 'Product catalogs, social feeds. Prefer availability over consistency. Accepts stale reads.',
+          },
+          {
+            condition: 'CA (Consistency + Availability)',
+            recommendation: '❌ IMPOSSIBLE in distributed systems!',
+            reasoning: 'Network partitions WILL happen. Must choose C+P or A+P.',
+          },
+        ],
+        whyItMatters: 'CAP theorem: Network partitions are inevitable. Choose: Block writes (CP) OR accept stale reads (AP). Can\'t have both!',
+        commonMistakes: [
+          'Thinking you can have all three (impossible!)',
+          'Choosing CP for read-heavy workloads (kills availability)',
+          'Choosing AP for financial data (data correctness matters!)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Regional load balancers for global distribution',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 12 },
+              reason: 'App servers in multiple regions',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to regional LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes traffic',
+            },
+          ];
+        },
+      },
+      {
+        id: 'use_case_mapping',
+        step: 4,
+        category: 'consistency',
+        title: 'Map Use Case to Consistency Level',
+        description: 'Amazon Product Catalog: 99.99% reads, 0.01% writes, stale data OK. Which consistency?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'strong',
+            label: 'Strong consistency',
+            description: 'All reads see latest product info',
+            consequence: '❌ Overkill! Writes take 50-200ms globally. Product info changes slowly - eventual consistency is fine.',
+          },
+          {
+            id: 'causal',
+            label: 'Causal consistency',
+            description: 'Product updates appear in causal order',
+            consequence: '⚠️ Better than strong, but still complex. Product updates are independent - no causality needed.',
+          },
+          {
+            id: 'eventual',
+            label: 'Eventual consistency',
+            description: 'Reads may see stale product info briefly',
+            consequence: '✅ BEST! Read-heavy (99.99%) + stale OK + global scale = eventual consistency. Fast writes (1-10ms), high availability.',
+          },
+        },
+        whyItMatters: 'Amazon catalog: Read-heavy (99.99%), stale OK (product prices change slowly), global (need low latency everywhere). Eventual consistency = perfect fit!',
+        commonMistakes: [
+          'Using strong consistency for catalogs (wasted performance)',
+          'Not considering read/write ratio (99.99% reads → optimize for reads!)',
+          'Ignoring staleness tolerance (if stale OK, use eventual!)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'eventual') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'storage',
+                config: { count: 10 },
+                reason: 'Primary DB (US) + 9 global read replicas (async replication)',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'storage',
+                reason: 'Reads from regional replicas (eventual consistency)',
+              },
+            ];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `${answer} is over-engineering! Read-heavy + stale OK = eventual consistency. Saves 10× latency, increases availability.`,
+            }];
+          }
+        },
+      },
+      {
+        id: 'replication_lag',
+        step: 5,
+        category: 'consistency',
+        title: 'Eventual Consistency Lag',
+        description: 'With eventual consistency, how long until replicas converge?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Replication Lag = Network Latency + Replication Overhead',
+          explanation: 'Async replication: Primary → background job → replicas.',
+          exampleInputs: {
+            'US → US': '1-10ms (same region)',
+            'US → EU': '100-150ms (cross-Atlantic)',
+            'US → Asia': '150-250ms (cross-Pacific)',
+            'Replication Overhead': '50-100ms (processing)',
+          },
+          exampleOutput: 'Total lag: 200-350ms for global replicas. Users may see stale data for ~0.5 seconds.',
+        },
+        whyItMatters: 'Eventual consistency lag: 0.1-1 second. For product catalogs, this is acceptable! Price changes don\'t need instant propagation.',
+        commonMistakes: [
+          'Expecting instant convergence (async replication has lag)',
+          'Not monitoring replication lag (can grow to minutes if replicas fall behind)',
+          'Using eventual consistency when lag is unacceptable (use causal or strong)',
+        ],
+        onAnswer: () => {
+          return [{
+            action: 'highlight',
+            reason: 'Final architecture: Primary (US) + 9 global replicas. Replication lag: 200-350ms. 99.99% reads from regional replicas (low latency). Eventual consistency = perfect for catalogs!',
+          }];
+        },
+      },
+    ],
+    summary: {
+      title: 'Consistency Levels Mastered!',
+      keyTakeaways: [
+        'Consistency spectrum: Strong (50-200ms writes) → Causal (10-50ms) → Eventual (1-10ms).',
+        'CAP theorem: Pick two! CP (strong consistency, low availability) vs AP (eventual consistency, high availability).',
+        'Strong consistency: Banking, inventory. Sync replication to ALL replicas before success.',
+        'Eventual consistency: Catalogs, feeds. Async replication. 99.99% reads + stale OK = eventual!',
+        'Replication lag: 200-350ms globally. Acceptable for product catalogs, NOT for banking.',
+      ],
+      nextSteps: 'NFR Teaching Course Complete! You\'ve mastered: Throughput, Latency, Durability, Sharding, Consistency. Ready for production systems!',
+    },
+  },
 };
 
 // Export all Chapter 0 problems
