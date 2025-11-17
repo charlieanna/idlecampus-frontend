@@ -465,11 +465,443 @@ Social media API with highly variable traffic:
 };
 
 // ============================================================================
-// Module 2: Latency - Request-Response & Data Processing
+// Module 2: Burst Handling & Write Queues
 // ============================================================================
 
 /**
- * Problem 4: Request-Response Latency - Understanding P99 and Percentiles
+ * Problem 4: Burst QPS - When Horizontal Scaling Isn't Fast Enough
+ *
+ * Teaches:
+ * - Difference between sustained load and burst load
+ * - Why autoscaling has scale-up lag (2-3 minutes)
+ * - When to use request queues instead of just adding servers
+ * - Backpressure and queue depth monitoring
+ *
+ * Learning Flow:
+ * 1. User has: Client → LB → AppServer Pool (10 servers)
+ * 2. Scenario: Flash sale - 0 → 20,000 RPS in 10 seconds
+ * 3. Problem: Autoscaling takes 3 minutes, requests are dropped
+ * 4. Solution: Add request queue to buffer the burst
+ */
+export const burstQpsProblem: ProblemDefinition = {
+  id: 'nfr-ch0-burst-qps',
+  title: 'Burst QPS: Request Queues for Flash Sales',
+  description: `You've built an e-commerce API with autoscaling (from Module 1). It handles normal traffic well, but during flash sales, users see errors.
+
+**Current Architecture:**
+\`\`\`
+Client → Load Balancer → AppServer Pool (autoscale: 5-20 servers)
+\`\`\`
+
+**The Flash Sale Scenario:**
+- Normal load: 2,000 RPS
+- Flash sale starts at 12:00:00 PM
+- Traffic spike: 0 → 20,000 RPS in 10 seconds
+- Duration: 5 minutes, then drops back to normal
+
+**What Happens (Current System):**
+\`\`\`
+12:00:00 - Flash sale starts, traffic hits 20,000 RPS
+12:00:01 - Load balancer has 5 servers (capacity: 7,000 RPS)
+12:00:01 - 13,000 requests/sec are DROPPED (503 errors)
+12:00:05 - Autoscaling triggers (CPU > 70%)
+12:00:08 - New servers starting...
+12:03:00 - New servers ready (now have 15 servers)
+12:03:00 - Can finally handle 20,000 RPS
+Result: 3 minutes of dropped requests ❌
+\`\`\`
+
+**Why Autoscaling Alone Fails:**
+1. **Scale-up lag:** Takes 2-3 minutes to start new servers
+2. **Thundering herd:** All requests arrive at once
+3. **Binary choice:** Accept request OR drop it (no buffering)
+
+**The Problem:**
+During the 3-minute scale-up window:
+- 13,000 requests/sec × 180 seconds = 2.34 million dropped requests
+- Users see: "Service Unavailable" errors
+- Lost sales, angry customers, bad PR
+
+**Your Task:**
+Add a request queue to buffer burst traffic while autoscaling catches up.
+
+**Solution: Request Queue + Worker Pool**
+\`\`\`
+Client → LB → Request Queue (Kafka/SQS) → Worker Pool (5-20 servers)
+\`\`\`
+
+**How It Works:**
+1. LB accepts ALL requests immediately (returns 202 Accepted)
+2. Requests are queued (Kafka can buffer millions of messages)
+3. Workers process queue at their max capacity (7k RPS with 5 servers)
+4. Autoscaling kicks in, workers scale to 15 servers (21k RPS)
+5. Queue drains in ~2 minutes
+
+**New Timeline:**
+\`\`\`
+12:00:00 - Flash sale, 20k RPS hits queue
+12:00:01 - Queue accepts all, depth = 20k messages
+12:00:01 - 5 workers process at 7k RPS (13k/sec queued)
+12:03:00 - Now 15 workers (21k RPS capacity)
+12:03:00 - Queue draining faster than filling
+12:05:00 - Queue empty, all requests processed ✅
+Result: 0 dropped requests, users see "processing..." instead of errors
+\`\`\`
+
+**Trade-offs:**
+- ✅ No dropped requests
+- ✅ Smooth user experience ("Your order is being processed")
+- ⚠️  Latency: Users wait 30-120 seconds instead of instant response
+- ⚠️  Queue monitoring: Need to watch queue depth
+
+**Learning Objectives:**
+1. Understand burst vs sustained load
+2. Know when queues > horizontal scaling
+3. Calculate queue depth and drain rate
+4. Design for backpressure (what if queue fills up?)`,
+
+  userFacingFRs: [
+    'Handle flash sale traffic spikes (20,000 RPS burst)',
+    'No dropped requests during scale-up lag',
+    'Users see "processing" status instead of errors',
+  ],
+
+  userFacingNFRs: [
+    'Burst QPS: 20,000 RPS for 5 minutes',
+    'Scale-up lag: 3 minutes (AWS EC2 boot time)',
+    'Queue capacity: 1M messages (enough for 5-min burst)',
+    'Acceptable latency during burst: 30-120 seconds',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'Flash Sale Client',
+      subtitle: 'Burst: 20k RPS',
+      id: 'client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Traffic entry point',
+      },
+      {
+        type: 'message_queue',
+        reason: 'Buffer burst traffic (Kafka/SQS) - critical for handling 20k RPS spike',
+      },
+      {
+        type: 'compute',
+        reason: 'Worker pool (autoscale 5-20 servers) - processes queue',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'message_queue',
+        reason: 'LB enqueues all requests immediately (returns 202 Accepted)',
+      },
+      {
+        from: 'message_queue',
+        to: 'compute',
+        reason: 'Workers pull from queue at max capacity',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-burst-qps', problemConfigs['nfr-ch0-burst-qps'] || {
+    baseRps: 20000, // Burst peak
+    readRatio: 0.5, // Mixed read/write (flash sale orders)
+    maxLatency: 120000, // 120 seconds acceptable during burst
+    availability: 0.999, // No dropped requests
+  }, [
+    'Handle 20k RPS burst with queue buffering',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Request Queue Required',
+      validate: (graph, scenario, problem) => {
+        const queueNodes = graph.components.filter(n => n.type === 'message_queue');
+
+        if (queueNodes.length === 0) {
+          return {
+            valid: false,
+            hint: 'Autoscaling takes 3 minutes. During 20k RPS burst, 13k requests/sec will be dropped. Add a request queue (Kafka/SQS) to buffer traffic while scaling up.',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+    {
+      name: 'Queue Between LB and Workers',
+      validate: (graph, scenario, problem) => {
+        const lbNodes = graph.components.filter(n => n.type === 'load_balancer');
+        const queueNodes = graph.components.filter(n => n.type === 'message_queue');
+        const computeNodes = graph.components.filter(n => n.type === 'compute');
+
+        if (queueNodes.length === 0) return { valid: true }; // Skip if no queue
+
+        // Check: LB → Queue → Compute
+        const lbToQueue = graph.connections.some(
+          c => lbNodes.some(lb => lb.id === c.from) &&
+               queueNodes.some(q => q.id === c.to)
+        );
+
+        const queueToCompute = graph.connections.some(
+          c => queueNodes.some(q => q.id === c.from) &&
+               computeNodes.some(comp => comp.id === c.to)
+        );
+
+        if (!lbToQueue || !queueToCompute) {
+          return {
+            valid: false,
+            hint: 'Queue must buffer between LB and workers. Flow: LB → Queue (enqueue) → Workers (dequeue and process).',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
+/**
+ * Problem 5: Write Queues vs Read Queues - Different Buffering Strategies
+ *
+ * Teaches:
+ * - When to use write queues (DB write bottleneck)
+ * - Batching for efficiency (100 writes/txn = 30× faster)
+ * - Why reads can't be queued (users won't wait)
+ * - 202 Accepted pattern for async processing
+ *
+ * Learning Flow:
+ * 1. Scenario: E-commerce with 10k writes/sec (orders, reviews, analytics)
+ * 2. Problem: Database can only handle 3k writes/sec
+ * 3. Solution: Write queue + batching workers
+ * 4. Contrast: Reads need caching (Module 3), not queuing
+ */
+export const writeQueueBatchingProblem: ProblemDefinition = {
+  id: 'nfr-ch0-write-queue-batching',
+  title: 'Write Queues: Batching for Database Write Efficiency',
+  description: `Your e-commerce platform handles 10,000 writes/second (orders, reviews, inventory updates). Your database is the bottleneck.
+
+**Current Architecture:**
+\`\`\`
+Client → LB → AppServer Pool → PostgreSQL
+\`\`\`
+
+**The Write Bottleneck:**
+- Incoming writes: 10,000/sec
+- Database capacity: 3,000 writes/sec (single transaction per write)
+- Result: 7,000 writes/sec are failing ❌
+
+**Why Is the Database Slow?**
+Each write is a separate transaction:
+\`\`\`sql
+-- User submits order
+BEGIN;
+  INSERT INTO orders VALUES (...);
+COMMIT;  -- Disk fsync (slow!)
+-- This takes ~0.3ms per write = max 3,000 writes/sec
+\`\`\`
+
+**The Insight: Batching**
+Instead of 1 write per transaction, batch 100 writes:
+\`\`\`sql
+BEGIN;
+  INSERT INTO orders VALUES (...);  -- Write 1
+  INSERT INTO orders VALUES (...);  -- Write 2
+  ...  -- 98 more writes
+  INSERT INTO orders VALUES (...);  -- Write 100
+COMMIT;  -- One disk fsync for 100 writes!
+-- This takes ~1ms per batch = 100,000 writes/sec capacity ✅
+\`\`\`
+
+**Your Task:**
+Design a write queue + batching worker architecture.
+
+**Solution: Write Queue + Batching Workers**
+\`\`\`
+Client → LB → AppServer → Write Queue (Kafka)
+                             │
+                             ▼
+                       Batching Workers
+                       (batch 100, every 200ms)
+                             │
+                             ▼
+                       PostgreSQL
+\`\`\`
+
+**How It Works:**
+1. **AppServer:** Receives write request
+   - Validates input
+   - Enqueues to Kafka
+   - Returns "202 Accepted" immediately
+   - User sees: "Your order is being processed"
+
+2. **Batching Worker:**
+   - Accumulates 100 messages from queue
+   - OR waits 200ms (whichever comes first)
+   - Executes batch INSERT in one transaction
+   - Commits once for all 100 writes
+
+3. **Performance:**
+   - Before: 3,000 writes/sec (1 per txn)
+   - After: 100,000 writes/sec (100 per txn)
+   - **30× improvement!**
+
+**Why This Works:**
+- Disk fsync is expensive (~0.3ms)
+- Batching amortizes cost across 100 writes
+- Queue decouples write spikes from DB
+
+**When NOT to Use Write Queues:**
+❌ **Reads:** Users won't wait 200ms for search results
+   → Use caching instead (Module 3)
+❌ **Real-time critical writes:** Stock trading, payment auth
+   → Need synchronous DB writes
+✅ **Async-tolerant writes:** Orders, logs, analytics, emails
+
+**Learning Objectives:**
+1. Identify write bottlenecks (DB transaction overhead)
+2. Calculate batching efficiency gains
+3. Design 202 Accepted pattern
+4. Know when queues work vs don't work`,
+
+  userFacingFRs: [
+    'Handle 10,000 writes/second (orders, reviews, analytics)',
+    'Users see immediate confirmation ("Processing your order")',
+    'All writes eventually persisted to database',
+  ],
+
+  userFacingNFRs: [
+    'Write throughput: 10,000 writes/sec',
+    'Database capacity: 3,000 writes/sec (without batching)',
+    'Batch size: 100 writes per transaction',
+    'Batch latency: P99 < 500ms (acceptable for async writes)',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'E-commerce Client',
+      subtitle: '10k writes/sec',
+      id: 'client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Traffic distribution',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServers (validate + enqueue)',
+      },
+      {
+        type: 'message_queue',
+        reason: 'Write queue (Kafka) - buffers writes for batching',
+      },
+      {
+        type: 'storage',
+        reason: 'PostgreSQL - receives batched writes',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'AppServers handle requests',
+      },
+      {
+        from: 'compute',
+        to: 'message_queue',
+        reason: 'AppServers enqueue writes (return 202 Accepted)',
+      },
+      {
+        from: 'message_queue',
+        to: 'storage',
+        reason: 'Batching workers pull from queue → batch INSERT to DB',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-write-queue-batching', problemConfigs['nfr-ch0-write-queue-batching'] || {
+    baseRps: 10000,
+    readRatio: 0.0, // All writes
+    maxLatency: 500, // Batching latency
+    availability: 0.999,
+  }, [
+    'Handle 10k writes/sec with batching',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Write Queue Required',
+      validate: (graph, scenario, problem) => {
+        const queueNodes = graph.components.filter(n => n.type === 'message_queue');
+
+        if (queueNodes.length === 0) {
+          return {
+            valid: false,
+            hint: 'Database can only handle 3k writes/sec, but you have 10k writes/sec. Add a write queue (Kafka) for batching. This improves throughput by 30×.',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+    {
+      name: 'Queue Before Database',
+      validate: (graph, scenario, problem) => {
+        const queueNodes = graph.components.filter(n => n.type === 'message_queue');
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (queueNodes.length === 0) return { valid: true }; // Skip if no queue
+
+        // Check: Queue → Database (batching workers)
+        const queueToDb = graph.connections.some(
+          c => queueNodes.some(q => q.id === c.from) &&
+               storageNodes.some(db => db.id === c.to)
+        );
+
+        if (!queueToDb) {
+          return {
+            valid: false,
+            hint: 'Batching workers must pull from queue and write to database. Add connection: Queue → Database (workers batch 100 writes per transaction).',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
+// ============================================================================
+// Module 3: Latency - Request-Response & Data Processing
+// ============================================================================
+
+/**
+ * Problem 6: Request-Response Latency - Understanding P99 and Percentiles
  *
  * Teaches:
  * - Difference between average latency and tail latency (P99, P999)
@@ -906,11 +1338,14 @@ TOTAL:                              25s ✅ (under 30s target!)
 
 // Export all Chapter 0 problems
 export const nfrTeachingChapter0Problems = [
-  // Module 1: Throughput & Horizontal Scaling
+  // Module 1: Throughput & Horizontal Scaling (3 problems)
   throughputCalculationProblem,
   peakVsAverageProblem,
   autoscalingProblem,
-  // Module 2: Latency (Request-Response & Data Processing)
+  // Module 2: Burst Handling & Write Queues (2 problems)
+  burstQpsProblem,
+  writeQueueBatchingProblem,
+  // Module 3: Latency - Request-Response & Data Processing (2 problems)
   requestResponseLatencyProblem,
   dataProcessingLatencyProblem,
 ];
