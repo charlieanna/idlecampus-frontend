@@ -191,6 +191,211 @@ Client → Load Balancer → [AppServer 1]
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Server Capacity Planning',
+    subtitle: 'Learn to calculate servers from throughput (RPS)',
+
+    objectives: [
+      'Calculate server capacity accounting for OS overhead',
+      'Design for PEAK load, not average load',
+      'Understand when horizontal scaling is needed',
+      'Learn why load balancers are essential for multi-server architectures',
+    ],
+
+    questions: [
+      {
+        id: 'avg_rps',
+        step: 1,
+        category: 'throughput',
+        title: 'What is your average traffic?',
+        description: 'This is the FIRST question we always ask! Traffic determines our baseline capacity needs.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter average RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 1000000,
+          suggestedValue: 2000,
+        },
+        whyItMatters: 'Average RPS tells us the steady-state load. However, we NEVER design just for average - that would cause failures during peak hours! This is just our starting point.',
+        commonMistakes: [
+          'Designing only for average load (causes peak-hour failures)',
+          'Forgetting to account for OS overhead (30% capacity loss)',
+          'Not planning for growth (always add 20-30% buffer)',
+        ],
+        onAnswer: (answer) => {
+          return [
+            {
+              action: 'highlight',
+              reason: `Your API receives ${answer} requests per second on average. But we need to know about peak traffic too!`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'peak_rps',
+        step: 2,
+        category: 'throughput',
+        title: 'What is your PEAK traffic?',
+        description: 'Peak traffic occurs during busy hours (e.g., morning commute, lunch, Black Friday). We MUST design for peak, not average.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter peak RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 1000000,
+          suggestedValue: 10000,
+        },
+        whyItMatters: 'Peak load determines your server count. If you design for average and peak is 5× higher, your service will crash during busy hours. Always design for peak with 20% buffer!',
+        commonMistakes: [
+          'Using average RPS for capacity planning',
+          'Peak is typically 2-10× average (depends on your service)',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const avgRps = previousAnswers.avg_rps || 2000;
+          const peakMultiplier = (answer / avgRps).toFixed(1);
+          return [
+            {
+              action: 'highlight',
+              reason: `Peak traffic is ${answer} RPS (${peakMultiplier}× average). This is what we'll design for!`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'server_capacity',
+        step: 3,
+        category: 'throughput',
+        title: 'Capacity Calculation',
+        description: 'Each server can theoretically handle 2,000 RPS. But we need to account for OS overhead!',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Effective Capacity = Theoretical Capacity × 0.7',
+          explanation: 'Why 30% overhead? Operating system (15%), health checks (5%), network I/O (5%), GC pauses (5%).',
+          exampleInputs: {
+            'Theoretical Capacity': 2000,
+            'OS Overhead': 0.3,
+          },
+          exampleOutput: '2,000 × 0.7 = 1,400 RPS per server',
+        },
+        whyItMatters: 'OS overhead is REAL! If you design assuming 100% capacity, servers will be overloaded at 70% theoretical load. Always account for 30% overhead in production systems.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Each server can handle 1,400 RPS effectively (2,000 theoretical - 30% overhead).',
+            },
+          ];
+        },
+      },
+      {
+        id: 'calculate_servers',
+        step: 4,
+        category: 'throughput',
+        title: 'How many servers do you need?',
+        description: 'Calculate based on peak RPS and effective capacity per server.',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Servers Needed = Peak RPS / (Server Capacity × 0.7)',
+          explanation: 'We divide peak load by effective capacity, then round UP for safety.',
+          exampleInputs: {
+            'Peak RPS': 10000,
+            'Server Capacity': 2000,
+            'Effective Capacity': 1400,
+          },
+          exampleOutput: '10,000 / 1,400 = 7.14 → 8 servers (round up)',
+        },
+        whyItMatters: 'Always round UP, never down! 7.14 servers means you need 8. Running at 100% capacity leaves no room for failures or traffic spikes.',
+        commonMistakes: [
+          'Rounding down (causes overload)',
+          'Not adding buffer for growth',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const peakRps = previousAnswers.peak_rps || 10000;
+          const serversNeeded = Math.ceil(peakRps / 1400);
+          return [
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: serversNeeded },
+              reason: `Adding ${serversNeeded} app servers to handle ${peakRps} peak RPS with 30% overhead buffer.`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'need_load_balancer',
+        step: 5,
+        category: 'throughput',
+        title: 'Do you need a load balancer?',
+        description: 'You have 8 app servers. How does traffic get distributed across them?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'yes',
+            label: 'Yes, add a load balancer',
+            description: 'Load balancer distributes traffic across all 8 servers',
+            consequence: 'Load balancer will route requests evenly across servers using round-robin or least-connections algorithm.',
+          },
+          {
+            id: 'no',
+            label: 'No, clients connect directly',
+            description: 'Each client picks a random server',
+            consequence: '⚠️ Without LB, you cannot guarantee even distribution. Some servers will be overloaded while others idle.',
+          },
+        ],
+        whyItMatters: 'Load balancers are ESSENTIAL for horizontal scaling. They provide: 1) Even traffic distribution, 2) Health checking (route away from failed servers), 3) Single entry point for clients.',
+        commonMistakes: [
+          'Thinking DNS round-robin is sufficient (it has 60s+ caching)',
+          'Client-side load balancing (adds complexity, not recommended)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'yes') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'load_balancer',
+                reason: 'Load balancer distributes 10k peak RPS evenly across 8 app servers.',
+              },
+              {
+                action: 'add_connection',
+                from: 'client',
+                to: 'load_balancer',
+                reason: 'All client traffic goes through load balancer first.',
+              },
+              {
+                action: 'add_connection',
+                from: 'load_balancer',
+                to: 'compute',
+                reason: 'Load balancer distributes to app server pool.',
+              },
+            ];
+          } else {
+            return [
+              {
+                action: 'highlight',
+                reason: '⚠️ Without a load balancer, traffic distribution will be uneven and you cannot handle server failures gracefully. Reconsider!',
+              },
+            ];
+          }
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Server Capacity Planning Complete!',
+      keyTakeaways: [
+        'Always design for PEAK load, not average load',
+        'Account for 30% OS overhead (effective capacity = theoretical × 0.7)',
+        'Round UP when calculating server count (safety buffer)',
+        'Load balancers are essential for horizontal scaling (>1 server)',
+        'Formula: Servers = Peak RPS / (Single Server Capacity × 0.7)',
+      ],
+      nextSteps: 'Now that you understand throughput calculation, try the next problem: Peak vs Average Load Planning!',
+    },
+  },
 };
 
 /**
