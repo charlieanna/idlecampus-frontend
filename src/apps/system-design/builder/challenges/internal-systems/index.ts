@@ -48,6 +48,7 @@ export { capacityPlanningSystemChallenge } from './capacityPlanningSystem';
 export { serviceHealthCheckerChallenge } from './serviceHealthChecker';
 export { sloSliReportingChallenge } from './sloSliReporting';
 export { monitoringDashboardChallenge } from './monitoringDashboard';
+export { runbookAutomationChallenge } from './runbookAutomation';
 
 // Migration & Reliability
 export { zeroDowntimeMigrationChallenge } from './zeroDowntimeMigration';
@@ -135,6 +136,7 @@ export function getInternalSystemsChallenges() {
   const { serviceHealthCheckerChallenge } = require('./serviceHealthChecker');
   const { sloSliReportingChallenge } = require('./sloSliReporting');
   const { monitoringDashboardChallenge } = require('./monitoringDashboard');
+  const { runbookAutomationChallenge } = require('./runbookAutomation');
   const { zeroDowntimeMigrationChallenge } = require('./zeroDowntimeMigration');
   const { multiRegionFailoverChallenge } = require('./multiRegionFailover');
   const { circuitBreakerLibraryChallenge } = require('./circuitBreakerLibrary');
@@ -176,6 +178,7 @@ export function getInternalSystemsChallenges() {
     serviceHealthCheckerChallenge,
     sloSliReportingChallenge,
     monitoringDashboardChallenge,
+    runbookAutomationChallenge,
     // Migration & Reliability
     zeroDowntimeMigrationChallenge,
     multiRegionFailoverChallenge,
@@ -229,6 +232,7 @@ export function getChallengesByCategory(category: string) {
       'service_health_checker',
       'slo_sli_reporting',
       'monitoring_dashboard',
+      'runbook_automation',
     ],
     migration: [
       'zero_downtime_migration',
