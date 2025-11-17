@@ -464,9 +464,453 @@ Social media API with highly variable traffic:
   ],
 };
 
+// ============================================================================
+// Module 2: Latency - Request-Response & Data Processing
+// ============================================================================
+
+/**
+ * Problem 4: Request-Response Latency - Understanding P99 and Percentiles
+ *
+ * Teaches:
+ * - Difference between average latency and tail latency (P99, P999)
+ * - Why percentiles matter more than averages
+ * - How to set P99 targets
+ * - Latency budget allocation
+ *
+ * Learning Flow:
+ * 1. User has: Client → LB → AppServer Pool → Database
+ * 2. Ask: What's your P99 latency target?
+ * 3. Measure: Current P99 = 450ms (DB query = 380ms)
+ * 4. Problem: Violates 200ms target
+ * 5. Solution: Add cache layer
+ */
+export const requestResponseLatencyProblem: ProblemDefinition = {
+  id: 'nfr-ch0-request-response-latency',
+  title: 'Request-Response Latency: P99 SLOs & Latency Budgets',
+  description: `You've built an API service with load balancing and horizontal scaling (from Module 1). Now users are complaining about slow response times.
+
+**Current Architecture:**
+\`\`\`
+Client → Load Balancer → AppServer Pool (10 servers) → PostgreSQL
+\`\`\`
+
+**The Problem:**
+Your API is handling throughput well (10k RPS), but it's SLOW.
+
+**Current Latency Measurements:**
+- Average latency: 120ms ✅ (seems fine!)
+- P50 (median): 80ms ✅
+- P95: 250ms ⚠️
+- P99: 450ms ❌ (unacceptable!)
+- P999: 2,100ms ❌ (terrible!)
+
+**Your P99 SLO: 200ms**
+
+**Why P99 Matters More Than Average:**
+1. **User experience:** The "average" user doesn't exist. 1 in 100 requests sees 450ms.
+2. **Fan-out amplification:** If your service calls 10 downstream APIs, probability of hitting P99 = 1 - (0.99)^10 = 9.6%
+3. **Early warning:** P99 degrades BEFORE average does. It's your canary.
+
+**Latency Budget Breakdown (Current):**
+\`\`\`
+Total budget: 200ms
+━━━━━━━━━━━━━━━━━━━━━
+Network (client → LB):           20ms
+Load balancer:                   10ms
+AppServer queue wait:            15ms
+AppServer processing:            25ms
+Database query (PRIMARY ISSUE):  380ms ❌
+━━━━━━━━━━━━━━━━━━━━━
+TOTAL:                           450ms (2.25× over budget!)
+\`\`\`
+
+**Root Cause:** Database is the bottleneck for read-heavy workload (100:1 read/write ratio).
+
+**Your Task:**
+Fix the P99 latency to meet the 200ms SLO.
+
+**Solution:**
+Add a cache layer (Redis) to reduce database load.
+
+**After Adding Cache:**
+\`\`\`
+Cache hit (95% of requests):     5ms ✅
+Cache miss (5% of requests):     380ms (still slow but rare)
+Weighted average P99:            ~50ms ✅
+\`\`\`
+
+**Learning Objectives:**
+1. Understand percentiles (P50, P95, P99, P999)
+2. Know why averages lie about tail latency
+3. Allocate latency budgets across system hops
+4. Identify when caching is needed (read-heavy + high latency)`,
+
+  userFacingFRs: [
+    'API must serve 10,000 RPS (already achieved in Module 1)',
+    'API must handle read-heavy workload (100:1 read/write ratio)',
+    'Database contains 100GB dataset (product catalog)',
+  ],
+
+  userFacingNFRs: [
+    'P99 latency target: 200ms (currently 450ms ❌)',
+    'P999 latency target: 500ms (currently 2,100ms ❌)',
+    'Read/write ratio: 100:1 (read-heavy)',
+    'Hot dataset: 20GB (frequently accessed products)',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'E-commerce Client',
+      subtitle: 'Browse products (10k RPS)',
+      id: 'client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Already have from Module 1',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServer pool (10 servers)',
+      },
+      {
+        type: 'cache',
+        reason: 'Redis cache to reduce DB read latency (95% hit ratio)',
+      },
+      {
+        type: 'storage',
+        reason: 'PostgreSQL database (source of truth)',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Traffic entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Distribute to app servers',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Check cache BEFORE hitting database',
+      },
+      {
+        from: 'cache',
+        to: 'storage',
+        reason: 'Cache miss → read from database',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-request-response-latency', problemConfigs['nfr-ch0-request-response-latency'] || {
+    baseRps: 10000,
+    readRatio: 0.99, // 100:1 read/write ratio
+    maxLatency: 200, // P99 target
+    availability: 0.99,
+  }, [
+    'Achieve P99 < 200ms with cache layer',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Cache Layer Required',
+      validate: (graph, scenario, problem) => {
+        const cacheNodes = graph.components.filter(n => n.type === 'cache');
+
+        if (cacheNodes.length === 0) {
+          return {
+            valid: false,
+            hint: 'Your P99 latency is 450ms due to DB reads. Add a cache layer (Redis) to reduce latency. With 95% cache hit ratio, P99 will drop to ~50ms.',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+    {
+      name: 'Cache Before Database',
+      validate: (graph, scenario, problem) => {
+        const cacheNodes = graph.components.filter(n => n.type === 'cache');
+        const computeNodes = graph.components.filter(n => n.type === 'compute');
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (cacheNodes.length === 0) return { valid: true }; // Skip if no cache
+
+        // Check connections: compute → cache → storage
+        const computeToCache = graph.connections.some(
+          c => computeNodes.some(comp => comp.id === c.from) &&
+               cacheNodes.some(cache => cache.id === c.to)
+        );
+
+        const cacheToStorage = graph.connections.some(
+          c => cacheNodes.some(cache => cache.id === c.from) &&
+               storageNodes.some(db => db.id === c.to)
+        );
+
+        if (!computeToCache || !cacheToStorage) {
+          return {
+            valid: false,
+            hint: 'Cache must be between AppServer and Database. Flow: AppServer → Cache → Database (on miss).',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
+/**
+ * Problem 5: Data Processing Latency - Freshness SLOs for Derived Data
+ *
+ * Teaches:
+ * - Difference between request-response latency (user-facing) and data processing latency (freshness)
+ * - Why derived data (search indexes, analytics) needs separate latency SLOs
+ * - Change Data Capture (CDC) for real-time data propagation
+ * - Event streaming architectures
+ *
+ * Learning Flow:
+ * 1. User has: Client → LB → AppServer → Cache → Database
+ * 2. New requirement: Product search (requires search index)
+ * 3. Ask: How fresh should the search index be?
+ * 4. Target: P99 freshness < 30 seconds
+ * 5. Solution: CDC → Event Stream → Search Indexer
+ */
+export const dataProcessingLatencyProblem: ProblemDefinition = {
+  id: 'nfr-ch0-data-processing-latency',
+  title: 'Data Processing Latency: Freshness SLOs & CDC Pipelines',
+  description: `Your e-commerce API now has great request-response latency (P99 < 200ms thanks to caching). But users report that newly added products don't show up in search results!
+
+**Current Architecture:**
+\`\`\`
+Client → LB → AppServer Pool → Cache → PostgreSQL
+\`\`\`
+
+**The New Requirement:**
+Add product search functionality. When a merchant adds a new product, it should appear in search results quickly.
+
+**Two Types of Latency:**
+
+**1. Request-Response Latency (User-Facing) ✅**
+- User submits search query
+- How long until they see results?
+- Target: P99 < 200ms
+- Already achieved via caching
+
+**2. Data Processing Latency (Freshness) ❌**
+- Merchant adds new product to database
+- How long until it appears in search index?
+- Target: P99 < 30 seconds
+- **Currently: 5 minutes** (batch job runs every 5 minutes)
+
+**The Problem:**
+
+**Current Approach: Batch Processing**
+\`\`\`
+PostgreSQL ──(poll every 5 min)──> Batch Job ──> Elasticsearch
+\`\`\`
+- ❌ Freshness: 5 minutes average, up to 10 minutes worst case
+- ❌ Inefficient: Scans entire table every 5 minutes
+- ❌ Load spikes: Heavy DB queries every 5 minutes
+
+**Why This Matters:**
+- Merchant adds product at 2:00:00 PM
+- Batch job runs at 2:05:00 PM
+- Product appears in search at 2:05:15 PM
+- **Data processing latency: 5 minutes 15 seconds** ❌
+
+**Your Task:**
+Design a real-time data pipeline to achieve P99 freshness < 30 seconds.
+
+**Solution: Change Data Capture (CDC) + Event Streaming**
+
+**New Architecture:**
+\`\`\`
+PostgreSQL ──(CDC connector)──> Kafka Topic
+                                    │
+                                    ├──> Search Indexer → Elasticsearch
+                                    ├──> Cache Invalidator → Redis
+                                    └──> Analytics → Data Warehouse
+\`\`\`
+
+**How CDC Works:**
+1. CDC connector (Debezium) monitors PostgreSQL transaction log
+2. Captures all INSERT/UPDATE/DELETE events in real-time
+3. Publishes events to Kafka topic (< 1 second lag)
+4. Multiple consumers process events independently
+
+**Data Processing Latency Breakdown:**
+\`\`\`
+Target: 30 seconds P99
+━━━━━━━━━━━━━━━━━━━━━
+CDC capture (DB → Kafka):          2s
+Kafka transport:                    1s
+Search indexer processing:          8s
+Elasticsearch indexing:             12s
+Cache invalidation:                 2s
+━━━━━━━━━━━━━━━━━━━━━
+TOTAL:                              25s ✅ (under 30s target!)
+\`\`\`
+
+**Why CDC > Batch:**
+1. **Real-time:** Events captured immediately (not every 5 min)
+2. **Efficient:** Only changed rows sent (not full table scan)
+3. **Scalable:** Multiple consumers can process same events
+4. **Decoupled:** Search, cache, analytics update independently
+
+**Learning Objectives:**
+1. Distinguish request-response latency from data processing latency
+2. Set freshness SLOs for derived data
+3. Understand CDC (Change Data Capture) patterns
+4. Design event-driven architectures`,
+
+  userFacingFRs: [
+    'Merchants can add/update products',
+    'Users can search for products',
+    'Search results must include recently added products',
+  ],
+
+  userFacingNFRs: [
+    'Request-response latency (search query): P99 < 200ms ✅ (already achieved)',
+    'Data processing latency (new product → searchable): P99 < 30s (currently 5 min ❌)',
+    'Freshness target: 95% of products appear in search within 30s of being added',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'Merchant Client',
+      subtitle: 'Add products',
+      id: 'merchant_client',
+    },
+    {
+      name: 'User Client',
+      subtitle: 'Search products',
+      id: 'user_client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Traffic distribution',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServer pool',
+      },
+      {
+        type: 'cache',
+        reason: 'Redis for fast reads',
+      },
+      {
+        type: 'storage',
+        reason: 'PostgreSQL (source of truth)',
+      },
+      {
+        type: 'message_queue',
+        reason: 'Kafka for CDC event stream (captures DB changes in real-time)',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Distribute traffic',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Read cache first',
+      },
+      {
+        from: 'cache',
+        to: 'storage',
+        reason: 'Cache miss → database',
+      },
+      {
+        from: 'storage',
+        to: 'message_queue',
+        reason: 'CDC connector sends DB changes to Kafka',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-data-processing-latency', problemConfigs['nfr-ch0-data-processing-latency'] || {
+    baseRps: 5000,
+    readRatio: 0.95, // Mostly searches, some writes
+    maxLatency: 200, // Request-response P99
+    availability: 0.99,
+  }, [
+    'Achieve P99 freshness < 30s with CDC',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Event Queue for CDC',
+      validate: (graph, scenario, problem) => {
+        const queueNodes = graph.components.filter(n => n.type === 'message_queue');
+
+        if (queueNodes.length === 0) {
+          return {
+            valid: false,
+            hint: 'To achieve P99 freshness < 30s, you need real-time event streaming. Add Kafka (message_queue) for CDC events. Batch jobs (5 min polling) are too slow.',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+    {
+      name: 'CDC Pipeline: DB → Queue',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+        const queueNodes = graph.components.filter(n => n.type === 'message_queue');
+
+        if (queueNodes.length === 0) return { valid: true }; // Skip if no queue
+
+        // Check for DB → Queue connection (CDC connector)
+        const dbToQueue = graph.connections.some(
+          c => storageNodes.some(db => db.id === c.from) &&
+               queueNodes.some(queue => queue.id === c.to)
+        );
+
+        if (!dbToQueue) {
+          return {
+            valid: false,
+            hint: 'CDC connector must capture database changes. Add connection: Database → Kafka (CDC publishes change events to Kafka topic).',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
 // Export all Chapter 0 problems
 export const nfrTeachingChapter0Problems = [
+  // Module 1: Throughput & Horizontal Scaling
   throughputCalculationProblem,
   peakVsAverageProblem,
   autoscalingProblem,
+  // Module 2: Latency (Request-Response & Data Processing)
+  requestResponseLatencyProblem,
+  dataProcessingLatencyProblem,
 ];

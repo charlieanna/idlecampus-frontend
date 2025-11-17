@@ -304,13 +304,16 @@ export const nextGenProblems = [
 ];
 
 /**
- * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (3 total)
+ * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (5 total)
  */
 export const nfrTeachingProblems = [
-  // Chapter 0: Systems Thinking & NFR-Driven Design (3)
+  // Module 1: Throughput & Horizontal Scaling (3)
   'nfr-ch0-throughput-calc',
   'nfr-ch0-peak-vs-avg',
   'nfr-ch0-autoscaling',
+  // Module 2: Latency - Request-Response & Data Processing (2)
+  'nfr-ch0-request-response-latency',
+  'nfr-ch0-data-processing-latency',
 ];
 
 /**
@@ -605,10 +608,10 @@ export const problemWhitelist = new Set([
   ...patternProblems,                 // 35 (30 original + 5 DDIA gaps)
   ...platformProblems,                // 107
   ...nextGenProblems,                 // 10
-  ...nfrTeachingProblems,             // 3 (Chapter 0: Systems Thinking)
+  ...nfrTeachingProblems,             // 5 (Chapter 0: Modules 1-2)
   ...ddiaTeachingProblems,            // 151 (ALL CHAPTERS!)
   ...systemDesignPrimerProblems,      // 77
-  // Total: 420 problems (previously 250, now with full DDIA + SDP)
+  // Total: 425 problems
 ]);
 
 /**
