@@ -945,4 +945,15 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasCache: false,
     hasObjectStorage: false,
   },
+
+  // ========== NFR TEACHING CHAPTER 0 (Throughput) ==========
+  'nfr-ch0-throughput-calc': {
+    baseRps: 10000, // Peak RPS for calculation exercise
+    readRatio: 1.0, // All reads (stateless API)
+    maxLatency: 100, // Fast stateless operations
+    availability: 0.99,
+    hasCdn: false,
+    hasCache: false,
+    hasObjectStorage: false,
+  },
 };
