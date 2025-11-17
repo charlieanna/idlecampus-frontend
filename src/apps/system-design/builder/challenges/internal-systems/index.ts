@@ -36,6 +36,7 @@ export { dataLineageTrackingChallenge } from './dataLineageTracking';
 export { dataQualityMonitoringChallenge } from './dataQualityMonitoring';
 export { changeDataCaptureChallenge } from './changeDataCapture';
 export { dataWarehouseQueryEngineChallenge } from './dataWarehouseQueryEngine';
+export { dataLakeManagerChallenge } from './dataLakeManager';
 
 // Observability & Operations
 export { distributedTracingChallenge } from './distributedTracing';
@@ -45,6 +46,7 @@ export { configurationRolloutChallenge } from './configurationRollout';
 export { capacityPlanningSystemChallenge } from './capacityPlanningSystem';
 export { serviceHealthCheckerChallenge } from './serviceHealthChecker';
 export { sloSliReportingChallenge } from './sloSliReporting';
+export { monitoringDashboardChallenge } from './monitoringDashboard';
 
 // Migration & Reliability
 export { zeroDowntimeMigrationChallenge } from './zeroDowntimeMigration';
@@ -56,6 +58,7 @@ export { backupRestoreServiceChallenge } from './backupRestoreService';
 export { modelServingPlatformChallenge } from './modelServingPlatform';
 export { mlExperimentTrackingChallenge } from './mlExperimentTracking';
 export { modelTrainingPipelineChallenge } from './modelTrainingPipeline';
+export { dataLabelingPlatformChallenge } from './dataLabelingPlatform';
 
 /**
  * All internal systems challenges
@@ -121,6 +124,7 @@ export function getInternalSystemsChallenges() {
   const { dataQualityMonitoringChallenge } = require('./dataQualityMonitoring');
   const { changeDataCaptureChallenge } = require('./changeDataCapture');
   const { dataWarehouseQueryEngineChallenge } = require('./dataWarehouseQueryEngine');
+  const { dataLakeManagerChallenge } = require('./dataLakeManager');
   const { distributedTracingChallenge } = require('./distributedTracing');
   const { alertingIncidentManagementChallenge } = require('./alertingIncidentManagement');
   const { chaosEngineeringPlatformChallenge } = require('./chaosEngineeringPlatform');
@@ -128,6 +132,7 @@ export function getInternalSystemsChallenges() {
   const { capacityPlanningSystemChallenge } = require('./capacityPlanningSystem');
   const { serviceHealthCheckerChallenge } = require('./serviceHealthChecker');
   const { sloSliReportingChallenge } = require('./sloSliReporting');
+  const { monitoringDashboardChallenge } = require('./monitoringDashboard');
   const { zeroDowntimeMigrationChallenge } = require('./zeroDowntimeMigration');
   const { multiRegionFailoverChallenge } = require('./multiRegionFailover');
   const { circuitBreakerLibraryChallenge } = require('./circuitBreakerLibrary');
@@ -135,6 +140,7 @@ export function getInternalSystemsChallenges() {
   const { modelServingPlatformChallenge } = require('./modelServingPlatform');
   const { mlExperimentTrackingChallenge } = require('./mlExperimentTracking');
   const { modelTrainingPipelineChallenge } = require('./modelTrainingPipeline');
+  const { dataLabelingPlatformChallenge } = require('./dataLabelingPlatform');
 
   return [
     // Developer Tools
@@ -157,6 +163,7 @@ export function getInternalSystemsChallenges() {
     dataQualityMonitoringChallenge,
     changeDataCaptureChallenge,
     dataWarehouseQueryEngineChallenge,
+    dataLakeManagerChallenge,
     // Observability
     distributedTracingChallenge,
     alertingIncidentManagementChallenge,
@@ -165,6 +172,7 @@ export function getInternalSystemsChallenges() {
     capacityPlanningSystemChallenge,
     serviceHealthCheckerChallenge,
     sloSliReportingChallenge,
+    monitoringDashboardChallenge,
     // Migration & Reliability
     zeroDowntimeMigrationChallenge,
     multiRegionFailoverChallenge,
@@ -174,6 +182,7 @@ export function getInternalSystemsChallenges() {
     modelServingPlatformChallenge,
     mlExperimentTrackingChallenge,
     modelTrainingPipelineChallenge,
+    dataLabelingPlatformChallenge,
   ];
 }
 
@@ -205,6 +214,7 @@ export function getChallengesByCategory(category: string) {
       'data_quality_monitoring',
       'change_data_capture',
       'data_warehouse_query_engine',
+      'data_lake_manager',
     ],
     observability: [
       'distributed_tracing',
@@ -214,6 +224,7 @@ export function getChallengesByCategory(category: string) {
       'capacity_planning_system',
       'service_health_checker',
       'slo_sli_reporting',
+      'monitoring_dashboard',
     ],
     migration: [
       'zero_downtime_migration',
@@ -226,6 +237,7 @@ export function getChallengesByCategory(category: string) {
       'model_serving_platform',
       'ml_experiment_tracking',
       'model_training_pipeline',
+      'data_labeling_platform',
     ],
   };
 
