@@ -38,7 +38,7 @@ These problems differ from the existing challenges by focusing on:
 
 | # | Problem | Description | Key Concepts |
 |---|---------|-------------|--------------|
-| 16 | **Data Warehouse Query Engine** | Distributed SQL, columnar storage, optimization | Google BigQuery/Presto, query planning, data skew |
+| ✅ | **Data Warehouse Query Engine** | Distributed SQL, columnar storage, optimization | Google BigQuery/Presto, query planning, data skew |
 | ✅ | **Real-time Analytics Pipeline** | Stream processing, windowing, late data | Uber AthenaX, exactly-once semantics, watermarking |
 | ✅ | **ETL Orchestration** | DAG execution, dependencies, retries | Airflow style, backfilling, idempotency, topological sort |
 | ✅ | **Data Quality Monitoring** | Schema validation, anomaly detection, freshness | Real-time validation, SLA tracking, alerting |
@@ -67,7 +67,7 @@ These problems differ from the existing challenges by focusing on:
 | ✅ | **Service Health Checker** | Active probing, synthetic transactions | Multi-region checks, false positives, dependency modeling |
 | ✅ | **Chaos Engineering Platform** | Failure injection, blast radius control | Netflix Chaos Monkey, safety controls, impact measurement |
 | ✅ | **Capacity Planning System** | Resource forecasting, growth modeling | Seasonality, traffic spikes, multi-dimensional resources |
-| 38 | **SLO/SLI Reporting** | Error budget tracking, burn rate alerts | Multi-service SLOs, user-journey based SLIs |
+| ✅ | **SLO/SLI Reporting** | Error budget tracking, burn rate alerts | Multi-service SLOs, user-journey based SLIs |
 | ✅ | **Configuration Rollout** | Safe config deployment, validation, rollback | Google GFE config, gradual rollout, A/B testing |
 | 40 | **Runbook Automation** | Automated remediation, playbook execution | Google SRE, safety checks, human-in-loop |
 | 41 | **Resource Quota Management** | Per-team quotas, reservations, usage | Fair sharing, overcommit strategies, quota transfers |
@@ -262,9 +262,9 @@ These problems are ideal for:
 
 ## Implementation Status
 
-- ✅ **30 problems fully implemented** with test cases (up from 29!)
-- 📝 **30 problems defined** with brief descriptions
-- 🎯 **Coverage**: Developer Tools (9), Data Infrastructure (8), Observability (6), Migration (4), ML Infrastructure (4)
+- ✅ **32 problems fully implemented** with test cases (up from 30!)
+- 📝 **28 problems defined** with brief descriptions
+- 🎯 **Coverage**: Developer Tools (9), Data Infrastructure (9), Observability (7), Migration (4), ML Infrastructure (4)
 - 🔜 **Next**: Implement remaining problems across all categories
 
 ---

@@ -35,6 +35,7 @@ export { realtimeAnalyticsPipelineChallenge } from './realtimeAnalyticsPipeline'
 export { dataLineageTrackingChallenge } from './dataLineageTracking';
 export { dataQualityMonitoringChallenge } from './dataQualityMonitoring';
 export { changeDataCaptureChallenge } from './changeDataCapture';
+export { dataWarehouseQueryEngineChallenge } from './dataWarehouseQueryEngine';
 
 // Observability & Operations
 export { distributedTracingChallenge } from './distributedTracing';
@@ -43,6 +44,7 @@ export { chaosEngineeringPlatformChallenge } from './chaosEngineeringPlatform';
 export { configurationRolloutChallenge } from './configurationRollout';
 export { capacityPlanningSystemChallenge } from './capacityPlanningSystem';
 export { serviceHealthCheckerChallenge } from './serviceHealthChecker';
+export { sloSliReportingChallenge } from './sloSliReporting';
 
 // Migration & Reliability
 export { zeroDowntimeMigrationChallenge } from './zeroDowntimeMigration';
@@ -118,12 +120,14 @@ export function getInternalSystemsChallenges() {
   const { dataLineageTrackingChallenge } = require('./dataLineageTracking');
   const { dataQualityMonitoringChallenge } = require('./dataQualityMonitoring');
   const { changeDataCaptureChallenge } = require('./changeDataCapture');
+  const { dataWarehouseQueryEngineChallenge } = require('./dataWarehouseQueryEngine');
   const { distributedTracingChallenge } = require('./distributedTracing');
   const { alertingIncidentManagementChallenge } = require('./alertingIncidentManagement');
   const { chaosEngineeringPlatformChallenge } = require('./chaosEngineeringPlatform');
   const { configurationRolloutChallenge } = require('./configurationRollout');
   const { capacityPlanningSystemChallenge } = require('./capacityPlanningSystem');
   const { serviceHealthCheckerChallenge } = require('./serviceHealthChecker');
+  const { sloSliReportingChallenge } = require('./sloSliReporting');
   const { zeroDowntimeMigrationChallenge } = require('./zeroDowntimeMigration');
   const { multiRegionFailoverChallenge } = require('./multiRegionFailover');
   const { circuitBreakerLibraryChallenge } = require('./circuitBreakerLibrary');
@@ -152,6 +156,7 @@ export function getInternalSystemsChallenges() {
     dataLineageTrackingChallenge,
     dataQualityMonitoringChallenge,
     changeDataCaptureChallenge,
+    dataWarehouseQueryEngineChallenge,
     // Observability
     distributedTracingChallenge,
     alertingIncidentManagementChallenge,
@@ -159,6 +164,7 @@ export function getInternalSystemsChallenges() {
     configurationRolloutChallenge,
     capacityPlanningSystemChallenge,
     serviceHealthCheckerChallenge,
+    sloSliReportingChallenge,
     // Migration & Reliability
     zeroDowntimeMigrationChallenge,
     multiRegionFailoverChallenge,
@@ -198,6 +204,7 @@ export function getChallengesByCategory(category: string) {
       'data_lineage_tracking',
       'data_quality_monitoring',
       'change_data_capture',
+      'data_warehouse_query_engine',
     ],
     observability: [
       'distributed_tracing',
@@ -206,6 +213,7 @@ export function getChallengesByCategory(category: string) {
       'configuration_rollout',
       'capacity_planning_system',
       'service_health_checker',
+      'slo_sli_reporting',
     ],
     migration: [
       'zero_downtime_migration',
