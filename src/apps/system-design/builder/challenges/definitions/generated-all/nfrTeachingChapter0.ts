@@ -2901,6 +2901,654 @@ Client → LB → AppServer → Primary DB (fsync + WAL)
   ],
 };
 
+// ============================================================================
+// Module 5: Dataset Size & Sharding (LARGEST Axis Continued)
+// ============================================================================
+
+/**
+ * Problem 12: When Sharding Is Needed - Dataset Size Analysis
+ *
+ * Teaches:
+ * - When dataset outgrows a single database server
+ * - Vertical scaling limits (CPU, RAM, disk)
+ * - When to shard vs when to optimize
+ * - Sharding decision matrix
+ *
+ * Learning Flow:
+ * 1. User has: Client → LB → AppServer → Database (single instance)
+ * 2. Problem: Database growing (10TB dataset, queries slow)
+ * 3. Options: Optimize, bigger server, or shard?
+ * 4. Decision: Shard when optimization + bigger server isn't enough
+ */
+export const shardingRequirementProblem: ProblemDefinition = {
+  id: 'nfr-ch0-sharding-requirement',
+  title: 'Dataset Size: When to Shard Your Database',
+  description: `Your database has grown to 10TB. Queries are slow. Do you need sharding, or is there a simpler solution?
+
+**The Problem: Database Growing**
+
+Your e-commerce platform started 3 years ago:
+- Year 1: 100GB dataset (10M products) → Single PostgreSQL server ✅
+- Year 2: 1TB dataset (100M products) → Upgraded to bigger server ✅
+- Year 3: 10TB dataset (1B products) → Queries taking 30+ seconds ❌
+
+**Current Architecture:**
+\`\`\`
+Client → LB → AppServer Pool → PostgreSQL (10TB, single server)
+\`\`\`
+
+**The Question: Do You Need Sharding?**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Option 1: Optimize Queries (Try This First!)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Before sharding, exhaust these optimizations:
+
+**1. Add Indexes**
+\`\`\`sql
+-- Slow query (30s on 10TB)
+SELECT * FROM products WHERE category = 'electronics' AND price < 100;
+
+-- Add index (query now 50ms)
+CREATE INDEX idx_category_price ON products(category, price);
+\`\`\`
+
+**2. Query Optimization**
+\`\`\`sql
+-- Bad: SELECT * (fetches all columns)
+SELECT * FROM products WHERE id = 123;
+
+-- Good: SELECT only needed columns
+SELECT id, name, price FROM products WHERE id = 123;
+\`\`\`
+
+**3. Partition Tables (NOT sharding!)**
+\`\`\`sql
+-- Partition by date (query only recent data)
+CREATE TABLE products_2024 PARTITION OF products
+FOR VALUES FROM ('2024-01-01') TO ('2025-01-01');
+\`\`\`
+
+**When This Works:**
+- ✅ Queries can be optimized
+- ✅ Most queries access recent data (partitioning helps)
+- ✅ Working set fits in RAM (cache helps)
+
+**When This Fails:**
+- ❌ Queries are already optimized
+- ❌ Need to scan large portions of data
+- ❌ Dataset > available RAM (cache misses)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Option 2: Vertical Scaling (Buy Bigger Server)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Current Server:**
+- CPU: 32 cores
+- RAM: 256GB
+- Disk: 20TB SSD
+- Cost: $2,000/month
+
+**Upgrade to Bigger Server:**
+- CPU: 96 cores
+- RAM: 1TB
+- Disk: 40TB SSD
+- Cost: $8,000/month
+
+**Pros:**
+- ✅ No code changes (drop-in replacement)
+- ✅ No sharding complexity
+- ✅ ACID transactions still work
+
+**Cons:**
+- ❌ Expensive (4× cost for 2× capacity)
+- ❌ Diminishing returns (law of diminishing returns)
+- ❌ Hard limits (largest AWS instance: 4TB RAM, 100TB disk)
+
+**When This Works:**
+- ✅ Dataset < 5TB
+- ✅ Budget allows
+- ✅ Don't want sharding complexity
+
+**When This Fails:**
+- ❌ Dataset > 10TB (approaching hardware limits)
+- ❌ Growing 2TB/year (will hit limits soon)
+- ❌ Cost prohibitive
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Option 3: Horizontal Scaling (Sharding)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Sharding:** Split data across multiple database servers
+
+**Example: Shard by User ID**
+\`\`\`
+Shard 0 (user_id % 4 == 0): 2.5TB (users 0, 4, 8, 12, ...)
+Shard 1 (user_id % 4 == 1): 2.5TB (users 1, 5, 9, 13, ...)
+Shard 2 (user_id % 4 == 2): 2.5TB (users 2, 6, 10, 14, ...)
+Shard 3 (user_id % 4 == 3): 2.5TB (users 3, 7, 11, 15, ...)
+\`\`\`
+
+**Pros:**
+- ✅ Linear scalability (add more shards as you grow)
+- ✅ Cost-effective (4× $2k servers = $8k, same as 1× big server)
+- ✅ No hard limits (can grow to 100+ shards)
+
+**Cons:**
+- ❌ Complex code changes (routing logic)
+- ❌ No cross-shard joins
+- ❌ No cross-shard transactions
+- ❌ Rebalancing is hard
+
+**When This Works:**
+- ✅ Dataset > 10TB and growing
+- ✅ Data can be partitioned by key (user_id, tenant_id, region)
+- ✅ Most queries are single-shard (e.g., user's own data)
+
+**When This Fails:**
+- ❌ Need cross-shard joins frequently
+- ❌ Need distributed transactions
+- ❌ Can't partition data logically
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Decision Matrix:**
+
+| Dataset Size | Query Pattern      | Best Solution           | Why?                            |
+|--------------|--------------------| ------------------------|----------------------------------|
+| < 100GB      | Any                | ✅ Single server        | Small enough to fit on one box  |
+| 100GB - 1TB  | Optimizable        | ✅ Single server + indexes | Optimization + bigger server   |
+| 1TB - 5TB    | Mostly recent data | ✅ Vertical scale + partitioning | Partitioning isolates hot data |
+| 1TB - 5TB    | Random access      | ⚠️ Consider sharding    | Depends on query patterns       |
+| 5TB - 20TB   | Can partition      | ✅ Sharding             | Vertical scaling too expensive  |
+| > 20TB       | Any                | ✅ Sharding (required)  | Exceeds single-server limits    |
+
+**Your Task:**
+
+You're building a **multi-tenant SaaS platform** (like Shopify):
+- 100,000 tenants (online stores)
+- Dataset: 50TB total
+  - Tenant A: 10GB (small store)
+  - Tenant B: 500GB (medium store)
+  - Tenant C: 5TB (enterprise store)
+- Query pattern: 99% of queries are single-tenant (users only see their own store's data)
+
+**Analysis:**
+- Dataset: 50TB ❌ Too large for vertical scaling
+- Growth: 10TB/year ❌ Will hit limits quickly
+- Query pattern: ✅ Partitionable by tenant_id
+- Cross-tenant queries: ❌ Only 1% (analytics, can be async)
+
+**Decision:** ✅ **Sharding Required**
+
+Shard by \`tenant_id\`:
+- Small tenants: Shard 0-3 (many tenants per shard)
+- Medium tenants: Shard 4-7 (fewer tenants per shard)
+- Large tenants: Shard 8+ (dedicated shard per tenant)
+
+**Expected Architecture:**
+\`\`\`
+Client → LB → AppServer Pool → Shard Router
+                                    ├─> Shard 0 (10TB)
+                                    ├─> Shard 1 (10TB)
+                                    ├─> Shard 2 (10TB)
+                                    ├─> Shard 3 (10TB)
+                                    └─> Shard 4 (10TB)
+\`\`\`
+
+**Learning Objectives:**
+1. Know when to optimize vs scale vertically vs shard
+2. Understand sharding trade-offs (complexity vs scalability)
+3. Identify partitionable data (user_id, tenant_id, region)
+4. Avoid premature sharding (shard only when necessary)`,
+
+  userFacingFRs: [
+    'Multi-tenant SaaS platform (100k tenants)',
+    'Each tenant has isolated data (products, orders, users)',
+    '99% of queries are single-tenant',
+  ],
+
+  userFacingNFRs: [
+    'Dataset: 50TB total (growing 10TB/year)',
+    'Largest tenant: 5TB',
+    'Query latency: P99 < 200ms',
+    'Cost: Minimize infrastructure cost',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'Tenant Client',
+      subtitle: 'Access own store data',
+      id: 'client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Traffic distribution',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServer pool (includes shard routing logic)',
+      },
+      {
+        type: 'storage',
+        reason: 'Multiple database shards (50TB total, need 5+ shards at 10TB each). Need multiple storage nodes.',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Distribute traffic',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'AppServer routes queries to correct shard based on tenant_id',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-sharding-requirement', problemConfigs['nfr-ch0-sharding-requirement'] || {
+    baseRps: 10000,
+    readRatio: 0.9,
+    maxLatency: 200,
+    availability: 0.999,
+  }, [
+    'Handle 50TB dataset with sharding',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Multiple Storage Nodes for Sharding',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (storageNodes.length < 3) {
+          return {
+            valid: false,
+            hint: '50TB dataset cannot fit on a single server. You need sharding (horizontal scaling). Add at least 5 database shards at ~10TB each.',
+          };
+        }
+
+        return {
+          valid: true,
+          details: {
+            storageNodes: storageNodes.length,
+            estimatedCapacity: `${storageNodes.length * 10}TB (${storageNodes.length} shards × 10TB)`,
+          },
+        };
+      },
+    },
+    {
+      name: 'Sufficient Shards for Dataset Size',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        // For 50TB, need at least 5 shards (10TB per shard)
+        const datasetSize = 50; // TB
+        const shardCapacity = 10; // TB per shard
+        const shardsNeeded = Math.ceil(datasetSize / shardCapacity);
+
+        if (storageNodes.length < shardsNeeded) {
+          return {
+            valid: false,
+            hint: `50TB dataset needs at least ${shardsNeeded} shards (at 10TB per shard). You have ${storageNodes.length} storage nodes. Add more shards.`,
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
+/**
+ * Problem 13: Sharding Strategies - Hash vs Range vs Geo-based
+ *
+ * Teaches:
+ * - Different sharding strategies and trade-offs
+ * - Hash-based sharding (user_id % N)
+ * - Range-based sharding (date ranges, alphabetical)
+ * - Geo-based sharding (by region)
+ * - Hot spots and rebalancing challenges
+ *
+ * Learning Flow:
+ * 1. You've decided to shard (from Problem 12)
+ * 2. Ask: HOW to shard? (what's the shard key?)
+ * 3. Trade-off: Uniform distribution vs query patterns
+ * 4. Solution: Choose strategy based on access patterns
+ */
+export const shardingStrategiesProblem: ProblemDefinition = {
+  id: 'nfr-ch0-sharding-strategies',
+  title: 'Sharding Strategies: Hash vs Range vs Geo-based',
+  description: `You've decided to shard your 50TB database (from Module 5 Problem 1). Now: HOW to shard?
+
+**The Question: What's Your Shard Key?**
+
+Shard key = The field you use to decide which shard stores the data
+
+**Three Sharding Strategies:**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Strategy 1: Hash-Based Sharding (Most Common)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**How It Works:**
+\`\`\`
+Shard = hash(user_id) % num_shards
+
+Example (4 shards):
+User 12345 → hash(12345) = 789654 → 789654 % 4 = 2 → Shard 2
+User 67890 → hash(67890) = 123456 → 123456 % 4 = 0 → Shard 0
+\`\`\`
+
+**Pros:**
+- ✅ Uniform distribution (each shard gets ~25% of data)
+- ✅ No hot spots (assuming good hash function)
+- ✅ Simple routing logic
+
+**Cons:**
+- ❌ Range queries expensive (need to query all shards)
+- ❌ Rebalancing is hard (changing num_shards reshuffles everything)
+- ❌ Can't leverage locality
+
+**When to Use:**
+- Random access patterns (lookup by user_id)
+- Uniform distribution critical
+- No range queries needed
+- **Example:** User data (profiles, settings), session storage
+
+**Code Example:**
+\`\`\`python
+def get_shard(user_id, num_shards=4):
+    return hash(user_id) % num_shards
+
+def query_user(user_id):
+    shard = get_shard(user_id)
+    return shards[shard].query(f"SELECT * FROM users WHERE id = {user_id}")
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Strategy 2: Range-Based Sharding**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**How It Works:**
+\`\`\`
+Shard by date ranges:
+Shard 0: 2020-01-01 to 2021-12-31
+Shard 1: 2022-01-01 to 2023-12-31
+Shard 2: 2024-01-01 to 2025-12-31
+Shard 3: 2026-01-01 to future
+\`\`\`
+
+**Pros:**
+- ✅ Range queries are fast (query single shard)
+- ✅ Easy to add new shards (just add next range)
+- ✅ Can archive old shards (move to cold storage)
+
+**Cons:**
+- ❌ Hot spots (recent data gets all writes)
+- ❌ Uneven distribution (Shard 3 grows, Shard 0 idle)
+- ❌ Requires rebalancing
+
+**When to Use:**
+- Time-series data (logs, metrics, events)
+- Most queries are recent data
+- Can archive old data
+- **Example:** Log aggregation, analytics, IoT sensor data
+
+**Code Example:**
+\`\`\`python
+def get_shard_by_date(timestamp):
+    if timestamp < datetime(2022, 1, 1):
+        return 0  # 2020-2021
+    elif timestamp < datetime(2024, 1, 1):
+        return 1  # 2022-2023
+    else:
+        return 2  # 2024+
+
+def query_logs(start_date, end_date):
+    # Only query shards with relevant date ranges
+    shards_to_query = [s for s in range(3) if overlaps(s, start_date, end_date)]
+    return [shards[s].query(...) for s in shards_to_query]
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**Strategy 3: Geo-Based Sharding (Regional)**
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**How It Works:**
+\`\`\`
+Shard by geographic region:
+Shard US-East:  North America users
+Shard EU-West:  Europe users
+Shard AP-South: Asia-Pacific users
+\`\`\`
+
+**Pros:**
+- ✅ Low latency (data close to users)
+- ✅ Data sovereignty (GDPR compliance - EU data stays in EU)
+- ✅ Natural partitioning (users in same region interact)
+
+**Cons:**
+- ❌ Uneven distribution (US has 50% of users, Asia 10%)
+- ❌ Cross-region queries are slow
+- ❌ Rebalancing requires data migration
+
+**When to Use:**
+- Global user base
+- Data sovereignty requirements (GDPR, CCPA)
+- Low latency critical
+- **Example:** Global SaaS, social media, e-commerce
+
+**Code Example:**
+\`\`\`python
+def get_shard_by_region(user_id):
+    user_region = get_user_region(user_id)  # Lookup in cache
+    return REGION_SHARDS[user_region]
+
+def query_user(user_id):
+    shard = get_shard_by_region(user_id)
+    return shards[shard].query(f"SELECT * FROM users WHERE id = {user_id}")
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Hot Spots & Rebalancing:**
+
+**Hot Spot Problem:**
+\`\`\`
+Example: Shard by first letter of username
+Shard A-F: 5TB (few users)
+Shard G-M: 25TB (many users start with J, M) ❌ HOT SPOT
+Shard N-Z: 20TB
+\`\`\`
+
+**Solution: Consistent Hashing**
+- Uses virtual nodes to distribute load
+- Adding/removing shards only reshuffles ~1/N of data
+- Avoids hot spots
+
+**Comparison Matrix:**
+
+| Strategy      | Distribution | Range Queries | Hot Spots | Rebalancing | Use Case             |
+|---------------|--------------|---------------|-----------|-------------|----------------------|
+| Hash-based    | ✅ Uniform   | ❌ Expensive  | ✅ Rare   | ❌ Hard     | User data, random access |
+| Range-based   | ❌ Uneven    | ✅ Fast       | ❌ Common | ✅ Easy     | Time-series, logs    |
+| Geo-based     | ⚠️ Varies    | ❌ Cross-region slow | ⚠️ Regional imbalance | ❌ Hard | Global apps, GDPR |
+
+**Your Task:**
+
+You're building **Instagram** (global photo-sharing app):
+- Dataset: 500TB (10B photos)
+- Users: 2B users worldwide (50% US, 30% Europe, 20% Asia)
+- Query pattern: Users mostly see their own + friends' photos (same region)
+- Compliance: GDPR requires EU data stays in EU
+
+**Analysis:**
+- Dataset: ✅ Too large for single cluster
+- Access pattern: ✅ Users mostly access same-region data
+- Compliance: ✅ GDPR requires regional isolation
+- Cross-region queries: ⚠️ Only friend recommendations (async job)
+
+**Which sharding strategy?** ✅ **Geo-Based Sharding**
+
+Shard by region:
+- US-East: 250TB (50% of data)
+- EU-West: 150TB (30% of data)
+- AP-South: 100TB (20% of data)
+
+Within each region, shard by user_id (hash-based):
+- US-East: 10 shards × 25TB
+- EU-West: 6 shards × 25TB
+- AP-South: 4 shards × 25TB
+
+**Expected Architecture:**
+\`\`\`
+US Users → US-East LB → US AppServers → US Shards (10 shards)
+EU Users → EU-West LB → EU AppServers → EU Shards (6 shards)
+AP Users → AP-South LB → AP AppServers → AP Shards (4 shards)
+\`\`\`
+
+**Learning Objectives:**
+1. Understand the 3 main sharding strategies
+2. Map query patterns to sharding strategy
+3. Identify and avoid hot spots
+4. Handle rebalancing and data migration`,
+
+  userFacingFRs: [
+    'Global photo-sharing app (Instagram-like)',
+    'Users upload/view photos',
+    'Users mostly see same-region content',
+  ],
+
+  userFacingNFRs: [
+    'Dataset: 500TB (10B photos)',
+    'Users: 2B worldwide (50% US, 30% EU, 20% Asia)',
+    'Latency: P99 < 200ms (regional)',
+    'Compliance: GDPR (EU data stays in EU)',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'US Client',
+      subtitle: 'North America users',
+      id: 'us_client',
+    },
+    {
+      name: 'EU Client',
+      subtitle: 'Europe users',
+      id: 'eu_client',
+    },
+    {
+      name: 'Asia Client',
+      subtitle: 'Asia-Pacific users',
+      id: 'asia_client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Regional traffic distribution',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServer pool (with geo-aware shard routing)',
+      },
+      {
+        type: 'storage',
+        reason: 'Multiple regional database clusters (500TB total, ~20 shards across 3 regions). Need many storage nodes.',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Distribute traffic',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'AppServer routes to correct regional shard cluster',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-sharding-strategies', problemConfigs['nfr-ch0-sharding-strategies'] || {
+    baseRps: 50000,
+    readRatio: 0.95,
+    maxLatency: 200,
+    availability: 0.9999,
+  }, [
+    'Handle 500TB with geo-based sharding',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Multiple Storage Clusters',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (storageNodes.length < 10) {
+          return {
+            valid: false,
+            hint: '500TB dataset with geo-based sharding needs ~20 shards across 3 regions. You have ${storageNodes.length} storage nodes. Add more regional shards.',
+          };
+        }
+
+        return {
+          valid: true,
+          details: {
+            storageNodes: storageNodes.length,
+            strategy: 'Geo-based sharding with regional clusters',
+          },
+        };
+      },
+    },
+    {
+      name: 'Sufficient Shards for Global Dataset',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        // For 500TB with geo-sharding, need ~20 shards (25TB per shard)
+        const datasetSize = 500; // TB
+        const shardCapacity = 25; // TB per shard
+        const shardsNeeded = Math.ceil(datasetSize / shardCapacity);
+
+        if (storageNodes.length < shardsNeeded) {
+          return {
+            valid: false,
+            hint: `500TB global dataset needs at least ${shardsNeeded} shards (at 25TB per shard across 3 regions). You have ${storageNodes.length} storage nodes. Add more shards.`,
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
 // Export all Chapter 0 problems
 export const nfrTeachingChapter0Problems = [
   // Module 1: Throughput & Horizontal Scaling (4 problems)
@@ -2919,4 +3567,7 @@ export const nfrTeachingChapter0Problems = [
   // Module 4: Data Durability & Persistence (2 problems)
   durabilityRequirementProblem,
   durabilityLevelsProblem,
+  // Module 5: Dataset Size & Sharding (2 problems)
+  shardingRequirementProblem,
+  shardingStrategiesProblem,
 ];
