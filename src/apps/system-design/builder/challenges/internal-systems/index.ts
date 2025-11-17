@@ -25,6 +25,7 @@ export { internalApiGatewayChallenge } from './internalApiGateway';
 export { serviceMeshControlPlaneChallenge } from './serviceMeshControlPlane';
 export { internalJobSchedulerChallenge } from './internalJobScheduler';
 export { developerMetricsDashboardChallenge } from './developerMetricsDashboard';
+export { dependencyGraphAnalyzerChallenge } from './dependencyGraphAnalyzer';
 
 // Data Infrastructure
 export { featureStoreChallenge } from './featureStore';
@@ -115,6 +116,7 @@ export function getInternalSystemsChallenges() {
   const { serviceMeshControlPlaneChallenge } = require('./serviceMeshControlPlane');
   const { internalJobSchedulerChallenge } = require('./internalJobScheduler');
   const { developerMetricsDashboardChallenge } = require('./developerMetricsDashboard');
+  const { dependencyGraphAnalyzerChallenge } = require('./dependencyGraphAnalyzer');
   const { featureStoreChallenge } = require('./featureStore');
   const { etlOrchestrationChallenge } = require('./etlOrchestration');
   const { logAggregationChallenge } = require('./logAggregation');
@@ -153,6 +155,7 @@ export function getInternalSystemsChallenges() {
     serviceMeshControlPlaneChallenge,
     internalJobSchedulerChallenge,
     developerMetricsDashboardChallenge,
+    dependencyGraphAnalyzerChallenge,
     // Data Infrastructure
     featureStoreChallenge,
     etlOrchestrationChallenge,
@@ -203,6 +206,7 @@ export function getChallengesByCategory(category: string) {
       'service_mesh_control_plane',
       'internal_job_scheduler',
       'developer_metrics_dashboard',
+      'dependency_graph_analyzer',
     ],
     data_infrastructure: [
       'feature_store',

@@ -25,7 +25,7 @@ These problems differ from the existing challenges by focusing on:
 | ✅ | **Internal API Gateway** | Request routing, auth, rate limiting | Dynamic routing, quota management, traffic shadowing, circuit breaking |
 | ✅ | **Secret Management System** | Secret rotation, access control, audit logs | Encryption at rest/transit, high availability, versioning, grace periods |
 | ✅ | **Internal Job Scheduler** | Task scheduling, resource allocation, priorities | Google Borg/K8s style, bin packing, preemption |
-| 10 | **Dependency Graph Analyzer** | Service dependencies, impact analysis | Real-time updates, circular dependency detection |
+| ✅ | **Dependency Graph Analyzer** | Service dependencies, impact analysis | Real-time updates, circular dependency detection |
 | 11 | **Code Search Engine** | Multi-repo search, regex, reference finding | Google Code Search style, incremental indexing |
 | 12 | **Internal Docs Platform** | Wiki, API docs, runbooks | Search relevance, version control, access control |
 | 13 | **Experimentation Platform** | A/B testing, statistical significance | Traffic splitting, user bucketing, experiment interference |
@@ -262,9 +262,9 @@ These problems are ideal for:
 
 ## Implementation Status
 
-- ✅ **35 problems fully implemented** with test cases (up from 32!)
-- 📝 **25 problems defined** with brief descriptions
-- 🎯 **Coverage**: Developer Tools (9), Data Infrastructure (10), Observability (8), Migration (4), ML Infrastructure (5)
+- ✅ **36 problems fully implemented** with test cases (up from 35!)
+- 📝 **24 problems defined** with brief descriptions
+- 🎯 **Coverage**: Developer Tools (10), Data Infrastructure (10), Observability (8), Migration (4), ML Infrastructure (5)
 - 🔜 **Next**: Implement remaining problems across all categories
 
 ---
