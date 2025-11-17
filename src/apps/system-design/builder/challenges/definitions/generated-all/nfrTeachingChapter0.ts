@@ -4377,6 +4377,279 @@ Client → LB → AppServer → Primary DB (fsync + WAL)
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Durability Levels: Performance vs Data Safety',
+    subtitle: 'Learn fsync, WAL, and replication trade-offs',
+    objectives: [
+      'Understand the durability spectrum (async → fsync → WAL → replication)',
+      'Map RPO/RTO requirements to durability level',
+      'Calculate performance impact of each level',
+      'Choose appropriate level based on data criticality',
+    ],
+    questions: [
+      {
+        id: 'data_criticality',
+        step: 1,
+        category: 'durability',
+        title: 'What type of data are you storing?',
+        description: 'Different data types have different durability requirements. Let\'s identify yours.',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'financial',
+            label: 'Financial transactions (banking, payments)',
+            description: 'Customer money - ZERO data loss acceptable',
+            consequence: 'Required: Level 4 (Synchronous Replication). RPO = 0, RTO < 1min.',
+          },
+          {
+            id: 'user_data',
+            label: 'User profiles and e-commerce orders',
+            description: 'Important but not life-critical',
+            consequence: 'Required: Level 2-3 (fsync or WAL). RPO = 0, RTO = 5-30min OK.',
+          },
+          {
+            id: 'analytics',
+            label: 'Analytics, logs, and metrics',
+            description: 'Approximate data is acceptable',
+            consequence: 'Required: Level 1 (Async). RPO = 30s OK (can rebuild from sources).',
+          },
+        ],
+        whyItMatters: 'Data criticality determines durability level! Banking = 0 data loss (Level 4 replication). Logs = approximate OK (Level 1 async).',
+        commonMistakes: [
+          'Using async writes for financial data (ILLEGAL! Lose customer money on crash)',
+          'Using sync replication for logs (10× slower, not worth it)',
+          'Not considering regulatory requirements (HIPAA, SOX require WAL)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'financial') {
+            return [{
+              action: 'highlight',
+              reason: 'Banking → Level 4 Synchronous Replication! Data written to 3 servers before "success". Survives data center failure.',
+            }];
+          } else if (answer === 'user_data') {
+            return [{
+              action: 'highlight',
+              reason: 'User data → Level 2 fsync (default for most DBs). Every commit waits for disk write. No data loss on crash.',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: 'Analytics → Level 1 Async! Write to RAM, return immediately. 50k writes/sec. 30s data loss OK (can rebuild).',
+            }];
+          }
+        },
+      },
+      {
+        id: 'rpo_rto_requirements',
+        step: 2,
+        category: 'durability',
+        title: 'RPO & RTO Requirements',
+        description: 'What are your Recovery Point Objective (data loss) and Recovery Time Objective (downtime) requirements?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'RPO = 30s, RTO = Hours',
+            recommendation: 'Level 1: Async writes (50k writes/sec, 1-5ms latency)',
+            reasoning: 'Logs, metrics, gaming leaderboards. Can tolerate data loss and rebuild.',
+          },
+          {
+            condition: 'RPO = 0s, RTO = 30min',
+            recommendation: 'Level 2: fsync on commit (5k writes/sec, 5-20ms latency)',
+            reasoning: 'E-commerce, SaaS. Standard production database. Default PostgreSQL config.',
+          },
+          {
+            condition: 'RPO = 0s, RTO = 5min',
+            recommendation: 'Level 3: WAL + fsync (10k writes/sec, 3-10ms latency)',
+            reasoning: 'Financial, compliance. WAL = point-in-time recovery. Faster crash recovery.',
+          },
+          {
+            condition: 'RPO = 0s, RTO < 1min',
+            recommendation: 'Level 4: Sync replication (3k writes/sec, 10-50ms latency)',
+            reasoning: 'Banking, medical. ZERO data loss, automatic failover. Survives data center failure.',
+          },
+        ],
+        whyItMatters: 'RPO/RTO drive architecture! RPO = 0 → need fsync or replication. RTO < 1min → need automatic failover (replication).',
+        commonMistakes: [
+          'Confusing RPO and RTO (RPO = data loss, RTO = downtime)',
+          'Not testing recovery time (claimed RTO = 5min, actual = 2 hours)',
+          'Forgetting about correlated failures (same data center = both servers down)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer for high availability',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 3 },
+              reason: 'App servers (stateless)',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes to app servers',
+            },
+          ];
+        },
+      },
+      {
+        id: 'performance_impact',
+        step: 3,
+        category: 'durability',
+        title: 'Performance Trade-offs',
+        description: 'Each durability level has different performance characteristics.',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Throughput Reduction = (Disk I/O Time) / (Total Transaction Time)',
+          explanation: 'fsync adds disk I/O latency to every transaction. More durable = slower.',
+          exampleInputs: {
+            'Level 1 (Async)': '50,000 writes/sec (in-memory only)',
+            'Level 2 (fsync)': '5,000 writes/sec (10× slower - disk I/O)',
+            'Level 3 (WAL+fsync)': '10,000 writes/sec (5× slower - sequential writes)',
+            'Level 4 (Sync Repl)': '3,000 writes/sec (16× slower - network + 2× disk)',
+          },
+          exampleOutput: 'Trade-off: 10× performance drop for zero data loss (async → fsync)',
+        },
+        whyItMatters: 'Durability costs performance! Async = 50k writes/sec. Sync replication = 3k writes/sec (16× slower). But you get zero data loss + automatic failover.',
+        commonMistakes: [
+          'Not load testing with fsync enabled (dev = fsync off, prod = 10× slower)',
+          'Assuming disk = fast (SSD fsync = 5ms, HDD = 20ms)',
+          'Forgetting about network latency in replication (cross-region = +100ms)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 1 },
+              reason: 'Primary database with fsync + WAL enabled',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'storage',
+              reason: 'App servers write to primary DB',
+            },
+          ];
+        },
+      },
+      {
+        id: 'wal_deep_dive',
+        step: 4,
+        category: 'durability',
+        title: 'Write-Ahead Log (WAL) Benefits',
+        description: 'Why is WAL faster than direct disk writes?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'sequential_writes',
+            label: 'Sequential writes are faster than random writes',
+            description: 'WAL = append-only log (sequential). Data pages = random writes.',
+            consequence: '✅ CORRECT! SSD: Sequential = 500 MB/s, Random = 50 MB/s (10× faster). WAL exploits sequential I/O.',
+          },
+          {
+            id: 'compression',
+            label: 'WAL compresses data',
+            description: 'Compression reduces disk I/O',
+            consequence: '❌ WRONG! WAL is about write pattern, not compression. Sequential writes are the key.',
+          },
+          {
+            id: 'caching',
+            label: 'WAL uses a cache',
+            description: 'Cache avoids disk writes',
+            consequence: '❌ WRONG! WAL still writes to disk (fsync). But it uses sequential I/O which is 10× faster.',
+          },
+        ],
+        whyItMatters: 'WAL enables 2× better throughput vs direct data page updates. Sequential writes (WAL) = 10× faster than random writes (data pages). Plus crash recovery and point-in-time restore!',
+        commonMistakes: [
+          'Thinking WAL is "just a backup" (it\'s a performance optimization + recovery tool)',
+          'Not archiving WAL (lose point-in-time recovery capability)',
+          'Putting WAL on same disk as data (single failure point)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'sequential_writes') {
+            return [{
+              action: 'highlight',
+              reason: '✅ WAL = Sequential writes! Append-only log is 10× faster than random data page updates. Plus: crash recovery + point-in-time restore.',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: '❌ WAL speed comes from sequential I/O, not compression or caching. Sequential disk writes = 10× faster than random!',
+            }];
+          }
+        },
+      },
+      {
+        id: 'replication_architecture',
+        step: 5,
+        category: 'durability',
+        title: 'Synchronous Replication Architecture',
+        description: 'For banking (RPO=0, RTO<1min), you need Level 4. How many replicas?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: '1 Primary + 1 Replica (same region)',
+            recommendation: '❌ RISKY! Single region = data center failure takes down both.',
+            reasoning: 'Correlated failure: Power outage, network split, natural disaster.',
+          },
+          {
+            condition: '1 Primary + 2 Replicas (same region)',
+            recommendation: '⚠️ BETTER but still regional risk',
+            reasoning: 'Survives 1 server failure, but not regional outage.',
+          },
+          {
+            condition: '1 Primary + 2 Replicas (different regions)',
+            recommendation: '✅ BEST! Survives data center failure.',
+            reasoning: 'Primary + Replica 1 (same region, <1ms) + Replica 2 (cross-region, +50ms). RTO < 1min via automatic failover.',
+          },
+        ],
+        whyItMatters: 'For zero data loss + automatic failover, need 3 nodes across 2+ regions. Same-region replica = fast (<1ms). Cross-region replica = survives data center failure.',
+        commonMistakes: [
+          'All replicas in same data center (correlated failure)',
+          'Not testing failover (claimed RTO = 1min, actual = 30min manual recovery)',
+          'Forgetting about split-brain (2 nodes both think they\'re primary)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 2 },
+              reason: '2 synchronous replicas (1 same-region, 1 cross-region) for RPO=0, RTO<1min',
+            },
+            {
+              action: 'highlight',
+              reason: 'Final architecture: Primary + 2 sync replicas. Write waits for all 3 to fsync. Automatic failover on primary failure. Survives data center outage!',
+            },
+          ];
+        },
+      },
+    ],
+    summary: {
+      title: 'Durability Levels Mastered!',
+      keyTakeaways: [
+        'Level 1 (Async): 50k writes/sec, RPO=30s. Use for: Logs, analytics.',
+        'Level 2 (fsync): 5k writes/sec, RPO=0s. Use for: E-commerce, SaaS (default).',
+        'Level 3 (WAL+fsync): 10k writes/sec, RPO=0s, faster recovery. Use for: Finance, compliance.',
+        'Level 4 (Sync Repl): 3k writes/sec, RPO=0s, RTO<1min. Use for: Banking, medical.',
+        'Trade-off: 16× performance drop (async → sync repl) for zero data loss + failover.',
+      ],
+      nextSteps: 'Next: Learn when to shard your database (Module 5 - Dataset Size)!',
+    },
+  },
 };
 
 // ============================================================================
@@ -5293,6 +5566,273 @@ AP Users → AP-South LB → AP AppServers → AP Shards (4 shards)
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Sharding Strategies: Hash vs Range vs Geo',
+    subtitle: 'Learn which sharding strategy fits your access patterns',
+    objectives: [
+      'Understand hash-based sharding (uniform distribution)',
+      'Learn range-based sharding (time-series optimization)',
+      'Master geo-based sharding (regional data sovereignty)',
+      'Choose strategy based on query patterns and requirements',
+    ],
+    questions: [
+      {
+        id: 'use_case',
+        step: 1,
+        category: 'dataset_size',
+        title: 'What type of application are you building?',
+        description: 'Different applications have different access patterns. Let\'s identify yours.',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'global_social',
+            label: 'Global social media app (Instagram/Twitter)',
+            description: 'Users worldwide, need low latency, GDPR compliance',
+            consequence: 'Access pattern: Regional (users mostly see content from same region). Best: Geo-based sharding.',
+          },
+          {
+            id: 'user_data',
+            label: 'User profile system (random access by user_id)',
+            description: 'Lookup users by ID, need uniform distribution',
+            consequence: 'Access pattern: Random access (by user_id). Best: Hash-based sharding.',
+          },
+          {
+            id: 'timeseries',
+            label: 'Log aggregation / Analytics (time-series data)',
+            description: 'Most queries are recent data, can archive old data',
+            consequence: 'Access pattern: Time-based (recent data hot). Best: Range-based sharding by timestamp.',
+          },
+        ],
+        whyItMatters: 'Your access pattern determines the sharding strategy! Social apps need geo-sharding for latency. User lookups need hash-sharding for uniform distribution. Logs need range-sharding for time-based queries.',
+        commonMistakes: [
+          'Using hash-based for time-series data (can\'t query date ranges efficiently)',
+          'Using range-based for user data (creates hot spots)',
+          'Ignoring GDPR requirements (geo-based sharding required for compliance)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'global_social') {
+            return [{
+              action: 'highlight',
+              reason: 'Global app → Geo-based sharding! Users in US hit US shards, EU users hit EU shards (low latency + GDPR compliance).',
+            }];
+          } else if (answer === 'user_data') {
+            return [{
+              action: 'highlight',
+              reason: 'Random access → Hash-based sharding! hash(user_id) % num_shards ensures uniform distribution.',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: 'Time-series → Range-based sharding! Shard by date ranges (recent data on hot shards, archive old shards).',
+            }];
+          }
+        },
+      },
+      {
+        id: 'strategy_comparison',
+        step: 2,
+        category: 'dataset_size',
+        title: 'Sharding Strategy Comparison',
+        description: 'Let\'s compare the 3 main strategies and their trade-offs.',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Hash-Based (user_id % N)',
+            recommendation: '✅ Uniform distribution | ❌ Expensive range queries',
+            reasoning: 'Best for: User profiles, session storage, random access. Avoids hot spots.',
+          },
+          {
+            condition: 'Range-Based (date ranges)',
+            recommendation: '✅ Fast range queries | ❌ Hot spots on recent data',
+            reasoning: 'Best for: Logs, metrics, analytics. Can archive old shards to cold storage.',
+          },
+          {
+            condition: 'Geo-Based (region)',
+            recommendation: '✅ Low latency + GDPR | ❌ Uneven distribution',
+            reasoning: 'Best for: Global apps. US has 50% of users, Asia 10% → unbalanced shards.',
+          },
+        ],
+        whyItMatters: 'Each strategy optimizes for different things. Hash → uniform distribution. Range → efficient time queries. Geo → low latency + compliance.',
+        commonMistakes: [
+          'Thinking one strategy is "best" for all cases (it depends on access patterns!)',
+          'Not considering compliance requirements (GDPR may FORCE geo-based sharding)',
+          'Ignoring hot spot risks (range-based creates hot shards for recent data)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer routes traffic based on sharding strategy',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 12 },
+              reason: 'App servers contain shard routing logic',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes to app servers',
+            },
+          ];
+        },
+      },
+      {
+        id: 'hash_based_deep_dive',
+        step: 3,
+        category: 'dataset_size',
+        title: 'Hash-Based Sharding (Most Common)',
+        description: 'How does hash-based sharding work?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Shard = hash(user_id) % num_shards',
+          explanation: 'Hash function distributes user IDs uniformly across shards.',
+          exampleInputs: {
+            'User ID': 12345,
+            'Hash Result': 'hash(12345) = 789654',
+            'Num Shards': 4,
+          },
+          exampleOutput: 'Shard = 789654 % 4 = 2 → Route to Shard 2',
+        },
+        whyItMatters: 'Hash-based sharding is the MOST COMMON strategy (90% of use cases). It guarantees uniform distribution and avoids hot spots (assuming good hash function).',
+        commonMistakes: [
+          'Using simple modulo without hashing (user_id % N creates patterns)',
+          'Not using consistent hashing (adding shards reshuffles ALL data)',
+          'Trying to do range queries on hashed data (requires querying ALL shards)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 4 },
+              reason: '4 database shards with uniform distribution via hash(user_id) % 4',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'storage',
+              reason: 'App servers route to shard based on hash(user_id) % 4',
+            },
+          ];
+        },
+      },
+      {
+        id: 'range_based_deep_dive',
+        step: 4,
+        category: 'dataset_size',
+        title: 'Range-Based Sharding (Time-Series)',
+        description: 'When do you use range-based sharding?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'logs_analytics',
+            label: 'Log aggregation and analytics',
+            description: 'Shard by date: 2022 data → Shard 0, 2023 → Shard 1, 2024 → Shard 2',
+            consequence: '✅ BEST! Range queries like "logs from Jan-Mar 2024" hit ONE shard. Old shards can be archived.',
+          },
+          {
+            id: 'user_profiles',
+            label: 'User profiles and authentication',
+            description: 'Shard by user_id ranges: 0-250k → Shard 0, 250k-500k → Shard 1',
+            consequence: '❌ BAD! Creates hot spots if new users cluster. Hash-based is better for random access.',
+          },
+          {
+            id: 'ecommerce_products',
+            label: 'E-commerce product catalog',
+            description: 'Shard by product_id ranges: 0-10M → Shard 0, 10M-20M → Shard 1',
+            consequence: '⚠️ RISKY! Hot spots if new products are popular. Hash-based safer unless you query by ranges.',
+          },
+        ],
+        whyItMatters: 'Range-based sharding optimizes for RANGE QUERIES (e.g., "all logs from Jan-Mar"). But it creates HOT SPOTS because recent data gets all writes!',
+        commonMistakes: [
+          'Using range-based for random access (defeats uniform distribution)',
+          'Not handling hot shards (recent data shard is overloaded)',
+          'Forgetting to archive old shards (wasted capacity on cold data)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'logs_analytics') {
+            return [{
+              action: 'highlight',
+              reason: '✅ Range-based for logs! Query "logs from Q1 2024" hits ONE shard. Archive 2022 shard to S3 (cold storage).',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `⚠️ Range-based for ${answer} creates hot spots! New users/products cluster in latest shard. Hash-based is safer.`,
+            }];
+          }
+        },
+      },
+      {
+        id: 'geo_based_deep_dive',
+        step: 5,
+        category: 'latency',
+        title: 'Geo-Based Sharding (Global Apps)',
+        description: 'You\'re building Instagram (500TB, 2B users: 50% US, 30% EU, 20% Asia). How to shard?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'US Region (50% of data)',
+            recommendation: 'US-East: 10 shards × 25TB = 250TB',
+            reasoning: 'Shard by region, then by hash(user_id) within region',
+          },
+          {
+            condition: 'EU Region (30% of data)',
+            recommendation: 'EU-West: 6 shards × 25TB = 150TB',
+            reasoning: 'GDPR requires EU data stays in EU (data sovereignty)',
+          },
+          {
+            condition: 'Asia Region (20% of data)',
+            recommendation: 'AP-South: 4 shards × 25TB = 100TB',
+            reasoning: 'Low latency for Asia-Pacific users',
+          },
+        ],
+        whyItMatters: 'Geo-based sharding solves 2 problems: (1) Low latency (data close to users), (2) Compliance (GDPR, CCPA require regional data storage). Trade-off: Uneven distribution (US has 50% of data).',
+        commonMistakes: [
+          'Not planning for uneven distribution (US has 5× more shards than Asia)',
+          'Trying to do cross-region queries synchronously (use async jobs instead)',
+          'Ignoring data sovereignty laws (GDPR fines up to 4% of revenue!)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 20 },
+              reason: '20 total shards: 10 (US) + 6 (EU) + 4 (Asia) for geo-based + hash sharding',
+            },
+            {
+              action: 'highlight',
+              reason: 'Architecture: 3 regional clusters. Within each region, hash-based sharding by user_id. US users hit US shards (low latency), EU data stays in EU (GDPR).',
+            },
+          ];
+        },
+      },
+    ],
+    summary: {
+      title: 'Sharding Strategies Mastered!',
+      keyTakeaways: [
+        'Hash-based (90% of cases): Uniform distribution, good for random access (user profiles)',
+        'Range-based (time-series): Fast range queries, but creates hot spots on recent data (logs)',
+        'Geo-based (global apps): Low latency + GDPR compliance, but uneven distribution (Instagram)',
+        'Formula: hash(key) % num_shards for uniform distribution',
+        'Trade-off: Uniform distribution (hash) vs Query efficiency (range) vs Latency (geo)',
+      ],
+      nextSteps: 'Next: Learn consistency models (read-after-write, monotonic reads) in Module 6!',
+    },
+  },
 };
 
 // ============================================================================
