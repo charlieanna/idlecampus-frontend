@@ -1620,6 +1620,690 @@ TOTAL:                              25s ✅ (under 30s target!)
   ],
 };
 
+/**
+ * Problem 8: Caching Strategies - Cache-Aside, Write-Through, Write-Behind
+ *
+ * Teaches:
+ * - Different caching strategies and when to use each
+ * - Cache-aside (lazy loading) for read-heavy workloads
+ * - Write-through for strong consistency
+ * - Write-behind for write-heavy workloads
+ * - Trade-offs: consistency, latency, complexity
+ *
+ * Learning Flow:
+ * 1. User has: Client → LB → AppServer → Database
+ * 2. Need: Add cache layer, but WHICH caching strategy?
+ * 3. Ask: What's your consistency requirement? Read/write ratio?
+ * 4. Solution: Choose strategy based on NFRs
+ */
+export const cachingStrategiesProblem: ProblemDefinition = {
+  id: 'nfr-ch0-caching-strategies',
+  title: 'Caching Strategies: Cache-Aside vs Write-Through vs Write-Behind',
+  description: `You know you need caching to reduce latency (from Module 3 Problem 1). But WHICH caching strategy should you use?
+
+**The Scenario:**
+You're building a social media API with:
+- Read/write ratio: 90:10 (read-heavy, but writes matter too!)
+- Current latency: P99 = 450ms (DB is bottleneck)
+- Consistency requirement: Eventual consistency acceptable
+
+**Three Caching Strategies:**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**1. Cache-Aside (Lazy Loading)** - Most Common
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Read Flow:**
+\`\`\`
+1. AppServer checks cache
+2. Cache miss → read from database
+3. AppServer writes to cache
+4. Return data to client
+\`\`\`
+
+**Write Flow:**
+\`\`\`
+1. AppServer writes to database
+2. AppServer invalidates cache (delete key)
+3. Next read will cache miss → reload from DB
+\`\`\`
+
+**Pros:**
+✅ Simple to implement
+✅ Only caches requested data (no wasted memory)
+✅ Cache failures don't break writes
+
+**Cons:**
+❌ Cache miss penalty (first read after write is slow)
+❌ Thundering herd (many readers after cache invalidation)
+❌ Stale reads possible (if cache not invalidated)
+
+**When to Use:**
+- Read-heavy workloads (>80% reads)
+- Eventual consistency acceptable
+- Unpredictable access patterns
+- **Example:** Product catalog, user profiles, news feeds
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**2. Write-Through** - Strong Consistency
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Read Flow:**
+\`\`\`
+1. AppServer checks cache
+2. Cache miss → read from database
+3. AppServer writes to cache
+4. Return data
+\`\`\`
+
+**Write Flow:**
+\`\`\`
+1. AppServer writes to cache first
+2. Cache synchronously writes to database (same transaction)
+3. Only return success after BOTH writes complete
+\`\`\`
+
+**Pros:**
+✅ Cache always consistent with database
+✅ No stale reads
+✅ Predictable latency (no cache miss penalty)
+
+**Cons:**
+❌ Slower writes (must write to both cache AND DB)
+❌ Wasted writes (caching data that's never read)
+❌ Cache failure breaks writes
+
+**When to Use:**
+- Strong consistency required
+- Read-heavy but consistency > latency
+- Predictable access patterns
+- **Example:** User session data, inventory counts, account balances
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**3. Write-Behind (Write-Back)** - Write-Heavy Optimization
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Read Flow:**
+\`\`\`
+1. AppServer checks cache
+2. Cache miss → read from database
+3. AppServer writes to cache
+4. Return data
+\`\`\`
+
+**Write Flow:**
+\`\`\`
+1. AppServer writes to cache ONLY
+2. Return success immediately (cache write is fast!)
+3. Background worker asynchronously flushes cache → DB
+4. Database updated later (after 200ms or batch of 100)
+\`\`\`
+
+**Pros:**
+✅ Fast writes (cache only, no DB wait)
+✅ Batching reduces DB load (100 writes → 1 transaction)
+✅ Great for write-heavy workloads
+
+**Cons:**
+❌ Data loss risk (if cache crashes before flush)
+❌ Complex (need background workers, flush logic)
+❌ Debugging harder (DB lags behind cache)
+
+**When to Use:**
+- Write-heavy workloads (>50% writes)
+- Writes are bursty
+- Some data loss acceptable (or use persistent cache)
+- **Example:** Page view counters, analytics, gaming leaderboards
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Decision Matrix:**
+
+| Read:Write | Consistency | Best Strategy    | Reason                          |
+|------------|-------------|------------------|---------------------------------|
+| 95:5       | Eventual    | ✅ Cache-Aside   | Read-heavy, simplicity wins     |
+| 90:10      | Eventual    | ✅ Cache-Aside   | Still read-heavy                |
+| 90:10      | Strong      | ✅ Write-Through | Reads dominate but need consistency |
+| 50:50      | Eventual    | ⚠️ Cache-Aside   | Balanced, but reads benefit more |
+| 50:50      | Strong      | ⚠️ Write-Through | Balanced, consistency required  |
+| 10:90      | Eventual    | ✅ Write-Behind  | Write-heavy, batch to DB        |
+| 10:90      | Strong      | ❌ No cache      | Cache can't help strong-consistency writes |
+
+**Your Task:**
+
+Given:
+- Social media feed API
+- Read/write ratio: 90:10 (read feed, post updates)
+- 10,000 RPS total (9,000 reads, 1,000 writes)
+- Eventual consistency acceptable (feeds can lag 1-2 seconds)
+- Current P99 latency: 450ms (DB bottleneck)
+
+**Which strategy?** ✅ **Cache-Aside**
+- Read-heavy (90% reads benefit from cache)
+- Eventual consistency is fine
+- Simple to implement
+- 95% cache hit ratio → P99 drops to 50ms
+
+**Expected Architecture:**
+\`\`\`
+Client → LB → AppServer → Cache (Redis, cache-aside pattern)
+                             ↓
+                          Database (PostgreSQL)
+\`\`\`
+
+**Cache-Aside Implementation:**
+\`\`\`python
+def read_post(post_id):
+    # 1. Check cache first
+    cached = redis.get(f"post:{post_id}")
+    if cached:
+        return cached  # Cache hit (5ms)
+
+    # 2. Cache miss → read from DB
+    post = db.query("SELECT * FROM posts WHERE id = ?", post_id)
+
+    # 3. Write to cache for next time
+    redis.set(f"post:{post_id}", post, ttl=300)  # 5-min TTL
+
+    return post  # (380ms)
+
+def update_post(post_id, content):
+    # 1. Write to database
+    db.execute("UPDATE posts SET content = ? WHERE id = ?", content, post_id)
+
+    # 2. Invalidate cache (delete key)
+    redis.delete(f"post:{post_id}")
+
+    # Next read will cache miss and reload from DB
+\`\`\`
+
+**Learning Objectives:**
+1. Understand the 3 main caching strategies
+2. Map consistency requirements to caching patterns
+3. Choose strategy based on read/write ratio
+4. Know trade-offs: consistency vs latency vs complexity`,
+
+  userFacingFRs: [
+    'Social media feed API (read feed, post updates)',
+    'Users read feeds (90% of traffic)',
+    'Users post updates (10% of traffic)',
+  ],
+
+  userFacingNFRs: [
+    'Total RPS: 10,000 (9,000 reads, 1,000 writes)',
+    'Read/write ratio: 90:10',
+    'Consistency: Eventual (1-2 second lag acceptable)',
+    'Current P99 latency: 450ms → Target: <100ms',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'Social Media Client',
+      subtitle: '90% reads, 10% writes',
+      id: 'client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Traffic distribution',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServer pool',
+      },
+      {
+        type: 'cache',
+        reason: 'Redis with cache-aside pattern (lazy loading)',
+      },
+      {
+        type: 'storage',
+        reason: 'PostgreSQL (source of truth)',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Distribute traffic',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Check cache first (cache-aside read)',
+      },
+      {
+        from: 'cache',
+        to: 'storage',
+        reason: 'Cache miss → read from database',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-caching-strategies', problemConfigs['nfr-ch0-caching-strategies'] || {
+    baseRps: 10000,
+    readRatio: 0.90,
+    maxLatency: 100,
+    availability: 0.99,
+  }, [
+    'Implement cache-aside for read-heavy workload',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Cache Layer for Read-Heavy Workload',
+      validate: (graph, scenario, problem) => {
+        const cacheNodes = graph.components.filter(n => n.type === 'cache');
+
+        if (cacheNodes.length === 0) {
+          return {
+            valid: false,
+            hint: 'For 90% read workload with P99=450ms, add cache layer. Cache-aside pattern is best for read-heavy + eventual consistency.',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+    {
+      name: 'Cache-Aside Pattern: AppServer → Cache → Database',
+      validate: (graph, scenario, problem) => {
+        const cacheNodes = graph.components.filter(n => n.type === 'cache');
+        const computeNodes = graph.components.filter(n => n.type === 'compute');
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (cacheNodes.length === 0) return { valid: true };
+
+        const computeToCache = graph.connections.some(
+          c => computeNodes.some(comp => comp.id === c.from) &&
+               cacheNodes.some(cache => cache.id === c.to)
+        );
+
+        const cacheToStorage = graph.connections.some(
+          c => cacheNodes.some(cache => cache.id === c.from) &&
+               storageNodes.some(db => db.id === c.to)
+        );
+
+        if (!computeToCache || !cacheToStorage) {
+          return {
+            valid: false,
+            hint: 'Cache-aside pattern: AppServer checks cache first, then reads from DB on miss. Flow: AppServer → Cache → Database.',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
+/**
+ * Problem 9: Replication Patterns - Single-Leader, Multi-Leader, Leaderless
+ *
+ * Teaches:
+ * - Database replication strategies and trade-offs
+ * - Single-leader with read replicas (most common)
+ * - Multi-leader replication for multi-region writes
+ * - Leaderless replication for high availability
+ * - CAP theorem implications
+ *
+ * Learning Flow:
+ * 1. User has: Client → LB → AppServer → Database (single instance)
+ * 2. Problem: Database is bottleneck for reads
+ * 3. Ask: Can reads tolerate eventual consistency?
+ * 4. Solution: Add read replicas (single-leader replication)
+ */
+export const replicationPatternsProblem: ProblemDefinition = {
+  id: 'nfr-ch0-replication-patterns',
+  title: 'Replication Patterns: Single-Leader vs Multi-Leader vs Leaderless',
+  description: `You've added caching (Module 3 Problem 3) to speed up reads. But your database is STILL a bottleneck. You need replication, but WHICH pattern?
+
+**The Scenario:**
+- E-commerce API with 50,000 RPS
+- Read/write ratio: 95:5 (47,500 reads, 2,500 writes)
+- Single PostgreSQL database is overloaded
+- Cache helps, but database read load is still too high
+- Need: Database replication to scale reads
+
+**Three Replication Patterns:**
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**1. Single-Leader with Read Replicas** - Most Common (95% of use cases)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Architecture:**
+\`\`\`
+AppServer (Writes) → Primary DB (Leader)
+                         │
+                         ├─(async replication)─> Read Replica 1
+                         ├─(async replication)─> Read Replica 2
+                         └─(async replication)─> Read Replica 3
+
+AppServer (Reads)  → Load Balancer → [Read Replica 1, 2, 3]
+\`\`\`
+
+**How It Works:**
+1. **Writes:** All writes go to primary DB (leader)
+2. **Replication:** Primary asynchronously replicates to read replicas (lag: 100ms-1s)
+3. **Reads:** Reads load-balanced across read replicas
+4. **Consistency:** Eventual consistency (replicas lag behind primary)
+
+**Pros:**
+✅ Scales reads horizontally (add more replicas)
+✅ Simple (built into PostgreSQL, MySQL, MongoDB)
+✅ Strong consistency for writes (single leader)
+✅ Replicas can be in different regions (low-latency reads)
+
+**Cons:**
+❌ Replication lag (100ms-1s) → stale reads
+❌ Writes don't scale (single primary bottleneck)
+❌ If primary fails, need failover (elect new leader)
+
+**When to Use:**
+- Read-heavy workloads (>80% reads)
+- Eventual consistency acceptable for reads
+- Single-region writes, multi-region reads
+- **Example:** E-commerce, social media, news sites, dashboards
+
+**Read-After-Write Consistency:**
+Problem: User writes data, immediately reads → sees old data (replica lag)
+\`\`\`python
+# Solution 1: Read from primary after write (for that user)
+def update_profile(user_id, data):
+    primary_db.write(user_id, data)
+    return primary_db.read(user_id)  # Read from primary, not replica
+
+# Solution 2: Track write timestamp, read from caught-up replica
+def update_profile(user_id, data):
+    timestamp = primary_db.write(user_id, data)
+    redis.set(f"user:{user_id}:last_write", timestamp)
+
+def get_profile(user_id):
+    last_write = redis.get(f"user:{user_id}:last_write")
+    return read_replica.read(user_id, min_timestamp=last_write)
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**2. Multi-Leader Replication** - Multi-Region Writes
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Architecture:**
+\`\`\`
+US Region:
+  AppServer → Leader 1 (accepts writes)
+                  ↓
+             (replicate to EU Leader)
+
+EU Region:
+  AppServer → Leader 2 (accepts writes)
+                  ↓
+             (replicate to US Leader)
+
+Both leaders replicate to each other
+\`\`\`
+
+**How It Works:**
+1. **Writes:** Each region has its own leader (accepts writes locally)
+2. **Replication:** Leaders replicate to each other asynchronously
+3. **Reads:** Read from local leader (low latency)
+4. **Conflicts:** Must resolve write conflicts (Last-Write-Wins, CRDTs, manual resolution)
+
+**Pros:**
+✅ Low-latency writes in multiple regions
+✅ Fault-tolerant (if one region fails, others continue)
+✅ Scales writes geographically
+
+**Cons:**
+❌ Write conflicts (two users update same row in different regions)
+❌ Complex conflict resolution
+❌ Data loss possible (if leaders diverge)
+❌ Harder to reason about consistency
+
+**When to Use:**
+- Multi-region writes required (global app)
+- Low write latency > strong consistency
+- Writes are independent (e.g., different user accounts)
+- **Example:** Google Docs (multi-user editing), CRM systems, collaborative tools
+
+**Conflict Example:**
+\`\`\`
+12:00:00 - User A (US) updates product price: $100 → $120
+12:00:01 - User B (EU) updates product price: $100 → $110
+12:00:02 - Replication happens
+Result: CONFLICT! Price is $120 in US, $110 in EU
+
+Resolution strategies:
+1. Last-Write-Wins (LWW): Use timestamp → $110 wins (but loses $120 update!)
+2. Application logic: Merge both updates (average? max? alert admin?)
+3. CRDT (Conflict-free Replicated Data Type): Automatically merge
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+**3. Leaderless Replication (Quorum)** - Cassandra, DynamoDB
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Architecture:**
+\`\`\`
+AppServer → [Node 1, Node 2, Node 3, Node 4, Node 5]
+             (write to 3/5 nodes, read from 2/5 nodes)
+
+Quorum:
+- Replication factor (N): 5 nodes
+- Write quorum (W): 3 (write succeeds if 3 nodes acknowledge)
+- Read quorum (R): 2 (read from 2 nodes, return latest version)
+- Guarantee: W + R > N → strong consistency
+\`\`\`
+
+**How It Works:**
+1. **Writes:** Client writes to W nodes in parallel
+2. **Success:** Write succeeds if W nodes acknowledge
+3. **Reads:** Client reads from R nodes in parallel
+4. **Consistency:** Return latest version (based on timestamp)
+
+**Pros:**
+✅ No single point of failure (no leader)
+✅ High availability (can tolerate N-W node failures for writes)
+✅ Tunable consistency (adjust W and R)
+
+**Cons:**
+❌ Read latency (must query multiple nodes)
+❌ Write conflicts still possible (need versioning, LWW)
+❌ Complex operations (no transactions, joins)
+
+**When to Use:**
+- High availability > strong consistency
+- Can tolerate eventual consistency
+- Need fault tolerance (datacenter failures)
+- **Example:** Session stores, shopping carts, IoT telemetry, time-series data
+
+**Tuning Consistency:**
+\`\`\`
+Strong consistency:     W=3, R=3, N=5 (W+R > N) → always see latest
+Eventual consistency:   W=1, R=1, N=5 (fast but stale reads possible)
+Balanced:              W=2, R=2, N=5 (some staleness, but faster)
+\`\`\`
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+**Decision Matrix:**
+
+| Use Case                        | Pattern         | Why?                                  |
+|---------------------------------|-----------------|---------------------------------------|
+| Read-heavy, single region       | ✅ Single-Leader | Simple, scales reads                 |
+| Read-heavy, multi-region reads  | ✅ Single-Leader | Replicas in each region              |
+| Write-heavy, multi-region       | ✅ Multi-Leader  | Low write latency everywhere         |
+| High availability critical      | ✅ Leaderless    | No single point of failure           |
+| Strong consistency required     | ✅ Single-Leader | One source of truth                  |
+| Eventual consistency OK         | ⚠️ Any          | Choose based on other factors        |
+
+**Your Task:**
+
+Given:
+- E-commerce product catalog
+- 50,000 RPS (47,500 reads, 2,500 writes)
+- Single region (US-East)
+- Database overloaded (even with cache)
+- Eventual consistency acceptable
+
+**Which pattern?** ✅ **Single-Leader with Read Replicas**
+- Read-heavy (95% reads)
+- Single region (don't need multi-leader)
+- Eventual consistency is fine (product catalog can lag 1s)
+- Simple to implement (PostgreSQL built-in)
+
+**Expected Architecture:**
+\`\`\`
+Client → LB → AppServer → Cache (Redis)
+                            ↓
+                         Primary DB (writes)
+                            ↓
+                    ┌───────┼───────┐
+                    ▼       ▼       ▼
+              Replica 1  Replica 2  Replica 3 (reads load-balanced)
+\`\`\`
+
+**Learning Objectives:**
+1. Understand the 3 main replication patterns
+2. Map consistency and latency requirements to replication strategy
+3. Know trade-offs: availability vs consistency vs complexity
+4. Handle replication lag (read-after-write consistency)`,
+
+  userFacingFRs: [
+    'E-commerce product catalog (browse, search, purchase)',
+    'Users browse products (95% reads)',
+    'Merchants update inventory (5% writes)',
+  ],
+
+  userFacingNFRs: [
+    'Total RPS: 50,000 (47,500 reads, 2,500 writes)',
+    'Read/write ratio: 95:5',
+    'Single region: US-East',
+    'Consistency: Eventual (1s replication lag acceptable)',
+    'Availability: 99.9% (need fault tolerance)',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'User Client',
+      subtitle: 'Browse products',
+      id: 'user_client',
+    },
+    {
+      name: 'Merchant Client',
+      subtitle: 'Update inventory',
+      id: 'merchant_client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Traffic distribution',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServer pool',
+      },
+      {
+        type: 'cache',
+        reason: 'Redis for hot data (reduces DB load)',
+      },
+      {
+        type: 'storage',
+        reason: 'Primary DB + Read Replicas (PostgreSQL with replication). Need multiple storage nodes for replication.',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Distribute traffic',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Check cache first',
+      },
+      {
+        from: 'cache',
+        to: 'storage',
+        reason: 'Cache miss → read from database replicas',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-replication-patterns', problemConfigs['nfr-ch0-replication-patterns'] || {
+    baseRps: 50000,
+    readRatio: 0.95,
+    maxLatency: 200,
+    availability: 0.999,
+  }, [
+    'Scale reads with single-leader replication',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Multiple Database Instances',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (storageNodes.length < 2) {
+          return {
+            valid: false,
+            hint: 'For 47,500 read RPS, single database is overloaded. Add read replicas (single-leader replication). Deploy at least 1 primary + 3 read replicas.',
+          };
+        }
+
+        return {
+          valid: true,
+          details: {
+            storageNodes: storageNodes.length,
+            pattern: 'Single-leader with read replicas',
+          },
+        };
+      },
+    },
+    {
+      name: 'Read Replicas for Read-Heavy Workload',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        // For 47.5k read RPS, need enough replicas
+        // Assume each replica can handle ~10k reads/sec
+        const readRps = 47500;
+        const readsPerReplica = 10000;
+        const replicasNeeded = Math.ceil(readRps / readsPerReplica); // ~5 replicas
+
+        if (storageNodes.length < replicasNeeded) {
+          return {
+            valid: false,
+            hint: \`Read-heavy workload (47.5k read RPS) needs \${replicasNeeded} read replicas at 10k reads/sec each. You have \${storageNodes.length} database nodes. Add more replicas.\`,
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
 // Export all Chapter 0 problems
 export const nfrTeachingChapter0Problems = [
   // Module 1: Throughput & Horizontal Scaling (4 problems)
@@ -1630,7 +2314,9 @@ export const nfrTeachingChapter0Problems = [
   // Module 2: Burst Handling & Write Queues (2 problems)
   burstQpsProblem,
   writeQueueBatchingProblem,
-  // Module 3: Latency - Request-Response & Data Processing (2 problems)
+  // Module 3: Latency - Request-Response & Data Processing (4 problems)
   requestResponseLatencyProblem,
   dataProcessingLatencyProblem,
+  cachingStrategiesProblem,
+  replicationPatternsProblem,
 ];
