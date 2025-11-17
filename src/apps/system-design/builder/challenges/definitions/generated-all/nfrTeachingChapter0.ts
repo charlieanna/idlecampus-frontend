@@ -321,7 +321,291 @@ Servers needed: 15,000 / 1,400 = 10.7 → 11 servers
 };
 
 /**
- * Problem 3: Autoscaling - Dynamic Capacity Adjustment
+ * Problem 3: Read/Write Ratio - Different Costs for Different Operations
+ *
+ * Teaches:
+ * - Why reads and writes have different performance characteristics
+ * - How to calculate capacity based on read/write mix
+ * - When read/write ratio matters for architecture decisions
+ * - Asymmetric costs: reads can be cached, writes must hit DB
+ *
+ * Learning Flow:
+ * 1. User has: Client → LB → AppServer Pool → Database
+ * 2. Ask: What's your read/write ratio?
+ * 3. Calculate: Different server capacity for reads vs writes
+ * 4. Insight: Writes are the bottleneck (can't be easily scaled)
+ */
+export const readWriteRatioProblem: ProblemDefinition = {
+  id: 'nfr-ch0-read-write-ratio',
+  title: 'Read/Write Ratio: Why Writes Are Harder to Scale',
+  description: `Not all RPS are created equal! You're building a social media API with 10,000 RPS, but the read/write ratio dramatically changes your architecture.
+
+**Two Scenarios:**
+
+**Scenario A: Read-Heavy (90% reads, 10% writes)**
+\`\`\`
+Total: 10,000 RPS
+Reads:  9,000 RPS (90%)
+Writes: 1,000 RPS (10%)
+\`\`\`
+
+**Scenario B: Write-Heavy (10% reads, 90% writes)**
+\`\`\`
+Total: 10,000 RPS
+Reads:  1,000 RPS (10%)
+Writes: 9,000 RPS (90%)
+\`\`\`
+
+**Why This Matters:**
+
+**Read Operations:**
+- Can be served from cache (5ms)
+- Can be scaled horizontally (read replicas)
+- AppServer can handle ~2,000 reads/sec
+- **Cheap to scale:** Add more cache/replicas
+
+**Write Operations:**
+- Must hit database (no cache!)
+- Must go through primary DB (bottleneck)
+- AppServer can handle ~500 writes/sec (DB limit)
+- **Expensive to scale:** Need sharding, queues, batching
+
+**Server Capacity Calculation (Mixed Workload):**
+
+For Scenario A (read-heavy):
+\`\`\`
+Reads:  9,000 RPS ÷ 2,000 per server = 5 servers
+Writes: 1,000 RPS ÷ 500 per server  = 2 servers
+Bottleneck: Reads (need 5 servers)
+→ Deploy 5 servers ✅
+\`\`\`
+
+For Scenario B (write-heavy):
+\`\`\`
+Reads:  1,000 RPS ÷ 2,000 per server = 1 server
+Writes: 9,000 RPS ÷ 500 per server  = 18 servers
+Bottleneck: Writes (need 18 servers!)
+→ Deploy 18 servers ❌ (writes bottleneck at DB!)
+\`\`\`
+
+**The Insight:**
+
+Same total RPS (10,000), but:
+- Read-heavy: 5 servers
+- Write-heavy: 18 servers (but DB becomes bottleneck anyway!)
+
+**Your Task:**
+
+You have an e-commerce API:
+- Total RPS: 10,000
+- Read/write ratio: 95:5 (typical e-commerce - lots of browsing, few purchases)
+
+Calculate:
+1. Reads per second: 9,500 RPS
+2. Writes per second: 500 RPS
+3. Servers needed for reads: 9,500 ÷ 2,000 = 5 servers
+4. Servers needed for writes: 500 ÷ 500 = 1 server
+5. **Deploy: 5 servers** (reads are bottleneck)
+
+**How Read/Write Ratio Changes Your Architecture:**
+
+**95:5 (Read-Heavy - E-commerce, Social Media Feeds)**
+\`\`\`
+Example: E-commerce product browsing
+Reads:  9,500 RPS (browse products)
+Writes:   500 RPS (place orders)
+
+Bottleneck: Reads (DB queries slow)
+Architecture Changes:
+✅ Add cache layer (Module 3) → 95% cache hit = 5ms reads
+✅ Add read replicas → scale reads horizontally
+❌ Write queues not needed (only 500 writes/sec)
+
+Result: Client → LB → AppServer → Cache → DB (+ read replicas)
+\`\`\`
+
+**50:50 (Balanced - Collaborative Apps, Real-time Updates)**
+\`\`\`
+Example: Google Docs collaborative editing
+Reads:  5,000 RPS (view documents)
+Writes: 5,000 RPS (save edits)
+
+Bottleneck: BOTH reads AND writes
+Architecture Changes:
+✅ Add cache for reads → reduce DB read load
+✅ Add write queue + batching → handle 5k writes/sec
+✅ Need both strategies simultaneously
+
+Result: Client → LB → AppServer → Cache → DB
+                                    ↓
+                              Write Queue → Batching Workers → DB
+\`\`\`
+
+**5:95 (Write-Heavy - Analytics, Logging, IoT Sensors)**
+\`\`\`
+Example: IoT sensor data ingestion
+Reads:    500 RPS (dashboards, queries)
+Writes: 9,500 RPS (sensor events)
+
+Bottleneck: Writes (DB can't handle 9.5k writes/sec)
+Architecture Changes:
+❌ Cache doesn't help (only 500 reads/sec, not the bottleneck)
+✅ Write queue + batching (Module 2) → 30× improvement
+✅ Consider time-series DB or append-only storage
+✅ May need sharding (partition by sensor_id)
+
+Result: Client → LB → AppServer → Write Queue → Batching Workers → DB (sharded)
+\`\`\`
+
+**The Decision Matrix:**
+
+| Ratio    | Reads  | Writes | Read Solution       | Write Solution       | Example           |
+|----------|--------|--------|---------------------|----------------------|-------------------|
+| 95:5     | 9,500  | 500    | ✅ Cache            | ❌ Not needed        | E-commerce        |
+| 90:10    | 9,000  | 1,000  | ✅ Cache            | ⚠️  Maybe queue      | Social media feed |
+| 80:20    | 8,000  | 2,000  | ✅ Cache            | ✅ Write queue       | News site         |
+| 50:50    | 5,000  | 5,000  | ✅ Cache            | ✅ Write queue       | Google Docs       |
+| 20:80    | 2,000  | 8,000  | ⚠️  Small cache    | ✅ Write queue       | Click tracking    |
+| 5:95     | 500    | 9,500  | ❌ Not needed       | ✅ Write queue       | IoT sensors       |
+
+**Key Learnings:**
+1. **Read-heavy (>80% reads):** Reads are bottleneck → solution = caching (Module 3)
+2. **Write-heavy (>50% writes):** Writes are bottleneck → solution = write queues (Module 2)
+3. **Balanced (40-60% writes):** Need BOTH caching AND write optimization
+4. **The ratio determines which modules you need to apply**
+
+**What This Teaches:**
+- Not all RPS have the same cost
+- Read/write ratio determines your bottleneck AND your architecture
+- Reads scale horizontally (easy) → caching, read replicas
+- Writes scale vertically (hard) → queues, batching, sharding
+- **Always calculate BOTH** read and write throughput separately`,
+
+  userFacingFRs: [
+    'API must serve 10,000 total RPS',
+    'Read/write ratio: 95:5 (e-commerce browsing pattern)',
+    'Reads: product catalog, search, reviews',
+    'Writes: orders, cart updates, reviews',
+  ],
+
+  userFacingNFRs: [
+    'Total RPS: 10,000',
+    'Read RPS: 9,500 (95%)',
+    'Write RPS: 500 (5%)',
+    'Single server capacity: 2,000 reads/sec OR 500 writes/sec',
+    'Bottleneck: Reads (need 5 servers)',
+  ],
+
+  clientDescriptions: [
+    {
+      name: 'E-commerce Client',
+      subtitle: '95% reads, 5% writes',
+      id: 'client',
+    },
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'load_balancer',
+        reason: 'Traffic distribution',
+      },
+      {
+        type: 'compute',
+        reason: 'AppServer pool (minimum 5 servers for 9.5k read RPS)',
+      },
+      {
+        type: 'storage',
+        reason: 'Database (handles 500 writes/sec)',
+      },
+    ],
+    mustConnect: [
+      {
+        from: 'client',
+        to: 'load_balancer',
+        reason: 'Entry point',
+      },
+      {
+        from: 'load_balancer',
+        to: 'compute',
+        reason: 'Distribute traffic',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'AppServers connect to database for reads and writes',
+      },
+    ],
+  },
+
+  scenarios: generateScenarios('nfr-ch0-read-write-ratio', problemConfigs['nfr-ch0-read-write-ratio'] || {
+    baseRps: 10000,
+    readRatio: 0.95, // 95% reads, 5% writes
+    maxLatency: 200,
+    availability: 0.99,
+  }, [
+    'Handle 10k RPS with 95:5 read/write ratio',
+  ]),
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    { name: 'Valid Connection Flow', validate: validConnectionFlowValidator },
+    {
+      name: 'Sufficient Capacity for Read-Heavy Workload',
+      validate: (graph, scenario, problem) => {
+        const computeNodes = graph.components.filter(n => n.type === 'compute');
+
+        if (computeNodes.length === 0) {
+          return {
+            valid: false,
+            hint: 'You need app servers to handle requests.',
+          };
+        }
+
+        // For 95% reads: 9,500 RPS ÷ 2,000 per server = 5 servers needed
+        const readRps = 9500;
+        const readCapacityPerServer = 2000;
+        const serversNeeded = Math.ceil(readRps / readCapacityPerServer);
+
+        if (computeNodes.length < serversNeeded) {
+          return {
+            valid: false,
+            hint: `Read-heavy workload (9,500 read RPS) needs ${serversNeeded} servers at 2,000 reads/sec per server. You have ${computeNodes.length} servers. Reads are your bottleneck!`,
+          };
+        }
+
+        return {
+          valid: true,
+          details: {
+            readRps,
+            writeRps: 500,
+            serversDeployed: computeNodes.length,
+            serversNeeded,
+            bottleneck: 'reads',
+          },
+        };
+      },
+    },
+    {
+      name: 'Database for Writes',
+      validate: (graph, scenario, problem) => {
+        const storageNodes = graph.components.filter(n => n.type === 'storage');
+
+        if (storageNodes.length === 0) {
+          return {
+            valid: false,
+            hint: 'You have 500 writes/sec that must be persisted. Add a database to handle writes (even though reads dominate your workload).',
+          };
+        }
+
+        return { valid: true };
+      },
+    },
+  ],
+};
+
+/**
+ * Problem 4: Autoscaling - Dynamic Capacity Adjustment
  *
  * Teaches:
  * - When to use autoscaling vs static provisioning
@@ -1338,9 +1622,10 @@ TOTAL:                              25s ✅ (under 30s target!)
 
 // Export all Chapter 0 problems
 export const nfrTeachingChapter0Problems = [
-  // Module 1: Throughput & Horizontal Scaling (3 problems)
+  // Module 1: Throughput & Horizontal Scaling (4 problems)
   throughputCalculationProblem,
   peakVsAverageProblem,
+  readWriteRatioProblem,
   autoscalingProblem,
   // Module 2: Burst Handling & Write Queues (2 problems)
   burstQpsProblem,

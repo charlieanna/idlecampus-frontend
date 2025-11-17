@@ -304,12 +304,13 @@ export const nextGenProblems = [
 ];
 
 /**
- * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (7 total)
+ * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (8 total)
  */
 export const nfrTeachingProblems = [
-  // Module 1: Throughput & Horizontal Scaling (3)
+  // Module 1: Throughput & Horizontal Scaling (4)
   'nfr-ch0-throughput-calc',
   'nfr-ch0-peak-vs-avg',
+  'nfr-ch0-read-write-ratio',
   'nfr-ch0-autoscaling',
   // Module 2: Burst Handling & Write Queues (2)
   'nfr-ch0-burst-qps',
