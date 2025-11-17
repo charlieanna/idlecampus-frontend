@@ -1676,6 +1676,237 @@ Result: 0 dropped requests, users see "processing..." instead of errors
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Burst QPS Handling',
+    subtitle: 'Learn how to handle traffic spikes with request queues',
+
+    objectives: [
+      'Understand burst vs sustained load',
+      'Learn why autoscaling alone fails (2-3 min lag)',
+      'Calculate queue depth and drain rate',
+      'Design request queue + worker pool architecture',
+    ],
+
+    questions: [
+      {
+        id: 'burst_scenario',
+        step: 1,
+        category: 'throughput',
+        title: 'The Flash Sale Problem',
+        description: 'Your e-commerce site has a flash sale at 12pm. Normal traffic: 5,000 RPS. Flash sale: 20,000 RPS burst!',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'static_provision',
+            label: 'Provision for 20k RPS all day',
+            description: 'Deploy 15 servers 24/7',
+            consequence: '⚠️ Works but EXPENSIVE! $15,000/month for capacity you use 30 min/day.',
+          },
+          {
+            id: 'autoscaling',
+            label: 'Use autoscaling',
+            description: 'Scale from 5 → 15 servers when needed',
+            consequence: '❌ FAILS! Autoscaling has 2-3 min lag. Flash sale drops 15k requests before servers boot.',
+          },
+          {
+            id: 'request_queue',
+            label: 'Add request queue',
+            description: 'Queue buffers burst while workers scale up',
+            consequence: '✅ BEST! Queue accepts all requests (0 drops), workers scale up, queue drains in 2-3 min.',
+          },
+        },
+        whyItMatters: 'Autoscaling has 2-3 minute boot time. During flash sales, you drop thousands of requests before new servers are ready! Queues bridge this gap.',
+        commonMistakes: [
+          'Relying solely on autoscaling (ignoring boot lag)',
+          'Not testing flash sale scenarios before launch',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Autoscaling lag is 2-3 minutes. Flash sales last seconds. You NEED a buffer!',
+            },
+          ];
+        },
+      },
+      {
+        id: 'queue_depth_calculation',
+        step: 2,
+        category: 'throughput',
+        title: 'Calculate Queue Depth',
+        description: 'How many requests will queue up during the 3-minute autoscaling lag?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Queue Depth = (Burst RPS - Worker Capacity) × Lag Time',
+          explanation: 'During autoscaling lag, requests arrive faster than workers can process.',
+          exampleInputs: {
+            'Burst RPS': 20000,
+            'Initial Workers': '5 servers × 1,400 RPS = 7,000 RPS',
+            'Overflow Rate': '20,000 - 7,000 = 13,000 RPS',
+            'Autoscaling Lag': '3 minutes = 180 seconds',
+          },
+          exampleOutput: 'Queue Depth = 13,000 RPS × 180s = 2.34 million requests',
+        },
+        whyItMatters: 'You must provision a queue large enough to buffer ALL requests during autoscaling lag. Kafka/SQS can handle millions of messages.',
+        commonMistakes: [
+          'Underestimating queue capacity (queue fills up, drops requests)',
+          'Not monitoring queue depth in production',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Queue must hold 2.34M requests during 3-min autoscaling lag!',
+            },
+          ];
+        },
+      },
+      {
+        id: 'drain_rate',
+        step: 3,
+        category: 'throughput',
+        title: 'Calculate Drain Rate',
+        description: 'After autoscaling, how long to drain the queue?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Drain Time = Queue Depth / (Worker Capacity - Burst RPS)',
+          explanation: 'Once workers scale up, they process the queue faster than new requests arrive.',
+          exampleInputs: {
+            'Queue Depth': '2.34M requests',
+            'Scaled Workers': '15 servers × 1,400 RPS = 21,000 RPS',
+            'Burst RPS': '20,000 RPS (still ongoing)',
+            'Net Drain Rate': '21,000 - 20,000 = 1,000 RPS',
+          },
+          exampleOutput: 'Drain Time = 2.34M / 1,000 = 2,340 seconds = 39 minutes',
+        },
+        whyItMatters: 'Queue drain time determines user experience. 39 minutes is too long! Need more workers or burst must end.',
+        commonMistakes: [
+          'Not accounting for continued burst traffic while draining',
+          'Assuming queue drains instantly after scale-up',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer accepts all requests immediately.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'message_queue',
+              reason: 'Kafka queue buffers 2.34M requests during autoscaling lag.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 5 },
+              reason: 'Initial: 5 workers (7k RPS capacity). Will scale to 15.',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client → LB (accepts all requests, returns 202 Accepted)',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'message_queue',
+              reason: 'LB → Queue (enqueue all requests)',
+            },
+            {
+              action: 'add_connection',
+              from: 'message_queue',
+              to: 'compute',
+              reason: 'Queue → Workers (dequeue and process)',
+            },
+          ];
+        },
+      },
+      {
+        id: 'user_experience',
+        step: 4,
+        category: 'throughput',
+        title: '202 Accepted Pattern',
+        description: 'How do users experience queued requests?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Without Queue',
+            recommendation: 'User sees: 503 Service Unavailable',
+            reasoning: 'Dropped requests = angry customers + lost revenue',
+          },
+          {
+            condition: 'With Queue (202 Accepted)',
+            recommendation: 'User sees: "Processing your order..."',
+            reasoning: 'Request accepted, processing async, user polls status',
+          },
+          {
+            condition: 'Trade-off',
+            recommendation: 'Latency: 30-120 seconds vs instant',
+            reasoning: 'Users wait but don\'t lose their order',
+          },
+        ],
+        whyItMatters: 'The 202 Accepted HTTP status tells clients "request accepted, processing asynchronously". Users see progress instead of errors!',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: '202 Accepted: Request queued successfully. User polls /order/{id}/status for completion.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'when_to_use_queues',
+        step: 5,
+        category: 'throughput',
+        title: 'When to Use Request Queues',
+        description: 'Decision matrix for request queuing:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Predictable daily peaks',
+            recommendation: 'NO queue needed (static provision)',
+            reasoning: 'Provision for peak, use all day (Module 1 Problem 2)',
+          },
+          {
+            condition: 'Unpredictable bursts (flash sales, viral posts)',
+            recommendation: 'YES use queue',
+            reasoning: 'Burst duration unknown, queue absorbs spike',
+          },
+          {
+            condition: 'Burst > 5× normal load',
+            recommendation: 'YES use queue',
+            reasoning: 'Autoscaling cannot keep up with sudden 5× spike',
+          },
+        ],
+        whyItMatters: 'Queues add complexity. Only use when bursts are unpredictable OR >5× normal load. For predictable peaks, static provisioning is simpler.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Flash sales are unpredictable + >5× burst → Request queue is the right solution!',
+            },
+          ];
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Burst QPS Handling Complete!',
+      keyTakeaways: [
+        'Autoscaling has 2-3 min lag (AWS EC2 boot time)',
+        'Queue depth = (Burst RPS - Worker Capacity) × Lag Time',
+        'Request queue + 202 Accepted pattern for async processing',
+        'Trade-off: Latency (30-120s wait) vs dropped requests (0%)',
+        'Use queues for unpredictable bursts >5× normal load',
+      ],
+      nextSteps: 'Next: Learn about write queues and batching for database bottlenecks!',
+    },
+  },
 };
 
 /**
@@ -4459,6 +4690,274 @@ Client → LB → AppServer Pool → Shard Router
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'When to Shard Your Database',
+    subtitle: 'Learn the decision framework: Optimize → Vertical Scale → Shard',
+    objectives: [
+      'Understand when to optimize vs scale vertically vs shard',
+      'Learn the dataset size thresholds for each approach',
+      'Calculate shard count based on dataset size',
+      'Identify good sharding keys (user_id, tenant_id, region)',
+    ],
+    questions: [
+      {
+        id: 'dataset_size',
+        step: 1,
+        category: 'dataset_size',
+        title: 'What is your current dataset size?',
+        description: 'Your multi-tenant SaaS platform has grown significantly. Let\'s analyze if you need sharding.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter dataset size',
+          unit: 'TB',
+          min: 1,
+          max: 1000,
+          suggestedValue: 50,
+        },
+        whyItMatters: 'Dataset size is the PRIMARY factor in deciding sharding. Small datasets (<5TB) should avoid sharding complexity. Large datasets (>10TB) REQUIRE sharding because single servers have hard limits (AWS largest: 4TB RAM, 100TB disk).',
+        commonMistakes: [
+          'Sharding prematurely when dataset is <1TB (massive complexity for no gain)',
+          'Waiting too long to shard (migration becomes painful at 50TB+)',
+          'Not accounting for growth rate (if growing 10TB/year, shard NOW)',
+        ],
+        onAnswer: (answer) => {
+          const datasetSizeTB = answer;
+
+          if (datasetSizeTB < 5) {
+            return [{
+              action: 'highlight',
+              reason: `Dataset: ${datasetSizeTB}TB. This is small enough for a single server. Do NOT shard yet! Try optimization and vertical scaling first.`,
+            }];
+          } else if (datasetSizeTB < 20) {
+            return [{
+              action: 'highlight',
+              reason: `Dataset: ${datasetSizeTB}TB. You're in the gray zone. Sharding may be needed soon, but consider vertical scaling first if queries can be optimized.`,
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `Dataset: ${datasetSizeTB}TB. This REQUIRES sharding! Single servers max out at ~20TB. You need horizontal scaling.`,
+            }];
+          }
+        },
+      },
+      {
+        id: 'decision_framework',
+        step: 2,
+        category: 'dataset_size',
+        title: 'Decision Framework: When to Shard',
+        description: 'Before sharding, exhaust simpler solutions. Sharding adds massive complexity!',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Dataset < 100GB',
+            recommendation: '✅ Single server + optimization',
+            reasoning: 'Add indexes, optimize queries, partition tables. No sharding needed.',
+          },
+          {
+            condition: 'Dataset 100GB - 5TB',
+            recommendation: '✅ Vertical scale (buy bigger server)',
+            reasoning: 'Upgrade to 1TB RAM server. No code changes. Cost: $8k/month.',
+          },
+          {
+            condition: 'Dataset 5TB - 20TB',
+            recommendation: '⚠️ Consider sharding (depends on query pattern)',
+            reasoning: 'If queries are partitionable (e.g., by tenant_id), shard. Otherwise, vertical scale + partitioning.',
+          },
+          {
+            condition: 'Dataset > 20TB',
+            recommendation: '✅ Sharding required',
+            reasoning: 'Exceeds single-server limits. Must shard horizontally.',
+          },
+        ],
+        whyItMatters: 'Sharding is the LAST RESORT! It breaks ACID transactions, prevents cross-shard joins, and requires complex routing logic. Only shard when dataset size or growth rate forces it.',
+        commonMistakes: [
+          'Sharding too early (premature optimization)',
+          'Not trying vertical scaling first (often solves problem for 1/4 the complexity)',
+          'Sharding when queries need cross-shard joins (sharding won\'t help)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer distributes traffic to app servers',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 8 },
+              reason: 'App servers handle routing logic (determine which shard to query)',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client connects to LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes to app servers',
+            },
+          ];
+        },
+      },
+      {
+        id: 'shard_count_calculation',
+        step: 3,
+        category: 'dataset_size',
+        title: 'Calculate Shard Count',
+        description: 'How many shards do you need for a 50TB dataset?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Shards Needed = Dataset Size / Shard Capacity',
+          explanation: 'Each shard should hold ~10TB (AWS RDS max: 64TB, but 10TB is optimal for performance). For 50TB dataset, you need 5 shards.',
+          exampleInputs: {
+            'Dataset Size': 50,
+            'Shard Capacity': 10,
+          },
+          exampleOutput: 'Shards Needed = 50TB / 10TB = 5 shards',
+        },
+        whyItMatters: 'Each shard is a separate database server. Too few shards → each shard too large (slow queries). Too many shards → expensive and complex.',
+        commonMistakes: [
+          'Using too many shards (100 shards for 50TB = overkill)',
+          'Making shards too small (<1TB per shard = wasted overhead)',
+          'Not planning for growth (if growing 10TB/year, add buffer capacity)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              config: { count: 5 },
+              reason: '5 database shards (10TB each) to hold 50TB total dataset',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'storage',
+              reason: 'App servers route queries to correct shard based on sharding key',
+            },
+          ];
+        },
+      },
+      {
+        id: 'sharding_key',
+        step: 4,
+        category: 'dataset_size',
+        title: 'Choose Sharding Key',
+        description: 'For a multi-tenant SaaS platform, what should you shard by?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'tenant_id',
+            label: 'tenant_id (each store gets routed to specific shard)',
+            description: 'Tenant A → Shard 0, Tenant B → Shard 1, etc.',
+            consequence: '✅ BEST! 99% of queries are single-tenant (users only see their own store). All data for a tenant lives on one shard → no cross-shard joins!',
+          },
+          {
+            id: 'user_id',
+            label: 'user_id (each user gets routed to specific shard)',
+            description: 'User 1 → Shard 0, User 2 → Shard 1, etc.',
+            consequence: '❌ BAD! A single tenant\'s users would be scattered across shards. Queries like "get all users for tenant X" would require cross-shard joins.',
+          },
+          {
+            id: 'product_id',
+            label: 'product_id (each product gets routed to specific shard)',
+            description: 'Product A → Shard 0, Product B → Shard 1, etc.',
+            consequence: '❌ BAD! Queries like "get all products for tenant X" would require cross-shard joins. Tenant data should live together.',
+          },
+          {
+            id: 'timestamp',
+            label: 'timestamp (shard by time, e.g., recent data on Shard 0)',
+            description: 'Recent data → Shard 0, old data → Shard 1, etc.',
+            consequence: '❌ BAD for SaaS! Creates hot shards (all writes go to latest shard). Good for time-series data (logs), bad for transactional data.',
+          },
+        ],
+        whyItMatters: 'The sharding key determines which shard holds each row. CRITICAL: Choose a key where most queries are "single-shard" (don\'t need to query multiple shards). For multi-tenant SaaS, tenant_id is almost always the right choice.',
+        commonMistakes: [
+          'Sharding by user_id in multi-tenant systems (scatters tenant data)',
+          'Sharding by timestamp for transactional data (creates hot shards)',
+          'Choosing a key that requires cross-shard joins (defeats the purpose)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'tenant_id') {
+            return [{
+              action: 'highlight',
+              reason: '✅ Sharding by tenant_id! Each tenant\'s data lives on ONE shard. Queries like "get orders for Tenant X" hit a single shard → fast!',
+            }];
+          } else {
+            return [{
+              action: 'highlight',
+              reason: `❌ Sharding by ${answer} would require cross-shard queries! For multi-tenant SaaS, always shard by tenant_id to keep tenant data together.`,
+            }];
+          }
+        },
+      },
+      {
+        id: 'sharding_tradeoffs',
+        step: 5,
+        category: 'cost',
+        title: 'Sharding Trade-offs',
+        description: 'Sharding gives you scalability, but at a cost. What do you lose?',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'ACID Transactions',
+            recommendation: '❌ Lost (no cross-shard transactions)',
+            reasoning: 'Can\'t do transactions across shards. E.g., can\'t transfer money between users on different shards atomically.',
+          },
+          {
+            condition: 'Cross-Shard Joins',
+            recommendation: '❌ Lost (no joins across shards)',
+            reasoning: 'Can\'t JOIN tables on different shards. E.g., can\'t do "SELECT * FROM tenants JOIN orders" if they\'re on different shards.',
+          },
+          {
+            condition: 'Complexity',
+            recommendation: '❌ Massive increase',
+            reasoning: 'App code needs routing logic (which shard to query?). Migrations are complex. Rebalancing shards is painful.',
+          },
+          {
+            condition: 'Scalability',
+            recommendation: '✅ Gained (linear scaling)',
+            reasoning: 'Can scale to 100+ shards. No hard limits on dataset size.',
+          },
+          {
+            condition: 'Cost',
+            recommendation: '✅ Cost-effective vs vertical scaling',
+            reasoning: '5 × $2k servers ($10k total) vs 1 × $20k big server. Sharding is cheaper at scale.',
+          },
+        ],
+        whyItMatters: 'Sharding is a TRADE-OFF. You gain unlimited scalability but lose simplicity. Only shard when the benefits (handling >10TB datasets) outweigh the costs (complexity).',
+        commonMistakes: [
+          'Thinking sharding is "free" (it\'s NOT - massive code changes required)',
+          'Not planning for cross-shard queries (analytics, reporting need special handling)',
+          'Forgetting about rebalancing (what if Tenant X grows to 20TB?)',
+        ],
+        onAnswer: () => {
+          return [{
+            action: 'highlight',
+            reason: 'Architecture complete! 5 shards (10TB each) = 50TB capacity. Each tenant\'s data lives on ONE shard. Cross-shard queries avoided by sharding by tenant_id.',
+          }];
+        },
+      },
+    ],
+    summary: {
+      title: 'Sharding Decision Framework Complete!',
+      keyTakeaways: [
+        'Sharding Hierarchy: Optimize first → Vertical scale → Shard (last resort)',
+        'Dataset size thresholds: <5TB = single server, 5-20TB = vertical scale, >20TB = shard',
+        'Shard count = Dataset Size / 10TB (e.g., 50TB → 5 shards)',
+        'Sharding key: Choose what keeps related data together (tenant_id for SaaS)',
+        'Trade-offs: Gain scalability, lose ACID transactions & cross-shard joins',
+      ],
+      nextSteps: 'Next: Learn sharding STRATEGIES (hash vs range vs geo-based) in Problem 14!',
+    },
+  },
 };
 
 /**
