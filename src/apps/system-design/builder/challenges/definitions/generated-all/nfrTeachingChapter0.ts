@@ -1009,6 +1009,318 @@ Result: Client → LB → AppServer → Write Queue → Batching Workers → DB 
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Read/Write Ratio Analysis',
+    subtitle: 'Learn why reads and writes have asymmetric costs',
+
+    objectives: [
+      'Understand read vs write performance characteristics',
+      'Calculate server capacity for mixed workloads',
+      'Learn why writes are the bottleneck',
+      'Know when to add caching vs write queues',
+    ],
+
+    questions: [
+      {
+        id: 'total_rps',
+        step: 1,
+        category: 'throughput',
+        title: 'What is your total traffic?',
+        description: 'You\'re building a social media or e-commerce API. Start with total RPS.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter total RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 100000,
+          suggestedValue: 10000,
+        },
+        whyItMatters: 'Total RPS is the starting point, but it\'s NOT enough! We need to know the read/write split because they have VERY different costs.',
+        onAnswer: (answer) => {
+          return [
+            {
+              action: 'highlight',
+              reason: `Total traffic: ${answer} RPS. But wait - how many are reads vs writes?`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'read_write_ratio',
+        step: 2,
+        category: 'throughput',
+        title: 'What is your read/write ratio?',
+        description: 'Different applications have different read/write patterns.',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'read_heavy_95_5',
+            label: '95% Reads / 5% Writes (Read-Heavy)',
+            description: 'E-commerce browsing, social feeds, news sites',
+            consequence: 'Bottleneck will be READS (database queries). Solution: Add caching + read replicas.',
+          },
+          {
+            id: 'balanced_50_50',
+            label: '50% Reads / 50% Writes (Balanced)',
+            description: 'Collaborative tools, messaging apps',
+            consequence: 'Both reads and writes matter. Need caching AND write optimization.',
+          },
+          {
+            id: 'write_heavy_10_90',
+            label: '10% Reads / 90% Writes (Write-Heavy)',
+            description: 'Logging systems, IoT sensors, analytics ingestion',
+            consequence: 'Bottleneck will be WRITES (database cannot keep up). Solution: Write queues + batching.',
+          },
+        ],
+        whyItMatters: 'Read/write ratio determines your architecture! Read-heavy → add caching. Write-heavy → add queues.',
+        commonMistakes: [
+          'Treating all RPS the same (reads are 4× faster than writes)',
+          'Not measuring actual read/write ratio in production',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const totalRps = previousAnswers.total_rps || 10000;
+          let readPercent, writePercent;
+
+          if (answer === 'read_heavy_95_5') {
+            readPercent = 0.95;
+            writePercent = 0.05;
+          } else if (answer === 'balanced_50_50') {
+            readPercent = 0.5;
+            writePercent = 0.5;
+          } else {
+            readPercent = 0.1;
+            writePercent = 0.9;
+          }
+
+          const readRps = Math.round(totalRps * readPercent);
+          const writeRps = Math.round(totalRps * writePercent);
+
+          return [
+            {
+              action: 'highlight',
+              reason: `Your workload: ${readRps} read RPS + ${writeRps} write RPS = ${totalRps} total RPS`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'asymmetric_costs',
+        step: 3,
+        category: 'throughput',
+        title: 'Asymmetric Performance',
+        description: 'Reads and writes have VERY different performance characteristics:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Read Operations',
+            recommendation: '2,000 RPS per server',
+            reasoning: 'Can be cached (5ms), read from replicas, scaled horizontally',
+          },
+          {
+            condition: 'Write Operations',
+            recommendation: '500 RPS per server',
+            reasoning: 'Must hit PRIMARY DB (50ms), cannot be cached, limited by DB',
+          },
+          {
+            condition: 'Performance Difference',
+            recommendation: 'Writes are 4× slower!',
+            reasoning: 'Database writes require: fsync, WAL, transaction log, indexes',
+          },
+        ],
+        whyItMatters: 'Writes are 4× more expensive than reads! This is why read-heavy apps are easier to scale than write-heavy apps.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Key insight: Reads (2000 RPS/server) vs Writes (500 RPS/server) = 4× difference!',
+            },
+          ];
+        },
+      },
+      {
+        id: 'server_calculation',
+        step: 4,
+        category: 'throughput',
+        title: 'Calculate Servers Needed',
+        description: 'For mixed workloads, calculate servers for EACH operation type, then take the MAX.',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Servers = MAX(Read Servers, Write Servers)',
+          explanation: 'Calculate servers for reads and writes separately, then deploy enough for the BOTTLENECK.',
+          exampleInputs: {
+            'Total RPS': 10000,
+            'Read/Write': '95:5',
+            'Read RPS': 9500,
+            'Write RPS': 500,
+            'Read Capacity': '2000 RPS/server',
+            'Write Capacity': '500 RPS/server',
+          },
+          exampleOutput: 'Read servers: 9500/2000 = 5\nWrite servers: 500/500 = 1\nDeploy: MAX(5, 1) = 5 servers',
+        },
+        whyItMatters: 'You deploy enough servers for whichever operation (read or write) needs MORE capacity. The bottleneck determines your server count!',
+        commonMistakes: [
+          'Adding read and write servers (wrong! they\'re the same physical servers)',
+          'Not accounting for the 4× difference in capacity',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const totalRps = previousAnswers.total_rps || 10000;
+          const ratio = previousAnswers.read_write_ratio;
+
+          let readRps, writeRps;
+          if (ratio === 'read_heavy_95_5') {
+            readRps = 9500;
+            writeRps = 500;
+          } else if (ratio === 'balanced_50_50') {
+            readRps = 5000;
+            writeRps = 5000;
+          } else {
+            readRps = 1000;
+            writeRps = 9000;
+          }
+
+          const readServers = Math.ceil(readRps / 2000);
+          const writeServers = Math.ceil(writeRps / 500);
+          const serversNeeded = Math.max(readServers, writeServers);
+
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer to distribute traffic.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: serversNeeded },
+              reason: `Deploying ${serversNeeded} servers (Read: ${readServers} needed, Write: ${writeServers} needed, Bottleneck: ${readServers > writeServers ? 'Reads' : 'Writes'})`,
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client → LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB → App Servers',
+            },
+          ];
+        },
+      },
+      {
+        id: 'architecture_implications',
+        step: 5,
+        category: 'throughput',
+        title: 'Architecture Based on Read/Write Ratio',
+        description: 'Different ratios require different architectures:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Read-Heavy (95:5)',
+            recommendation: 'Add: Cache + Read Replicas',
+            reasoning: 'Reads are bottleneck → cache 95% of reads (5ms) + read replicas for scale',
+          },
+          {
+            condition: 'Balanced (50:50)',
+            recommendation: 'Add: Cache + Write Queues',
+            reasoning: 'Both matter → cache reads + batch writes for efficiency',
+          },
+          {
+            condition: 'Write-Heavy (10:90)',
+            recommendation: 'Add: Write Queues + Batching + Sharding',
+            reasoning: 'Writes are bottleneck → queue for burst, batch for throughput, shard for scale',
+          },
+        ],
+        whyItMatters: 'Read/write ratio is a DECISION DRIVER! It tells you which components to add next.',
+        onAnswer: (answer, previousAnswers) => {
+          const ratio = previousAnswers.read_write_ratio;
+
+          if (ratio === 'read_heavy_95_5') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'storage',
+                reason: 'PostgreSQL for persistent storage.',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'storage',
+                reason: 'App Servers → Database (write 500 RPS, read 9500 RPS)',
+              },
+              {
+                action: 'highlight',
+                reason: 'Next module: Add CACHE layer to handle 9,500 read RPS with 95% hit ratio!',
+              },
+            ];
+          } else if (ratio === 'write_heavy_10_90') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'message_queue',
+                reason: 'Message queue to buffer 9,000 write RPS.',
+              },
+              {
+                action: 'add_component',
+                componentType: 'storage',
+                reason: 'PostgreSQL for persistent storage.',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'message_queue',
+                reason: 'App Servers → Queue (buffer writes)',
+              },
+              {
+                action: 'add_connection',
+                from: 'message_queue',
+                to: 'storage',
+                reason: 'Queue → Database (batch writes)',
+              },
+              {
+                action: 'highlight',
+                reason: 'Write-heavy workload requires QUEUES + BATCHING to handle 9,000 writes/sec!',
+              },
+            ];
+          } else {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'storage',
+                reason: 'PostgreSQL for persistent storage.',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'storage',
+                reason: 'App Servers → Database (balanced read/write)',
+              },
+              {
+                action: 'highlight',
+                reason: 'Balanced workload: Need both cache (for reads) AND write optimization!',
+              },
+            ];
+          }
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Read/Write Ratio Analysis Complete!',
+      keyTakeaways: [
+        'Reads and writes have ASYMMETRIC costs (4× difference)',
+        'Read capacity: 2,000 RPS/server | Write capacity: 500 RPS/server',
+        'Server calculation: MAX(Read Servers, Write Servers)',
+        'Read-heavy → Add caching + read replicas',
+        'Write-heavy → Add write queues + batching + sharding',
+      ],
+      nextSteps: 'Next: Learn about caching strategies to handle read-heavy workloads!',
+    },
+  },
 };
 
 /**
@@ -2351,6 +2663,259 @@ def update_post(post_id, content):
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Caching Strategies',
+    subtitle: 'Learn Cache-Aside, Write-Through, and Write-Behind patterns',
+
+    objectives: [
+      'Understand 3 caching strategies and their trade-offs',
+      'Learn when to use Cache-Aside (most common)',
+      'Know Write-Through for strong consistency',
+      'Understand Write-Behind for write-heavy workloads',
+    ],
+
+    questions: [
+      {
+        id: 'caching_problem',
+        step: 1,
+        category: 'latency',
+        title: 'Why Add Caching?',
+        description: 'Your social media API has 10,000 RPS with 90% reads. Database queries are slow (P99 = 450ms).',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'reduce_latency',
+            label: 'Reduce latency (speed up reads)',
+            description: 'Cache stores frequently accessed data in memory (5ms vs 50ms)',
+            consequence: '✅ CORRECT! Caching reduces read latency by 10×.',
+          },
+          {
+            id: 'reduce_db_load',
+            label: 'Reduce database load',
+            description: 'Cache handles 90% of reads, only 10% hit database',
+            consequence: '✅ ALSO CORRECT! With 90% cache hit ratio, DB load drops by 9×.',
+          },
+          {
+            id: 'both',
+            label: 'Both of the above',
+            description: 'Caching provides both faster reads AND lower DB load',
+            consequence: '✅ BEST ANSWER! Caching is a latency AND throughput optimization.',
+          },
+        ],
+        whyItMatters: 'Caching is one of the MOST impactful optimizations. It reduces latency (5ms vs 50ms) AND database load (90% cache hit = 10× fewer DB queries).',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Caching reduces P99 latency from 450ms → 50ms and DB load by 90%!',
+            },
+          ];
+        },
+      },
+      {
+        id: 'consistency_requirement',
+        step: 2,
+        category: 'consistency',
+        title: 'What consistency do you need?',
+        description: 'Different caching strategies offer different consistency guarantees.',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'eventual',
+            label: 'Eventual Consistency (OK if cache is stale for a few seconds)',
+            description: 'Social feeds, product listings, view counts',
+            consequence: 'Use Cache-Aside: Writes invalidate cache, next read reloads from DB.',
+          },
+          {
+            id: 'strong',
+            label: 'Strong Consistency (cache must ALWAYS match database)',
+            description: 'Bank balances, inventory counts, user profiles',
+            consequence: 'Use Write-Through: Writes update BOTH cache and DB synchronously.',
+          },
+          {
+            id: 'write_heavy',
+            label: 'Write-Heavy Workload (optimize write latency)',
+            description: 'Logging systems, analytics, time-series data',
+            consequence: 'Use Write-Behind: Writes go to cache first, async to DB.',
+          },
+        ],
+        whyItMatters: 'Consistency requirement determines your caching strategy! Eventual consistency → Cache-Aside. Strong consistency → Write-Through.',
+        commonMistakes: [
+          'Using Cache-Aside for financial data (can have stale cache)',
+          'Using Write-Through for read-heavy workloads (unnecessary complexity)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Consistency requirement is the PRIMARY decision driver for caching strategy.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'cache_aside_pattern',
+        step: 3,
+        category: 'latency',
+        title: 'Cache-Aside Pattern (Most Common)',
+        description: 'Cache-Aside is used by 90% of applications. Learn how it works:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Read Flow',
+            recommendation: '1. Check cache\n2. Miss → Read DB\n3. Write to cache\n4. Return',
+            reasoning: 'Lazy loading: Only cache what is actually read',
+          },
+          {
+            condition: 'Write Flow',
+            recommendation: '1. Write to DB\n2. Invalidate cache (delete key)\n3. Next read reloads',
+            reasoning: 'Invalidation prevents stale cache',
+          },
+          {
+            condition: 'Consistency',
+            recommendation: 'Eventual (stale for ~1 read)',
+            reasoning: 'After invalidation, next read sees latest data',
+          },
+        ],
+        whyItMatters: 'Cache-Aside is simple and works for 90% of use cases. Reads check cache first (fast path), writes invalidate cache (simple consistency).',
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer to distribute traffic.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 3 },
+              reason: 'App servers handle read/write logic.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'cache',
+              reason: 'Redis cache for Cache-Aside pattern (check cache first, load on miss).',
+            },
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              reason: 'PostgreSQL database (source of truth).',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client → LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB → App Servers',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'cache',
+              reason: 'App Server checks cache first.',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'storage',
+              reason: 'App Server reads from DB on cache miss.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'write_through_pattern',
+        step: 4,
+        category: 'consistency',
+        title: 'Write-Through Pattern (Strong Consistency)',
+        description: 'Write-Through ensures cache and database are ALWAYS in sync.',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Read Flow',
+            recommendation: '1. Check cache\n2. Miss → Read DB\n3. Write to cache\n4. Return',
+            reasoning: 'Same as Cache-Aside',
+          },
+          {
+            condition: 'Write Flow',
+            recommendation: '1. Write to cache\n2. Write to DB (sync)\n3. Return after BOTH complete',
+            reasoning: 'Cache and DB updated together (strong consistency)',
+          },
+          {
+            condition: 'Consistency',
+            recommendation: 'Strong (cache = DB always)',
+            reasoning: 'Writes are synchronous to both cache and DB',
+          },
+        ],
+        whyItMatters: 'Write-Through guarantees strong consistency but adds write latency (must write to cache AND DB). Use for critical data like bank balances.',
+        commonMistakes: [
+          'Using Write-Through for read-heavy workloads (adds complexity for little benefit)',
+          'Not considering write latency impact (2× slower writes)',
+        ],
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Write-Through: Writes update BOTH cache and DB synchronously. Strong consistency but slower writes.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'strategy_decision',
+        step: 5,
+        category: 'latency',
+        title: 'Choose Your Strategy',
+        description: 'Decision matrix for caching strategies:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Read-Heavy + Eventual Consistency OK',
+            recommendation: 'Cache-Aside (90% of use cases)',
+            reasoning: 'Social feeds, news, product listings → simple and fast',
+          },
+          {
+            condition: 'Strong Consistency Required',
+            recommendation: 'Write-Through',
+            reasoning: 'Bank balances, inventory, user profiles → cache = DB always',
+          },
+          {
+            condition: 'Write-Heavy Workload',
+            recommendation: 'Write-Behind (async)',
+            reasoning: 'Logging, analytics, time-series → fast writes, batch to DB',
+          },
+        ],
+        whyItMatters: 'Most applications should start with Cache-Aside. Only use Write-Through if you need strong consistency. Write-Behind is for specialized write-heavy workloads.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Cache-Aside is the default choice. Only switch to Write-Through/Write-Behind when you have specific consistency or write-heavy requirements.',
+            },
+          ];
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Caching Strategies Complete!',
+      keyTakeaways: [
+        'Cache-Aside (90% of apps): Check cache → Miss → Load from DB → Write to cache',
+        'Write-Through (strong consistency): Write to cache + DB synchronously',
+        'Write-Behind (write-heavy): Write to cache → Async batch to DB',
+        'Cache-Aside invalidates on write (eventual consistency)',
+        'Cache hit ratio of 90% = 10× reduction in DB load',
+      ],
+      nextSteps: 'Next: Learn about replication patterns to scale database reads!',
+    },
+  },
 };
 
 /**
