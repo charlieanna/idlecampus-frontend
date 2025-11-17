@@ -120,6 +120,9 @@ export { l6ExistentialNuclearResilientProblemDefinition, l6ExistentialClimateAda
 // DDIA Gap Problems - Filling missing "Designing Data-Intensive Applications" concepts (5)
 export { batchProcessingMapreduceProblemDefinition, explicitShardingDesignProblemDefinition, transactionIsolationLevelsProblemDefinition, dataWarehouseOlapProblemDefinition, graphDatabaseSocialProblemDefinition } from './generated-all/ddiaGapProblems';
 
+// NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (3 problems)
+export { nfrTeachingChapter0Problems } from './generated-all/nfrTeachingChapter0';
+
 // DDIA Teaching Problems - Concept-focused learning problems (151 total - ALL CHAPTERS)
 export { ddiaChapter1Problems } from './generated-all/ddiaTeachingChapter1';
 export { ddiaChapter2Problems } from './generated-all/ddiaTeachingChapter2';
@@ -236,6 +239,9 @@ import { l6ExistentialNuclearResilientProblemDefinition, l6ExistentialClimateAda
 
 // DDIA Gap Problems - Filling missing DDIA concepts
 import { batchProcessingMapreduceProblemDefinition, explicitShardingDesignProblemDefinition, transactionIsolationLevelsProblemDefinition, dataWarehouseOlapProblemDefinition, graphDatabaseSocialProblemDefinition } from './generated-all/ddiaGapProblems';
+
+// NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (3 problems)
+import { nfrTeachingChapter0Problems } from './generated-all/nfrTeachingChapter0';
 
 // DDIA Teaching Problems - Concept-focused learning (151 total)
 import { ddiaChapter1Problems } from './generated-all/ddiaTeachingChapter1';
@@ -949,6 +955,8 @@ export const allProblemDefinitions: ProblemDefinition[] = [
     transactionIsolationLevelsProblemDefinition,
     dataWarehouseOlapProblemDefinition,
     graphDatabaseSocialProblemDefinition,
+    // NFR Teaching Problems - Chapter 0: Systems Thinking (3 problems)
+    ...nfrTeachingChapter0Problems,
     // DDIA Teaching Problems (151 - ALL CHAPTERS)
     ...ddiaChapter1Problems,
     ...ddiaChapter2Problems,

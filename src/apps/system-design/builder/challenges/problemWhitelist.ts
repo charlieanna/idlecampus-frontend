@@ -304,6 +304,16 @@ export const nextGenProblems = [
 ];
 
 /**
+ * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (3 total)
+ */
+export const nfrTeachingProblems = [
+  // Chapter 0: Systems Thinking & NFR-Driven Design (3)
+  'nfr-ch0-throughput-calc',
+  'nfr-ch0-peak-vs-avg',
+  'nfr-ch0-autoscaling',
+];
+
+/**
  * DDIA Teaching Problems - Concept-focused learning (151 total - ALL CHAPTERS)
  */
 export const ddiaTeachingProblems = [
@@ -595,6 +605,7 @@ export const problemWhitelist = new Set([
   ...patternProblems,                 // 35 (30 original + 5 DDIA gaps)
   ...platformProblems,                // 107
   ...nextGenProblems,                 // 10
+  ...nfrTeachingProblems,             // 3 (Chapter 0: Systems Thinking)
   ...ddiaTeachingProblems,            // 151 (ALL CHAPTERS!)
   ...systemDesignPrimerProblems,      // 77
   // Total: 420 problems (previously 250, now with full DDIA + SDP)

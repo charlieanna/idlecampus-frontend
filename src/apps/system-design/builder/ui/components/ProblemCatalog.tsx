@@ -8,6 +8,7 @@ import { isCoreProblem, getCoreStage } from '../../challenges/coreTrack';
 function extractCategory(id: string): string {
   // Map prefixes to categories
   if (id.includes('tutorial')) return 'Tutorial';
+  if (id.startsWith('nfr-')) return 'NFR Thinking';
   if (id.includes('cache') || id.includes('cdn') || id.includes('redis')) return 'Caching';
   if (id.includes('gateway') || id.includes('rate-limit')) return 'API Gateway';
   if (id.includes('stream') || id.includes('queue') || id.includes('kafka') || id.includes('notification')) return 'Streaming';
@@ -152,7 +153,7 @@ export function ProblemCatalog() {
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'difficulty' | 'category'>('difficulty');
-  const [trackFilter, setTrackFilter] = useState<'all' | 'core' | 'ddia' | 'sdp'>('all');
+  const [trackFilter, setTrackFilter] = useState<'all' | 'core' | 'nfr' | 'ddia' | 'sdp'>('all');
 
   // Enrich challenges with metadata and filter out tutorials
   const enrichedChallenges = useMemo(() => {
@@ -166,6 +167,11 @@ export function ProblemCatalog() {
         coreStage: getCoreStage(challenge),
       }));
   }, []);
+
+  const nfrCount = useMemo(
+    () => enrichedChallenges.filter(c => c.id.startsWith('nfr-')).length,
+    [enrichedChallenges],
+  );
 
   const ddiaCount = useMemo(
     () => enrichedChallenges.filter(c => c.id.startsWith('ddia-')).length,
@@ -189,6 +195,8 @@ export function ProblemCatalog() {
 
     if (trackFilter === 'core') {
       list = list.filter(c => c.isCore);
+    } else if (trackFilter === 'nfr') {
+      list = list.filter(c => c.id.startsWith('nfr-'));
     } else if (trackFilter === 'ddia') {
       list = list.filter(c => c.id.startsWith('ddia-'));
     } else if (trackFilter === 'sdp') {
@@ -268,6 +276,16 @@ export function ProblemCatalog() {
                   }`}
                 >
                   Core Track
+                </button>
+                <button
+                  onClick={() => setTrackFilter('nfr')}
+                  className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors ${
+                    trackFilter === 'nfr'
+                      ? 'bg-orange-600 text-white'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  NFR Thinking ({nfrCount})
                 </button>
                 <button
                   onClick={() => setTrackFilter('ddia')}
