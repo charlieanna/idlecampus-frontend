@@ -9,6 +9,13 @@ import {
 } from '../types/request';
 import { Component } from './components/Component';
 import { SimulationContext } from '../types/component';
+import {
+  CycleAwareTraversalContext,
+  detectCycles,
+  validateGraphCycles,
+  CycleDetectionResult,
+} from './cycleDetection';
+import { isEnabled, verboseLog } from './featureFlags';
 
 /**
  * Traffic Flow Engine
@@ -18,6 +25,7 @@ export class TrafficFlowEngine {
   private components: Map<string, Component> = new Map();
   private adjacency: Map<string, Connection[]> = new Map();
   private requestCounter = 0;
+  private cycleDetectionResult: CycleDetectionResult | null = null;
 
   /**
    * Build graph from system design
@@ -32,13 +40,36 @@ export class TrafficFlowEngine {
       list.push(conn);
       this.adjacency.set(conn.from, list);
     }
+
+    // Perform cycle detection
+    const adjacencyForCycles = new Map<string, { to: string; type: Connection['type'] }[]>();
+    for (const [from, connections] of this.adjacency.entries()) {
+      adjacencyForCycles.set(
+        from,
+        connections.map((c) => ({ to: c.to, type: c.type }))
+      );
+    }
+    this.cycleDetectionResult = detectCycles(adjacencyForCycles);
+
+    verboseLog('Graph built with cycle detection', {
+      hasCycles: this.cycleDetectionResult.hasCycles,
+      numCycles: this.cycleDetectionResult.cycles.length,
+    });
+  }
+
+  /**
+   * Get cycle detection results
+   */
+  getCycleDetectionResult(): CycleDetectionResult | null {
+    return this.cycleDetectionResult;
   }
 
   /**
    * Validate that graph has valid paths for traffic
    */
-  validateGraph(): { valid: boolean; errors: string[] } {
+  validateGraph(): { valid: boolean; errors: string[]; warnings?: string[] } {
     const errors: string[] = [];
+    const warnings: string[] = [];
 
     // Find entry point (client, load_balancer, or app_server)
     const entryId =
@@ -48,14 +79,14 @@ export class TrafficFlowEngine {
 
     if (!entryId) {
       errors.push('No entry point found (need client, load_balancer, or app_server)');
-      return { valid: false, errors };
+      return { valid: false, errors, warnings };
     }
 
     // Check if we can reach app server (if entry isn't app server itself)
     const appId = this.findNodeByType('app_server');
     if (!appId) {
       errors.push('No app server found - system cannot process requests');
-      return { valid: false, errors };
+      return { valid: false, errors, warnings };
     }
 
     // Only check path if entry is not the app server itself
@@ -63,7 +94,7 @@ export class TrafficFlowEngine {
       const pathToApp = this.findPath(entryId, appId, 'read_write');
       if (!pathToApp) {
         errors.push('No path from entry point to app server - traffic cannot flow');
-        return { valid: false, errors };
+        return { valid: false, errors, warnings };
       }
     }
 
@@ -78,7 +109,34 @@ export class TrafficFlowEngine {
       }
     }
 
-    return { valid: errors.length === 0, errors };
+    // Validate graph cycles
+    if (this.cycleDetectionResult) {
+      const adjacencyForValidation = new Map<string, { to: string; type: Connection['type'] }[]>();
+      for (const [from, connections] of this.adjacency.entries()) {
+        adjacencyForValidation.set(
+          from,
+          connections.map((c) => ({ to: c.to, type: c.type }))
+        );
+      }
+      const cycleValidation = validateGraphCycles(adjacencyForValidation);
+
+      if (!cycleValidation.valid) {
+        // If cycles are not allowed, add as errors
+        if (!isEnabled('ENABLE_GRAPH_CYCLES')) {
+          errors.push(...cycleValidation.errors);
+        } else {
+          // If cycles are allowed, add as warnings
+          warnings.push(...cycleValidation.errors);
+        }
+      }
+
+      // Add cycle detection warnings
+      if (this.cycleDetectionResult.warnings.length > 0) {
+        warnings.push(...this.cycleDetectionResult.warnings);
+      }
+    }
+
+    return { valid: errors.length === 0, errors, warnings };
   }
 
   /**
@@ -133,25 +191,42 @@ export class TrafficFlowEngine {
       return;
     }
 
-    // Start traversal
-    const visited = new Set<string>();
-    this.traverseGraph(request, clientId, context, visited);
+    // Start traversal with cycle-aware context
+    const traversalContext = new CycleAwareTraversalContext();
+    this.traverseGraph(request, clientId, context, traversalContext);
+
+    // Log traversal stats if verbose logging is enabled
+    const stats = traversalContext.getStats();
+    verboseLog('Request traversal completed', {
+      requestId: request.id,
+      totalHops: stats.totalHops,
+      uniqueNodes: stats.uniqueNodes,
+      maxVisitsPerNode: stats.maxVisitsPerNode,
+      failed: request.failed,
+    });
   }
 
   /**
    * Recursively traverse graph following connections
+   * Uses CycleAwareTraversalContext for controlled cycle support
    */
   private traverseGraph(
     request: Request,
     currentNodeId: string,
     context: SimulationContext,
-    visited: Set<string>
+    traversalContext: CycleAwareTraversalContext
   ): void {
-    // Prevent infinite loops
-    if (visited.has(currentNodeId)) {
+    // Check if we can visit this node (respects cycle limits)
+    if (!traversalContext.canVisit(currentNodeId)) {
+      verboseLog('Cannot visit node - cycle limit reached', {
+        nodeId: currentNodeId,
+        path: traversalContext.getPath(),
+      });
       return;
     }
-    visited.add(currentNodeId);
+
+    // Mark as visited
+    traversalContext.visit(currentNodeId);
 
     // Add to path
     request.path.push(currentNodeId);
@@ -161,6 +236,7 @@ export class TrafficFlowEngine {
     if (!component) {
       request.failed = true;
       request.failureReason = `Component ${currentNodeId} not found`;
+      traversalContext.unvisit(currentNodeId);
       return;
     }
 
@@ -174,6 +250,7 @@ export class TrafficFlowEngine {
     if (!result.success) {
       request.failed = true;
       request.failureReason = result.errorReason || 'Component failed';
+      traversalContext.unvisit(currentNodeId);
       return;
     }
 
@@ -192,6 +269,7 @@ export class TrafficFlowEngine {
 
     // If no outgoing connections, request completes here
     if (validConnections.length === 0) {
+      traversalContext.unvisit(currentNodeId);
       return;
     }
 
@@ -199,13 +277,15 @@ export class TrafficFlowEngine {
     if (result.nextNodeId) {
       const nextConn = validConnections.find((c) => c.to === result.nextNodeId);
       if (nextConn) {
-        this.traverseGraph(request, nextConn.to, context, visited);
+        this.traverseGraph(request, nextConn.to, context, traversalContext);
       }
+      traversalContext.unvisit(currentNodeId);
       return;
     }
 
     // For caching layers, might not pass through
     if (result.passthrough === false) {
+      traversalContext.unvisit(currentNodeId);
       return; // Cache hit, no need to go to database
     }
 
@@ -214,11 +294,13 @@ export class TrafficFlowEngine {
       // For database reads, check cache first
       const downstreamComp = this.components.get(conn.to);
       if (downstreamComp) {
-        this.traverseGraph(request, conn.to, context, visited);
+        this.traverseGraph(request, conn.to, context, traversalContext);
         // For this simplified model, only follow first valid path
         break;
       }
     }
+
+    traversalContext.unvisit(currentNodeId);
   }
 
   /**

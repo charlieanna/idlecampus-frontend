@@ -19,6 +19,47 @@ import {
 import { MongoDB } from './components/MongoDB';
 import { Cassandra } from './components/Cassandra';
 import { MessageQueue } from './components/MessageQueue';
+import { calculateRequestPercentiles } from './latencyDistribution';
+import { isEnabled, verboseLog } from './featureFlags';
+import {
+  findAllDatabaseNodes,
+  distributeTrafficAcrossShards,
+  aggregateShardMetrics,
+  getDefaultShardingConfig,
+} from './sharding';
+import {
+  calculateEffectiveCapacity,
+  CONNECTION_POOL_DEFAULTS,
+  QueryComplexity,
+  IOPattern,
+} from './databaseCapacity';
+import {
+  calculateDynamicHitRatio,
+  CacheAccessPattern,
+} from './cacheModeling';
+import {
+  calculateTrafficAtTime,
+  TrafficPatternConfig,
+} from './trafficPatterns';
+import {
+  calculateFailureEffect,
+  FailureInjectionConfig,
+} from './failureInjection';
+import {
+  calculateRetryEffect,
+  calculateCircuitBreakerEffect,
+  calculateTimeoutEffect,
+  calculateQueueEffect,
+  calculateCombinedReliabilityEffect,
+  RetryConfig,
+  CircuitBreakerConfig,
+  TimeoutConfig,
+  QueueConfig,
+  DEFAULT_RETRY_CONFIG,
+  DEFAULT_CIRCUIT_BREAKER_CONFIG,
+  DEFAULT_TIMEOUT_CONFIG,
+  DEFAULT_QUEUE_CONFIG,
+} from './reliabilityPatterns';
 
 /**
  * Simulation Engine
@@ -28,6 +69,97 @@ export class SimulationEngine {
   private components: Map<string, Component> = new Map();
   private adjacency: Map<string, { to: string; type: Connection['type'] }[]> = new Map();
   private trafficFlowEngine: TrafficFlowEngine = new TrafficFlowEngine();
+
+  // Advanced simulation configuration
+  private trafficPatternConfig?: TrafficPatternConfig;
+  private failureInjections: FailureInjectionConfig[] = [];
+  private cacheAccessPattern: CacheAccessPattern = 'zipf';
+  private queryComplexity: QueryComplexity = 'moderate';
+  private ioPattern: IOPattern = 'random';
+
+  // Reliability pattern configuration
+  private retryConfig: RetryConfig = DEFAULT_RETRY_CONFIG;
+  private circuitBreakerConfig: CircuitBreakerConfig = DEFAULT_CIRCUIT_BREAKER_CONFIG;
+  private timeoutConfig: TimeoutConfig = DEFAULT_TIMEOUT_CONFIG;
+  private queueConfig: QueueConfig = DEFAULT_QUEUE_CONFIG;
+
+  /**
+   * Configure traffic pattern for simulation
+   */
+  setTrafficPattern(config: TrafficPatternConfig): void {
+    this.trafficPatternConfig = config;
+  }
+
+  /**
+   * Configure failure injection scenarios
+   */
+  setFailureInjections(injections: FailureInjectionConfig[]): void {
+    this.failureInjections = injections;
+  }
+
+  /**
+   * Configure cache access pattern
+   */
+  setCacheAccessPattern(pattern: CacheAccessPattern): void {
+    this.cacheAccessPattern = pattern;
+  }
+
+  /**
+   * Configure database query complexity
+   */
+  setQueryComplexity(complexity: QueryComplexity): void {
+    this.queryComplexity = complexity;
+  }
+
+  /**
+   * Configure database I/O pattern
+   */
+  setIOPattern(pattern: IOPattern): void {
+    this.ioPattern = pattern;
+  }
+
+  /**
+   * Configure retry logic
+   */
+  setRetryConfig(config: RetryConfig): void {
+    this.retryConfig = config;
+  }
+
+  /**
+   * Configure circuit breaker pattern
+   */
+  setCircuitBreakerConfig(config: CircuitBreakerConfig): void {
+    this.circuitBreakerConfig = config;
+  }
+
+  /**
+   * Configure timeout enforcement
+   */
+  setTimeoutConfig(config: TimeoutConfig): void {
+    this.timeoutConfig = config;
+  }
+
+  /**
+   * Configure queue/backpressure behavior
+   */
+  setQueueConfig(config: QueueConfig): void {
+    this.queueConfig = config;
+  }
+
+  /**
+   * Reset advanced configuration to defaults
+   */
+  resetAdvancedConfig(): void {
+    this.trafficPatternConfig = undefined;
+    this.failureInjections = [];
+    this.cacheAccessPattern = 'zipf';
+    this.queryComplexity = 'moderate';
+    this.ioPattern = 'random';
+    this.retryConfig = DEFAULT_RETRY_CONFIG;
+    this.circuitBreakerConfig = DEFAULT_CIRCUIT_BREAKER_CONFIG;
+    this.timeoutConfig = DEFAULT_TIMEOUT_CONFIG;
+    this.queueConfig = DEFAULT_QUEUE_CONFIG;
+  }
 
   /**
    * Build component instances from graph
@@ -226,10 +358,30 @@ export class SimulationEngine {
     // (Validation is done internally but doesn't block simulation)
     this.trafficFlowEngine.buildGraph(graph, this.components);
 
-    // Extract traffic parameters
-    const totalRps = testCase.traffic.rps;
-    const readRps = testCase.traffic.readRps || totalRps * (testCase.traffic.readRatio || 1);
-    const writeRps = testCase.traffic.writeRps || totalRps * (1 - (testCase.traffic.readRatio || 1));
+    // Extract traffic parameters with optional traffic pattern modeling
+    let totalRps = testCase.traffic.rps;
+    let readRps = testCase.traffic.readRps || totalRps * (testCase.traffic.readRatio || 1);
+    let writeRps = testCase.traffic.writeRps || totalRps * (1 - (testCase.traffic.readRatio || 1));
+
+    // Apply traffic pattern if configured and feature flag is enabled
+    if (isEnabled('ENABLE_TRAFFIC_PATTERNS') && this.trafficPatternConfig) {
+      const patternResult = calculateTrafficAtTime(
+        testCase.duration / 2, // Sample at midpoint
+        this.trafficPatternConfig,
+        testCase.traffic.readRatio || 0.9
+      );
+
+      totalRps = patternResult.rps;
+      readRps = patternResult.readRps;
+      writeRps = patternResult.writeRps;
+
+      verboseLog('Traffic pattern applied', {
+        originalRps: testCase.traffic.rps,
+        patternRps: totalRps,
+        patternPhase: patternResult.patternPhase,
+        isSpike: patternResult.isSpike,
+      });
+    }
 
     // Build simulation context
     const context: SimulationContext = {
@@ -242,6 +394,21 @@ export class SimulationEngine {
     let combinedErrorRate = 0;
     let totalCost = 0;
     let availability = 1.0;
+
+    // Track failure effects across components
+    const failureEffects = new Map<string, ReturnType<typeof calculateFailureEffect>>();
+    if (isEnabled('ENABLE_FAILURE_INJECTION') && this.failureInjections.length > 0) {
+      for (const [compId] of this.components) {
+        const effect = calculateFailureEffect(compId, context.currentTime, this.failureInjections);
+        if (effect.isAffected) {
+          failureEffects.set(compId, effect);
+          verboseLog('Failure effect on component', {
+            componentId: compId,
+            effect: effect.failureDescription,
+          });
+        }
+      }
+    }
 
     // Determine entry point and key components via graph connections
     const entryId =
@@ -263,13 +430,30 @@ export class SimulationEngine {
         ? writeAppServerIds[0]
         : this.findNodeIdByType('app_server');
 
-    const dbId = this.findNodeIdByType('database') ||
-      this.findNodeIdByType('postgresql') ||
-      this.findNodeIdByType('mongodb') ||
-      this.findNodeIdByType('cassandra');
+    // Find all database nodes (support for multi-database/sharding)
+    const allDbIds = isEnabled('ENABLE_MULTI_DB')
+      ? findAllDatabaseNodes(this.components)
+      : [];
+
+    // Fallback to single database for backward compatibility
+    const dbId = allDbIds.length > 0
+      ? allDbIds[0]
+      : this.findNodeIdByType('database') ||
+        this.findNodeIdByType('postgresql') ||
+        this.findNodeIdByType('mongodb') ||
+        this.findNodeIdByType('cassandra');
 
     const appServer = appId ? (this.components.get(appId) as AppServer) : undefined;
     const db = dbId ? (this.components.get(dbId) as PostgreSQL | MongoDB | Cassandra) : undefined;
+
+    // Track if we're using multi-database mode
+    const useMultiDb = isEnabled('ENABLE_MULTI_DB') && allDbIds.length > 1;
+
+    verboseLog('Database configuration', {
+      singleDbId: dbId,
+      allDbIds,
+      useMultiDb,
+    });
 
     // Find paths based on connections
     let toAppPath: string[] | null = null;
@@ -324,7 +508,14 @@ export class SimulationEngine {
     }
 
     for (const comp of pathToAppComponents) {
-      const metrics = comp.simulate(totalRps, context);
+      let metrics = comp.simulate(totalRps, context);
+
+      // Apply failure injection effects if applicable
+      const failureEffect = failureEffects.get(comp.id);
+      if (failureEffect && failureEffect.isAffected) {
+        metrics = this.applyFailureEffect(metrics, failureEffect);
+      }
+
       componentMetrics.set(comp.id, metrics);
       totalLatency += metrics.latency;
       combinedErrorRate = this.combineErrorRates(combinedErrorRate, metrics.errorRate);
@@ -341,21 +532,213 @@ export class SimulationEngine {
     let cacheLatency = 0;
     let missRatio = 1;
     if (cache && toCachePath) {
+      // Apply dynamic cache hit ratio modeling if enabled
+      let dynamicHitRatio: number | undefined;
+
+      if (isEnabled('ENABLE_DYNAMIC_CACHE_HIT')) {
+        // Get cache configuration from component
+        const cacheConfig = cache.config || {};
+        const cacheSizeGB = (cacheConfig.memorySizeGB as number) || 10;
+        const cacheTTL = (cacheConfig.ttlSeconds as number) || 3600;
+
+        // Estimate working set from database configuration
+        const dbComponent = db;
+        const dbConfig = dbComponent?.config || {};
+        const totalDataSizeGB = (dbConfig.storageSizeGB as number) || 100;
+        const hotDataPercentage = 0.2; // Assume 20% of data is hot
+        const avgItemSizeKB = 1; // Default 1KB per cached item
+
+        const cacheHitResult = calculateDynamicHitRatio(
+          {
+            maxSizeGB: cacheSizeGB,
+            ttlSeconds: cacheTTL,
+            evictionPolicy: 'lru',
+          },
+          {
+            totalDataSizeGB,
+            hotDataPercentage,
+            avgItemSizeKB,
+            readRps,
+            writeRps,
+          },
+          this.cacheAccessPattern
+        );
+
+        dynamicHitRatio = cacheHitResult.hitRatio;
+
+        verboseLog('Dynamic cache hit ratio calculated', {
+          hitRatio: dynamicHitRatio,
+          effectiveCapacity: cacheHitResult.effectiveCapacity,
+          evictionRate: cacheHitResult.evictionRate,
+          warnings: cacheHitResult.warnings,
+        });
+      }
+
       const cacheMetrics = cache.simulate(readRps, context);
-      componentMetrics.set(cache.id, cacheMetrics);
-      cacheLatency = cacheMetrics.latency;
-      totalCost += cacheMetrics.cost;
-      dbReadRps = cacheMetrics.cacheMisses || readRps;
-      missRatio = readRps > 0 ? (dbReadRps / readRps) : 0;
+
+      // Apply failure injection effects to cache
+      let finalCacheMetrics = cacheMetrics;
+      const cacheFailureEffect = failureEffects.get(cache.id);
+      if (cacheFailureEffect && cacheFailureEffect.isAffected) {
+        finalCacheMetrics = this.applyFailureEffect(cacheMetrics, cacheFailureEffect);
+      }
+
+      componentMetrics.set(cache.id, finalCacheMetrics);
+      cacheLatency = finalCacheMetrics.latency;
+      totalCost += finalCacheMetrics.cost;
+
+      // Use dynamic hit ratio if calculated, otherwise use component's calculation
+      if (dynamicHitRatio !== undefined) {
+        dbReadRps = readRps * (1 - dynamicHitRatio);
+        missRatio = 1 - dynamicHitRatio;
+      } else {
+        dbReadRps = finalCacheMetrics.cacheMisses || readRps;
+        missRatio = readRps > 0 ? dbReadRps / readRps : 0;
+      }
     }
 
-    // Database
-    const dbMetrics = db.simulateWithReadWrite(dbReadRps, dbWriteRps, context);
-    componentMetrics.set(db.id, dbMetrics);
-    combinedErrorRate = this.combineErrorRates(combinedErrorRate, dbMetrics.errorRate);
-    totalCost += dbMetrics.cost;
-    if (dbMetrics.downtime) {
-      availability = Math.max(0, 1 - dbMetrics.downtime / testCase.duration);
+    // Database (with multi-database/sharding support)
+    let dbMetrics: ComponentMetrics;
+
+    if (useMultiDb && allDbIds.length > 1) {
+      // Multi-database mode: distribute traffic across all databases
+      const shardingConfig = getDefaultShardingConfig(allDbIds.length);
+      const trafficDistribution = distributeTrafficAcrossShards(
+        allDbIds,
+        dbReadRps,
+        dbWriteRps,
+        shardingConfig
+      );
+
+      verboseLog('Multi-database traffic distribution', {
+        numShards: allDbIds.length,
+        distribution: trafficDistribution.map((d) => ({
+          shardId: d.shardId,
+          percentage: d.trafficPercentage.toFixed(2),
+        })),
+      });
+
+      // Simulate each database shard
+      const shardMetricsMap = new Map<string, ComponentMetrics>();
+      for (const dist of trafficDistribution) {
+        const shardDb = this.components.get(dist.shardId) as
+          | PostgreSQL
+          | MongoDB
+          | Cassandra;
+        if (shardDb) {
+          const shardMetrics = shardDb.simulateWithReadWrite(
+            dist.readRps,
+            dist.writeRps,
+            context
+          );
+          shardMetricsMap.set(dist.shardId, shardMetrics);
+          componentMetrics.set(dist.shardId, shardMetrics);
+        }
+      }
+
+      // Aggregate metrics from all shards
+      const aggregated = aggregateShardMetrics(
+        shardMetricsMap,
+        trafficDistribution
+      );
+
+      // Create combined dbMetrics for downstream calculations
+      dbMetrics = {
+        latency: aggregated.maxReadLatency,
+        readLatency: aggregated.maxReadLatency,
+        writeLatency: aggregated.maxWriteLatency,
+        errorRate: aggregated.combinedErrorRate,
+        utilization: aggregated.maxUtilization,
+        cost: aggregated.totalCost,
+      };
+
+      combinedErrorRate = this.combineErrorRates(
+        combinedErrorRate,
+        aggregated.combinedErrorRate
+      );
+      totalCost += aggregated.totalCost;
+
+      // Check for hot shards and add to bottlenecks later
+      if (aggregated.hotShards.length > 0) {
+        verboseLog('Hot shards detected', aggregated.hotShards);
+      }
+
+      // Availability based on worst shard
+      for (const [, metrics] of shardMetricsMap) {
+        if (metrics.downtime) {
+          availability = Math.min(
+            availability,
+            Math.max(0, 1 - metrics.downtime / testCase.duration)
+          );
+        }
+      }
+    } else {
+      // Single database mode (legacy behavior)
+      dbMetrics = db.simulateWithReadWrite(dbReadRps, dbWriteRps, context);
+
+      // Apply database capacity modeling if enabled
+      if (isEnabled('ENABLE_DB_CONNECTION_POOL')) {
+        const dbConfig = db.config || {};
+        const instanceType = (dbConfig.instanceType as string) || 'db.t3.medium';
+        const poolConfig = CONNECTION_POOL_DEFAULTS[instanceType] || CONNECTION_POOL_DEFAULTS['db.t3.medium'];
+
+        const capacityResult = calculateEffectiveCapacity(
+          dbMetrics.utilization ? dbMetrics.utilization * (dbReadRps + dbWriteRps) * 10 : 1000, // Estimate base capacity
+          dbReadRps + dbWriteRps,
+          {
+            poolConfig,
+            queryComplexity: this.queryComplexity,
+            ioPattern: this.ioPattern,
+            avgQueryDurationMs: dbMetrics.latency || 10,
+          }
+        );
+
+        verboseLog('Database capacity modeling', {
+          effectiveCapacity: capacityResult.effectiveCapacity,
+          connectionPoolUtilization: capacityResult.connectionPoolUtilization,
+          queryLatencyMultiplier: capacityResult.queryLatencyMultiplier,
+          ioLatencyMultiplier: capacityResult.ioLatencyMultiplier,
+          warnings: capacityResult.warnings,
+        });
+
+        // Adjust metrics based on capacity modeling
+        const capacityFactor = capacityResult.effectiveCapacity / Math.max(dbReadRps + dbWriteRps, 1);
+        if (capacityFactor < 1) {
+          // Database is overloaded
+          dbMetrics.errorRate = this.combineErrorRates(
+            dbMetrics.errorRate,
+            Math.min(0.5, (1 - capacityFactor) * 0.3) // Up to 30% additional errors from overload
+          );
+          dbMetrics.latency = (dbMetrics.latency || 10) * capacityResult.queryLatencyMultiplier;
+          if (dbMetrics.readLatency) {
+            dbMetrics.readLatency *= capacityResult.queryLatencyMultiplier;
+          }
+          if (dbMetrics.writeLatency) {
+            dbMetrics.writeLatency *= capacityResult.queryLatencyMultiplier;
+          }
+        }
+
+        // Add capacity warnings to component metrics
+        if (capacityResult.warnings.length > 0) {
+          dbMetrics.warnings = [...(dbMetrics.warnings || []), ...capacityResult.warnings];
+        }
+      }
+
+      // Apply failure injection effects to database
+      const dbFailureEffect = failureEffects.get(db.id);
+      if (dbFailureEffect && dbFailureEffect.isAffected) {
+        dbMetrics = this.applyFailureEffect(dbMetrics, dbFailureEffect);
+      }
+
+      componentMetrics.set(db.id, dbMetrics);
+      combinedErrorRate = this.combineErrorRates(
+        combinedErrorRate,
+        dbMetrics.errorRate
+      );
+      totalCost += dbMetrics.cost;
+      if (dbMetrics.downtime) {
+        availability = Math.max(0, 1 - dbMetrics.downtime / testCase.duration);
+      }
     }
 
     // CDN (if present and reachable)
@@ -401,17 +784,98 @@ export class SimulationEngine {
       if (unreachableFrac >= 0.999) availability = 0;
     }
 
-    const p50Latency =
+    let p50Latency =
       totalRps > 0
         ? (readRps * readLatency + writeRps * writeLatency) / totalRps
         : 0;
 
-    // Calculate full percentile distribution using realistic multipliers
-    // Based on typical distributed system characteristics
-    const p90Latency = p50Latency * 1.3;  // 90th percentile ~1.3x median
-    const p95Latency = p50Latency * 1.4;  // 95th percentile ~1.4x median
-    const p99Latency = p50Latency * 1.8;  // 99th percentile ~1.8x median (was 1.5x)
-    const p999Latency = p50Latency * 3.0; // 99.9th percentile ~3x median (tail latency)
+    // Apply reliability patterns (retry, circuit breaker, timeout, queue)
+    let reliabilityWarnings: string[] = [];
+    let effectiveRps = totalRps;
+
+    // Only apply if any reliability feature flag is enabled
+    const anyReliabilityEnabled =
+      isEnabled('ENABLE_RETRY_LOGIC') ||
+      isEnabled('ENABLE_CIRCUIT_BREAKER') ||
+      isEnabled('ENABLE_TIMEOUT_ENFORCEMENT') ||
+      isEnabled('ENABLE_BACKPRESSURE');
+
+    if (anyReliabilityEnabled && totalRps > 0) {
+      const reliabilityResult = calculateCombinedReliabilityEffect(
+        totalRps,
+        combinedErrorRate,
+        p50Latency,
+        p50Latency * 0.3, // Estimate variance as 30% of mean
+        this.retryConfig,
+        this.circuitBreakerConfig,
+        this.timeoutConfig,
+        this.queueConfig
+      );
+
+      // Update metrics with reliability effects
+      effectiveRps = reliabilityResult.effectiveRps;
+      combinedErrorRate = this.combineErrorRates(
+        combinedErrorRate,
+        reliabilityResult.effectiveErrorRate - combinedErrorRate
+      );
+      p50Latency = reliabilityResult.effectiveLatencyMs;
+      reliabilityWarnings = reliabilityResult.warnings;
+
+      verboseLog('Reliability patterns applied', {
+        originalRps: totalRps,
+        effectiveRps: reliabilityResult.effectiveRps,
+        originalErrorRate: combinedErrorRate,
+        effectiveErrorRate: reliabilityResult.effectiveErrorRate,
+        originalLatency: p50Latency,
+        effectiveLatency: reliabilityResult.effectiveLatencyMs,
+        warnings: reliabilityResult.warnings,
+      });
+
+      // Add reliability warnings to app server metrics (if present)
+      if (appId && reliabilityWarnings.length > 0) {
+        const appMetrics = componentMetrics.get(appId);
+        if (appMetrics) {
+          appMetrics.warnings = [
+            ...(appMetrics.warnings || []),
+            ...reliabilityWarnings,
+          ];
+        }
+      }
+    }
+
+    // Calculate full percentile distribution
+    // Uses feature flag to switch between legacy (hardcoded multipliers) and accurate (statistical) calculation
+    const componentCount = pathToAppComponents.length + (cache ? 1 : 0) + 1; // +1 for DB
+    const cacheHitRatio = cache ? (1 - missRatio) : 0;
+    const maxUtilization = Math.max(
+      ...Array.from(componentMetrics.values()).map(m => m.utilization || 0)
+    );
+    const loadFactor = Math.min(1, maxUtilization);
+
+    verboseLog('Calculating percentiles', {
+      p50Latency,
+      componentCount,
+      cacheHitRatio,
+      loadFactor,
+      useAccuratePercentiles: isEnabled('USE_ACCURATE_PERCENTILES'),
+    });
+
+    const percentiles = calculateRequestPercentiles(
+      readLatency,
+      writeLatency,
+      readRps,
+      writeRps,
+      {
+        componentCount,
+        cacheHitRatio,
+        loadFactor,
+      }
+    );
+
+    const p90Latency = percentiles.p90;
+    const p95Latency = percentiles.p95;
+    const p99Latency = percentiles.p99;
+    const p999Latency = percentiles.p999;
 
     // Get flow visualization (components and traffic flow engine already built)
     // Note: Flow visualization is optional and runs on a sample of requests
@@ -447,6 +911,71 @@ export class SimulationEngine {
   private combineErrorRates(rate1: number, rate2: number): number {
     const successRate = (1 - rate1) * (1 - rate2);
     return 1 - successRate;
+  }
+
+  /**
+   * Apply failure injection effects to component metrics
+   */
+  private applyFailureEffect(
+    metrics: ComponentMetrics,
+    effect: ReturnType<typeof calculateFailureEffect>
+  ): ComponentMetrics {
+    const adjustedMetrics = { ...metrics };
+
+    // Apply latency multiplier
+    if (effect.latencyMultiplier === Infinity) {
+      // Component is completely down
+      adjustedMetrics.latency = 30000; // 30 second timeout
+      adjustedMetrics.errorRate = 1.0;
+      adjustedMetrics.utilization = 0;
+      adjustedMetrics.downtime = (adjustedMetrics.downtime || 0) + 1; // Mark as down
+    } else {
+      adjustedMetrics.latency = (metrics.latency || 0) * effect.latencyMultiplier;
+      if (adjustedMetrics.readLatency) {
+        adjustedMetrics.readLatency *= effect.latencyMultiplier;
+      }
+      if (adjustedMetrics.writeLatency) {
+        adjustedMetrics.writeLatency *= effect.latencyMultiplier;
+      }
+    }
+
+    // Apply error rate increase
+    adjustedMetrics.errorRate = this.combineErrorRates(
+      metrics.errorRate,
+      effect.errorRateIncrease
+    );
+
+    // Apply availability factor
+    if (effect.availabilityFactor < 1) {
+      // Reduce effective capacity
+      adjustedMetrics.utilization = Math.min(
+        1,
+        (metrics.utilization || 0) / effect.availabilityFactor
+      );
+
+      // Add partial failure to error rate
+      const unavailabilityError = 1 - effect.availabilityFactor;
+      adjustedMetrics.errorRate = this.combineErrorRates(
+        adjustedMetrics.errorRate,
+        unavailabilityError * 0.5 // 50% of unavailable capacity causes errors
+      );
+    }
+
+    // Add failure description to warnings
+    if (!adjustedMetrics.warnings) {
+      adjustedMetrics.warnings = [];
+    }
+    adjustedMetrics.warnings.push(effect.failureDescription);
+
+    verboseLog('Applied failure effect', {
+      originalLatency: metrics.latency,
+      adjustedLatency: adjustedMetrics.latency,
+      originalErrorRate: metrics.errorRate,
+      adjustedErrorRate: adjustedMetrics.errorRate,
+      failureDescription: effect.failureDescription,
+    });
+
+    return adjustedMetrics;
   }
 
   /**

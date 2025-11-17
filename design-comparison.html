@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Design UI - Before & After</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .gradient-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .gradient-success {
+            background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+        }
+        .gradient-warning {
+            background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+        }
+        .gradient-danger {
+            background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #EEF2FF 0%, #F3E8FF 100%);
+        }
+        .glassmorphism {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="max-w-7xl mx-auto p-8">
+        <!-- Header -->
+        <div class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">System Design UI Redesign</h1>
+            <p class="text-lg text-gray-600">Current Design vs. Proposed Modern Design (2025)</p>
+        </div>
+
+        <!-- SECTION 1: Problem Catalog Cards -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">1. Problem Catalog Cards</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- BEFORE -->
+                <div>
+                    <div class="bg-red-100 border-l-4 border-red-500 p-4 mb-4">
+                        <h3 class="text-lg font-bold text-red-900">❌ CURRENT (2015 Style)</h3>
+                    </div>
+                    
+                    <!-- Current Card Design -->
+                    <div class="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer p-4 border border-gray-200 hover:border-blue-400">
+                        <!-- Title -->
+                        <h3 class="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">
+                            Design a URL Shortener (TinyURL)
+                        </h3>
+
+                        <!-- Description -->
+                        <p class="text-xs text-gray-600 mb-3 line-clamp-2">
+                            Build a scalable URL shortening service that converts long URLs into short, shareable links with analytics tracking.
+                        </p>
+
+                        <!-- Requirements Preview -->
+                        <div class="space-y-1 mb-3">
+                            <div class="flex items-center text-xs text-gray-500">
+                                <span class="font-medium mr-2">📊</span>
+                                <span class="truncate">1M URLs/day, 10M redirects/day</span>
+                            </div>
+                            <div class="flex items-center text-xs text-gray-500">
+                                <span class="font-medium mr-2">⚡</span>
+                                <span>p99 &lt; 100ms</span>
+                            </div>
+                        </div>
+
+                        <!-- Badges -->
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-2 py-1 text-xs font-medium bg-purple-100 text-purple-800 rounded-full">
+                                🏢 Google
+                            </span>
+                            <span class="px-2 py-1 text-[10px] font-semibold rounded-full bg-purple-100 text-purple-800">
+                                Core Track · Stage 1
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Issues List -->
+                    <div class="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                        <h4 class="font-semibold text-sm text-gray-900 mb-2">Issues:</h4>
+                        <ul class="text-xs text-gray-600 space-y-1">
+                            <li>• Text too small (text-xs, text-sm)</li>
+                            <li>• Cramped spacing (p-4)</li>
+                            <li>• Boring gray colors</li>
+                            <li>• Tiny badges hard to read</li>
+                            <li>• No visual hierarchy</li>
+                            <li>• Minimal hover effect</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- AFTER -->
+                <div>
+                    <div class="bg-green-100 border-l-4 border-green-500 p-4 mb-4">
+                        <h3 class="text-lg font-bold text-green-900">✅ PROPOSED (2025 Style)</h3>
+                    </div>
+                    
+                    <!-- New Card Design -->
+                    <div class="group relative glassmorphism rounded-2xl p-6 border border-gray-200/50 hover:border-blue-400/50 shadow-sm card-hover cursor-pointer">
+                        <!-- Top: Category badge with gradient -->
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="px-3 py-1.5 text-xs font-semibold rounded-full gradient-primary text-white shadow-md">
+                                Storage & Caching
+                            </span>
+                            <span class="px-3 py-1.5 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                Intermediate
+                            </span>
+                        </div>
+
+                        <!-- Title - Larger, more readable -->
+                        <h3 class="text-lg font-bold text-gray-900 mb-3 group-hover:text-blue-600 transition-colors">
+                            Design a URL Shortener (TinyURL)
+                        </h3>
+
+                        <!-- Description - More space -->
+                        <p class="text-sm text-gray-600 mb-4 line-clamp-3 leading-relaxed">
+                            Build a scalable URL shortening service that converts long URLs into short, shareable links with analytics tracking.
+                        </p>
+
+                        <!-- Stats with icons - More visual -->
+                        <div class="flex items-center gap-4 text-sm text-gray-600 mb-4">
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xl">📊</span>
+                                <span class="font-medium">1M URLs/day</span>
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-xl">⚡</span>
+                                <span class="font-medium">p99 &lt; 100ms</span>
+                            </div>
+                        </div>
+
+                        <!-- Bottom badges - Larger, clearer -->
+                        <div class="flex flex-wrap gap-2">
+                            <span class="px-3 py-1.5 text-sm font-medium bg-purple-100 text-purple-800 rounded-lg flex items-center gap-1">
+                                🏢 Google
+                            </span>
+                            <span class="px-3 py-1.5 text-sm font-semibold rounded-lg bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-sm">
+                                Core Track · Stage 1
+                            </span>
+                        </div>
+
+                        <!-- Hover glow effect -->
+                        <div class="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-400/0 via-purple-400/0 to-pink-400/0 group-hover:from-blue-400/10 group-hover:via-purple-400/10 group-hover:to-pink-400/10 transition-all duration-300 pointer-events-none"></div>
+                    </div>
+
+                    <!-- Improvements List -->
+                    <div class="mt-4 bg-green-50 rounded-lg p-4 border border-green-200">
+                        <h4 class="font-semibold text-sm text-gray-900 mb-2">Improvements:</h4>
+                        <ul class="text-xs text-gray-600 space-y-1">
+                            <li>✓ Larger text (text-sm, text-lg)</li>
+                            <li>✓ Better spacing (p-6)</li>
+                            <li>✓ Gradient badges for visual interest</li>
+                            <li>✓ Glassmorphism effect</li>
+                            <li>✓ Clear visual hierarchy</li>
+                            <li>✓ Smooth hover animations</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 2: Difficulty Columns -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">2. Difficulty Column Headers</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- BEFORE -->
+                <div>
+                    <div class="bg-red-100 border-l-4 border-red-500 p-4 mb-4">
+                        <h3 class="text-lg font-bold text-red-900">❌ CURRENT</h3>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Beginner -->
+                        <div class="bg-green-100 rounded-t-lg p-4 border-b-4 border-green-600">
+                            <h2 class="text-lg font-bold text-green-900 flex items-center justify-between">
+                                <span>🟢 Beginner</span>
+                                <span class="text-sm bg-green-200 px-2 py-1 rounded-full">12</span>
+                            </h2>
+                        </div>
+
+                        <!-- Intermediate -->
+                        <div class="bg-yellow-100 rounded-t-lg p-4 border-b-4 border-yellow-600">
+                            <h2 class="text-lg font-bold text-yellow-900 flex items-center justify-between">
+                                <span>🟡 Intermediate</span>
+                                <span class="text-sm bg-yellow-200 px-2 py-1 rounded-full">45</span>
+                            </h2>
+                        </div>
+
+                        <!-- Advanced -->
+                        <div class="bg-red-100 rounded-t-lg p-4 border-b-4 border-red-600">
+                            <h2 class="text-lg font-bold text-red-900 flex items-center justify-between">
+                                <span>🔴 Advanced</span>
+                                <span class="text-sm bg-red-200 px-2 py-1 rounded-full">28</span>
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AFTER -->
+                <div>
+                    <div class="bg-green-100 border-l-4 border-green-500 p-4 mb-4">
+                        <h3 class="text-lg font-bold text-green-900">✅ PROPOSED</h3>
+                    </div>
+                    
+                    <div class="space-y-4">
+                        <!-- Beginner -->
+                        <div class="gradient-success rounded-xl p-5 shadow-lg">
+                            <h2 class="text-xl font-bold text-white flex items-center justify-between">
+                                <span class="flex items-center gap-2">
+                                    <span class="text-2xl">🎯</span>
+                                    <span>Beginner</span>
+                                </span>
+                                <span class="text-lg bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg">12</span>
+                            </h2>
+                            <p class="text-white/90 text-sm mt-2">Perfect for getting started</p>
+                        </div>
+
+                        <!-- Intermediate -->
+                        <div class="gradient-warning rounded-xl p-5 shadow-lg">
+                            <h2 class="text-xl font-bold text-white flex items-center justify-between">
+                                <span class="flex items-center gap-2">
+                                    <span class="text-2xl">🚀</span>
+                                    <span>Intermediate</span>
+                                </span>
+                                <span class="text-lg bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg">45</span>
+                            </h2>
+                            <p class="text-white/90 text-sm mt-2">Build real-world systems</p>
+                        </div>
+
+                        <!-- Advanced -->
+                        <div class="gradient-danger rounded-xl p-5 shadow-lg">
+                            <h2 class="text-xl font-bold text-white flex items-center justify-between">
+                                <span class="flex items-center gap-2">
+                                    <span class="text-2xl">⚡</span>
+                                    <span>Advanced</span>
+                                </span>
+                                <span class="text-lg bg-white/20 backdrop-blur-sm px-3 py-1 rounded-lg">28</span>
+                            </h2>
+                            <p class="text-white/90 text-sm mt-2">Master complex architectures</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 3: Top Navigation Bar -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">3. Top Navigation & Header</h2>
+            
+            <div class="space-y-8">
+                <!-- BEFORE -->
+                <div>
+                    <div class="bg-red-100 border-l-4 border-red-500 p-4 mb-4">
+                        <h3 class="text-lg font-bold text-red-900">❌ CURRENT</h3>
+                    </div>
+                    
+                    <div class="bg-white border-b border-gray-200 p-6">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h1 class="text-3xl font-bold text-gray-900">System Design Problems</h1>
+                                <p class="text-sm text-gray-600 mt-1">658 total • 85 core • 658 shown</p>
+                            </div>
+                        </div>
+                        <input
+                            type="text"
+                            placeholder="Search problems..."
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        />
+                    </div>
+                </div>
+
+                <!-- AFTER -->
+                <div>
+                    <div class="bg-green-100 border-l-4 border-green-500 p-4 mb-4">
+                        <h3 class="text-lg font-bold text-green-900">✅ PROPOSED</h3>
+                    </div>
+                    
+                    <div class="gradient-bg rounded-2xl p-8 shadow-lg">
+                        <div class="flex items-center justify-between mb-6">
+                            <div>
+                                <h1 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                                    System Design Problems
+                                </h1>
+                                <div class="flex items-center gap-4 text-sm text-gray-600">
+                                    <span class="flex items-center gap-1">
+                                        <span class="text-lg">📚</span>
+                                        <span class="font-semibold">658</span> total
+                                    </span>
+                                    <span class="text-gray-400">•</span>
+                                    <span class="flex items-center gap-1">
+                                        <span class="text-lg">⭐</span>
+                                        <span class="font-semibold">85</span> core
+                                    </span>
+                                    <span class="text-gray-400">•</span>
+                                    <span class="flex items-center gap-1">
+                                        <span class="text-lg">✅</span>
+                                        <span class="font-semibold">23</span> completed
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Search with icon -->
+                        <div class="relative">
+                            <input
+                                type="text"
+                                placeholder="Search by title, category, or company..."
+                                class="w-full px-5 py-4 pl-12 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-sm text-base"
+                            />
+                            <span class="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔍</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 4: Filter Buttons -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">4. Track Filter Buttons</h2>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- BEFORE -->
+                <div>
+                    <div class="bg-red-100 border-l-4 border-red-500 p-4 mb-4">
+                        <h3 class="text-lg font-bold text-red-900">❌ CURRENT</h3>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg border border-gray-200">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-sm text-gray-600">Track:</span>
+                            <button class="px-3 py-1 text-xs font-medium rounded-lg bg-blue-600 text-white">
+                                All Problems
+                            </button>
+                            <button class="px-3 py-1 text-xs font-medium rounded-lg bg-gray-100 text-gray-700">
+                                Core Track
+                            </button>
+                            <button class="px-3 py-1 text-xs font-medium rounded-lg bg-gray-100 text-gray-700">
+                                NFR Thinking (42)
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AFTER -->
+                <div>
+                    <div class="bg-green-100 border-l-4 border-green-500 p-4 mb-4">
+                        <h3 class="text-lg font-bold text-green-900">✅ PROPOSED</h3>
+                    </div>
+                    
+                    <div class="bg-white p-6 rounded-lg border border-gray-200">
+                        <div class="flex items-center gap-3 flex-wrap">
+                            <span class="text-sm font-semibold text-gray-700">Filter by Track:</span>
+                            <button class="px-4 py-2.5 text-sm font-semibold rounded-xl gradient-primary text-white shadow-md hover:shadow-lg transition-all">
+                                All Problems
+                            </button>
+                            <button class="px-4 py-2.5 text-sm font-medium rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all">
+                                Core Track
+                            </button>
+                            <button class="px-4 py-2.5 text-sm font-medium rounded-xl bg-orange-100 text-orange-700 hover:bg-orange-200 transition-all flex items-center gap-2">
+                                <span>NFR Thinking</span>
+                                <span class="bg-orange-200 px-2 py-0.5 rounded-full text-xs font-bold">42</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 5: Full Page Comparison -->
+        <div class="mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">5. Full Catalog View Comparison</h2>
+            
+            <div class="bg-yellow-100 border-l-4 border-yellow-500 p-4 mb-4">
+                <p class="text-sm text-yellow-900">
+                    <strong>Note:</strong> Scroll down to see the full comparison. The new design has better spacing, modern gradients, and improved visual hierarchy.
+                </p>
+            </div>
+
+            <!-- Side by side comparison -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- BEFORE - Current Design -->
+                <div class="border-4 border-red-500 rounded-lg overflow-hidden">
+                    <div class="bg-red-500 text-white p-3 font-bold">
+                        ❌ CURRENT DESIGN
+                    </div>
+                    <div class="bg-gray-50 p-4 h-[600px] overflow-y-auto">
+                        <!-- Simplified catalog view -->
+                        <div class="bg-white border-b border-gray-200 p-4 mb-4">
+                            <h1 class="text-2xl font-bold text-gray-900">System Design Problems</h1>
+                            <p class="text-xs text-gray-600 mt-1">658 total</p>
+                            <input type="text" placeholder="Search..." class="w-full px-3 py-2 border border-gray-300 rounded-lg mt-3 text-sm" />
+                        </div>
+                        
+                        <div class="grid grid-cols-1 gap-3">
+                            <!-- Sample cards (current style) -->
+                            <div class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+                                <h3 class="text-sm font-semibold text-gray-900 mb-1">URL Shortener</h3>
+                                <p class="text-xs text-gray-600 mb-2">Build a scalable URL shortening service...</p>
+                                <div class="flex gap-1">
+                                    <span class="px-2 py-0.5 text-[10px] bg-green-100 text-green-700 rounded-full">Beginner</span>
+                                    <span class="px-2 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded-full">Storage</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+                                <h3 class="text-sm font-semibold text-gray-900 mb-1">Rate Limiter</h3>
+                                <p class="text-xs text-gray-600 mb-2">Design a distributed rate limiting system...</p>
+                                <div class="flex gap-1">
+                                    <span class="px-2 py-0.5 text-[10px] bg-yellow-100 text-yellow-700 rounded-full">Intermediate</span>
+                                    <span class="px-2 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded-full">Gateway</span>
+                                </div>
+                            </div>
+                            
+                            <div class="bg-white rounded-lg shadow-sm p-3 border border-gray-200">
+                                <h3 class="text-sm font-semibold text-gray-900 mb-1">Distributed Cache</h3>
+                                <p class="text-xs text-gray-600 mb-2">Build a Redis-like distributed caching system...</p>
+                                <div class="flex gap-1">
+                                    <span class="px-2 py-0.5 text-[10px] bg-red-100 text-red-700 rounded-full">Advanced</span>
+                                    <span class="px-2 py-0.5 text-[10px] bg-blue-100 text-blue-700 rounded-full">Caching</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- AFTER - Proposed Design -->
+                <div class="border-4 border-green-500 rounded-lg overflow-hidden">
+                    <div class="bg-green-500 text-white p-3 font-bold">
+                        ✅ PROPOSED DESIGN
+                    </div>
+                    <div class="gradient-bg p-4 h-[600px] overflow-y-auto">
+                        <!-- Modern catalog view -->
+                        <div class="glassmorphism rounded-2xl p-6 mb-6 shadow-lg">
+                            <h1 class="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">
+                                System Design Problems
+                            </h1>
+                            <div class="flex items-center gap-3 text-sm text-gray-600 mb-4">
+                                <span>📚 <strong>658</strong> total</span>
+                                <span>⭐ <strong>85</strong> core</span>
+                            </div>
+                            <div class="relative">
+                                <input type="text" placeholder="Search by title, category..." class="w-full px-4 py-3 pl-10 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 text-sm" />
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2">🔍</span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 gap-4">
+                            <!-- Sample cards (new style) -->
+                            <div class="glassmorphism rounded-xl p-5 border border-gray-200/50 hover:border-blue-400/50 shadow-sm card-hover">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-3 py-1 text-xs font-semibold rounded-full gradient-primary text-white shadow-sm">Storage</span>
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Beginner</span>
+                                </div>
+                                <h3 class="text-base font-bold text-gray-900 mb-2">URL Shortener</h3>
+                                <p class="text-sm text-gray-600 mb-3">Build a scalable URL shortening service...</p>
+                                <div class="flex items-center gap-3 text-sm text-gray-600">
+                                    <span>📊 1M/day</span>
+                                    <span>⚡ &lt;100ms</span>
+                                </div>
+                            </div>
+                            
+                            <div class="glassmorphism rounded-xl p-5 border border-gray-200/50 hover:border-blue-400/50 shadow-sm card-hover">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-3 py-1 text-xs font-semibold rounded-full gradient-warning text-white shadow-sm">Gateway</span>
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Intermediate</span>
+                                </div>
+                                <h3 class="text-base font-bold text-gray-900 mb-2">Rate Limiter</h3>
+                                <p class="text-sm text-gray-600 mb-3">Design a distributed rate limiting system...</p>
+                                <div class="flex items-center gap-3 text-sm text-gray-600">
+                                    <span>📊 10K RPS</span>
+                                    <span>⚡ &lt;10ms</span>
+                                </div>
+                            </div>
+                            
+                            <div class="glassmorphism rounded-xl p-5 border border-gray-200/50 hover:border-blue-400/50 shadow-sm card-hover">
+                                <div class="flex items-center justify-between mb-3">
+                                    <span class="px-3 py-1 text-xs font-semibold rounded-full gradient-danger text-white shadow-sm">Caching</span>
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Advanced</span>
+                                </div>
+                                <h3 class="text-base font-bold text-gray-900 mb-2">Distributed Cache</h3>
+                                <p class="text-sm text-gray-600 mb-3">Build a Redis-like distributed caching system...</p>
+                                <div class="flex items-center gap-3 text-sm text-gray-600">
+                                    <span>📊 1M ops/s</span>
+                                    <span>⚡ &lt;1ms</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="bg-gradient-to-r from-blue-500 to-purple-600 rounded-2xl p-8 text-white">
+            <h2 class="text-3xl font-bold mb-4">Key Improvements Summary</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h3 class="text-xl font-bold mb-3">Visual Design</h3>
+                    <ul class="space-y-2 text-white/90">
+                        <li>✓ Gradient backgrounds for depth</li>
+                        <li>✓ Glassmorphism effects</li>
+                        <li>✓ Smooth hover animations</li>
+                        <li>✓ Modern rounded corners (rounded-xl, rounded-2xl)</li>
+                        <li>✓ Better shadows and elevation</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold mb-3">Typography & Layout</h3>
+                    <ul class="space-y-2 text-white/90">
+                        <li>✓ Larger, more readable text (16px base)</li>
+                        <li>✓ Better spacing (p-5, p-6 instead of p-3, p-4)</li>
+                        <li>✓ Clear visual hierarchy</li>
+                        <li>✓ Improved color contrast</li>
+                        <li>✓ Inter font for modern look</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
