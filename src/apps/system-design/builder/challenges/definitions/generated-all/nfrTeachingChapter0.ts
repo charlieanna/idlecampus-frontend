@@ -523,6 +523,208 @@ Servers needed: 15,000 / 1,400 = 10.7 → 11 servers
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Peak vs Average Load Planning',
+    subtitle: 'Learn why you must ALWAYS design for peak, not average',
+
+    objectives: [
+      'Understand traffic patterns (average, daily peak, weekend peak)',
+      'Calculate the cost of under-provisioning',
+      'Learn the difference between static and autoscaling approaches',
+      'Design for worst-case, not typical case',
+    ],
+
+    questions: [
+      {
+        id: 'avg_load',
+        step: 1,
+        category: 'throughput',
+        title: 'What is your average load?',
+        description: 'Your e-commerce API handles steady traffic most of the day.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter average RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 100000,
+          suggestedValue: 1000,
+        },
+        whyItMatters: 'Average load tells us the baseline. But here\'s the trap: many engineers provision for average and then wonder why their service crashes during lunch hour!',
+        commonMistakes: [
+          'Provisioning only for average load (causes peak-hour failures)',
+          'Not measuring traffic patterns over a full week/month',
+        ],
+        onAnswer: (answer) => {
+          return [
+            {
+              action: 'highlight',
+              reason: `Average load: ${answer} RPS. But wait - what about peak hours?`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'daily_peak',
+        step: 2,
+        category: 'throughput',
+        title: 'What is your daily peak load?',
+        description: 'E-commerce sites typically see peak traffic during lunch (12pm-1pm) and evening (7pm-9pm).',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter daily peak RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 100000,
+          suggestedValue: 8000,
+        },
+        whyItMatters: 'Daily peaks are predictable and recurring. Your service MUST handle this load every single day, or you lose customers during your busiest hours.',
+        commonMistakes: [
+          'Thinking autoscaling will save you (it has 2-3 min lag)',
+          'Not planning for daily peaks (only thinking about average)',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const avg = previousAnswers.avg_load || 1000;
+          const multiplier = (answer / avg).toFixed(1);
+          return [
+            {
+              action: 'highlight',
+              reason: `Daily peak is ${answer} RPS (${multiplier}× average). This happens EVERY day at lunch!`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'weekend_peak',
+        step: 3,
+        category: 'throughput',
+        title: 'What about weekend flash sales?',
+        description: 'Your marketing team runs flash sales every Saturday morning. Traffic can spike 10-15× normal.',
+        questionType: 'numeric_input',
+        numericConfig: {
+          placeholder: 'Enter weekend peak RPS',
+          unit: 'RPS',
+          min: 100,
+          max: 100000,
+          suggestedValue: 15000,
+        },
+        whyItMatters: 'Weekend peaks and flash sales are your TRUE worst-case scenario. You must design for the absolute peak, or accept losing revenue during high-value sales events.',
+        commonMistakes: [
+          'Thinking "flash sales only happen once a week, we can afford downtime"',
+          'Not testing architecture at peak load before launch',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const avg = previousAnswers.avg_load || 1000;
+          const multiplier = (answer / avg).toFixed(1);
+          return [
+            {
+              action: 'highlight',
+              reason: `Weekend peak: ${answer} RPS (${multiplier}× average). THIS is what you design for!`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'under_provision_scenario',
+        step: 4,
+        category: 'throughput',
+        title: 'What if you provision for average?',
+        description: 'Let\'s calculate what happens if you design for average load instead of peak.',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Provision for average (1,000 RPS)',
+            recommendation: '1 server ($100/mo)',
+            reasoning: 'At 15k RPS weekend peak → 14k requests/sec DROPPED',
+          },
+          {
+            condition: 'Provision for daily peak (8,000 RPS)',
+            recommendation: '6 servers ($600/mo)',
+            reasoning: 'Weekend flash sale → 7k requests/sec DROPPED',
+          },
+          {
+            condition: 'Provision for weekend peak (15,000 RPS)',
+            recommendation: '11 servers ($1,100/mo)',
+            reasoning: '✅ Handles all traffic, zero dropped requests',
+          },
+        ],
+        whyItMatters: 'Under-provisioning saves money short-term but costs you MUCH more in lost sales, customer frustration, and reputation damage during your most valuable traffic spikes.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'You must provision for the HIGHEST peak, or accept dropping requests during high-value events.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'calculate_servers',
+        step: 5,
+        category: 'throughput',
+        title: 'How many servers for weekend peak?',
+        description: 'Calculate servers needed for 15,000 RPS weekend peak.',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Servers = Peak RPS / (Server Capacity × 0.7)',
+          explanation: 'Weekend peak is the worst-case. Design for this!',
+          exampleInputs: {
+            'Weekend Peak RPS': 15000,
+            'Server Capacity': 2000,
+            'Effective Capacity': 1400,
+          },
+          exampleOutput: '15,000 / 1,400 = 10.7 → 11 servers',
+        },
+        whyItMatters: 'You need 11 servers to handle weekend peak. Yes, they\'ll be underutilized most of the time (only 7% utilization at average load), but that\'s the price of reliability.',
+        commonMistakes: [
+          'Thinking "11 servers is wasteful, let\'s use autoscaling"',
+          'Not accounting for autoscaling lag (2-3 minutes)',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const peakRps = previousAnswers.weekend_peak || 15000;
+          const serversNeeded = Math.ceil(peakRps / 1400);
+          return [
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: serversNeeded },
+              reason: `Adding ${serversNeeded} app servers to handle ${peakRps} RPS weekend peak.`,
+            },
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer to distribute traffic across all servers.',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client sends all requests to LB.',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes to server pool.',
+            },
+          ];
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Peak Load Planning Complete!',
+      keyTakeaways: [
+        'ALWAYS design for PEAK load, not average load',
+        'Traffic patterns: average < daily peak < weekend/event peak',
+        'Under-provisioning costs MORE than over-provisioning (lost revenue + reputation)',
+        'Autoscaling is NOT a solution for predictable daily peaks (2-3 min lag)',
+        'Your servers will be "underutilized" most of the time - that\'s OK!',
+      ],
+      nextSteps: 'Next problem: Learn how read/write ratio affects capacity planning!',
+    },
+  },
 };
 
 /**
@@ -2786,6 +2988,281 @@ Client → Load Balancer → AppServer Pool → Database (PostgreSQL)
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'When to Add a Database',
+    subtitle: 'Learn the RISKIEST axis: What happens if we LOSE data?',
+
+    objectives: [
+      'Start with NO database (in-memory first)',
+      'Ask: What happens if we lose this data?',
+      'Decision matrix: In-memory vs Cache vs Database',
+      'Understand RPO (Recovery Point Objective) requirements',
+    ],
+
+    questions: [
+      {
+        id: 'intro_durability',
+        step: 1,
+        category: 'durability',
+        title: 'The RISKIEST Question',
+        description: 'Every tutorial says "add a database," but let\'s think critically: What happens if your server crashes and you LOSE data?',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'Risk = Impact of Data Loss × Probability of Loss',
+          explanation: 'Before adding a database, ask: How risky is data loss for THIS specific data?',
+          exampleInputs: {
+            'View Counter': 'Low impact (minor inaccuracy)',
+            'User Sessions': 'Medium impact (annoying re-login)',
+            'E-commerce Orders': 'CRITICAL impact (revenue loss, legal liability)',
+          },
+          exampleOutput: 'Data criticality determines storage strategy',
+        },
+        whyItMatters: 'Databases add cost, complexity, and latency. Start with in-memory and only add persistence when data loss is UNACCEPTABLE.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 3 },
+              reason: 'Starting with AppServers (in-memory only) - NO database yet!',
+            },
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer for traffic distribution.',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client → LB → AppServers (in-memory)',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB distributes to app server pool.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'scenario_selection',
+        step: 2,
+        category: 'durability',
+        title: 'What are you building?',
+        description: 'Choose your scenario to understand durability requirements:',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'view_counter',
+            label: 'Article View Counter',
+            description: 'Track how many times articles are viewed',
+            consequence: 'Data loss impact: LOW - Users don\'t care if count is 100% accurate',
+          },
+          {
+            id: 'user_sessions',
+            label: 'User Login Sessions',
+            description: 'Track who is currently logged in',
+            consequence: 'Data loss impact: MEDIUM - Users hate re-logging in',
+          },
+          {
+            id: 'ecommerce_orders',
+            label: 'E-commerce Orders',
+            description: 'Store customer purchases and payments',
+            consequence: 'Data loss impact: CRITICAL - Revenue loss, legal liability',
+          },
+        ],
+        whyItMatters: 'Different data has different durability requirements. View counters can be approximate, but financial transactions must be durable!',
+        onAnswer: (answer) => {
+          return [
+            {
+              action: 'highlight',
+              reason: `You chose: ${answer}. Let's analyze durability requirements...`,
+            },
+          ];
+        },
+      },
+      {
+        id: 'impact_analysis',
+        step: 3,
+        category: 'durability',
+        title: 'Impact Analysis',
+        description: 'Ask these 4 questions about your data:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'Is it critical to product experience?',
+            recommendation: 'View Counter: NO | Sessions: ANNOYING | Orders: YES',
+            reasoning: 'How much do users care if this data is lost?',
+          },
+          {
+            condition: 'Is it a security/compliance issue?',
+            recommendation: 'View Counter: NO | Sessions: MODERATE | Orders: YES (PCI)',
+            reasoning: 'Legal requirements? Financial regulations?',
+          },
+          {
+            condition: 'Must we reconstruct on loss?',
+            recommendation: 'View Counter: NO | Sessions: NO | Orders: YES (7yr retention)',
+            reasoning: 'Can we rebuild from other sources?',
+          },
+          {
+            condition: 'What is acceptable RPO?',
+            recommendation: 'View Counter: ∞ | Sessions: 5min | Orders: 0 seconds',
+            reasoning: 'RPO = Recovery Point Objective (how much data loss OK?)',
+          },
+        ],
+        whyItMatters: 'RPO (Recovery Point Objective) determines your storage strategy. RPO = 0 means ZERO data loss acceptable → need database with ACID transactions!',
+        onAnswer: (answer, previousAnswers) => {
+          const scenario = previousAnswers.scenario_selection;
+          if (scenario === 'view_counter') {
+            return [
+              {
+                action: 'highlight',
+                reason: '✅ View counters: In-memory is FINE! Data loss is acceptable. NO database needed.',
+              },
+            ];
+          } else if (scenario === 'user_sessions') {
+            return [
+              {
+                action: 'highlight',
+                reason: '⚠️ User sessions: Use Redis/Memcached (persistent cache). Not a full database, but provides snapshots.',
+              },
+            ];
+          } else {
+            return [
+              {
+                action: 'highlight',
+                reason: '❌ E-commerce orders: MUST HAVE DATABASE! Data loss is unacceptable.',
+              },
+            ];
+          }
+        },
+      },
+      {
+        id: 'storage_decision',
+        step: 4,
+        category: 'durability',
+        title: 'Choose Your Storage Strategy',
+        description: 'Based on your durability requirements, select the right storage:',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'in_memory',
+            label: 'In-Memory Only (HashMap)',
+            description: 'No persistence, fastest, cheapest',
+            consequence: 'Data lost on crash. Good for: view counters, temporary data, caches',
+          },
+          {
+            id: 'persistent_cache',
+            label: 'Persistent Cache (Redis/Memcached)',
+            description: 'Periodic snapshots, TTL expiry',
+            consequence: 'Small data loss window (last 5 min). Good for: sessions, recent activity',
+          },
+          {
+            id: 'database',
+            label: 'ACID Database (PostgreSQL/MySQL)',
+            description: 'Full durability, ACID transactions',
+            consequence: 'Zero data loss. Good for: financial data, user accounts, orders',
+          },
+        ],
+        whyItMatters: 'This is the core trade-off: Durability vs Speed vs Cost. Choose based on data criticality, not what tutorials say!',
+        commonMistakes: [
+          'Adding a database "just because" (overkill for temporary data)',
+          'Using in-memory for financial data (legal liability)',
+          'Not considering Redis for session data (simpler than PostgreSQL)',
+        ],
+        onAnswer: (answer, previousAnswers) => {
+          const scenario = previousAnswers.scenario_selection;
+
+          if (answer === 'database') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'storage',
+                reason: 'Adding PostgreSQL for durable storage (ACID guarantees).',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'storage',
+                reason: 'AppServers persist critical data to database.',
+              },
+            ];
+          } else if (answer === 'persistent_cache') {
+            return [
+              {
+                action: 'add_component',
+                componentType: 'cache',
+                reason: 'Adding Redis for persistent session storage (AOF/RDB snapshots).',
+              },
+              {
+                action: 'add_connection',
+                from: 'compute',
+                to: 'cache',
+                reason: 'AppServers store sessions in Redis.',
+              },
+            ];
+          } else {
+            return [
+              {
+                action: 'highlight',
+                reason: 'In-memory only - NO additional components! Data stored in AppServer RAM.',
+              },
+            ];
+          }
+        },
+      },
+      {
+        id: 'decision_summary',
+        step: 5,
+        category: 'durability',
+        title: 'Decision Matrix Summary',
+        description: 'Here\'s the complete decision framework for durability:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'RPO = ∞ (data loss OK)',
+            recommendation: 'In-Memory (HashMap)',
+            reasoning: 'View counters, temporary caches, metrics',
+          },
+          {
+            condition: 'RPO = 1-5 minutes',
+            recommendation: 'Persistent Cache (Redis)',
+            reasoning: 'User sessions, recent activity, leaderboards',
+          },
+          {
+            condition: 'RPO = 0 (zero data loss)',
+            recommendation: 'ACID Database (PostgreSQL)',
+            reasoning: 'Financial transactions, user accounts, orders',
+          },
+        ],
+        whyItMatters: 'RPO (Recovery Point Objective) is the KEY metric. It tells you how much data loss is acceptable, which determines your storage choice.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Remember: Start with NO database and only add when RPO requires it!',
+            },
+          ];
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Durability Requirements Complete!',
+      keyTakeaways: [
+        'START with NO database - use in-memory storage first',
+        'Ask: What happens if we LOSE this data? (RISKIEST axis)',
+        'RPO = Recovery Point Objective (how much data loss OK?)',
+        'Decision matrix: RPO = ∞ → In-memory | RPO = 5min → Redis | RPO = 0 → Database',
+        'Databases add cost/complexity - only use when data loss is UNACCEPTABLE',
+      ],
+      nextSteps: 'Next: Learn about durability LEVELS (fsync, WAL, replication)!',
+    },
+  },
 };
 
 /**
@@ -4141,6 +4618,272 @@ def get_feed(user_id):
       },
     },
   ],
+
+  wizardFlow: {
+    enabled: true,
+    title: 'Read-After-Write Consistency',
+    subtitle: 'Learn session guarantees and how to implement them',
+
+    objectives: [
+      'Understand the 4 session guarantees',
+      'Learn 3 techniques: read-from-leader, sticky sessions, version tracking',
+      'Implement read-after-write consistency with Redis',
+      'Know when read-after-write is needed vs eventual consistency',
+    ],
+
+    questions: [
+      {
+        id: 'consistency_problem',
+        step: 1,
+        category: 'consistency',
+        title: 'The Consistency Problem',
+        description: 'User posts a tweet and immediately refreshes. Will they see their own tweet?',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'always_yes',
+            label: 'Always YES (by default)',
+            description: 'Databases automatically show you what you wrote',
+            consequence: '❌ WRONG! With replicas, your read might go to a replica that hasn\'t synced yet.',
+          },
+          {
+            id: 'maybe',
+            label: 'MAYBE (depends on architecture)',
+            description: 'You might or might not see your write',
+            consequence: '✅ CORRECT! With replication lag, you might read from a stale replica.',
+          },
+          {
+            id: 'always_no',
+            label: 'Always NO',
+            description: 'Distributed systems never show your own writes',
+            consequence: '❌ WRONG! We can implement read-after-write with the right techniques.',
+          },
+        ],
+        whyItMatters: 'This is the READ-AFTER-WRITE problem. With database replication, writes go to the PRIMARY but reads can go to REPLICAS. Replication lag = stale data!',
+        commonMistakes: [
+          'Assuming databases "just work" (ignoring replication lag)',
+          'Not testing consistency in distributed environments',
+        ],
+        onAnswer: (answer) => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'With replicas, replication lag can cause users to NOT see their own writes immediately!',
+            },
+          ];
+        },
+      },
+      {
+        id: 'session_guarantees',
+        step: 2,
+        category: 'consistency',
+        title: 'The 4 Session Guarantees',
+        description: 'There are 4 types of consistency guarantees for user sessions:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: '1. Read-After-Write',
+            recommendation: 'User sees their own writes',
+            reasoning: 'After I post a tweet, I MUST see it when I refresh',
+          },
+          {
+            condition: '2. Monotonic Reads',
+            recommendation: 'Reads never go backwards in time',
+            reasoning: 'If I saw a tweet once, I will ALWAYS see it (no time travel)',
+          },
+          {
+            condition: '3. Monotonic Writes',
+            recommendation: 'Writes happen in order',
+            reasoning: 'If I post Tweet A then Tweet B, they appear in that order',
+          },
+          {
+            condition: '4. Consistent Prefix Reads',
+            recommendation: 'See writes in causal order',
+            reasoning: 'If someone replies to Tweet A, you see Tweet A first',
+          },
+        ],
+        whyItMatters: 'Read-after-write is the MOST important guarantee. Users expect to see their own writes immediately!',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Today we\'re implementing Read-After-Write consistency (guarantee #1).',
+            },
+          ];
+        },
+      },
+      {
+        id: 'implementation_choice',
+        step: 3,
+        category: 'consistency',
+        title: 'Choose Implementation Technique',
+        description: 'There are 3 ways to implement read-after-write consistency:',
+        questionType: 'single_choice',
+        options: [
+          {
+            id: 'read_from_leader',
+            label: '1. Read-from-Leader (after write)',
+            description: 'Track recent writers, route their reads to PRIMARY',
+            consequence: '✅ Best approach! Use Redis to track recent writers (30s TTL). If user wrote recently → read from PRIMARY, else → read from REPLICA.',
+          },
+          {
+            id: 'sticky_sessions',
+            label: '2. Sticky Sessions',
+            description: 'Route user to same replica always',
+            consequence: '⚠️ Doesn\'t guarantee read-after-write (replica might still be stale). Use for monotonic reads instead.',
+          },
+          {
+            id: 'version_tracking',
+            label: '3. Version Tracking',
+            description: 'Client tracks version, waits for replica to catch up',
+            consequence: '⚠️ Complex! Client must track versions and retry. Only use for strict ordering requirements.',
+          },
+        ],
+        whyItMatters: 'Read-from-leader is the simplest and most reliable approach. Track who wrote recently, route their reads to the PRIMARY (source of truth).',
+        commonMistakes: [
+          'Using sticky sessions (doesn\'t solve read-after-write)',
+          'Always reading from PRIMARY (defeats the purpose of replicas)',
+          'Not setting TTL on writer tracking (memory leak)',
+        ],
+        onAnswer: (answer) => {
+          if (answer === 'read_from_leader') {
+            return [
+              {
+                action: 'highlight',
+                reason: 'Read-from-leader: We\'ll use Redis to track recent writers for 30 seconds!',
+              },
+            ];
+          } else {
+            return [
+              {
+                action: 'highlight',
+                reason: 'Consider read-from-leader instead - it\'s simpler and more reliable!',
+              },
+            ];
+          }
+        },
+      },
+      {
+        id: 'architecture_design',
+        step: 4,
+        category: 'consistency',
+        title: 'Build the Architecture',
+        description: 'Let\'s implement read-from-leader with Redis tracking:',
+        questionType: 'calculation',
+        calculation: {
+          formula: 'if (redis.exists("recent_writer:" + user_id)) { read from PRIMARY } else { read from REPLICA }',
+          explanation: 'After a write, set Redis key with 30s TTL. Reads check Redis first.',
+          exampleInputs: {
+            'On Write': 'redis.setex("recent_writer:user123", 30, "1")',
+            'On Read': 'if (redis.exists("recent_writer:user123")) → PRIMARY else → REPLICA',
+            'After 30s': 'TTL expires → back to REPLICA (faster reads)',
+          },
+          exampleOutput: 'Read-after-write guaranteed for 30 seconds post-write',
+        },
+        whyItMatters: '30-second TTL is enough for users to see their own write immediately, then we route back to replicas for performance.',
+        onAnswer: () => {
+          return [
+            {
+              action: 'add_component',
+              componentType: 'load_balancer',
+              reason: 'Load balancer to route traffic.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'compute',
+              config: { count: 3 },
+              reason: 'App servers to handle requests.',
+            },
+            {
+              action: 'add_component',
+              componentType: 'cache',
+              reason: 'Redis to track recent writers (recent_writer:{user_id} with 30s TTL).',
+            },
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              reason: 'PostgreSQL Primary (writes + recent-writer reads).',
+            },
+            {
+              action: 'add_component',
+              componentType: 'storage',
+              reason: 'PostgreSQL Replica (regular reads).',
+            },
+            {
+              action: 'add_connection',
+              from: 'client',
+              to: 'load_balancer',
+              reason: 'Client → LB',
+            },
+            {
+              action: 'add_connection',
+              from: 'load_balancer',
+              to: 'compute',
+              reason: 'LB → App Servers',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'cache',
+              reason: 'App Server checks Redis for recent writer flag.',
+            },
+            {
+              action: 'add_connection',
+              from: 'compute',
+              to: 'storage',
+              reason: 'App Server writes to PRIMARY, reads from PRIMARY if recent writer.',
+            },
+          ];
+        },
+      },
+      {
+        id: 'flow_walkthrough',
+        step: 5,
+        category: 'consistency',
+        title: 'Read-After-Write Flow',
+        description: 'Here\'s how read-after-write works step-by-step:',
+        questionType: 'decision_matrix',
+        decisionMatrix: [
+          {
+            condition: 'User posts tweet (WRITE)',
+            recommendation: '1. Write to PRIMARY\n2. Set Redis: recent_writer:user123 = 1 (30s TTL)',
+            reasoning: 'Mark this user as a recent writer',
+          },
+          {
+            condition: 'User refreshes immediately (READ)',
+            recommendation: '1. Check Redis: recent_writer:user123 exists\n2. READ FROM PRIMARY',
+            reasoning: 'Recent writer → read from source of truth',
+          },
+          {
+            condition: 'User refreshes after 31 seconds (READ)',
+            recommendation: '1. Check Redis: recent_writer:user123 expired\n2. READ FROM REPLICA',
+            reasoning: 'Not recent anymore → use fast replica reads',
+          },
+        ],
+        whyItMatters: 'This pattern gives you consistency when you need it (immediately after write) and performance when you don\'t (regular reads).',
+        onAnswer: () => {
+          return [
+            {
+              action: 'highlight',
+              reason: 'Read-from-leader pattern: Recent writers → PRIMARY, everyone else → REPLICA!',
+            },
+          ];
+        },
+      },
+    ],
+
+    summary: {
+      title: 'Read-After-Write Consistency Complete!',
+      keyTakeaways: [
+        '4 session guarantees: Read-after-write, Monotonic reads, Monotonic writes, Consistent prefix',
+        'Read-after-write = users see their own writes immediately',
+        'Implementation: Track recent writers in Redis (30s TTL)',
+        'Read flow: Recent writer → PRIMARY, else → REPLICA',
+        'Trade-off: Consistency for recent writers, performance for everyone else',
+      ],
+      nextSteps: 'Next: Learn about consistency LEVELS (Linearizability, Causal, Eventual)!',
+    },
+  },
 };
 
 /**
