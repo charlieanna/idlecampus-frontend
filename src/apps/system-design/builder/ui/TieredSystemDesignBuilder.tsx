@@ -231,11 +231,37 @@ export function TieredSystemDesignBuilder({
         mergedConfig.instances = mergedConfig.instances || 1;
       }
 
+      // Copy schema from challenge componentBehaviors to database config
+      if ((comp.type === 'database' || comp.type === 'postgresql' || comp.type === 'mongodb') &&
+          !solutionConfig.schema) {
+        // First try to get schema from challenge componentBehaviors
+        const challengeSchema = (selectedChallenge as TieredChallenge)?.componentBehaviors?.database?.schema;
+
+        if (challengeSchema) {
+          mergedConfig.schema = challengeSchema.tables || challengeSchema;
+          console.log(`  📋 ${comp.type}: Adding schema from challenge:`, mergedConfig.schema);
+        } else if (selectedChallenge?.id === 'tiny_url') {
+          // Fallback: Use default TinyURL schema
+          mergedConfig.schema = [
+            {
+              name: 'url_mapping',
+              columns: [
+                { name: 'short_code', type: 'varchar(10)', primaryKey: true, nullable: false, indexed: true },
+                { name: 'long_url', type: 'text', nullable: false },
+                { name: 'created_at', type: 'timestamp', nullable: false, indexed: true },
+                { name: 'user_id', type: 'varchar(50)', nullable: true, indexed: true },
+              ],
+            }
+          ];
+          console.log(`  📋 ${comp.type}: Adding default TinyURL schema`);
+        }
+      }
+
             // Debug log for app_server instances
             if (comp.type === 'app_server') {
               console.log(`  📋 ${comp.type}: solution.instances=${solutionConfig.instances}, merged.instances=${mergedConfig.instances}`);
             }
-            
+
             // Debug log for database sharding
             if (comp.type === 'database' || comp.type === 'postgresql') {
               console.log(`  📋 ${comp.type}: solution.sharding=`, solutionConfig.sharding, `merged.sharding=`, mergedConfig.sharding);

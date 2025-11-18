@@ -98,7 +98,7 @@ export function convertProblemDefinitionToChallenge(
 
   // Generate a basic solution if not already present
   // Note: Solutions can be manually refined later
-  challenge.solution = generateBasicSolution(challenge);
+  challenge.solution = generateBasicSolution(challenge, def);
 
   return challenge;
 }
@@ -459,10 +459,100 @@ function mapFailureType(component: string): 'db_crash' | 'cache_flush' | 'networ
 }
 
 /**
+ * Pattern detection functions to identify challenge-specific requirements
+ */
+
+function hasGeospatialPattern(def?: ProblemDefinition): boolean {
+  if (!def) return false;
+  
+  // Check accessPatterns if available
+  if (def.functionalRequirements?.dataModel?.accessPatterns) {
+    return def.functionalRequirements.dataModel.accessPatterns
+      .some(p => p.type === 'geospatial_query');
+  }
+  
+  // Fallback to heuristics
+  const geoKeywords = ['map', 'location', 'nearby', 'distance', 'delivery', 'ride', 'driver', 'geospatial', 'coordinates', 'lat', 'lng', 'radius'];
+  const titleLower = def.title.toLowerCase();
+  const descLower = def.description.toLowerCase();
+  
+  return geoKeywords.some(keyword => 
+    titleLower.includes(keyword) || descLower.includes(keyword)
+  );
+}
+
+function hasRealtimePattern(def?: ProblemDefinition): boolean {
+  if (!def) return false;
+  
+  // Check for real-time keywords
+  const realtimeKeywords = ['real-time', 'realtime', 'live', 'chat', 'message', 'messaging', 'websocket', 'streaming', 'instant', 'notification'];
+  const titleLower = def.title.toLowerCase();
+  const descLower = def.description.toLowerCase();
+  const nfrs = def.userFacingNFRs?.join(' ').toLowerCase() || '';
+  
+  return realtimeKeywords.some(keyword => 
+    titleLower.includes(keyword) || descLower.includes(keyword) || nfrs.includes(keyword)
+  );
+}
+
+function hasMediaPattern(def?: ProblemDefinition): boolean {
+  if (!def) return false;
+  
+  // Check for media/video keywords
+  const mediaKeywords = ['video', 'media', 'photo', 'image', 'stream', 'upload', 'file', 'content delivery', 'cdn', 'blob', 'asset'];
+  const titleLower = def.title.toLowerCase();
+  const descLower = def.description.toLowerCase();
+  
+  return mediaKeywords.some(keyword => 
+    titleLower.includes(keyword) || descLower.includes(keyword)
+  );
+}
+
+function hasEcommercePattern(def?: ProblemDefinition): boolean {
+  if (!def) return false;
+  
+  // Check for e-commerce keywords
+  const ecommerceKeywords = ['shop', 'store', 'product', 'catalog', 'cart', 'checkout', 'order', 'payment', 'inventory', 'purchase', 'e-commerce', 'ecommerce'];
+  const titleLower = def.title.toLowerCase();
+  const descLower = def.description.toLowerCase();
+  
+  return ecommerceKeywords.some(keyword => 
+    titleLower.includes(keyword) || descLower.includes(keyword)
+  );
+}
+
+function hasGraphPattern(def?: ProblemDefinition): boolean {
+  if (!def) return false;
+  
+  // Check for graph/social keywords
+  const graphKeywords = ['social', 'network', 'graph', 'friend', 'follow', 'connection', 'relationship', 'feed', 'timeline'];
+  const titleLower = def.title.toLowerCase();
+  const descLower = def.description.toLowerCase();
+  
+  return graphKeywords.some(keyword => 
+    titleLower.includes(keyword) || descLower.includes(keyword)
+  );
+}
+
+function hasSearchPattern(def?: ProblemDefinition): boolean {
+  if (!def) return false;
+  
+  // Check for search keywords
+  const searchKeywords = ['search', 'query', 'index', 'autocomplete', 'suggestion', 'discovery', 'find', 'filter'];
+  const titleLower = def.title.toLowerCase();
+  const descLower = def.description.toLowerCase();
+  const nfrs = def.userFacingNFRs?.join(' ').toLowerCase() || '';
+  
+  return searchKeywords.some(keyword => 
+    titleLower.includes(keyword) || descLower.includes(keyword) || nfrs.includes(keyword)
+  );
+}
+
+/**
  * Generate a basic solution for a challenge
  * This creates a solution using the commodity hardware model
  */
-function generateBasicSolution(challenge: Challenge): import('../types/testCase').Solution {
+function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): import('../types/testCase').Solution {
   const components: any[] = [];
   const connections: any[] = [];
 
@@ -504,6 +594,14 @@ function generateBasicSolution(challenge: Challenge): import('../types/testCase'
   // Calculate app server instances (1000 RPS per instance, add 20% headroom)
   const appServerInstances = Math.max(1, Math.ceil((maxRps * 1.2) / 1000));
 
+  // Detect challenge patterns
+  const isGeospatial = hasGeospatialPattern(def);
+  const isRealtime = hasRealtimePattern(def);
+  const isMedia = hasMediaPattern(def);
+  const isEcommerce = hasEcommercePattern(def);
+  const isGraph = hasGraphPattern(def);
+  const hasSearch = hasSearchPattern(def);
+
   // Determine component needs
   const needsLoadBalancer = appServerInstances > 1 || maxRps > 1000;
   const needsCache = challenge.availableComponents.includes('redis') || 
@@ -515,16 +613,19 @@ function generateBasicSolution(challenge: Challenge): import('../types/testCase'
   const needsDatabase = challenge.availableComponents.includes('database') ||
                         challenge.availableComponents.includes('postgresql');
   const needsCDN = challenge.availableComponents.includes('cdn') ||
+                   isMedia ||
                    challenge.requirements?.nfrs?.some(nfr => 
                      nfr.toLowerCase().includes('cdn') || 
                      nfr.toLowerCase().includes('static')
                    );
   const needsS3 = challenge.availableComponents.includes('s3') ||
+                  isMedia ||
                   challenge.requirements?.nfrs?.some(nfr => 
                     nfr.toLowerCase().includes('object storage') ||
                     nfr.toLowerCase().includes('file')
                   );
   const needsQueue = challenge.availableComponents.includes('message_queue') ||
+                     isRealtime ||
                      challenge.requirements?.nfrs?.some(nfr => 
                        nfr.toLowerCase().includes('async') ||
                        nfr.toLowerCase().includes('queue') ||
@@ -618,6 +719,16 @@ function generateBasicSolution(challenge: Challenge): import('../types/testCase'
       shards = 1; // Single-leader doesn't need sharding unless write load is extreme
     }
 
+    // Determine sharding key based on pattern
+    let shardKey = 'id';
+    if (isGeospatial) {
+      shardKey = 'region_id'; // Geospatial: shard by region for locality
+    } else if (isGraph) {
+      shardKey = 'user_id'; // Social graph: shard by user for friend queries
+    } else if (isEcommerce) {
+      shardKey = 'category_id'; // E-commerce: shard by category for product queries
+    }
+
     components.push({
       type: 'postgresql',
       config: {
@@ -631,7 +742,7 @@ function generateBasicSolution(challenge: Challenge): import('../types/testCase'
         sharding: {
           enabled: shards > 1,
           shards: shards,
-          shardKey: 'id',
+          shardKey: shardKey,
         }
       }
     });
@@ -670,18 +781,75 @@ function generateBasicSolution(challenge: Challenge): import('../types/testCase'
     connections.push({ from: 'app_server', to: 'message_queue', type: 'write' });
   }
 
+  // Build pattern-specific explanation
+  let patternExplanation = '';
+  const patterns: string[] = [];
+  
+  if (isGeospatial) {
+    patterns.push('Geospatial');
+    patternExplanation += `\n\n🗺️ Geospatial Pattern:
+- PostgreSQL with PostGIS support for location queries (nearby drivers, businesses)
+- Sharded by region_id for geographic locality
+- Optimized for "find within radius" queries`;
+  }
+  
+  if (isRealtime) {
+    patterns.push('Real-time');
+    patternExplanation += `\n\n⚡ Real-time Pattern:
+- Message queue for async message delivery and fan-out
+- WebSocket-ready architecture for instant notifications
+- Low-latency design (p99 < 100ms target)`;
+  }
+  
+  if (isMedia) {
+    patterns.push('Media');
+    patternExplanation += `\n\n🎥 Media Pattern:
+- CDN for global content delivery (videos, images)
+- S3 for scalable object storage
+- Separate read path (client → CDN → S3) for static content
+- Write path (app → S3) for uploads`;
+  }
+  
+  if (isEcommerce) {
+    patterns.push('E-commerce');
+    patternExplanation += `\n\n🛒 E-commerce Pattern:
+- Aggressive caching for product catalog (${cacheSizeGB}GB)
+- Sharded by category_id for product discovery
+- Search-optimized for product queries`;
+  }
+  
+  if (isGraph) {
+    patterns.push('Social Graph');
+    patternExplanation += `\n\n👥 Social Graph Pattern:
+- Sharded by user_id for friend/follower queries
+- Optimized for multi-hop graph traversal
+- Cache for hot user profiles and feeds`;
+  }
+
+  const patternLabel = patterns.length > 0 ? ` (${patterns.join(' + ')})` : '';
+
   return {
     components,
     connections,
-    explanation: `Comprehensive solution for ${challenge.title}:
-- ${appServerInstances} app server instance(s) (commodity hardware: 1000 RPS each, ${maxRps.toFixed(0)} RPS peak)
-- ${needsCache ? `${cacheSizeGB}GB Redis cache with cache-aside strategy (handles ${(maxReadRps * 0.9).toFixed(0)} read RPS via cache)` : 'No cache'}
-- ${needsDatabase ? `PostgreSQL with ${replicationMode} replication (${replicas} replica(s)${shards > 1 ? `, ${shards} shard(s)` : ''}) - handles ${maxReadRps.toFixed(0)} read RPS, ${maxWriteRps.toFixed(0)} write RPS` : 'No database'}
-- ${needsLoadBalancer ? 'Load balancer for traffic distribution' : 'Direct client-to-app-server connection'}
-- ${needsCDN ? 'CDN for static content delivery' : ''}
-- ${needsS3 ? 'S3 for object storage' : ''}
-- ${needsQueue ? 'Message queue for async processing (fan-out, trending topics)' : ''}
+    explanation: `Solution for ${challenge.title}${patternLabel}:
 
-This solution is designed to handle peak traffic requirements across all test cases. Components are sized with 20% headroom for safety.`
+📊 Infrastructure:
+- ${appServerInstances} app server instance(s) @ 1000 RPS each (peak: ${maxRps.toFixed(0)} RPS)
+- ${needsLoadBalancer ? 'Load balancer with least-connections algorithm' : 'Direct client connection'}
+${needsCache ? `- ${cacheSizeGB}GB Redis cache (cache-aside, ~${(maxReadRps * 0.9).toFixed(0)} RPS cached reads)` : ''}
+${needsDatabase ? `- PostgreSQL ${replicationMode} (${replicas} replica${replicas !== 1 ? 's' : ''}${shards > 1 ? `, ${shards} shard${shards !== 1 ? 's' : ''}` : ''})
+  • Read capacity: ${maxReadRps.toFixed(0)} RPS
+  • Write capacity: ${maxWriteRps.toFixed(0)} RPS` : ''}
+${needsCDN ? '- CDN for static content delivery (edge caching)' : ''}
+${needsS3 ? '- S3 for object storage (images, videos, files)' : ''}
+${needsQueue ? '- Message queue for async processing' : ''}${patternExplanation}
+
+💡 Design Decisions:
+- Components sized with 20% headroom for traffic spikes
+- ${needsCache && maxReadRps > 0 ? `Cache reduces database load by ~${((maxReadRps * 0.9) / maxReadRps * 100).toFixed(0)}%` : needsCache ? 'Cache layer for read optimization' : 'No caching layer (low read traffic)'}
+- ${replicationMode === 'multi-leader' ? 'Multi-leader replication for write scalability' : 'Single-leader replication for consistency'}
+- ${shards > 1 ? `${shards} shards for horizontal scaling` : 'No sharding (single-shard sufficient)'}
+
+This architecture is optimized for the specific requirements of ${challenge.title}.`
   };
 }

@@ -466,12 +466,15 @@ function DatabaseConfig({
   };
 
   const handleDataModelChange = (model: string) => {
-    onChange('dataModel', model);
-    // Apply auto-configuration for the selected model
-    const autoConfig = autoConfigurations[model];
-    Object.entries(autoConfig).forEach(([key, value]) => {
-      onChange(key, value);
-    });
+    // Apply data model and auto-configuration in a single batched update
+    const autoConfig = autoConfigurations[model] || {};
+    const updatedConfig = {
+      dataModel: model,
+      ...autoConfig
+    };
+
+    // Use onApplyPreset for batched update to avoid race conditions
+    onApplyPreset(updatedConfig);
   };
 
   // Schema management functions

@@ -96,10 +96,10 @@ function CustomNode({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`px-1.5 py-1 rounded border shadow-sm transition-all min-w-[80px] ${
+      className={`px-4 py-3 rounded-lg border-2 shadow-md transition-all min-w-[160px] ${
         style.bgColor
       } ${style.borderColor} ${
-        selected ? 'ring-2 ring-blue-500 ring-offset-1 shadow-md' : 'hover:shadow-md'
+        selected ? 'ring-2 ring-blue-500 ring-offset-1 shadow-lg' : 'hover:shadow-lg'
       } ${isClient ? 'cursor-default' : ''} relative`}
       onContextMenu={handleContextMenu}
     >
@@ -108,45 +108,45 @@ function CustomNode({ data, selected }: NodeProps) {
         <Handle
           type="target"
           position={Position.Top}
-          className="w-1.5 h-1.5 !bg-blue-500 !border !border-white"
+          className="w-3 h-3 !bg-blue-500 !border-2 !border-white"
         />
       )}
 
       {/* Node Content */}
-      <div className="flex flex-col gap-0.5">
-        <div className="flex items-center gap-1">
-          <span className="text-sm">{style.icon}</span>
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">{style.icon}</span>
           <div className="flex-1 min-w-0">
-            <div className={`font-semibold text-[10px] ${style.color} truncate flex items-center gap-0.5`}>
+            <div className={`font-semibold text-sm ${style.color} truncate flex items-center gap-1`}>
               {displayName}
-              {isClient && <span className="text-[8px]">🔒</span>}
+              {isClient && <span className="text-xs">🔒</span>}
             </div>
             {data.subtitle && (
-              <div className="text-[8px] text-gray-500 truncate">{data.subtitle}</div>
+              <div className="text-xs text-gray-500 truncate">{data.subtitle}</div>
             )}
           </div>
         </div>
 
         {/* Database Configuration Display */}
         {isDatabase && (
-          <div className="flex flex-wrap gap-0.5 px-1">
+          <div className="flex flex-wrap gap-1 px-1">
             {/* Data Model Badge */}
             {DATA_MODEL_BADGES[dataModel] && (
-              <span className={`text-[7px] px-1 rounded-sm font-medium ${DATA_MODEL_BADGES[dataModel].color}`}>
+              <span className={`text-xs px-2 py-0.5 rounded font-medium ${DATA_MODEL_BADGES[dataModel].color}`}>
                 {DATA_MODEL_BADGES[dataModel].label}
               </span>
             )}
 
             {/* Replicas Badge */}
             {replicas > 1 && (
-              <span className="text-[7px] px-1 rounded-sm bg-gray-100 text-gray-600">
+              <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">
                 {replicas}R
               </span>
             )}
 
             {/* Sharding Badge */}
             {isSharded && (
-              <span className="text-[7px] px-1 rounded-sm bg-yellow-100 text-yellow-700">
+              <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">
                 ⚡S
               </span>
             )}
@@ -155,8 +155,8 @@ function CustomNode({ data, selected }: NodeProps) {
 
         {/* App Server API Display */}
         {componentType === 'app_server' && data.config?.handledAPIs && data.config.handledAPIs.length > 0 && (
-          <div className="px-1 mt-0.5">
-            <div className="flex flex-wrap gap-0.5">
+          <div className="px-1 mt-1">
+            <div className="flex flex-wrap gap-1">
               {data.config.handledAPIs.slice(0, 3).map((api: string, index: number) => {
                 // Parse the API pattern to show a compact version
                 const parts = api.trim().split(/\s+/);
@@ -170,7 +170,7 @@ function CustomNode({ data, selected }: NodeProps) {
                 return (
                   <span
                     key={index}
-                    className="text-[7px] px-1 py-0.5 rounded-sm bg-purple-100 text-purple-700 font-medium"
+                    className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-medium"
                     title={api}
                   >
                     {method === '*' ? displayPath : `${method.substring(0, 3)} ${displayPath}`}
@@ -178,7 +178,7 @@ function CustomNode({ data, selected }: NodeProps) {
                 );
               })}
               {data.config.handledAPIs.length > 3 && (
-                <span className="text-[7px] px-1 py-0.5 rounded-sm bg-gray-100 text-gray-600">
+                <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">
                   +{data.config.handledAPIs.length - 3}
                 </span>
               )}
@@ -224,7 +224,7 @@ function CustomNode({ data, selected }: NodeProps) {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-1.5 h-1.5 !bg-green-500 !border !border-white"
+        className="w-3 h-3 !bg-green-500 !border-2 !border-white"
       />
 
       {/* Left Handle */}
@@ -232,7 +232,7 @@ function CustomNode({ data, selected }: NodeProps) {
         type="target"
         position={Position.Left}
         id="left"
-        className="w-1.5 h-1.5 !bg-blue-500 !border !border-white"
+        className="w-3 h-3 !bg-blue-500 !border-2 !border-white"
       />
 
       {/* Right Handle */}
@@ -240,7 +240,7 @@ function CustomNode({ data, selected }: NodeProps) {
         type="source"
         position={Position.Right}
         id="right"
-        className="w-1.5 h-1.5 !bg-green-500 !border !border-white"
+        className="w-3 h-3 !bg-green-500 !border-2 !border-white"
       />
     </div>
   );

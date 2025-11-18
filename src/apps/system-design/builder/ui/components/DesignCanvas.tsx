@@ -37,11 +37,11 @@ const edgeTypes: EdgeTypes = {
   custom: CustomEdge,
 };
 
-// Default edge style (for all connections - simple arrow from source to target)
+// Default edge style (for all connections - simple straight arrow from source to target)
 const defaultEdgeOptions = {
   type: 'custom',
   animated: false, // Disable animation to avoid confusion with direction
-  style: { stroke: '#3b82f6', strokeWidth: 2 },
+  style: { stroke: '#3b82f6', strokeWidth: 3 }, // Thicker line for better visibility
 };
 
 export function DesignCanvas({
@@ -76,47 +76,71 @@ export function DesignCanvas({
       const componentIds = new Set(systemGraph.components.map((c) => c.id));
 
       // Helper function to calculate node position based on component type and layer
+      // Layout follows standard system design whiteboard conventions based on reference solutions:
+      //
+      // Standard Flow (TinyURL pattern):
+      // Client → Load Balancer → App Servers → Cache → Database
+      //
+      // CDN Flow (Food Blog pattern):
+      // Client → CDN → S3 (parallel path for static content)
+      // Client → Load Balancer → App Servers → Database (dynamic content)
       const calculateNodePosition = (comp: any, allComponents: any[]): { x: number; y: number } => {
-        const isClient = comp.type === 'client';
-        
-        if (isClient) {
-          // Clients on the left, stacked vertically
-          const clientIndex = allComponents.filter(c => c.type === 'client' && allComponents.indexOf(c) <= allComponents.indexOf(comp)).length - 1;
-          return {
-            x: 50,
-            y: 150 + (clientIndex * 120)
-          };
-        }
-
-        // Define layer positions (horizontal spacing) - left to right flow
-        const layerPositions: Record<string, number> = {
-          load_balancer: 300,
-          app_server: 500,
-          cache: 700,
-          redis: 700,
-          database: 900,
-          postgresql: 900,
-          mongodb: 900,
-          dynamodb: 900,
-          cassandra: 900,
-          message_queue: 700,
-          kafka: 700,
-          rabbitmq: 700,
-          sqs: 700,
-          cdn: 1100,
-          s3: 1100,
+        // Define horizontal layers based on data flow (left to right)
+        const componentLayer: Record<string, number> = {
+          client: 0,
+          cdn: 1,          // Edge layer for static content
+          load_balancer: 2,
+          app_server: 3,
+          cache: 4,
+          redis: 4,
+          memcached: 4,
+          message_queue: 4,
+          kafka: 4,
+          rabbitmq: 4,
+          sqs: 4,
+          s3: 5,           // Storage layer (parallel to database)
+          database: 5,
+          postgresql: 5,
+          mongodb: 5,
+          dynamodb: 5,
+          cassandra: 5,
         };
 
-        const x = layerPositions[comp.type] || 500;
-        
-        // Count components of the same type before this one (for vertical stacking)
-        const sameTypeBefore = allComponents.filter(
-          c => c.type === comp.type && allComponents.indexOf(c) < allComponents.indexOf(comp)
-        ).length;
-        
-        // Vertical spacing: stack same-type components with 120px spacing
-        const baseY = 200;
-        const y = baseY + (sameTypeBefore * 120);
+        const layer = componentLayer[comp.type] ?? 3;
+
+        // Horizontal spacing between layers (generous spacing for clarity)
+        const layerSpacing = 350;
+        const x = 100 + (layer * layerSpacing);
+
+        // Vertical positioning: center-align by default, then stack multiples
+        const baseY = 250; // center of canvas
+        let y = baseY;
+
+        // Group components by layer for vertical stacking
+        const componentsInSameLayer = allComponents.filter(c => {
+          const cLayer = componentLayer[c.type] ?? 3;
+          return cLayer === layer;
+        });
+
+        if (componentsInSameLayer.length > 1) {
+          // Multiple components in same layer - stack them vertically
+          const indexInLayer = componentsInSameLayer.indexOf(comp);
+          const totalHeight = (componentsInSameLayer.length - 1) * 200;
+          const startY = baseY - (totalHeight / 2);
+          y = startY + (indexInLayer * 200);
+        }
+
+        // Special positioning for specific component types
+        if (comp.type === 'app_server') {
+          // App servers: if multiple instances, show them in a tight vertical group
+          const appServers = allComponents.filter(c => c.type === 'app_server');
+          if (appServers.length > 1) {
+            const appIndex = appServers.indexOf(comp);
+            const totalHeight = (appServers.length - 1) * 150;
+            const startY = baseY - (totalHeight / 2);
+            y = startY + (appIndex * 150);
+          }
+        }
 
         return { x, y };
       };
@@ -345,7 +369,8 @@ export function DesignCanvas({
           nodeTypes={nodeTypes}
           edgeTypes={edgeTypes}
           defaultEdgeOptions={defaultEdgeOptions}
-          connectionLineStyle={{ stroke: '#3b82f6', strokeWidth: 2 }}
+          connectionLineStyle={{ stroke: '#3b82f6', strokeWidth: 3 }}
+          connectionLineType="straight"
           fitView
           minZoom={0.5}
           maxZoom={1.5}

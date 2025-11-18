@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { EdgeProps, getBezierPath } from 'reactflow';
+import { EdgeProps, getStraightPath } from 'reactflow';
 
 export default function CustomEdge({
   id,
@@ -12,13 +12,11 @@ export default function CustomEdge({
   style = {},
   markerEnd,
 }: EdgeProps) {
-  const [edgePath, labelX, labelY] = getBezierPath({
+  const [edgePath, labelX, labelY] = getStraightPath({
     sourceX,
     sourceY,
-    sourcePosition,
     targetX,
     targetY,
-    targetPosition,
   });
 
   const pathRef = useRef<SVGPathElement | null>(null);
