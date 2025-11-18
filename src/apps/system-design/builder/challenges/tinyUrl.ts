@@ -57,11 +57,11 @@ Example:
         components: [
           { type: 'client', config: {} },
           { type: 'app_server', config: { instances: 1 } },
-          { type: 'postgresql', config: { readCapacity: 100, writeCapacity: 100 } },
+          { type: 'database', config: { readCapacity: 100, writeCapacity: 100 } },
         ],
         connections: [
           { from: 'client', to: 'app_server' },
-          { from: 'app_server', to: 'postgresql' },
+          { from: 'app_server', to: 'database' },
         ],
         explanation: `Minimal viable system - just app server + database.`,
       },
@@ -116,11 +116,11 @@ Example:
         components: [
           { type: 'client', config: {} },
           { type: 'app_server', config: { instances: 1 } },
-          { type: 'postgresql', config: { readCapacity: 100, writeCapacity: 100 } },
+          { type: 'database', config: { readCapacity: 100, writeCapacity: 100 } },
         ],
         connections: [
           { from: 'client', to: 'app_server' },
-          { from: 'app_server', to: 'postgresql' },
+          { from: 'app_server', to: 'database' },
         ],
         explanation: `This test shows why persistence matters for URL shortening:
 
@@ -162,14 +162,14 @@ URLs must work forever once created. Losing mappings breaks trust!`,
           { type: 'client', config: {} },
           { type: 'load_balancer', config: {} },
           { type: 'app_server', config: { instances: 2 } },
-          { type: 'redis', config: { memorySizeGB: 4, ttl: 3600, hitRatio: 0.9 } },
-          { type: 'postgresql', config: { readCapacity: 1000, writeCapacity: 1000, replication: false } },
+          { type: 'cache', config: { memorySizeGB: 4, ttl: 3600, hitRatio: 0.9 } },
+          { type: 'database', config: { readCapacity: 1000, writeCapacity: 1000, replication: false } },
         ],
         connections: [
           { from: 'client', to: 'load_balancer' },
           { from: 'load_balancer', to: 'app_server' },
-          { from: 'app_server', to: 'redis' },
-          { from: 'redis', to: 'postgresql' },
+          { from: 'app_server', to: 'cache' },
+          { from: 'cache', to: 'database' },
         ],
         explanation: `This solution handles 1100 RPS (1000 reads, 100 writes) efficiently:
 
@@ -211,14 +211,14 @@ URLs must work forever once created. Losing mappings breaks trust!`,
           { type: 'client', config: {} },
           { type: 'load_balancer', config: {} },
           { type: 'app_server', config: { instances: 4 } },
-          { type: 'redis', config: { memorySizeGB: 8, ttl: 3600, hitRatio: 0.95 } },
-          { type: 'postgresql', config: { readCapacity: 2000, writeCapacity: 1000, replication: true } },
+          { type: 'cache', config: { memorySizeGB: 8, ttl: 3600, hitRatio: 0.95 } },
+          { type: 'database', config: { readCapacity: 2000, writeCapacity: 1000, replication: true } },
         ],
         connections: [
           { from: 'client', to: 'load_balancer' },
           { from: 'load_balancer', to: 'app_server' },
-          { from: 'app_server', to: 'redis' },
-          { from: 'redis', to: 'postgresql' },
+          { from: 'app_server', to: 'cache' },
+          { from: 'cache', to: 'database' },
         ],
         explanation: `This solution handles a 5x traffic spike (5100 RPS):
 
@@ -267,14 +267,14 @@ URLs must work forever once created. Losing mappings breaks trust!`,
           { type: 'client', config: {} },
           { type: 'load_balancer', config: {} },
           { type: 'app_server', config: { instances: 2 } },
-          { type: 'redis', config: { memorySizeGB: 4, ttl: 3600, hitRatio: 0.9 } },
-          { type: 'postgresql', config: { readCapacity: 2000, writeCapacity: 1000, replication: true } },
+          { type: 'cache', config: { memorySizeGB: 4, ttl: 3600, hitRatio: 0.9 } },
+          { type: 'database', config: { readCapacity: 2000, writeCapacity: 1000, replication: true } },
         ],
         connections: [
           { from: 'client', to: 'load_balancer' },
           { from: 'load_balancer', to: 'app_server' },
-          { from: 'app_server', to: 'redis' },
-          { from: 'redis', to: 'postgresql' },
+          { from: 'app_server', to: 'cache' },
+          { from: 'cache', to: 'database' },
         ],
         explanation: `This solution handles a cache flush scenario:
 
@@ -652,14 +652,14 @@ def handle_request(request: dict, context: dict) -> dict:
       { type: 'client', config: {} },
       { type: 'load_balancer', config: {} },
       { type: 'app_server', config: { instances: 10 } },
-      { type: 'redis', config: { memorySizeGB: 64 } },
-      { type: 'postgresql', config: { readCapacity: 20000, writeCapacity: 5000 } },
+      { type: 'cache', config: { memorySizeGB: 64 } },
+      { type: 'database', config: { readCapacity: 20000, writeCapacity: 5000 } },
     ],
     connections: [
       { from: 'client', to: 'load_balancer' },
       { from: 'load_balancer', to: 'app_server' },
-      { from: 'app_server', to: 'redis' },
-      { from: 'app_server', to: 'postgresql' },
+      { from: 'app_server', to: 'cache' },
+      { from: 'app_server', to: 'database' },
     ],
     explanation: `# Complete Solution for Tiny URL Shortener
 
