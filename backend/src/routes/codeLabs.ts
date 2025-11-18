@@ -103,9 +103,15 @@ router.post('/:id/execute', async (req: Request, res: Response) => {
       });
     }
 
+    // Get challenge if it exists, but allow execution even if challenge doesn't exist
     const challenge = getChallenge(id);
     const timeLimit = timeout || challenge?.time_limit || 5;
     const memoryLimit = challenge?.memory_limit;
+    
+    // Log if challenge not found (for debugging) but continue execution
+    if (!challenge) {
+      console.log(`[CodeLabs] Challenge '${id}' not found, using default time limit: ${timeLimit}s`);
+    }
 
     // Execute code with test input appended using compatibility wrapper
     if (finalTestInput) {

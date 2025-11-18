@@ -8,9 +8,18 @@ import { SimulationEngine } from './engine';
  */
 export class TestRunner {
   private engine: SimulationEngine;
+  private pythonCode: string = '';
 
   constructor() {
     this.engine = new SimulationEngine();
+  }
+
+  /**
+   * Set Python code for code-aware simulation
+   */
+  setPythonCode(code: string): void {
+    this.pythonCode = code;
+    this.engine.setPythonCode(code);
   }
 
   /**

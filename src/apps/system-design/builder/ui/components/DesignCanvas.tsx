@@ -375,23 +375,44 @@ export function getComponentInfo(type: string): { label: string; displayName: st
 export function getDefaultConfig(type: string): Record<string, any> {
   const defaults: Record<string, Record<string, any>> = {
     client: {},
-    load_balancer: {},
-    app_server: { instances: 1 },
+    load_balancer: { algorithm: 'round-robin' },
+    app_server: { 
+      instances: 1,
+      instanceType: 'commodity-app',
+      lbStrategy: 'round-robin',
+    },
     database: {
-      dataModel: 'relational',  // Default to relational model
-      // Auto-configured settings for relational
-      replication: 'single-leader',
-      replicas: 2,
-      isolation: 'read-committed',
-      sharding: false,
+      instanceType: 'commodity-db',
+      dataModel: 'relational',
+      replicationMode: 'single-leader',
+      replication: { enabled: false, replicas: 0, mode: 'async' },
+      sharding: { enabled: false, shards: 1, shardKey: '' },
+      isolationLevel: 'read-committed',
       consistency: 'strong',
       indexType: 'b-tree',
+      storageType: 'gp3',
+      storageSizeGB: 100,
       // Legacy fields for backward compatibility
       databaseType: 'postgresql',
       dbCategory: 'sql',
     },
+    postgresql: {
+      instanceType: 'commodity-db',
+      replicationMode: 'single-leader',
+      replication: { enabled: false, replicas: 0, mode: 'async' },
+      sharding: { enabled: false, shards: 1, shardKey: '' },
+      isolationLevel: 'read-committed',
+      storageType: 'gp3',
+      storageSizeGB: 100,
+    },
     cache: {
       cacheType: 'redis',
+      memorySizeGB: 4,
+      ttl: 3600,
+      hitRatio: 0.9,
+      strategy: 'cache_aside',
+    },
+    redis: {
       memorySizeGB: 4,
       ttl: 3600,
       hitRatio: 0.9,

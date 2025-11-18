@@ -9,7 +9,7 @@ interface SolutionModalProps {
 export function SolutionModal({ solution, challengeTitle, onClose }: SolutionModalProps) {
   // Build flow paths from connections
   const buildFlowPaths = () => {
-    if (!solution) return [];
+    if (!solution || !solution.connections || !Array.isArray(solution.connections)) return [];
 
     const connections = solution.connections;
     const paths: string[][] = [];
@@ -83,10 +83,10 @@ export function SolutionModal({ solution, challengeTitle, onClose }: SolutionMod
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3">Architecture Components</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {solution.components.map((comp, idx) => (
+                  {solution.components && Array.isArray(solution.components) && solution.components.map((comp, idx) => (
                     <div key={idx} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                       <div className="font-semibold text-blue-900">{comp.type}</div>
-                      {Object.keys(comp.config).length > 0 && (
+                      {comp.config && Object.keys(comp.config).length > 0 && (
                         <div className="text-sm text-blue-700 mt-2 space-y-1">
                           {Object.entries(comp.config).map(([key, value]) => (
                             <div key={key} className="flex justify-between">

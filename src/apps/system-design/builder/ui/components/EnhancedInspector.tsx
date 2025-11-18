@@ -71,18 +71,32 @@ export function EnhancedInspector({
   // Calculate estimated cost for current config
   const calculateCost = (): number => {
     if (databaseComponent) {
-      const readCapacity = component.config.readCapacity || 500;
-      const writeCapacity = component.config.writeCapacity || 200;
-      const baseUnits = Math.ceil((readCapacity + writeCapacity) / 1000) || 1;
-      const storageCost = (component.config.storageSizeGB || 50) * 0.1;
+      // Commodity database: $146/mo base
+      const baseCost = 146;
       const replication = component.config.replication;
-      const replicas = replication?.enabled ? replication.replicas || 1 : 0;
-      return baseUnits * 80 * (1 + replicas) + storageCost;
+      const sharding = component.config.sharding;
+      
+      // Calculate replicas
+      let replicas = 0;
+      if (replication) {
+        if (typeof replication === 'boolean') {
+          replicas = replication ? 1 : 0;
+        } else if (replication.enabled) {
+          replicas = replication.replicas || 1;
+        }
+      }
+      
+      // Calculate shards
+      const shards = sharding?.enabled ? (sharding.shards || 1) : 1;
+      
+      // Total cost = base × (1 + replicas) × shards
+      const storageCost = (component.config.storageSizeGB || 100) * 0.1;
+      return baseCost * (1 + replicas) * shards + storageCost;
     }
 
     switch (component.type) {
       case 'app_server':
-        return (component.config.instances || 1) * 100;
+        return (component.config.instances || 1) * 110; // Commodity app server cost
       case 'redis':
         return (component.config.memorySizeGB || 4) * 50;
       case 'message_queue':
@@ -223,27 +237,28 @@ interface DatabaseConfigProps extends ConfigProps {
 
 function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [] }: ConfigProps) {
   const instances = config.instances || 1;
-  const capacity = instances * 1000; // 1000 RPS per instance
-  const cost = instances * 100;
+  const capacity = instances * 1000; // Fixed: 1000 RPS per commodity instance
+  const cost = instances * 110; // Fixed: $110/mo per commodity instance
   const handledAPIs = config.handledAPIs || [];
+  const lbStrategy = config.lbStrategy || 'round-robin';
 
   const presets: ConfigPreset[] = [
     {
       name: 'Minimal',
       description: '1 instance for low traffic',
-      config: { instances: 1 },
+      config: { instances: 1, lbStrategy: 'round-robin' },
       icon: '💰',
     },
     {
       name: 'Standard',
-      description: '2 instances for redundancy',
-      config: { instances: 2 },
+      description: '3 instances for redundancy',
+      config: { instances: 3, lbStrategy: 'round-robin' },
       icon: '⚖️',
     },
     {
-      name: 'High Availability',
-      description: '4+ instances for scale',
-      config: { instances: 4 },
+      name: 'High Scale',
+      description: '10+ instances for high traffic',
+      config: { instances: 10, lbStrategy: 'least-connections' },
       icon: '🚀',
     },
   ];
@@ -289,7 +304,7 @@ function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [] }
         <input
           type="range"
           min="1"
-          max="10"
+          max="20"
           value={instances}
           onChange={(e) => onChange('instances', parseInt(e.target.value))}
           className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
@@ -305,17 +320,65 @@ function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [] }
         </div>
       </div>
 
+      {/* Load Balancing Strategy */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Load Balancing Strategy
+        </label>
+        <select
+          value={lbStrategy}
+          onChange={(e) => onChange('lbStrategy', e.target.value)}
+          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="round-robin">Round Robin - Even distribution</option>
+          <option value="least-connections">Least Connections - Balance active connections</option>
+          <option value="ip-hash">IP Hash - Sticky sessions per client</option>
+        </select>
+        <p className="text-xs text-gray-500 mt-1">
+          {lbStrategy === 'round-robin' && 'Distributes requests evenly across all instances'}
+          {lbStrategy === 'least-connections' && 'Routes to instance with fewest active connections'}
+          {lbStrategy === 'ip-hash' && 'Same client always goes to same instance (session affinity)'}
+        </p>
+      </div>
+
+      {/* Commodity Server Specs */}
+      <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-xs font-medium text-gray-700 mb-2">🖥️ Commodity Server Specs (Fixed)</div>
+        <div className="space-y-1 text-xs text-gray-600">
+          <div className="flex justify-between">
+            <span>vCPU:</span>
+            <span className="font-semibold">8 cores</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Memory:</span>
+            <span className="font-semibold">64 GB RAM</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Storage:</span>
+            <span className="font-semibold">2 TB SSD</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Capacity:</span>
+            <span className="font-semibold">1,000 RPS</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Cost:</span>
+            <span className="font-semibold">$110/mo</span>
+          </div>
+        </div>
+      </div>
+
       {/* Impact Card */}
       <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-        <div className="text-xs font-medium text-blue-900 mb-2">💡 Impact</div>
+        <div className="text-xs font-medium text-blue-900 mb-2">💡 Total Capacity</div>
         <div className="space-y-1 text-xs text-blue-800">
           <div className="flex justify-between">
-            <span>Total Capacity:</span>
+            <span>Total RPS:</span>
             <span className="font-semibold">{capacity.toLocaleString()} RPS</span>
           </div>
           <div className="flex justify-between">
-            <span>Per Instance:</span>
-            <span className="font-semibold">1,000 RPS</span>
+            <span>Instances:</span>
+            <span className="font-semibold">{instances} × 1,000 RPS</span>
           </div>
           <div className="flex justify-between">
             <span>Monthly Cost:</span>
@@ -1091,8 +1154,10 @@ function CacheConfig({ config, onChange, onApplyPreset }: ConfigProps) {
 // ============================================================================
 
 function PostgreSQLConfig({ config, onChange, onApplyPreset }: ConfigProps) {
-  const instanceType = config.instanceType || 'db.t3.medium';
+  // Always use commodity-db spec
+  const instanceType = 'commodity-db';
   const isolationLevel = config.isolationLevel || 'read-committed';
+  const replicationMode = config.replicationMode || 'single-leader';
   const replication = config.replication || { enabled: false, replicas: 1, mode: 'async' };
   const sharding = config.sharding || { enabled: false, shards: 1, shardKey: '' };
   const storageType = config.storageType || 'gp3';
@@ -1100,39 +1165,57 @@ function PostgreSQLConfig({ config, onChange, onApplyPreset }: ConfigProps) {
   const primaryKey = config.primaryKey || '';
   const indexes = config.indexes || '';
 
-  // Calculate cost based on instance type
-  const instanceCosts: Record<string, number> = {
-    'db.t3.micro': 13,
-    'db.t3.small': 26,
-    'db.t3.medium': 53,
-    'db.m5.large': 133,
-    'db.m5.xlarge': 266,
-    'db.m5.2xlarge': 532,
-  };
-  const baseCost = instanceCosts[instanceType] || 100;
-  const replicationCost = replication.enabled ? baseCost * replication.replicas : 0;
-  const totalCost = baseCost + replicationCost;
+  // Calculate cost based on commodity spec + replication + sharding
+  const baseCost = 146; // Commodity database: $146/mo
+  const replicas = replication.enabled ? (replication.replicas || 1) : 0;
+  const shards = sharding.enabled ? (sharding.shards || 1) : 1;
+  const totalCost = baseCost * (1 + replicas) * shards;
+  
+  // Calculate capacity based on replication mode and sharding
+  const baseCapacity = 1000; // 1000 RPS base
+  let readCapacity = baseCapacity;
+  let writeCapacity = baseCapacity / 10; // Writes are 10x slower
+  
+  if (replicationMode === 'single-leader') {
+    // Read replicas scale read capacity
+    readCapacity = baseCapacity * (1 + replicas);
+    writeCapacity = baseCapacity / 10; // Writes only to leader
+  } else if (replicationMode === 'multi-leader') {
+    // Multiple leaders scale both reads and writes, but add latency
+    readCapacity = baseCapacity * (1 + replicas);
+    writeCapacity = (baseCapacity / 10) * (1 + replicas);
+  } else if (replicationMode === 'leaderless') {
+    // Quorum-based: capacity depends on quorum size
+    readCapacity = baseCapacity * (1 + replicas) * 0.7; // Reduced due to quorum overhead
+    writeCapacity = (baseCapacity / 10) * (1 + replicas) * 0.7;
+  }
+  
+  // Sharding scales capacity linearly
+  readCapacity *= shards;
+  writeCapacity *= shards;
 
   const presets: ConfigPreset[] = [
     {
-      name: 'Dev/Test',
-      description: 'Low cost, minimal setup',
+      name: 'Single Node',
+      description: 'No replication, no sharding',
       config: {
-        instanceType: 'db.t3.micro',
+        instanceType: 'commodity-db',
         isolationLevel: 'read-committed',
+        replicationMode: 'single-leader',
         replication: { enabled: false, replicas: 0, mode: 'async' },
         sharding: { enabled: false, shards: 1, shardKey: '' },
         storageType: 'gp3',
-        storageSizeGB: 20,
+        storageSizeGB: 100,
       },
       icon: '💰',
     },
     {
-      name: 'Production',
-      description: 'HA + replication',
+      name: 'Single-Leader',
+      description: 'Read replicas for scale',
       config: {
-        instanceType: 'db.m5.large',
+        instanceType: 'commodity-db',
         isolationLevel: 'read-committed',
+        replicationMode: 'single-leader',
         replication: { enabled: true, replicas: 2, mode: 'async' },
         sharding: { enabled: false, shards: 1, shardKey: '' },
         storageType: 'gp3',
@@ -1141,12 +1224,27 @@ function PostgreSQLConfig({ config, onChange, onApplyPreset }: ConfigProps) {
       icon: '🔒',
     },
     {
-      name: 'High Scale',
-      description: 'Sharded + replicated',
+      name: 'Multi-Leader',
+      description: 'Scale writes + reads',
       config: {
-        instanceType: 'db.m5.xlarge',
+        instanceType: 'commodity-db',
         isolationLevel: 'read-committed',
+        replicationMode: 'multi-leader',
         replication: { enabled: true, replicas: 2, mode: 'async' },
+        sharding: { enabled: false, shards: 1, shardKey: '' },
+        storageType: 'gp3',
+        storageSizeGB: 100,
+      },
+      icon: '⚡',
+    },
+    {
+      name: 'Sharded',
+      description: 'Horizontal partitioning',
+      config: {
+        instanceType: 'commodity-db',
+        isolationLevel: 'read-committed',
+        replicationMode: 'single-leader',
+        replication: { enabled: true, replicas: 1, mode: 'async' },
         sharding: { enabled: true, shards: 4, shardKey: 'user_id' },
         storageType: 'gp3',
         storageSizeGB: 500,
@@ -1222,29 +1320,51 @@ function PostgreSQLConfig({ config, onChange, onApplyPreset }: ConfigProps) {
         </div>
       </div>
 
-      {/* Instance Type */}
+      {/* Commodity Database Specs */}
+      <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-xs font-medium text-gray-700 mb-2">🖥️ Commodity Database Server (Fixed)</div>
+        <div className="space-y-1 text-xs text-gray-600">
+          <div className="flex justify-between">
+            <span>vCPU:</span>
+            <span className="font-semibold">8 cores</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Memory:</span>
+            <span className="font-semibold">64 GB RAM</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Storage:</span>
+            <span className="font-semibold">2 TB SSD</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Base Capacity:</span>
+            <span className="font-semibold">1,000 read RPS, 100 write RPS</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Cost:</span>
+            <span className="font-semibold">$146/mo</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Replication Mode */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-2">
-          Instance Type
+          Replication Mode
         </label>
         <select
-          value={instanceType}
-          onChange={(e) => onChange('instanceType', e.target.value)}
+          value={replicationMode}
+          onChange={(e) => onChange('replicationMode', e.target.value)}
           className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
-          <optgroup label="T3 - Dev/Testing (Burstable)">
-            <option value="db.t3.micro">db.t3.micro - ~50 RPS, $13/mo</option>
-            <option value="db.t3.small">db.t3.small - ~100 RPS, $26/mo</option>
-            <option value="db.t3.medium">db.t3.medium - ~200 RPS, $53/mo</option>
-          </optgroup>
-          <optgroup label="M5 - Production (Recommended)">
-            <option value="db.m5.large">db.m5.large - ~500 RPS, $133/mo</option>
-            <option value="db.m5.xlarge">db.m5.xlarge - ~1000 RPS, $266/mo</option>
-            <option value="db.m5.2xlarge">db.m5.2xlarge - ~2000 RPS, $532/mo</option>
-          </optgroup>
+          <option value="single-leader">Single-Leader (Read Replicas)</option>
+          <option value="multi-leader">Multi-Leader (Write Scaling)</option>
+          <option value="leaderless">Leaderless (Quorum)</option>
         </select>
         <p className="text-xs text-gray-500 mt-1">
-          Real AWS RDS instance types. Pick based on expected traffic.
+          {replicationMode === 'single-leader' && 'Scales reads via replicas; writes to leader only; eventual consistency for reads'}
+          {replicationMode === 'multi-leader' && 'Scales reads and writes; adds 20-50ms latency for conflict resolution; weaker consistency'}
+          {replicationMode === 'leaderless' && 'Quorum-based (R+W>N); tunable consistency; handles partitions well; 30% overhead'}
         </p>
       </div>
 
@@ -1418,6 +1538,37 @@ function PostgreSQLConfig({ config, onChange, onApplyPreset }: ConfigProps) {
             </div>
           </div>
         )}
+      </div>
+
+      {/* Calculated Capacity */}
+      <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+        <div className="text-xs font-medium text-blue-900 mb-2">💡 Total Capacity</div>
+        <div className="space-y-1 text-xs text-blue-800">
+          <div className="flex justify-between">
+            <span>Read Capacity:</span>
+            <span className="font-semibold">{Math.round(readCapacity).toLocaleString()} RPS</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Write Capacity:</span>
+            <span className="font-semibold">{Math.round(writeCapacity).toLocaleString()} RPS</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Monthly Cost:</span>
+            <span className="font-semibold">${totalCost}/month</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Configuration:</span>
+            <span className="font-semibold">
+              {replication.enabled ? `${1 + replicas} nodes` : '1 node'}
+              {sharding.enabled ? ` × ${shards} shards` : ''}
+            </span>
+          </div>
+        </div>
+        <p className="text-xs text-gray-600 mt-2">
+          {replicationMode === 'single-leader' && 'Reads scale with replicas; writes to leader only'}
+          {replicationMode === 'multi-leader' && 'Both reads and writes scale; +20-50ms latency'}
+          {replicationMode === 'leaderless' && 'Quorum-based; 30% overhead for coordination'}
+        </p>
       </div>
 
       {/* Storage Configuration */}

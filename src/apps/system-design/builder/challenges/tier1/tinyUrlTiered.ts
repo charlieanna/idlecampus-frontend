@@ -34,13 +34,23 @@ def shorten(long_url: str, context: dict) -> str:
         context: Dictionary for storing data (in-memory only!)
 
     Returns:
-        short_code: The generated short code
+        short_code: The generated short code, or None if input is invalid
     """
+    # Validate input
+    if not long_url or not isinstance(long_url, str) or len(long_url.strip()) == 0:
+        return None
+
     # Initialize storage if this is the first request
     if 'url_mappings' not in context:
         context['url_mappings'] = {}
+    if 'reverse_mappings' not in context:
+        context['reverse_mappings'] = {}  # URL -> code mapping for duplicate detection
     if 'next_id' not in context:
         context['next_id'] = 0
+
+    # Check if URL already exists (duplicate handling)
+    if long_url in context['reverse_mappings']:
+        return context['reverse_mappings'][long_url]
 
     # Get next ID and increment counter
     id = context['next_id']
@@ -49,8 +59,9 @@ def shorten(long_url: str, context: dict) -> str:
     # Convert ID to short code using base62 encoding
     code = base62_encode(id)
 
-    # Store mapping in memory
+    # Store mapping in memory (both directions)
     context['url_mappings'][code] = long_url
+    context['reverse_mappings'][long_url] = code
 
     return code
 
@@ -64,8 +75,12 @@ def redirect(short_code: str, context: dict) -> str:
         context: Dictionary containing stored data
 
     Returns:
-        long_url: The original URL, or None if not found
+        long_url: The original URL, or None if not found or invalid input
     """
+    # Validate input
+    if not short_code or not isinstance(short_code, str) or len(short_code.strip()) == 0:
+        return None
+
     # Initialize storage if needed
     if 'url_mappings' not in context:
         context['url_mappings'] = {}

@@ -207,6 +207,11 @@ export function generateSolutionForChallenge(challenge: Challenge): Solution | n
  * All challenges now use Tier 1 approach (write Python code)
  */
 export function addPythonTemplate(challenge: Challenge): Challenge {
+  // If challenge already has a pythonTemplate, keep it (don't overwrite)
+  if (challenge.pythonTemplate) {
+    return challenge;
+  }
+
   // Generate Python template based on challenge type
   const pythonTemplate = generatePythonTemplate(challenge);
 

@@ -83,6 +83,24 @@ export class SimulationEngine {
   private timeoutConfig: TimeoutConfig = DEFAULT_TIMEOUT_CONFIG;
   private queueConfig: QueueConfig = DEFAULT_QUEUE_CONFIG;
 
+  // Python code for code-aware simulation
+  private pythonCode: string = '';
+  private codeUsesCache: boolean = false;
+  private codeUsesDatabase: boolean = false;
+  private codeUsesQueue: boolean = false;
+
+  /**
+   * Set Python code and analyze what components it uses
+   */
+  setPythonCode(code: string): void {
+    this.pythonCode = code;
+    
+    // Analyze code to determine what components it uses
+    this.codeUsesCache = /context\[['"]cache['"]\]|context\.cache/.test(code);
+    this.codeUsesDatabase = /context\[['"]db['"]\]|context\.db/.test(code);
+    this.codeUsesQueue = /context\[['"]queue['"]\]|context\.queue/.test(code);
+  }
+
   /**
    * Configure traffic pattern for simulation
    */
@@ -353,6 +371,21 @@ export class SimulationEngine {
     componentMetrics: Map<string, ComponentMetrics>;
     flowViz?: FlowVisualization;
   } {
+    // Log for all NFR tests to debug failures
+    const shouldLog = testCase.type !== 'functional';
+    
+    // Log the graph config before building components
+    if (shouldLog) {
+      const appServerNode = graph.components.find(c => c.type === 'app_server');
+      if (appServerNode) {
+        console.log(`\n🔵 ${testCase.name} (${testCase.requirement})`);
+        console.log(`  📋 Graph has app_server with config:`, JSON.stringify(appServerNode.config));
+      } else {
+        console.log(`\n🔵 ${testCase.name} (${testCase.requirement})`);
+        console.log(`  ⚠️ No app_server found in graph!`);
+      }
+    }
+    
     this.buildComponents(graph);
 
     // Build traffic flow engine with the same components
@@ -360,9 +393,32 @@ export class SimulationEngine {
     this.trafficFlowEngine.buildGraph(graph, this.components);
 
     // Extract traffic parameters with optional traffic pattern modeling
-    let totalRps = testCase.traffic.rps;
-    let readRps = testCase.traffic.readRps || totalRps * (testCase.traffic.readRatio || 1);
-    let writeRps = testCase.traffic.writeRps || totalRps * (1 - (testCase.traffic.readRatio || 1));
+    // If readRps and writeRps are specified separately, calculate totalRps from them
+    let readRps: number;
+    let writeRps: number;
+    let totalRps: number;
+    
+    // If readRps/writeRps are specified separately, use them and calculate totalRps
+    if (testCase.traffic.readRps !== undefined && testCase.traffic.writeRps !== undefined) {
+      readRps = testCase.traffic.readRps;
+      writeRps = testCase.traffic.writeRps;
+      totalRps = readRps + writeRps;
+    } else if (testCase.traffic.rps !== undefined) {
+      // If totalRps is specified, calculate readRps/writeRps from readRatio
+      totalRps = testCase.traffic.rps;
+      const readRatio = testCase.traffic.readRatio !== undefined ? testCase.traffic.readRatio : 0.5;
+      readRps = totalRps * readRatio;
+      writeRps = totalRps * (1 - readRatio);
+    } else {
+      // Fallback: default to 0
+      totalRps = 0;
+      readRps = 0;
+      writeRps = 0;
+    }
+    
+    if (shouldLog) {
+      console.log(`  Traffic: ${totalRps} RPS (${readRps.toFixed(0)} reads, ${writeRps.toFixed(0)} writes)`);
+    }
 
     // Apply traffic pattern if configured and feature flag is enabled
     if (isEnabled('ENABLE_TRAFFIC_PATTERNS') && this.trafficPatternConfig) {
@@ -462,13 +518,14 @@ export class SimulationEngine {
       toAppPath = this.findPath(entryId, 'read_write', (n) => n === appId);
     }
 
-    // Optional cache
-    const cacheId = this.findNodeIdByType('redis');
+    // Optional cache (check both 'redis' and 'cache' types)
+    const cacheId = this.findNodeIdByType('redis') || this.findNodeIdByType('cache');
     const toCachePath = appId && cacheId ? this.findPath(appId, 'read', (n) => n === cacheId) : null;
 
-    // Read DB path (from cache if present else from app)
-    const readDbFromId = toCachePath ? toCachePath[toCachePath.length - 1] : appId;
-    const toDbReadPath = dbId && readDbFromId ? this.findPath(readDbFromId, 'read', (n) => n === dbId) : null;
+    // Read DB path: In cache-aside pattern, reads go app_server → database (not cache → database)
+    // Cache is checked first, but on miss, app_server queries database directly
+    // So we always use app_server as the source for database reads
+    const toDbReadPath = dbId && appId ? this.findPath(appId, 'read', (n) => n === dbId) : null;
 
     // Write DB path (from app to db)
     const toDbWritePath = dbId && appId ? this.findPath(appId, 'write', (n) => n === dbId) : null;
@@ -482,8 +539,28 @@ export class SimulationEngine {
     // If critical backend paths are missing, system cannot function for those flows
     const readPathAvailable = !!(toAppPath && (toCachePath || true) && toDbReadPath);
     const writePathAvailable = !!(toAppPath && toDbWritePath);
+    
+    // Check path availability
+    if (shouldLog && (!readPathAvailable || !writePathAvailable)) {
+      console.log('❌ PATH ISSUE:', {
+        readPathAvailable,
+        writePathAvailable,
+        hasApp: !!appServer,
+        hasDb: !!db,
+        toAppPath: !!toAppPath,
+        toDbReadPath: !!toDbReadPath,
+        toDbWritePath: !!toDbWritePath,
+      });
+    }
 
     if (!appServer || !db || !toAppPath) {
+      if (shouldLog) {
+        console.log('❌ EARLY RETURN - Missing components:', {
+          hasAppServer: !!appServer,
+          hasDb: !!db,
+          hasToAppPath: !!toAppPath,
+        });
+      }
       return {
         metrics: {
           p50Latency: 0,
@@ -519,8 +596,17 @@ export class SimulationEngine {
 
       componentMetrics.set(comp.id, metrics);
       totalLatency += metrics.latency;
+      const errorBefore = combinedErrorRate;
       combinedErrorRate = this.combineErrorRates(combinedErrorRate, metrics.errorRate);
-      totalCost += metrics.cost;
+      if (shouldLog && comp.type === 'app_server') {
+        const appMetrics = metrics as any;
+        const instanceType = (comp as any).config?.instanceType || 't3.medium';
+        const instances = appMetrics.instances || 1;
+        const rpsPerInstance = appMetrics.rpsPerInstance || 0;
+        const capacityPerInstance = instanceType === 't3.medium' ? 500 : (instanceType === 't3.small' ? 250 : 100);
+        // Always log for app_server in NFR tests to debug
+        console.log(`  ⚠️ ${comp.type}: ${instances} instances (config.instances=${(comp as any).config?.instances}), ${rpsPerInstance.toFixed(0)} RPS/instance, ${((metrics.utilization || 0) * 100).toFixed(1)}% util, ${(metrics.errorRate * 100).toFixed(1)}% errors`);
+      }
     }
 
     // App server already included above as part of pathToAppComponents
@@ -675,7 +761,20 @@ export class SimulationEngine {
       }
     } else {
       // Single database mode (legacy behavior)
+      // Log database config before simulation
+      if (shouldLog) {
+        const dbConfig = (db as any).config;
+        console.log(`  Database config:`, {
+          replicationMode: dbConfig?.replicationMode,
+          replicas: dbConfig?.replication?.replicas,
+          shards: dbConfig?.sharding?.shards,
+        });
+      }
+      
       dbMetrics = db.simulateWithReadWrite(dbReadRps, dbWriteRps, context);
+      if (shouldLog && (dbMetrics.errorRate > 0 || dbMetrics.utilization > 0.5)) {
+        console.log(`  Database: ${dbReadRps.toFixed(0)} read, ${dbWriteRps.toFixed(0)} write RPS → ${((dbMetrics.utilization || 0) * 100).toFixed(1)}% util, ${(dbMetrics.errorRate * 100).toFixed(1)}% errors`);
+      }
 
       // Apply database capacity modeling if enabled
       if (isEnabled('ENABLE_DB_CONNECTION_POOL')) {
@@ -732,10 +831,14 @@ export class SimulationEngine {
       }
 
       componentMetrics.set(db.id, dbMetrics);
+      const errorBeforeDb = combinedErrorRate;
       combinedErrorRate = this.combineErrorRates(
         combinedErrorRate,
         dbMetrics.errorRate
       );
+      if (shouldLog && dbMetrics.errorRate > 0) {
+        console.log(`  ⚠️ Database: ${(dbMetrics.errorRate * 100).toFixed(1)}% errors, ${((dbMetrics.utilization || 0) * 100).toFixed(1)}% util`);
+      }
       totalCost += dbMetrics.cost;
       if (dbMetrics.downtime) {
         availability = Math.max(0, 1 - dbMetrics.downtime / testCase.duration);
@@ -778,9 +881,25 @@ export class SimulationEngine {
     // If any path is unavailable, treat that fraction as failed (1.0 error)
     const readFrac = totalRps > 0 ? readRps / totalRps : 0;
     const writeFrac = totalRps > 0 ? writeRps / totalRps : 0;
+    
+    if (shouldLog && combinedErrorRate > 0) {
+      console.log(`  ⚠️ Combined error rate: ${(combinedErrorRate * 100).toFixed(1)}%`);
+    }
+    
     if (!readPathAvailable || !writePathAvailable) {
       const unreachableFrac = (readPathAvailable ? 0 : readFrac) + (writePathAvailable ? 0 : writeFrac);
+      const errorBeforePath = combinedErrorRate;
+      if (shouldLog) {
+        console.log('❌ PATH UNAVAILABLE - Error rate will be 100% for', {
+          unreachableFrac: (unreachableFrac * 100).toFixed(1) + '%',
+          readPathAvailable,
+          writePathAvailable,
+        });
+      }
       combinedErrorRate = this.combineErrorRates(combinedErrorRate, Math.min(1, unreachableFrac));
+      if (shouldLog) {
+        console.log(`  After path check: combinedErrorRate: ${(errorBeforePath * 100).toFixed(2)}% → ${(combinedErrorRate * 100).toFixed(2)}%`);
+      }
       // If everything is unreachable, knock availability to 0
       if (unreachableFrac >= 0.999) availability = 0;
     }
@@ -890,17 +1009,24 @@ export class SimulationEngine {
       flowViz = undefined;
     }
 
+    const finalMetrics = {
+      p50Latency,
+      p90Latency,
+      p95Latency,
+      p99Latency,
+      p999Latency,
+      errorRate: combinedErrorRate,
+      monthlyCost: totalCost,
+      availability,
+    };
+    
+    if (shouldLog) {
+      const status = finalMetrics.errorRate > 0.01 ? '❌' : '✅';
+      console.log(`  ${status} Result: ${(finalMetrics.errorRate * 100).toFixed(1)}% errors, ${finalMetrics.p99Latency.toFixed(0)}ms p99, $${finalMetrics.monthlyCost.toFixed(0)}/mo`);
+    }
+    
     return {
-      metrics: {
-        p50Latency,
-        p90Latency,
-        p95Latency,
-        p99Latency,
-        p999Latency,
-        errorRate: combinedErrorRate,
-        monthlyCost: totalCost,
-        availability,
-      },
+      metrics: finalMetrics,
       componentMetrics,
       flowViz,
     };

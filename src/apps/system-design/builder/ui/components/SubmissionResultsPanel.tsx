@@ -1,4 +1,4 @@
-import { TestCase, TestResult } from '../../types/testCase';
+import { TestCase, TestResult, Solution } from '../../types/testCase';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface SubmissionResultsPanelProps {
@@ -7,7 +7,7 @@ interface SubmissionResultsPanelProps {
   isRunning: boolean;
   currentTestIndex: number;
   onEditDesign: () => void;
-  onShowSolution: () => void;
+  onShowSolution: (solution?: Solution) => void;
 }
 
 export function SubmissionResultsPanel({
@@ -237,6 +237,18 @@ export function SubmissionResultsPanel({
                     </div>
                   </div>
                 )}
+
+                {/* Show Solution button for this test case */}
+                {testCase.solution && (
+                  <div className="mt-2 pt-2 border-t border-gray-200">
+                    <button
+                      onClick={() => onShowSolution(testCase.solution)}
+                      className="w-full px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition-colors"
+                    >
+                      📋 Load Solution for {testCase.name}
+                    </button>
+                  </div>
+                )}
               </motion.div>
               </div>
             );
@@ -275,7 +287,10 @@ export function SubmissionResultsPanel({
               ✏️ Edit Design
             </button>
             <button
-              onClick={onShowSolution}
+              onClick={() => {
+                // Load challenge-level solution (pass undefined to use fallback)
+                onShowSolution(undefined);
+              }}
               className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded transition-colors"
             >
               💡 Solution

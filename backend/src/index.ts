@@ -16,6 +16,10 @@ const PORT = process.env.PORT || 3001;
 // Middleware
 const allowedOrigins = [
   'http://localhost:5000',
+  'http://localhost:5001',
+  'http://localhost:5002',
+  'http://localhost:5003',
+  'http://localhost:5004',
   'http://localhost:5173',
   'http://0.0.0.0:5000',
 ];

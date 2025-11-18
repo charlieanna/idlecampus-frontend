@@ -17,7 +17,17 @@ export interface InstanceSpec {
 
 // Common EC2 instance types
 export const EC2_INSTANCES: Record<string, InstanceSpec> = {
-  // T3 - Burstable (cheap, good for variable load)
+  // Commodity App Server - Fixed spec for all app servers
+  'commodity-app': {
+    type: 'commodity-app',
+    vcpu: 8,
+    memoryGB: 64,
+    networkGbps: 10.0,
+    costPerHour: 0.15, // ~$110/month
+    requestsPerSecond: 1000,
+  },
+
+  // Legacy types (kept for backward compatibility with existing configs)
   't3.micro': {
     type: 't3.micro',
     vcpu: 2,
@@ -42,8 +52,6 @@ export const EC2_INSTANCES: Record<string, InstanceSpec> = {
     costPerHour: 0.0416,
     requestsPerSecond: 500,
   },
-
-  // M5 - General purpose (balanced, production-ready)
   'm5.large': {
     type: 'm5.large',
     vcpu: 2,
@@ -68,8 +76,6 @@ export const EC2_INSTANCES: Record<string, InstanceSpec> = {
     costPerHour: 0.384,
     requestsPerSecond: 4000,
   },
-
-  // C5 - Compute optimized (high CPU for processing)
   'c5.large': {
     type: 'c5.large',
     vcpu: 2,
@@ -126,6 +132,18 @@ export const REDIS_INSTANCES: Record<string, InstanceSpec & { memoryGB: number }
 
 // RDS Database instance types
 export const RDS_INSTANCES: Record<string, InstanceSpec & { storageIOPS: number }> = {
+  // Commodity Database Server - Fixed spec for all databases
+  'commodity-db': {
+    type: 'commodity-db',
+    vcpu: 8,
+    memoryGB: 64,
+    networkGbps: 10.0,
+    costPerHour: 0.20, // ~$146/month
+    requestsPerSecond: 1000, // Base capacity; scales with replication/sharding
+    storageIOPS: 16000,
+  },
+
+  // Legacy types (kept for backward compatibility)
   'db.t3.micro': {
     type: 'db.t3.micro',
     vcpu: 2,

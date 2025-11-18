@@ -180,9 +180,25 @@ export function extractFieldNames(codeSnippet: string): string[] {
   }
 
   // Match bracket notation: data["key"] or data['key']
+  // But exclude context API clients like context['db'], context['cache'], context['queue']
   const bracketPattern = /\[['"](\w+)['"]\]/g;
+  const contextApiClients = ['db', 'cache', 'queue', 'cdn', 'search']; // Known API client names
   while ((match = bracketPattern.exec(codeSnippet)) !== null) {
-    fields.add(match[1]);
+    const key = match[1];
+    // Only add if it's not a context API client (e.g., context['db'] should not extract 'db' as a field)
+    // Check if this bracket notation is part of context['api'] pattern
+    if (contextApiClients.includes(key)) {
+      // Look back to see if 'context' appears before this bracket
+      const startPos = Math.max(0, match.index - 20);
+      const contextBefore = codeSnippet.substring(startPos, match.index);
+      // Check if 'context' followed by optional whitespace appears, and the next char is '['
+      // We check if contextBefore ends with 'context' or 'context ' and the bracket starts right after
+      if (/context\s*$/.test(contextBefore.trim())) {
+        // This is context['db'] or context["db"], skip it
+        continue;
+      }
+    }
+    fields.add(key);
   }
 
   // Match .get() calls: .get("key") or .get('key')

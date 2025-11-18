@@ -9,25 +9,29 @@ import { EC2_INSTANCES } from '../../types/instanceTypes';
 export class AppServer extends Component {
   private readonly baseLatency = 10; // ms
 
-  constructor(id: string, config: { instances?: number; instanceType?: string } = {}) {
+  constructor(id: string, config: { instances?: number; instanceType?: string; lbStrategy?: string } = {}) {
     super(id, 'app_server', {
       instances: 1,
-      instanceType: 't3.medium', // Default instance type
+      instanceType: 'commodity-app', // Always use commodity spec
+      lbStrategy: 'round-robin', // Default load balancing strategy
       ...config,
+      // Override instanceType to always be commodity-app
+      instanceType: 'commodity-app',
     });
   }
 
   simulate(rps: number, context?: SimulationContext): ComponentMetrics {
     const instances = this.config.instances || 1;
-    const instanceType = this.config.instanceType || 't3.medium';
+    // Always use commodity-app spec (1000 RPS, 64GB RAM, 2TB disk)
+    const instanceType = 'commodity-app';
 
-    // Get capacity and cost from real instance specs
+    // Get capacity and cost from commodity spec
     const instanceSpec = EC2_INSTANCES[instanceType];
     if (!instanceSpec) {
-      console.warn(`Unknown instance type: ${instanceType}, using default`);
-      // Fallback to default
-      const capacityPerInstance = 500;
-      const costPerInstance = 50;
+      console.error('Commodity app server spec not found! This should never happen.');
+      // Fallback
+      const capacityPerInstance = 1000;
+      const costPerInstance = 110;
       const rpsPerInstance = rps / instances;
       const utilization = rpsPerInstance / capacityPerInstance;
 
@@ -41,8 +45,8 @@ export class AppServer extends Component {
       };
     }
 
-    const capacityPerInstance = instanceSpec.requestsPerSecond;
-    const costPerInstance = instanceSpec.costPerHour * 730; // Monthly cost
+    const capacityPerInstance = instanceSpec.requestsPerSecond; // Fixed at 1000 RPS
+    const costPerInstance = instanceSpec.costPerHour * 730; // Monthly cost (~$110/mo)
     const rpsPerInstance = rps / instances;
     const utilization = rpsPerInstance / capacityPerInstance;
 
