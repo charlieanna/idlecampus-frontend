@@ -534,9 +534,17 @@ def shorten(long_url: str, context: dict) -> str:
     if 'next_id' not in context:
         context['next_id'] = 0
 
-    # Your code here: Generate short code and store mapping
+    # Get next ID and increment counter
+    id = context['next_id']
+    context['next_id'] = id + 1
 
-    return ''
+    # Convert ID to short code using base62 encoding
+    code = base62_encode(id)
+
+    # Store mapping in memory
+    context['url_mappings'][code] = long_url
+
+    return code
 
 
 def redirect(short_code: str, context: dict) -> str:
@@ -563,9 +571,8 @@ def redirect(short_code: str, context: dict) -> str:
     if 'url_mappings' not in context:
         context['url_mappings'] = {}
 
-    # Your code here: Look up and return the URL
-
-    return None
+    # Simple lookup from in-memory dictionary
+    return context['url_mappings'].get(short_code)
 
 
 def base62_encode(num: int) -> str:
@@ -585,10 +592,15 @@ def base62_encode(num: int) -> str:
         base62_encode(62) -> 'ba'
     """
     charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
-
-    # Your code here: Convert number to base62
-
-    return ''
+    
+    if num == 0:
+        return charset[0]
+    
+    result = ''
+    while num > 0:
+        result = charset[num % 62] + result
+        num //= 62
+    return result
 
 
 # App Server Handler
