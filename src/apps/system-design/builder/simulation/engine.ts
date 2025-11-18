@@ -194,6 +194,7 @@ export class SimulationEngine {
         case 'cassandra':
           component = new Cassandra(node.id, node.config);
           break;
+        case 'cache':
         case 'redis':
           component = new RedisCache(node.id, node.config);
           break;
