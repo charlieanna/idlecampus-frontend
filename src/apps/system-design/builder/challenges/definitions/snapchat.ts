@@ -72,7 +72,11 @@ export const snapchatProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('snapchat', problemConfigs.snapchat),
+  scenarios: generateScenarios('snapchat', problemConfigs.snapchat, [
+    'Users can send photos/videos that disappear after viewing',
+    'Users can post stories that last 24 hours',
+    'Users can send messages that auto-delete'
+  ]),
 
   validators: [
     {

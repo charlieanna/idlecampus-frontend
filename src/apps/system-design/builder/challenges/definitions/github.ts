@@ -297,7 +297,12 @@ Learning Objectives (DDIA Ch. 2, 3, 12):
     },
   },
 
-  scenarios: generateScenarios('github', problemConfigs.github),
+  scenarios: generateScenarios('github', problemConfigs.github, [
+    'Users can host Git repositories',
+    'Users can create pull requests and issues',
+    'Users can fork and star repositories',
+    'Platform supports code review and collaboration'
+  ]),
 
   validators: [
     {

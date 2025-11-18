@@ -155,7 +155,10 @@ Learning Objectives (DDIA Ch. 4):
     },
   },
 
-  scenarios: generateScenarios('telegram', problemConfigs.telegram),
+  scenarios: generateScenarios('telegram', problemConfigs.telegram, [
+    'Users can send messages, photos, and videos',
+    'Users can create channels for broadcasting'
+  ]),
 
   validators: [
     {

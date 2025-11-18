@@ -203,6 +203,28 @@ export function TieredSystemDesignBuilder({
   const hasCodeChallenges = selectedChallenge?.codeChallenges && selectedChallenge.codeChallenges.length > 0;
   const hasPythonTemplate = selectedChallenge?.pythonTemplate && selectedChallenge.pythonTemplate.length > 0;
 
+  // Load solution to canvas with disclaimer (wrapped version for UI buttons)
+  const loadSolutionWithDisclaimer = useCallback((solutionOverride?: Solution) => {
+    const confirmed = window.confirm(
+      "💡 Reference Architecture\n\n" +
+      "This shows ONE valid way to meet the requirements.\n" +
+      "Your design may differ and still pass all tests!\n\n" +
+      "The traffic simulator validates ANY architecture that:\n" +
+      "✅ Has all required components (mustHave)\n" +
+      "✅ Has all required connections (mustConnect)\n" +
+      "✅ Meets performance targets (latency, cost, errors)\n\n" +
+      "There are often multiple valid solutions. This reference is optimized for:\n" +
+      "• Simplicity: Minimal components needed\n" +
+      "• Best practices: Industry-standard patterns\n" +
+      "• Education: Demonstrates DDIA/SDP concepts\n\n" +
+      "Click OK to load this reference architecture to the canvas."
+    );
+
+    if (confirmed) {
+      loadSolutionToCanvas(solutionOverride);
+    }
+  }, []);
+
   // Load solution to canvas (can be challenge-level or test-case-specific)
   const loadSolutionToCanvas = useCallback((solutionOverride?: Solution) => {
     const solution = solutionOverride || selectedChallenge?.solution;
@@ -1299,7 +1321,7 @@ if __name__ == "__main__":
                   setTestResults(new Map());
                   setCurrentTestIndex(0);
                 }}
-                onShowSolution={loadSolutionToCanvas}
+                onShowSolution={loadSolutionWithDisclaimer}
                 hasChallengeSolution={!!selectedChallenge?.solution}
               />
             ) : (

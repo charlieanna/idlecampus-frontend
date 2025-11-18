@@ -109,7 +109,12 @@ Learning Objectives (DDIA Ch. 3, 4):
     },
   },
 
-  scenarios: generateScenarios('dropbox', problemConfigs.dropbox),
+  scenarios: generateScenarios('dropbox', problemConfigs.dropbox, [
+    'Users can upload and download files',
+    'Files sync across multiple devices',
+    'Users can share files and folders',
+    'Platform supports file versioning'
+  ]),
 
   validators: [
     {

@@ -312,7 +312,11 @@ Learning Objectives (DDIA Ch. 10):
     },
   },
 
-  scenarios: generateScenarios('spotify', problemConfigs.spotify),
+  scenarios: generateScenarios('spotify', problemConfigs.spotify, [
+    'Users can search and play songs',
+    'Users can create and share playlists',
+    'Users can follow artists and other users'
+  ]),
 
   validators: [
     {

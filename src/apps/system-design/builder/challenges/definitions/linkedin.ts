@@ -345,7 +345,12 @@ Learning Objectives (DDIA Ch. 10):
     },
   },
 
-  scenarios: generateScenarios('linkedin', problemConfigs.linkedin),
+  scenarios: generateScenarios('linkedin', problemConfigs.linkedin, [
+    'Users can create profiles with work experience',
+    'Users can connect with other professionals',
+    'Users can post updates and articles',
+    'Users can search for jobs and people'
+  ]),
 
   validators: [
     {

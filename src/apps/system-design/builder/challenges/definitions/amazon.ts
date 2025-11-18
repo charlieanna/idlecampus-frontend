@@ -229,7 +229,12 @@ Learning Objectives (DDIA Ch. 7):
     },
   },
 
-  scenarios: generateScenarios('amazon', problemConfigs.amazon),
+  scenarios: generateScenarios('amazon', problemConfigs.amazon, [
+    'Users can browse and search for products',
+    'Users can add items to cart and checkout',
+    'Users can track orders and view order history',
+    'Sellers can list and manage products'
+  ]),
 
   validators: [
     {

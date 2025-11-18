@@ -222,7 +222,12 @@ Learning Objectives (DDIA/SDP):
     },
   },
 
-  scenarios: generateScenarios('bookingcom', problemConfigs.bookingcom),
+  scenarios: generateScenarios('bookingcom', problemConfigs.bookingcom, [
+    'Users can search for hotels by location and dates',
+    'Users can view room availability and prices',
+    'Users can book rooms and manage reservations',
+    'Platform handles payments and cancellations'
+  ]),
 
   validators: [
     {

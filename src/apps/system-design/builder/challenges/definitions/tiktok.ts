@@ -71,7 +71,11 @@ export const tiktokProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('tiktok', problemConfigs.tiktok),
+  scenarios: generateScenarios('tiktok', problemConfigs.tiktok, [
+    'Users can upload short videos (15-60 seconds)',
+    'Users can scroll through an infinite feed of videos',
+    'Users can like, comment, and share videos'
+  ]),
 
   validators: [
     {

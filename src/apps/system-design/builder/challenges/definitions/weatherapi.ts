@@ -62,7 +62,10 @@ export const weatherapiProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('weatherapi', problemConfigs.weatherapi),
+  scenarios: generateScenarios('weatherapi', problemConfigs.weatherapi, [
+    'Users can query current weather by location',
+    'Supports high-volume read traffic'
+  ]),
 
   validators: [
     {

@@ -154,7 +154,12 @@ Learning Objectives (DDIA Ch. 3):
     },
   },
 
-  scenarios: generateScenarios('facebook', problemConfigs.facebook),
+  scenarios: generateScenarios('facebook', problemConfigs.facebook, [
+    'Users can create profiles and friend other users',
+    'Users can post status updates, photos, and videos',
+    ' posts',
+    'Users can like and comment on posts'
+  ]),
 
   validators: [
     {

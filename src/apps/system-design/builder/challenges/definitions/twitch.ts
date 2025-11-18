@@ -151,7 +151,9 @@ Learning Objectives (DDIA Ch. 3):
     },
   },
 
-  scenarios: generateScenarios('twitch', problemConfigs.twitch),
+  scenarios: generateScenarios('twitch', problemConfigs.twitch, [
+    'Users can chat in real-time during streams'
+  ]),
 
   validators: [
     {

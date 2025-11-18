@@ -232,7 +232,10 @@ Learning Objectives (DDIA Ch. 8):
     },
   },
 
-  scenarios: generateScenarios('zoom', problemConfigs.zoom),
+  scenarios: generateScenarios('zoom', problemConfigs.zoom, [
+    'Users can create and join video meetings',
+    'Users can chat during meetings'
+  ]),
 
   validators: [
     {

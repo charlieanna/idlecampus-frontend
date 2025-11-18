@@ -131,7 +131,12 @@ Learning Objectives (DDIA Ch. 4, 11):
     },
   },
 
-  scenarios: generateScenarios('discord', problemConfigs.discord),
+  scenarios: generateScenarios('discord', problemConfigs.discord, [
+    'Users can create servers with multiple channels',
+    'Users can send text messages in real-time',
+    'Users can join voice/video calls',
+    'Messages are organized by channels and threads'
+  ]),
 
   validators: [
     {

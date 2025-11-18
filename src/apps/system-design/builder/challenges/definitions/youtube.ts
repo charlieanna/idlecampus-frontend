@@ -445,7 +445,11 @@ Learning Objectives (DDIA/SDP):
     },
   },
 
-  scenarios: generateScenarios('youtube', problemConfigs.youtube),
+  scenarios: generateScenarios('youtube', problemConfigs.youtube, [
+    'Users can upload and share videos',
+    'Users can watch, like, comment on videos',
+    'Users can subscribe to channels'
+  ]),
 
   validators: [
     {

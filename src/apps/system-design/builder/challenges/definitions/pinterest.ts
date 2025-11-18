@@ -133,7 +133,12 @@ Learning Objectives (DDIA Ch. 3):
     },
   },
 
-  scenarios: generateScenarios('pinterest', problemConfigs.pinterest),
+  scenarios: generateScenarios('pinterest', problemConfigs.pinterest, [
+    'Users can create boards and pin images',
+    'Users can browse and search for pins',
+    'Users can follow boards and users',
+    'Images are organized into categories'
+  ]),
 
   validators: [
     {

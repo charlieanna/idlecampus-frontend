@@ -518,7 +518,12 @@ Learning Objectives (DDIA Ch. 3 + SDP Rate Limiting):
     },
   },
 
-  scenarios: generateScenarios('reddit', problemConfigs.reddit),
+  scenarios: generateScenarios('reddit', problemConfigs.reddit, [
+    'Users can create posts in different subreddits',
+    'Users can comment on posts (nested comments)',
+    'Users can upvote and downvote posts and comments',
+    'Posts are ranked by votes and recency'
+  ]),
 
   validators: [
     {

@@ -237,7 +237,11 @@ Learning Objectives (DDIA Ch. 8):
     },
   },
 
-  scenarios: generateScenarios('whatsapp', problemConfigs.whatsapp),
+  scenarios: generateScenarios('whatsapp', problemConfigs.whatsapp, [
+    'Users can send text messages in real-time',
+    'Users can send photos, videos, and voice messages',
+    'Users can create group chats'
+  ]),
 
   validators: [
     {

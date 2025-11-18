@@ -73,7 +73,11 @@ export const steamProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('steam', problemConfigs.steam),
+  scenarios: generateScenarios('steam', problemConfigs.steam, [
+    'Users can browse and purchase games',
+    'Users can download and launch games',
+    'Users can add friends and view achievements'
+  ]),
 
   validators: [
     {

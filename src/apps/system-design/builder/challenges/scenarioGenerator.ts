@@ -245,6 +245,80 @@ This tests if architecture can scale horizontally. May require load balancers an
     },
   });
 
+  // ========== JUSTIFICATION-BASED TESTS (NFR-J) ==========
+  // These tests demonstrate WHY specific architectural decisions are needed
+  // Tests FAIL without proper architecture, PASS with it
+
+  // Test for Read/Write Split (CQRS) justification
+  if (config.readRatio >= 0.8 && config.baseRps >= 1000) {
+    scenarios.push({
+      name: 'NFR-P5: Read Latency Under Write Pressure',
+      description: `Heavy write traffic (bursts of 20% of total RPS) causes read latency degradation in monolithic architecture.
+**Why this test matters**: Monolithic app servers process reads and writes in same thread pool. Heavy writes block read threads, causing read latency spikes.
+**How CQRS solves it**: Separate Read API and Write API with independent thread pools. Writes don't block reads.
+**Pass criteria**: With CQRS (separate read/write services), read latency stays < ${config.maxLatency}ms even during write bursts. Without CQRS: read latency spikes to ${config.maxLatency * 3}ms+.`,
+      traffic: {
+        rps: config.baseRps,
+        readWriteRatio: config.readRatio,
+        avgFileSize: config.avgFileSize,
+        // Inject write bursts to simulate heavy write pressure
+        writeBurstPattern: true,
+      },
+      passCriteria: {
+        maxLatency: config.maxLatency,  // Strict latency requirement for reads
+        maxErrorRate: 0.01,
+        readP99Latency: config.maxLatency,  // Read p99 must stay low even during write bursts
+      },
+    });
+  }
+
+  // Test for Read Replicas justification
+  if (config.readRatio >= 0.7 && config.baseRps >= 500) {
+    const dbReadRps = config.baseRps * config.readRatio;
+    scenarios.push({
+      name: 'NFR-S3: Heavy Read Load',
+      description: `Read traffic of ${dbReadRps.toFixed(0)} RPS exceeds single database capacity (~1000 RPS).
+**Why this test matters**: Single database instance has limited read capacity. High read traffic causes latency spikes and potential database overload.
+**How read replicas solve it**: Distribute read traffic across multiple replicas. Each replica handles ~1000 RPS, linearly scaling read capacity.
+**Pass criteria**: With ${Math.ceil(dbReadRps / 1000)} read replica(s), meet latency targets at acceptable cost. Without replicas: latency exceeds ${config.maxLatency * 2}ms OR cost exceeds budget (vertical scaling is expensive).`,
+      traffic: {
+        rps: config.baseRps * 1.5,  // 50% higher read traffic
+        readWriteRatio: config.readRatio,
+        avgFileSize: config.avgFileSize,
+      },
+      passCriteria: {
+        maxLatency: config.maxLatency,
+        maxErrorRate: 0.02,
+        // Cost validation: replicas are cheaper than vertical scaling
+        maxCostMultiplier: 2.0,  // Solution shouldn't cost more than 2x baseline
+      },
+    });
+  }
+
+  // Test for Sharding/Multi-leader justification
+  const writeRps = config.baseRps * (1 - config.readRatio);
+  if (writeRps > 100) {
+    scenarios.push({
+      name: 'NFR-S4: Write Burst',
+      description: `Write traffic bursts to ${(writeRps * 2).toFixed(0)} RPS, exceeding single-leader capacity (~100 RPS).
+**Why this test matters**: Single-leader replication has limited write throughput. All writes go to one master, causing bottleneck.
+**How sharding/multi-leader solves it**:
+- Multi-leader: Multiple masters accept writes independently (~300 RPS per leader pair)
+- Sharding: Partition data across shards, each with independent write capacity
+**Pass criteria**: Handle write burst with latency < ${config.maxLatency * 2}ms. Without sharding/multi-leader: writes queue up, latency exceeds ${config.maxLatency * 5}ms.`,
+      traffic: {
+        rps: config.baseRps * 2,
+        readWriteRatio: 0.3,  // Heavy write scenario (70% writes)
+        avgFileSize: config.avgFileSize,
+      },
+      passCriteria: {
+        maxLatency: config.maxLatency * 2,  // Acceptable degradation during burst
+        maxErrorRate: 0.03,
+        writeP99Latency: config.maxLatency * 2,
+      },
+    });
+  }
+
   // ========== RELIABILITY REQUIREMENTS (NFR-R) ==========
   scenarios.push({
     name: 'NFR-R1: Database Failure',

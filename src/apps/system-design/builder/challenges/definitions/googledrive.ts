@@ -108,7 +108,12 @@ Learning Objectives (DDIA Ch. 3, 11):
     },
   },
 
-  scenarios: generateScenarios('googledrive', problemConfigs.googledrive),
+  scenarios: generateScenarios('googledrive', problemConfigs.googledrive, [
+    'Users can upload, store, and organize files',
+    'Users can collaborate on documents in real-time',
+    'Files can be shared with specific permissions',
+    'Platform supports searching across all files'
+  ]),
 
   validators: [
     {

@@ -364,7 +364,10 @@ Learning Objectives (DDIA Ch. 9):
     },
   },
 
-  scenarios: generateScenarios('notion', problemConfigs.notion),
+  scenarios: generateScenarios('notion', problemConfigs.notion, [
+    'Users can create pages with rich content (text, images, databases)',
+    'Users can share and collaborate on workspaces'
+  ]),
 
   validators: [
     {

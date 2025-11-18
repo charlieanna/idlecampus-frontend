@@ -412,7 +412,10 @@ Learning Objectives (DDIA Ch. 8, 11):
     },
   },
 
-  scenarios: generateScenarios('netflix', problemConfigs.netflix),
+  scenarios: generateScenarios('netflix', problemConfigs.netflix, [
+    'Users can browse movies and TV shows',
+    'Users can stream videos on-demand'
+  ]),
 
   validators: [
     {

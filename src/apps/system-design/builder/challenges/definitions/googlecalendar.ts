@@ -62,7 +62,10 @@ export const googlecalendarProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('googlecalendar', problemConfigs.googlecalendar),
+  scenarios: generateScenarios('googlecalendar', problemConfigs.googlecalendar, [
+    'Users can create and manage events',
+    'Users can share calendars with others'
+  ]),
 
   validators: [
     {

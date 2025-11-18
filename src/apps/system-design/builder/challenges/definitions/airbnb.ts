@@ -277,7 +277,12 @@ Learning Objectives (DDIA/SDP):
     },
   },
 
-  scenarios: generateScenarios('airbnb', problemConfigs.airbnb),
+  scenarios: generateScenarios('airbnb', problemConfigs.airbnb, [
+    'Hosts can list properties with photos and details',
+    'Guests can search and book properties',
+    'Platform handles payments and bookings',
+    'Users can leave reviews'
+  ]),
 
   validators: [
     {

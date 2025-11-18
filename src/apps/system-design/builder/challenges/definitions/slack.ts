@@ -324,7 +324,12 @@ Learning Objectives (DDIA Ch. 9):
     },
   },
 
-  scenarios: generateScenarios('slack', problemConfigs.slack),
+  scenarios: generateScenarios('slack', problemConfigs.slack, [
+    'Users can send messages in channels and direct messages',
+    'Users can share files and integrate apps',
+    'Workspaces organize teams with multiple channels',
+    'Messages support threads and reactions'
+  ]),
 
   validators: [
     {

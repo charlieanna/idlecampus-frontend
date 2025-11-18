@@ -124,7 +124,12 @@ Learning Objectives (DDIA Ch. 3):
     },
   },
 
-  scenarios: generateScenarios('yelp', problemConfigs.yelp),
+  scenarios: generateScenarios('yelp', problemConfigs.yelp, [
+    'Users can search for local businesses',
+    'Users can write reviews and upload photos',
+    'Businesses are ranked by rating and relevance',
+    'Platform supports geospatial search'
+  ]),
 
   validators: [
     {

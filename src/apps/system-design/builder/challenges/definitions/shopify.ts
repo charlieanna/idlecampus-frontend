@@ -159,7 +159,11 @@ Learning Objectives (DDIA Ch. 7):
     },
   },
 
-  scenarios: generateScenarios('shopify', problemConfigs.shopify),
+  scenarios: generateScenarios('shopify', problemConfigs.shopify, [
+    'Store owners can create online stores',
+    'Store owners can manage products and inventory',
+    'Customers can browse and purchase products'
+  ]),
 
   validators: [
     {

@@ -404,7 +404,12 @@ Learning Objectives (DDIA/SDP):
     },
   },
 
-  scenarios: generateScenarios('instagram', problemConfigs.instagram),
+  scenarios: generateScenarios('instagram', problemConfigs.instagram, [
+    'Users can upload photos and videos',
+    'Users can view a feed of photos from people they follow',
+    'Users can like and comment on photos',
+    'Users can search for other users and content'
+  ]),
 
   validators: [
     {

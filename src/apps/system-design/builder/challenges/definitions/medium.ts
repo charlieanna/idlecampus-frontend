@@ -127,7 +127,12 @@ Learning Objectives (DDIA Ch. 3):
     },
   },
 
-  scenarios: generateScenarios('medium', problemConfigs.medium),
+  scenarios: generateScenarios('medium', problemConfigs.medium, [
+    'Users can write and publish articles',
+    'Users can follow authors and topics',
+    'Users can clap (like) and comment on articles',
+    'Articles are ranked by popularity and engagement'
+  ]),
 
   validators: [
     {

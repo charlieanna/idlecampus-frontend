@@ -57,7 +57,11 @@ export const doordashProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('doordash', problemConfigs.doordash),
+  scenarios: generateScenarios('doordash', problemConfigs.doordash, [
+    'Customers can browse restaurants and order food',
+    'Platform matches orders with nearby dashers (drivers)',
+    'Real-time tracking of delivery status'
+  ]),
 
   validators: [
     {

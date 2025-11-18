@@ -166,7 +166,10 @@ Learning Objectives (DDIA Ch. 7):
     },
   },
 
-  scenarios: generateScenarios('ticketmaster', problemConfigs.ticketmaster),
+  scenarios: generateScenarios('ticketmaster', problemConfigs.ticketmaster, [
+    'Users can browse and search for events',
+    'Users can purchase tickets with seat selection'
+  ]),
 
   validators: [
     {

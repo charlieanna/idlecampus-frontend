@@ -71,7 +71,10 @@ export const huluProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('hulu', problemConfigs.hulu),
+  scenarios: generateScenarios('hulu', problemConfigs.hulu, [
+    'Users can watch TV shows and movies',
+    'Users can record shows to watch later (DVR)'
+  ]),
 
   validators: [
     {

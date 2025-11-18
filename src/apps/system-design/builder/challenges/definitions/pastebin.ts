@@ -59,7 +59,10 @@ export const pastebinProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('pastebin', problemConfigs.pastebin),
+  scenarios: generateScenarios('pastebin', problemConfigs.pastebin, [
+    'Users can paste text and get a shareable URL',
+    'Users can view paste syntax highlighting'
+  ]),
 
   validators: [
     {

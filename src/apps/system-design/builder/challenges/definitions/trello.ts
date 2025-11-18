@@ -343,7 +343,10 @@ Learning Objectives (DDIA Ch. 9):
     },
   },
 
-  scenarios: generateScenarios('trello', problemConfigs.trello),
+  scenarios: generateScenarios('trello', problemConfigs.trello, [
+    'Users can create boards with lists and cards',
+    'Users can collaborate on boards'
+  ]),
 
   validators: [
     {

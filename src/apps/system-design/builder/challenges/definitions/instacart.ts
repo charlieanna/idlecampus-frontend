@@ -57,7 +57,11 @@ export const instacartProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('instacart', problemConfigs.instacart),
+  scenarios: generateScenarios('instacart', problemConfigs.instacart, [
+    'Customers can order groceries from multiple stores',
+    'Personal shoppers fulfill orders in real-time',
+    'Real-time order tracking and communication'
+  ]),
 
   validators: [
     {

@@ -80,7 +80,10 @@ export const messengerProblemDefinition: ProblemDefinition = {
     },
   },
 
-  scenarios: generateScenarios('messenger', problemConfigs.messenger),
+  scenarios: generateScenarios('messenger', problemConfigs.messenger, [
+    'Users can send text messages and media',
+    'Users can make voice and video calls'
+  ]),
 
   validators: [
     {

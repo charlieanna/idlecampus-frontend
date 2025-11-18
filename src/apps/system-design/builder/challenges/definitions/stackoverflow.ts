@@ -95,7 +95,12 @@ Learning Objectives (DDIA Ch. 2, 3):
     },
   },
 
-  scenarios: generateScenarios('stackoverflow', problemConfigs.stackoverflow),
+  scenarios: generateScenarios('stackoverflow', problemConfigs.stackoverflow, [
+    'Users can ask and answer questions',
+    'Questions and answers can be upvoted/downvoted',
+    'Users earn reputation points',
+    'Questions have tags for categorization'
+  ]),
 
   validators: [
     {

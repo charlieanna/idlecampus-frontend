@@ -198,7 +198,14 @@ Learning Objectives (DDIA/SDP):
     },
   },
 
-  scenarios: generateScenarios('twitter', problemConfigs.twitter),
+  scenarios: generateScenarios('twitter', problemConfigs.twitter, [
+    'Users can post short messages (tweets) up to 280 characters',
+    'Users can follow or unfollow other users',
+    'Users can view personalized timelines from followed accounts',
+    'Users can like or retweet posts',
+    'Users can search for tweets and users',
+    'Users can view real-time trending topics'
+  ]),
 
   validators: [
     {

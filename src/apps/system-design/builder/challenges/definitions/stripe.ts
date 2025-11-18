@@ -341,7 +341,12 @@ Learning Objectives (DDIA Ch. 7, 12):
     },
   },
 
-  scenarios: generateScenarios('stripe', problemConfigs.stripe),
+  scenarios: generateScenarios('stripe', problemConfigs.stripe, [
+    'Merchants can accept credit card payments',
+    'Platform handles subscriptions and recurring billing',
+    'Merchants can view transaction history',
+    'Platform processes payments securely'
+  ]),
 
   validators: [
     {
