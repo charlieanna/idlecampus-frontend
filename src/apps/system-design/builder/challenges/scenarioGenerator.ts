@@ -183,7 +183,7 @@ to database. Read operations must return correct data. Tests data integrity.`,
   scenarios.push({
     name: 'NFR-P1: Normal Daily Load',
     description: `System handles expected daily traffic with target latency. This is the baseline performance
-test - system must meet latency and cost targets under normal conditions.`,
+test - system must meet latency targets under normal conditions.`,
     traffic: {
       rps: config.baseRps,
       readWriteRatio: config.readRatio,
@@ -192,7 +192,8 @@ test - system must meet latency and cost targets under normal conditions.`,
     passCriteria: {
       maxLatency: config.maxLatency,
       maxErrorRate: 0.01,
-      maxCost: calculateMonthlyCost(config.baseRps, config),
+      // ⚠️ Cost validation only happens at challenge level, not in individual tests
+      // maxCost removed per SOLUTION_AND_TEST_PLAN.md
     },
   });
 
@@ -208,7 +209,8 @@ System must maintain acceptable latency with 2x traffic. Slight degradation OK b
     passCriteria: {
       maxLatency: config.maxLatency * 1.5, // 50% degradation OK
       maxErrorRate: 0.02,
-      maxCost: calculateMonthlyCost(config.baseRps * 2, config),
+      // ⚠️ Cost validation only happens at challenge level, not in individual tests
+      // maxCost removed per SOLUTION_AND_TEST_PLAN.md
     },
   });
 

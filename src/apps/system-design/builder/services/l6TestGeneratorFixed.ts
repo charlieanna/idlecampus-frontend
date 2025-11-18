@@ -90,14 +90,28 @@ export class L6TestGenerator {
   private static extractBaselineMetrics(challenge: Challenge): any {
     // Get from first test case if available
     const firstTest = challenge.testCases[0];
-    if (firstTest && firstTest.totalRps) {
-      return {
-        baseRps: firstTest.totalRps,
-        readRatio: firstTest.readRps ? firstTest.readRps / firstTest.totalRps : 0.9,
-        targetP99: firstTest.passCriteria?.maxP99Latency || 100,
-        systemType: this.inferSystemType(challenge),
-        challengeId: challenge.id,
-      };
+    if (firstTest && firstTest.traffic) {
+      // Extract RPS from traffic object
+      let baseRps = 0;
+      if (firstTest.traffic.rps !== undefined) {
+        baseRps = firstTest.traffic.rps;
+      } else if (firstTest.traffic.readRps !== undefined && firstTest.traffic.writeRps !== undefined) {
+        baseRps = firstTest.traffic.readRps + firstTest.traffic.writeRps;
+      }
+      
+      if (baseRps > 0) {
+        const readRatio = firstTest.traffic.readRatio !== undefined 
+          ? firstTest.traffic.readRatio 
+          : (firstTest.traffic.readRps ? firstTest.traffic.readRps / baseRps : 0.9);
+        
+        return {
+          baseRps,
+          readRatio,
+          targetP99: firstTest.passCriteria?.maxP99Latency || 100,
+          systemType: this.inferSystemType(challenge),
+          challengeId: challenge.id,
+        };
+      }
     }
 
     // Otherwise parse from requirements

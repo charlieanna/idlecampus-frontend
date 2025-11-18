@@ -35,9 +35,10 @@ export const foodBlogGoodDesign: SystemGraph = {
       id: 'db',
       type: 'postgresql',
       config: {
-        readCapacity: 500,
-        writeCapacity: 100,
-        replication: false,
+        instanceType: 'commodity-db',
+        replicationMode: 'single-leader',
+        replication: { enabled: false, replicas: 0, mode: 'async' },
+        sharding: { enabled: false, shards: 1, shardKey: 'post_id' }
       },
     },
     {
@@ -59,6 +60,7 @@ export const foodBlogGoodDesign: SystemGraph = {
     { from: 'lb', to: 'app', type: 'read_write' },
     { from: 'app', to: 'cache', type: 'read' },
     { from: 'cache', to: 'db', type: 'read' },
+    { from: 'app', to: 'db', type: 'write' }, // Direct write path
     // Route read traffic for images via CDN to S3
     { from: 'lb', to: 'cdn', type: 'read' },
     { from: 'cdn', to: 's3', type: 'read' },
@@ -84,9 +86,10 @@ export const foodBlogMediocreDesign: SystemGraph = {
       id: 'db',
       type: 'postgresql',
       config: {
-        readCapacity: 500,
-        writeCapacity: 100,
-        replication: false,
+        instanceType: 'commodity-db',
+        replicationMode: 'single-leader',
+        replication: { enabled: false, replicas: 0, mode: 'async' },
+        sharding: { enabled: false, shards: 1, shardKey: 'post_id' }
       },
     },
     {
@@ -123,9 +126,10 @@ export const foodBlogBadDesign: SystemGraph = {
       id: 'db',
       type: 'postgresql',
       config: {
-        readCapacity: 500,
-        writeCapacity: 100,
-        replication: false,
+        instanceType: 'commodity-db',
+        replicationMode: 'single-leader',
+        replication: { enabled: false, replicas: 0, mode: 'async' },
+        sharding: { enabled: false, shards: 1, shardKey: 'post_id' }
       },
     },
   ],

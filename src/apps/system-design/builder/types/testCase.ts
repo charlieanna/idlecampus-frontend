@@ -74,7 +74,8 @@ export interface TestMetrics {
   p99Latency: number;
   p999Latency?: number; // Optional for backward compatibility
   errorRate: number;
-  monthlyCost: number;
+  monthlyCost: number; // Total cost (including CDN/S3 operational costs)
+  infrastructureCost?: number; // Infrastructure cost (excluding CDN/S3) for budget validation
   availability: number;
 }
 

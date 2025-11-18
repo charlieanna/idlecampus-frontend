@@ -404,9 +404,25 @@ export class SimulationEngine {
       writeRps = testCase.traffic.writeRps;
       totalRps = readRps + writeRps;
     } else if (testCase.traffic.rps !== undefined) {
-      // If totalRps is specified, calculate readRps/writeRps from readRatio
+      // If totalRps is specified, calculate readRps/writeRps based on traffic type
       totalRps = testCase.traffic.rps;
-      const readRatio = testCase.traffic.readRatio !== undefined ? testCase.traffic.readRatio : 0.5;
+      
+      // Determine readRatio based on traffic type
+      let readRatio: number;
+      if (testCase.traffic.readRatio !== undefined) {
+        // Explicit readRatio provided
+        readRatio = testCase.traffic.readRatio;
+      } else if (testCase.traffic.type === 'read') {
+        // Read-only traffic: 100% reads
+        readRatio = 1.0;
+      } else if (testCase.traffic.type === 'write') {
+        // Write-only traffic: 0% reads (100% writes)
+        readRatio = 0.0;
+      } else {
+        // Mixed traffic: default to 50/50 if not specified
+        readRatio = 0.5;
+      }
+      
       readRps = totalRps * readRatio;
       writeRps = totalRps * (1 - readRatio);
     } else {
@@ -450,6 +466,7 @@ export class SimulationEngine {
     let totalLatency = 0;
     let combinedErrorRate = 0;
     let totalCost = 0;
+    let infrastructureCost = 0; // Infrastructure cost (excludes CDN/S3 operational costs)
     let availability = 1.0;
 
     // Track failure effects across components
@@ -598,6 +615,13 @@ export class SimulationEngine {
       totalLatency += metrics.latency;
       const errorBefore = combinedErrorRate;
       combinedErrorRate = this.combineErrorRates(combinedErrorRate, metrics.errorRate);
+      // Infrastructure components (app servers, load balancers) are infrastructure
+      if (comp.type === 'app_server' || comp.type === 'load_balancer' || comp.type === 'worker') {
+        totalCost += metrics.cost;
+        infrastructureCost += metrics.cost;
+      } else {
+        totalCost += metrics.cost;
+      }
       if (shouldLog && comp.type === 'app_server') {
         const appMetrics = metrics as any;
         const instanceType = (comp as any).config?.instanceType || 't3.medium';
@@ -673,6 +697,7 @@ export class SimulationEngine {
       componentMetrics.set(cache.id, finalCacheMetrics);
       cacheLatency = finalCacheMetrics.latency;
       totalCost += finalCacheMetrics.cost;
+      infrastructureCost += finalCacheMetrics.cost; // Cache is infrastructure
 
       // Use dynamic hit ratio if calculated, otherwise use component's calculation
       if (dynamicHitRatio !== undefined) {
@@ -744,6 +769,7 @@ export class SimulationEngine {
         aggregated.combinedErrorRate
       );
       totalCost += aggregated.totalCost;
+      infrastructureCost += aggregated.totalCost; // Database is infrastructure
 
       // Check for hot shards and add to bottlenecks later
       if (aggregated.hotShards.length > 0) {
@@ -840,27 +866,38 @@ export class SimulationEngine {
         console.log(`  ⚠️ Database: ${(dbMetrics.errorRate * 100).toFixed(1)}% errors, ${((dbMetrics.utilization || 0) * 100).toFixed(1)}% util`);
       }
       totalCost += dbMetrics.cost;
+      infrastructureCost += dbMetrics.cost; // Database is infrastructure
       if (dbMetrics.downtime) {
         availability = Math.max(0, 1 - dbMetrics.downtime / testCase.duration);
       }
     }
 
     // CDN (if present and reachable)
+    // CDN costs are operational (data transfer), not infrastructure - exclude from budget
     const cdn = cdnId ? (this.components.get(cdnId) as CDN) : undefined;
+    let cdnHitRatio = 0.95; // Default CDN hit ratio
     if (cdn && toCdnPath) {
       const avgResponseSize = testCase.traffic.avgResponseSizeMB || 2;
       const cdnMetrics = cdn.simulate(totalRps, context, avgResponseSize);
       componentMetrics.set(cdn.id, cdnMetrics);
       totalCost += cdnMetrics.cost;
+      // CDN cost is operational (data transfer), not infrastructure - don't add to infrastructureCost
+      // Use CDN's hit ratio if available, otherwise default to 0.95
+      cdnHitRatio = cdnMetrics.hitRatio ?? 0.95;
     }
 
     // Step 6: S3 (if present, for object storage)
+    // S3 costs are operational (data transfer + storage), not infrastructure - exclude from budget
+    // S3 only handles cache misses from CDN, not all traffic
     const s3 = s3Id ? (this.components.get(s3Id) as S3) : undefined;
     if (s3 && cdnToS3Path) {
       const avgObjectSize = testCase.traffic.avgResponseSizeMB || 2;
-      const s3Metrics = s3.simulate(totalRps, context, avgObjectSize);
+      // Only calculate S3 cost for cache misses (1 - hitRatio)
+      const s3Rps = totalRps * (1 - cdnHitRatio);
+      const s3Metrics = s3.simulate(s3Rps, context, avgObjectSize);
       componentMetrics.set(s3.id, s3Metrics);
       totalCost += s3Metrics.cost;
+      // S3 cost is operational (data transfer + storage), not infrastructure - don't add to infrastructureCost
     }
 
     // Calculate final metrics
@@ -1016,7 +1053,8 @@ export class SimulationEngine {
       p99Latency,
       p999Latency,
       errorRate: combinedErrorRate,
-      monthlyCost: totalCost,
+      monthlyCost: totalCost, // Total cost (including CDN/S3) for display
+      infrastructureCost, // Infrastructure cost (excluding CDN/S3) for budget validation
       availability,
     };
     

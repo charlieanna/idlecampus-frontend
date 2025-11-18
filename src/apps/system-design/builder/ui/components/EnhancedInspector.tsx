@@ -242,27 +242,6 @@ function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [] }
   const handledAPIs = config.handledAPIs || [];
   const lbStrategy = config.lbStrategy || 'round-robin';
 
-  const presets: ConfigPreset[] = [
-    {
-      name: 'Minimal',
-      description: '1 instance for low traffic',
-      config: { instances: 1, lbStrategy: 'round-robin' },
-      icon: '💰',
-    },
-    {
-      name: 'Standard',
-      description: '3 instances for redundancy',
-      config: { instances: 3, lbStrategy: 'round-robin' },
-      icon: '⚖️',
-    },
-    {
-      name: 'High Scale',
-      description: '10+ instances for high traffic',
-      config: { instances: 10, lbStrategy: 'least-connections' },
-      icon: '🚀',
-    },
-  ];
-
   const handleAPIToggle = (api: string) => {
     const currentAPIs = config.handledAPIs || [];
     const newAPIs = currentAPIs.includes(api)
@@ -274,27 +253,6 @@ function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [] }
   return (
     <div className="space-y-4">
       <h3 className="font-semibold text-sm text-gray-900">Configuration</h3>
-
-      {/* Presets */}
-      <div>
-        <label className="block text-xs font-medium text-gray-700 mb-2">
-          Quick Presets
-        </label>
-        <div className="grid grid-cols-3 gap-2">
-          {presets.map((preset) => (
-            <button
-              key={preset.name}
-              onClick={() => onApplyPreset?.(preset.config)}
-              className="p-2 text-left border border-gray-200 rounded hover:border-blue-500 hover:bg-blue-50 transition-colors"
-            >
-              <div className="text-lg">{preset.icon}</div>
-              <div className="text-xs font-medium text-gray-900 mt-1">
-                {preset.name}
-              </div>
-            </button>
-          ))}
-        </div>
-      </div>
 
       {/* Instances Slider */}
       <div>

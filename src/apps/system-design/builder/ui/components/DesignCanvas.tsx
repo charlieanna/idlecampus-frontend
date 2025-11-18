@@ -412,11 +412,10 @@ export function getComponentInfo(type: string): { label: string; displayName: st
 export function getDefaultConfig(type: string): Record<string, any> {
   const defaults: Record<string, Record<string, any>> = {
     client: {},
-    load_balancer: { algorithm: 'round-robin' },
+    load_balancer: { algorithm: 'round_robin' },
     app_server: { 
       instances: 1,
       instanceType: 'commodity-app',
-      lbStrategy: 'round-robin',
     },
     database: {
       instanceType: 'commodity-db',

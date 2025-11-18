@@ -10,6 +10,7 @@ interface RightSidebarProps {
   systemGraph: SystemGraph;
   onUpdateConfig: (nodeId: string, config: Record<string, any>) => void;
   onBackToPalette: () => void;
+  availableAPIs?: string[];
 }
 
 export function RightSidebar({
@@ -19,6 +20,7 @@ export function RightSidebar({
   systemGraph,
   onUpdateConfig,
   onBackToPalette,
+  availableAPIs = [],
 }: RightSidebarProps) {
   // Show Inspector when a node is selected, otherwise show ComponentPalette
   if (selectedNode) {
@@ -53,6 +55,7 @@ export function RightSidebar({
             selectedNode={selectedNode}
             systemGraph={systemGraph}
             onUpdateConfig={onUpdateConfig}
+            availableAPIs={availableAPIs}
           />
         </div>
       </div>

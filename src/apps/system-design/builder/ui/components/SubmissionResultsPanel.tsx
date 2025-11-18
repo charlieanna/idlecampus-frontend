@@ -8,6 +8,7 @@ interface SubmissionResultsPanelProps {
   currentTestIndex: number;
   onEditDesign: () => void;
   onShowSolution: (solution?: Solution) => void;
+  hasChallengeSolution?: boolean; // Whether challenge has a challenge-level solution
 }
 
 export function SubmissionResultsPanel({
@@ -17,12 +18,40 @@ export function SubmissionResultsPanel({
   currentTestIndex,
   onEditDesign,
   onShowSolution,
+  hasChallengeSolution = false,
 }: SubmissionResultsPanelProps) {
   // Calculate overall results
   const totalTests = testCases.length;
-  const passedTests = Array.from(testResults.values()).filter(r => r.passed).length;
-  const failedTests = Array.from(testResults.values()).filter(r => !r.passed).length;
-  const allTestsPassed = passedTests === totalTests;
+  // Count passed/failed by checking each test case's result in the Map
+  let passedTests = 0;
+  let failedTests = 0;
+  testCases.forEach((_, index) => {
+    const result = testResults.get(index);
+    if (result) {
+      if (result.passed) {
+        passedTests++;
+      } else {
+        failedTests++;
+      }
+    }
+  });
+  
+  // Debug: Log results Map state (only in development)
+  if (process.env.NODE_ENV === 'development' && testResults.size > 0) {
+    console.log('[SubmissionResultsPanel] Results Map:', {
+      mapSize: testResults.size,
+      totalTests,
+      passedCount: passedTests,
+      failedCount: failedTests,
+      mapEntries: Array.from(testResults.entries()).map(([idx, r]) => ({
+        index: idx,
+        passed: r.passed,
+        hasMetrics: !!r.metrics
+      }))
+    });
+  }
+  
+  const allTestsPassed = passedTests === totalTests && testResults.size === totalTests;
 
   // Calculate per-category results
   const functionalTests = testCases.filter(tc => tc.type === 'functional');
@@ -286,15 +315,18 @@ export function SubmissionResultsPanel({
             >
               ✏️ Edit Design
             </button>
-            <button
-              onClick={() => {
-                // Load challenge-level solution (pass undefined to use fallback)
-                onShowSolution(undefined);
-              }}
-              className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded transition-colors"
-            >
-              💡 Solution
-            </button>
+            {/* Only show Solution button if challenge has a challenge-level solution */}
+            {hasChallengeSolution && (
+              <button
+                onClick={() => {
+                  // Load challenge-level solution (pass undefined to use fallback)
+                  onShowSolution(undefined);
+                }}
+                className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded transition-colors"
+              >
+                💡 Solution
+              </button>
+            )}
           </div>
         </div>
       )}

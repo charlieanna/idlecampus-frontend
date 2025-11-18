@@ -1057,8 +1057,8 @@ def handle_request(request: dict, context: dict) -> dict:
   solution: {
     components: [
       { type: 'client', config: {} },
-      { type: 'load_balancer', config: {} },
-      { type: 'app_server', config: { instances: 6, lbStrategy: 'least-connections' } }, // Sized for Read Spike (5100 RPS)
+      { type: 'load_balancer', config: { algorithm: 'least_connections' } },
+      { type: 'app_server', config: { instances: 6 } }, // Sized for Read Spike (5100 RPS)
       { type: 'cache', config: { memorySizeGB: 6, ttl: 3600, hitRatio: 0.95, strategy: 'cache_aside' } }, // High hit ratio for Read Spike (6GB sufficient for 95% hit ratio)
       { type: 'database', config: { 
         instanceType: 'commodity-db',

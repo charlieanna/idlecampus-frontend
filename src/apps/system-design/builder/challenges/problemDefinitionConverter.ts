@@ -76,7 +76,7 @@ export function convertProblemDefinitionToChallenge(
   // Create learning objectives
   const learningObjectives = createLearningObjectives(def);
 
-  return {
+  const challenge: Challenge = {
     id: def.id,
     title: def.title,
     difficulty,
@@ -95,6 +95,12 @@ export function convertProblemDefinitionToChallenge(
     referenceLinks: getReferenceLinks(def.id),
     pythonTemplate: def.pythonTemplate, // Pass through Python template
   };
+
+  // Generate a basic solution if not already present
+  // Note: Solutions can be manually refined later
+  challenge.solution = generateBasicSolution(challenge);
+
+  return challenge;
 }
 
 function determineDifficulty(
@@ -450,4 +456,232 @@ function mapFailureType(component: string): 'db_crash' | 'cache_flush' | 'networ
   if (component === 'database' || component === 'db') return 'db_crash';
   if (component === 'cache' || component === 'redis') return 'cache_flush';
   return 'network_partition';
+}
+
+/**
+ * Generate a basic solution for a challenge
+ * This creates a solution using the commodity hardware model
+ */
+function generateBasicSolution(challenge: Challenge): import('../types/testCase').Solution {
+  const components: any[] = [];
+  const connections: any[] = [];
+
+  // Always add client
+  components.push({ type: 'client', config: {} });
+
+  // Calculate max RPS from test cases
+  let maxRps = 0;
+  let maxReadRps = 0;
+  let maxWriteRps = 0;
+  
+  challenge.testCases.forEach(tc => {
+    if (tc.traffic?.rps) {
+      maxRps = Math.max(maxRps, tc.traffic.rps);
+      if (tc.traffic.readRatio !== undefined) {
+        maxReadRps = Math.max(maxReadRps, tc.traffic.rps * tc.traffic.readRatio);
+        maxWriteRps = Math.max(maxWriteRps, tc.traffic.rps * (1 - tc.traffic.readRatio));
+      }
+    }
+    if (tc.traffic?.readRps && tc.traffic?.writeRps) {
+      maxReadRps = Math.max(maxReadRps, tc.traffic.readRps);
+      maxWriteRps = Math.max(maxWriteRps, tc.traffic.writeRps);
+      maxRps = Math.max(maxRps, tc.traffic.readRps + tc.traffic.writeRps);
+    }
+  });
+
+  // Parse RPS from requirements if available
+  if (challenge.requirements?.traffic) {
+    const rpsMatch = challenge.requirements.traffic.match(/(\d+)(?:K|k)?\s*RPS/i);
+    if (rpsMatch) {
+      let rps = parseInt(rpsMatch[1]);
+      if (challenge.requirements.traffic.toLowerCase().includes('k')) {
+        rps *= 1000;
+      }
+      maxRps = Math.max(maxRps, rps);
+    }
+  }
+
+  // Calculate app server instances (1000 RPS per instance, add 20% headroom)
+  const appServerInstances = Math.max(1, Math.ceil((maxRps * 1.2) / 1000));
+
+  // Determine component needs
+  const needsLoadBalancer = appServerInstances > 1 || maxRps > 1000;
+  const needsCache = challenge.availableComponents.includes('redis') || 
+                     challenge.availableComponents.includes('cache') ||
+                     challenge.requirements?.nfrs?.some(nfr => 
+                       nfr.toLowerCase().includes('cache') || 
+                       nfr.toLowerCase().includes('hit ratio')
+                     );
+  const needsDatabase = challenge.availableComponents.includes('database') ||
+                        challenge.availableComponents.includes('postgresql');
+  const needsCDN = challenge.availableComponents.includes('cdn') ||
+                   challenge.requirements?.nfrs?.some(nfr => 
+                     nfr.toLowerCase().includes('cdn') || 
+                     nfr.toLowerCase().includes('static')
+                   );
+  const needsS3 = challenge.availableComponents.includes('s3') ||
+                  challenge.requirements?.nfrs?.some(nfr => 
+                    nfr.toLowerCase().includes('object storage') ||
+                    nfr.toLowerCase().includes('file')
+                  );
+  const needsQueue = challenge.availableComponents.includes('message_queue') ||
+                     challenge.requirements?.nfrs?.some(nfr => 
+                       nfr.toLowerCase().includes('async') ||
+                       nfr.toLowerCase().includes('queue') ||
+                       nfr.toLowerCase().includes('fan-out')
+                     );
+
+  // Add load balancer if needed
+  if (needsLoadBalancer) {
+    components.push({ type: 'load_balancer', config: {} });
+    connections.push({ from: 'client', to: 'load_balancer', type: 'read_write' });
+  }
+
+  // Add app server
+  components.push({
+    type: 'app_server',
+    config: {
+      instances: appServerInstances,
+    }
+  });
+  
+  // Update load balancer config with algorithm if it exists
+  if (needsLoadBalancer) {
+    const lbIndex = components.findIndex(c => c.type === 'load_balancer');
+    if (lbIndex >= 0) {
+      components[lbIndex].config = {
+        ...components[lbIndex].config,
+        algorithm: 'least_connections',
+      };
+    }
+  }
+
+  if (needsLoadBalancer) {
+    connections.push({ from: 'load_balancer', to: 'app_server', type: 'read_write' });
+  } else {
+    connections.push({ from: 'client', to: 'app_server', type: 'read_write' });
+  }
+
+  // Add cache if needed - size based on read traffic
+  let cacheSizeGB = 4;
+  if (needsCache) {
+    // Calculate cache size: larger for read-heavy workloads
+    // Base: 4GB, add 2GB per 1000 read RPS (accounting for 90% hit ratio)
+    if (maxReadRps > 0) {
+      cacheSizeGB = Math.max(4, Math.min(16, 4 + Math.ceil((maxReadRps / 1000) * 2)));
+    }
+    
+    components.push({
+      type: 'redis',
+      config: {
+        sizeGB: cacheSizeGB,
+        strategy: 'cache_aside',
+      }
+    });
+    connections.push({ from: 'app_server', to: 'redis', type: 'read_write' });
+  }
+
+  // Add database if needed
+  let replicationMode = 'single-leader';
+  let replicas = 0;
+  let shards = 1;
+  
+  if (needsDatabase) {
+    // Account for cache misses: if cache has 90% hit ratio, 10% of reads go to DB
+    // But be conservative: assume cache might not be fully warmed or might flush
+    const cacheHitRatio = needsCache ? 0.9 : 0;
+    const dbReadRps = maxReadRps * (1 - cacheHitRatio * 0.8); // Conservative: assume 80% of ideal hit ratio
+    
+    // Calculate read replicas needed (1000 RPS per replica)
+    const readReplicas = Math.max(0, Math.ceil((dbReadRps * 1.2) / 1000));
+    
+    // Determine replication mode based on write load
+    // Use multi-leader if write RPS > 100 (single-leader write capacity)
+    const useMultiLeader = maxWriteRps > 100;
+    replicationMode = useMultiLeader ? 'multi-leader' : 'single-leader';
+    
+    // Calculate shards needed for write capacity
+    // Single-leader: 100 RPS per shard
+    // Multi-leader: 300 RPS per shard (each replica can write)
+    const writeCapacityPerShard = useMultiLeader ? 300 : 100;
+    const requiredShards = Math.max(1, Math.ceil((maxWriteRps * 1.2) / writeCapacityPerShard));
+    
+    // For multi-leader: need at least 2 replicas (1 primary + 1 replica = 2 leaders)
+    // For single-leader: replicas are just for read scaling
+    if (useMultiLeader) {
+      // Multi-leader: replicas = number of leaders (at least 2)
+      replicas = Math.max(2, Math.ceil(requiredShards / 2));
+      shards = requiredShards > 1 ? requiredShards : 1;
+    } else {
+      // Single-leader: replicas are read replicas
+      replicas = readReplicas;
+      shards = 1; // Single-leader doesn't need sharding unless write load is extreme
+    }
+
+    components.push({
+      type: 'postgresql',
+      config: {
+        instanceType: 'commodity-db',
+        replicationMode,
+        replication: {
+          enabled: replicas > 0,
+          replicas: replicas,
+          mode: 'async',
+        },
+        sharding: {
+          enabled: shards > 1,
+          shards: shards,
+          shardKey: 'id',
+        }
+      }
+    });
+    connections.push({ from: 'app_server', to: 'postgresql', type: 'read_write' });
+  }
+
+  // Add CDN if needed
+  if (needsCDN) {
+    components.push({
+      type: 'cdn',
+      config: {
+        enabled: true,
+      }
+    });
+    connections.push({ from: 'client', to: 'cdn', type: 'read' });
+  }
+
+  // Add S3 if needed
+  if (needsS3) {
+    components.push({
+      type: 's3',
+      config: {}
+    });
+    if (needsCDN) {
+      connections.push({ from: 'cdn', to: 's3', type: 'read' });
+    }
+    connections.push({ from: 'app_server', to: 's3', type: 'read_write' });
+  }
+
+  // Add message queue if needed
+  if (needsQueue) {
+    components.push({
+      type: 'message_queue',
+      config: {}
+    });
+    connections.push({ from: 'app_server', to: 'message_queue', type: 'write' });
+  }
+
+  return {
+    components,
+    connections,
+    explanation: `Comprehensive solution for ${challenge.title}:
+- ${appServerInstances} app server instance(s) (commodity hardware: 1000 RPS each, ${maxRps.toFixed(0)} RPS peak)
+- ${needsCache ? `${cacheSizeGB}GB Redis cache with cache-aside strategy (handles ${(maxReadRps * 0.9).toFixed(0)} read RPS via cache)` : 'No cache'}
+- ${needsDatabase ? `PostgreSQL with ${replicationMode} replication (${replicas} replica(s)${shards > 1 ? `, ${shards} shard(s)` : ''}) - handles ${maxReadRps.toFixed(0)} read RPS, ${maxWriteRps.toFixed(0)} write RPS` : 'No database'}
+- ${needsLoadBalancer ? 'Load balancer for traffic distribution' : 'Direct client-to-app-server connection'}
+- ${needsCDN ? 'CDN for static content delivery' : ''}
+- ${needsS3 ? 'S3 for object storage' : ''}
+- ${needsQueue ? 'Message queue for async processing (fan-out, trending topics)' : ''}
+
+This solution is designed to handle peak traffic requirements across all test cases. Components are sized with 20% headroom for safety.`
+  };
 }

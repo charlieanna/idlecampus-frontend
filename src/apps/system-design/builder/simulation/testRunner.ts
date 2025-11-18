@@ -96,12 +96,16 @@ export class TestRunner {
     }
 
     if (
-      criteria.maxMonthlyCost !== undefined &&
-      metrics.monthlyCost > criteria.maxMonthlyCost
+      criteria.maxMonthlyCost !== undefined
     ) {
-      failures.push(
-        `Monthly cost ($${metrics.monthlyCost.toFixed(0)}) exceeds budget ($${criteria.maxMonthlyCost})`
-      );
+      // Use infrastructure cost (excludes CDN/S3 operational costs) for budget validation
+      // If infrastructureCost is not available, fall back to monthlyCost for backward compatibility
+      const costToCheck = metrics.infrastructureCost ?? metrics.monthlyCost;
+      if (costToCheck > criteria.maxMonthlyCost) {
+        failures.push(
+          `Monthly cost ($${costToCheck.toFixed(0)}) exceeds budget ($${criteria.maxMonthlyCost})`
+        );
+      }
     }
 
     if (

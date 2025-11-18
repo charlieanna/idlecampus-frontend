@@ -14,6 +14,8 @@ import { DesignCanvas, getDefaultConfig } from './components/DesignCanvas';
 import { ProblemDescriptionPanel } from './components/ProblemDescriptionPanel';
 import { SubmissionResultsPanel } from './components/SubmissionResultsPanel';
 import { ComponentPalette } from './components/ComponentPalette';
+import { AppServerConfigPanel } from './components/AppServerConfigPanel';
+import { LoadBalancerConfigPanel } from './components/LoadBalancerConfigPanel';
 import { EnhancedInspector } from './components/EnhancedInspector';
 import { SolutionModal } from './components/SolutionModal';
 
@@ -891,7 +893,21 @@ if __name__ == "__main__":
         let nfrResults: TestResult[] = [];
         if (allFrPassed && nfrTests.length > 0) {
           console.log(`🚀 Running ${nfrTests.length} NFR tests...`);
+          console.log(`📋 NFR test names:`, nfrTests.map(tc => tc.name));
           nfrResults = testRunner.runAllTestCases(systemGraph, nfrTests);
+          console.log(`📊 NFR results:`, {
+            total: nfrResults.length,
+            passed: nfrResults.filter(r => r.passed).length,
+            failed: nfrResults.filter(r => !r.passed).length,
+            results: nfrResults.map((r, i) => ({
+              testName: nfrTests[i]?.name,
+              passed: r.passed,
+              errorRate: r.metrics?.errorRate,
+              latency: r.metrics?.p99Latency
+            }))
+          });
+        } else if (!allFrPassed) {
+          console.log(`⚠️ Skipping NFR tests because ${frResults.filter(r => !r.passed).length} FR test(s) failed`);
         }
         
         // Combine results (FR first, then NFR if they ran)
@@ -913,6 +929,8 @@ if __name__ == "__main__":
             errorRate: ((result.metrics?.errorRate || 0) * 100).toFixed(2) + '%',
             cost: '$' + (result.metrics?.monthlyCost || 0).toFixed(0),
             passed: result.passed,
+            originalIndex,
+            testCaseIndex: index,
           });
           
           resultsMap.set(originalIndex, result as TestResult);
@@ -920,6 +938,11 @@ if __name__ == "__main__":
         
         const passedCount = resultsArray.filter(r => r.passed).length;
         console.log(`\n📊 Summary: ${passedCount}/${resultsArray.length} tests passed`);
+        console.log(`📊 Results Map after setting:`, {
+          mapSize: resultsMap.size,
+          passedInMap: Array.from(resultsMap.values()).filter(r => r.passed).length,
+          mapEntries: Array.from(resultsMap.entries()).map(([idx, r]) => ({ idx, passed: r.passed }))
+        });
 
         // Validate challenge-level budget (independent of test results - cost is only checked at challenge level)
         if (selectedChallenge.requirements?.budget) {
@@ -928,26 +951,35 @@ if __name__ == "__main__":
           const budgetStr = selectedChallenge.requirements.budget.replace(/[$,]/g, '').match(/\d+/);
           if (budgetStr) {
             const budgetLimit = parseInt(budgetStr[0], 10);
-            // Get cost from first test result (cost is static per component)
-            const totalCost = resultsArray[0]?.metrics?.monthlyCost || 0;
+            // Use infrastructure cost (excludes CDN/S3 operational costs) for budget validation
+            // If infrastructureCost is not available, fall back to monthlyCost for backward compatibility
+            const totalCost = Math.max(...resultsArray.map(r => (r?.metrics?.infrastructureCost ?? r?.metrics?.monthlyCost) ?? 0), 0);
             
             if (totalCost > budgetLimit) {
-              console.warn(`⚠️ Challenge budget exceeded: $${totalCost.toFixed(0)} > $${budgetLimit}`);
-              // Mark all tests as failed due to budget constraint (cost is checked at challenge level, not per test)
-              const budgetExceededMsg = `\n\n❌ Challenge Budget Exceeded: Total cost $${totalCost.toFixed(0)}/month exceeds budget of $${budgetLimit}/month.\n\n💡 Note: Cost is only validated at the challenge level (not per individual test). Optimize your architecture to reduce costs (reduce shards, use single-leader replication, smaller cache, fewer app server instances).`;
+              console.warn(`⚠️ Challenge budget exceeded: $${totalCost.toFixed(0)} > $${budgetLimit} (infrastructure cost, excluding CDN/S3)`);
+              // Budget is a challenge-level concern - don't overwrite individual test results
+              // Instead, add a budget warning to the explanation of each test result
+              const budgetExceededMsg = `\n\n⚠️ Challenge Budget Exceeded: Total cost $${totalCost.toFixed(0)}/month exceeds budget of $${budgetLimit}/month.\n\n💡 Note: Individual tests may pass, but the overall solution exceeds the budget. Optimize your architecture to reduce costs (reduce shards, use single-leader replication, smaller cache, fewer app server instances).`;
               
+              console.log(`⚠️ Budget exceeded - adding warning to all test results (not marking as failed)`);
               allTestCasesToRun.forEach((testCase, index) => {
                 const originalIndex = selectedChallenge.testCases.indexOf(testCase);
                 const existingResult = resultsMap.get(originalIndex);
                 if (existingResult) {
+                  // Keep the original passed/failed status, just add budget warning to explanation
                   resultsMap.set(originalIndex, {
                     ...existingResult,
-                    passed: false, // Budget failure fails the entire challenge
+                    // Keep passed status as-is - don't overwrite with false
                     explanation: existingResult.explanation 
                       ? `${existingResult.explanation}${budgetExceededMsg}`
-                      : `❌ Challenge Budget Exceeded: Total cost $${totalCost.toFixed(0)}/month exceeds budget of $${budgetLimit}/month.${budgetExceededMsg}`,
+                      : budgetExceededMsg,
                   });
                 }
+              });
+              console.log(`📊 Results Map after budget check:`, {
+                mapSize: resultsMap.size,
+                passedInMap: Array.from(resultsMap.values()).filter(r => r.passed).length,
+                note: 'Budget warning added but test results preserved'
               });
             } else {
               console.log(`✅ Challenge budget met: $${totalCost.toFixed(0)} ≤ $${budgetLimit}`);
@@ -955,6 +987,12 @@ if __name__ == "__main__":
           }
         }
 
+        console.log(`📊 Final Results Map before setState:`, {
+          mapSize: resultsMap.size,
+          passedInMap: Array.from(resultsMap.values()).filter(r => r.passed).length,
+          failedInMap: Array.from(resultsMap.values()).filter(r => !r.passed).length,
+          totalTestCases: selectedChallenge.testCases.length,
+        });
         setTestResults(resultsMap);
         setCurrentTestIndex(0);
         setHasSubmitted(true);
@@ -1005,6 +1043,9 @@ if __name__ == "__main__":
 
   // Check if app_server component exists on canvas
   const hasAppServer = systemGraph.components.some(comp => comp.type === 'app_server');
+  
+  // Check if load_balancer component exists on canvas
+  const hasLoadBalancer = systemGraph.components.some(comp => comp.type === 'load_balancer');
 
   // Get available APIs from challenge (for API assignment in inspector)
   const getAvailableAPIs = (): string[] => {
@@ -1076,6 +1117,34 @@ if __name__ == "__main__":
             🎨 Canvas
           </button>
 
+          {/* App Server Tab - Only show when app_server component is on canvas */}
+          {hasAppServer && (
+            <button
+              onClick={() => setActiveTab('app-server')}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'app-server'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              📦 App Server
+            </button>
+          )}
+
+          {/* Load Balancer Tab - Only show when load_balancer component is on canvas */}
+          {hasLoadBalancer && (
+            <button
+              onClick={() => setActiveTab('load-balancer')}
+              className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                activeTab === 'load-balancer'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+              }`}
+            >
+              ⚖️ Load Balancer
+            </button>
+          )}
+
           {/* Python Code Tab - Only show when app_server component is on canvas */}
           {hasAppServer && (
             <button
@@ -1137,6 +1206,7 @@ if __name__ == "__main__":
                   setCurrentTestIndex(0);
                 }}
                 onShowSolution={loadSolutionToCanvas}
+                hasChallengeSolution={!!selectedChallenge?.solution}
               />
             ) : (
               <ProblemDescriptionPanel challenge={selectedChallenge} />
@@ -1211,6 +1281,22 @@ if __name__ == "__main__":
               </div>
             )}
           </>
+        )}
+
+        {/* App Server Configuration Tab Content */}
+        {activeTab === 'app-server' && (
+          <AppServerConfigPanel
+            systemGraph={systemGraph}
+            onUpdateConfig={handleUpdateConfig}
+          />
+        )}
+
+        {/* Load Balancer Configuration Tab Content */}
+        {activeTab === 'load-balancer' && (
+          <LoadBalancerConfigPanel
+            systemGraph={systemGraph}
+            onUpdateConfig={handleUpdateConfig}
+          />
         )}
 
         {/* Python Code Tab Content */}

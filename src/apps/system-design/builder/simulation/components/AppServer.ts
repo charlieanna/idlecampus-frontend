@@ -9,11 +9,10 @@ import { EC2_INSTANCES } from '../../types/instanceTypes';
 export class AppServer extends Component {
   private readonly baseLatency = 10; // ms
 
-  constructor(id: string, config: { instances?: number; instanceType?: string; lbStrategy?: string } = {}) {
+  constructor(id: string, config: { instances?: number; instanceType?: string } = {}) {
     super(id, 'app_server', {
       instances: 1,
       instanceType: 'commodity-app', // Always use commodity spec
-      lbStrategy: 'round-robin', // Default load balancing strategy
       ...config,
       // Override instanceType to always be commodity-app
       instanceType: 'commodity-app',

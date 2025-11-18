@@ -183,22 +183,27 @@ export class PostgreSQL extends Component {
       }
     }
 
-    // Debug logging for capacity calculation
-    console.log(`[PostgreSQL] Capacity calculation:`, {
-      baseRead: baseReadCapacity,
-      baseWrite: baseWriteCapacity,
-      replicationMode: replicationModeConfig,
-      replicas,
-      shards: shardingConfig.shards,
-      hasExplicitCapacity,
-      finalReadCapacity: readCapacity,
-      finalWriteCapacity: writeCapacity,
-      readRps,
-      writeRps,
-      calculation: hasExplicitCapacity 
-        ? 'USING EXPLICIT CAPACITY (LEGACY)' 
-        : `CALCULATED: ${replicationModeConfig} mode with ${replicas} replicas = ${readCapacity} read, ${writeCapacity} write`,
-    });
+    // Debug logging for capacity calculation (only log if there's an issue or first time)
+    // Removed excessive logging - only log if there's a problem or explicit capacity is used
+    if (hasExplicitCapacity || (readRps > readCapacity * 0.9) || (writeRps > writeCapacity * 0.9)) {
+      console.log(`[PostgreSQL] Capacity calculation:`, {
+        baseRead: baseReadCapacity,
+        baseWrite: baseWriteCapacity,
+        replicationMode: replicationModeConfig,
+        replicas,
+        shards: shardingConfig.shards,
+        hasExplicitCapacity,
+        finalReadCapacity: readCapacity,
+        finalWriteCapacity: writeCapacity,
+        readRps,
+        writeRps,
+        readUtil: (readRps / readCapacity * 100).toFixed(1) + '%',
+        writeUtil: (writeRps / writeCapacity * 100).toFixed(1) + '%',
+        calculation: hasExplicitCapacity 
+          ? 'USING EXPLICIT CAPACITY (LEGACY)' 
+          : `CALCULATED: ${replicationModeConfig} mode with ${replicas} replicas = ${readCapacity} read, ${writeCapacity} write`,
+      });
+    }
 
     const readUtil = readRps / readCapacity;
     const writeUtil = writeRps / writeCapacity;
