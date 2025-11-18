@@ -8,6 +8,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * WhatsApp - Messaging Platform
@@ -381,3 +382,6 @@ def get_chat_messages(chat_id: str, limit: int = 50) -> List[Dict]:
     return chat_messages[-limit:]  # Return most recent N messages
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(whatsappProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(whatsappProblemDefinition);

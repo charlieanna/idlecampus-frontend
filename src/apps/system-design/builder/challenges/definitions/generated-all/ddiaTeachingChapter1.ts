@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * DDIA Teaching Problems - Chapter 1: Reliability, Scalability, Maintainability
@@ -1247,3 +1248,6 @@ export const ddiaChapter1Problems = [
   observabilityProblemDefinition,
   technicalDebtProblemDefinition,
 ];
+
+// Auto-generate code challenges from functional requirements
+(spofProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(spofProblemDefinition);

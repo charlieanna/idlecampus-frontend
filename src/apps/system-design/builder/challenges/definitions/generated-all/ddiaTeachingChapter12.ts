@@ -19,6 +19,7 @@
 
 import { ProblemDefinition } from '../../../types/problemDefinition';
 import { generateScenarios } from '../../scenarioGenerator';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 // ============================================================================
 // DATA INTEGRATION (4 PROBLEMS)
@@ -1006,3 +1007,6 @@ export const ddiaChapter12Problems = [
   searchIndexMaintenanceProblemDefinition,
   cqrsProblemDefinition,
 ];
+
+// Auto-generate code challenges from functional requirements
+(lambdaArchitectureProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(lambdaArchitectureProblemDefinition);

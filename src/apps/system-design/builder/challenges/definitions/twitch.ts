@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Twitch - Live Streaming Platform
@@ -248,3 +249,6 @@ def follow_streamer(follower_id: str, streamer_id: str) -> Dict:
     return follows[follow_id]
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(twitchProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(twitchProblemDefinition);

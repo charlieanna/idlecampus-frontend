@@ -11,6 +11,7 @@ import {
 } from '../../validation/validators/cachingValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * YouTube - Video Sharing Platform
@@ -572,3 +573,6 @@ def get_subscribed_videos(user_id: str, limit: int = 20) -> List[Dict]:
     return feed[:limit]
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(youtubeProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(youtubeProblemDefinition);

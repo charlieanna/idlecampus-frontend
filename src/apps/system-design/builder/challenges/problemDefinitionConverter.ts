@@ -601,6 +601,18 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
   const isEcommerce = hasEcommercePattern(def);
   const isGraph = hasGraphPattern(def);
   const hasSearch = hasSearchPattern(def);
+  
+  // Debug logging for pattern detection
+  if (def && (isGeospatial || isRealtime || isMedia || isEcommerce || isGraph || hasSearch)) {
+    const detectedPatterns = [];
+    if (isGeospatial) detectedPatterns.push('Geospatial');
+    if (isRealtime) detectedPatterns.push('Real-time');
+    if (isMedia) detectedPatterns.push('Media');
+    if (isEcommerce) detectedPatterns.push('E-commerce');
+    if (isGraph) detectedPatterns.push('Social Graph');
+    if (hasSearch) detectedPatterns.push('Search');
+    console.log(`[Solution Generator] ${def.title}: Detected patterns: ${detectedPatterns.join(', ') || 'None'}`);
+  }
 
   // Determine component needs
   const needsLoadBalancer = appServerInstances > 1 || maxRps > 1000;

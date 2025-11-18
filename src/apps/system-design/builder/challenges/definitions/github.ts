@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * GitHub - Code Hosting Platform
@@ -431,3 +432,6 @@ def get_repository_pull_requests(repo_id: str, status: str = "open") -> List[Dic
     return repo_prs
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(githubProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(githubProblemDefinition);

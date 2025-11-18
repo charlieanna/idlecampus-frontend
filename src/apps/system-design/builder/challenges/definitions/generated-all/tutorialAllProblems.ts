@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Tutorial Problems - Complete Set
@@ -483,3 +484,5 @@ export const boeWalkthroughChatProblemDefinition: ProblemDefinition = {
   ],
 };
 
+// Auto-generate code challenges from functional requirements
+(tutorialSimpleBlogProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(tutorialSimpleBlogProblemDefinition);

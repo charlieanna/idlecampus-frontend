@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * TikTok - Short Video Platform
@@ -168,3 +169,6 @@ def share_video(video_id: str, user_id: str, share_to: str) -> Dict:
     }
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(tiktokProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(tiktokProblemDefinition);

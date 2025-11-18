@@ -8,6 +8,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Booking.com - Hotel Booking Platform
@@ -348,3 +349,6 @@ def get_user_bookings(user_id: str) -> List[Dict]:
     return user_bookings
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(bookingcomProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(bookingcomProblemDefinition);

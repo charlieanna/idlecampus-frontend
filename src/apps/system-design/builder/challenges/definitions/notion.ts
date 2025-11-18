@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Notion - Collaborative Workspace
@@ -455,3 +456,6 @@ def get_page_content(page_id: str) -> Dict:
     return page
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(notionProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(notionProblemDefinition);

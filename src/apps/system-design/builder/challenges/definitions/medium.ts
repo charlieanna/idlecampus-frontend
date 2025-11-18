@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Medium - Blogging Platform
@@ -255,3 +256,6 @@ def get_article_claps(article_id: str) -> int:
     return total
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(mediumProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(mediumProblemDefinition);

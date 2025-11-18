@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Slack - Team Collaboration Platform
@@ -436,3 +437,6 @@ def get_channel_messages(channel_id: str, limit: int = 50) -> List[Dict]:
     return channel_messages[-limit:]  # Return most recent N messages
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(slackProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(slackProblemDefinition);

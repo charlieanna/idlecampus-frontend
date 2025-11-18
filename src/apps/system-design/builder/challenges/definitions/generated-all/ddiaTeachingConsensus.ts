@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * DDIA Teaching Problems - Chapter 9: Consistency and Consensus
@@ -1127,3 +1128,6 @@ export const ddiaConsensusProblems = [
   lwwRegisterProblemDefinition,
   orSetProblemDefinition,
 ];
+
+// Auto-generate code challenges from functional requirements
+(linearizabilityProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(linearizabilityProblemDefinition);

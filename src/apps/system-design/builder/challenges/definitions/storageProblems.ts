@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * NoSQL Document Store - Flexible schema for user profiles
@@ -323,3 +324,6 @@ export const objectStorageSystemProblemDefinition: ProblemDefinition = {
     },
   ],
 };
+
+// Auto-generate code challenges from functional requirements
+(nosqlBasicsProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(nosqlBasicsProblemDefinition);

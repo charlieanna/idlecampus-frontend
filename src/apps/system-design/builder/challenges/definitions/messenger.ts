@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Facebook Messenger - Messaging Platform
@@ -194,3 +195,6 @@ def create_conversation(conversation_id: str, participant_ids: List[str],
     return conversations[conversation_id]
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(messengerProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(messengerProblemDefinition);

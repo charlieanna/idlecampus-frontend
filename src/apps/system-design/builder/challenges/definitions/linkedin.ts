@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * LinkedIn - Professional Networking Platform
@@ -504,3 +505,6 @@ def get_network_feed(user_id: str, limit: int = 20) -> List[Dict]:
     return feed[:limit]
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(linkedinProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(linkedinProblemDefinition);

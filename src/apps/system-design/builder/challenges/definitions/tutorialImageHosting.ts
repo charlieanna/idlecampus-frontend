@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Tutorial 2: Image Hosting Service
@@ -97,3 +98,6 @@ export const tutorialImageHostingProblemDefinition: ProblemDefinition = {
     },
   ],
 };
+
+// Auto-generate code challenges from functional requirements
+(tutorialImageHostingProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(tutorialImageHostingProblemDefinition);

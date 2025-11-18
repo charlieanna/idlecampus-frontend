@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Reddit Comment System - Multi-layer Caching
@@ -230,3 +231,6 @@ def clear_cache(thread_id: str = None) -> int:
         return count
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(redditCommentSystemProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(redditCommentSystemProblemDefinition);

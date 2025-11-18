@@ -8,6 +8,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Uber - Ride Sharing Platform
@@ -480,3 +481,6 @@ def get_ride_history(rider_id: str) -> List[Dict]:
     return rider_rides
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(uberProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(uberProblemDefinition);

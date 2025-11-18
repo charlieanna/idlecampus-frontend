@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Stack Overflow - Q&A Platform
@@ -199,3 +200,6 @@ def get_question_answers(question_id: str) -> List[Dict]:
     return question_answers
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(stackoverflowProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(stackoverflowProblemDefinition);

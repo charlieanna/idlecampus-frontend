@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Zoom - Video Conferencing Platform
@@ -337,3 +338,6 @@ def get_meeting_chat(meeting_id: str) -> List[Dict]:
     return meeting_chat
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(zoomProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(zoomProblemDefinition);

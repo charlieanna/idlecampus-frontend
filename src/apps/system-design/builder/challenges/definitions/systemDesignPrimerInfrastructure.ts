@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../validation/validators/common
 import { basicFunctionalValidator } from '../../validation/validators/featureValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * System Design Primer - Infrastructure Concepts
@@ -3812,3 +3813,6 @@ export const systemDesignPrimerInfrastructureProblems = [
   rateLimitingProblem,
   apiVersioningProblem,
 ];
+
+// Auto-generate code challenges from functional requirements
+(performanceVsScalabilityProblem as any).codeChallenges = generateCodeChallengesFromFRs(performanceVsScalabilityProblem);

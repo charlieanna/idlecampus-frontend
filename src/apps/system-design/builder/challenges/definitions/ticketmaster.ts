@@ -7,6 +7,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Ticketmaster - Event Ticketing Platform
@@ -272,3 +273,6 @@ def get_user_tickets(user_id: str) -> List[Dict]:
     return user_tickets
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(ticketmasterProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(ticketmasterProblemDefinition);

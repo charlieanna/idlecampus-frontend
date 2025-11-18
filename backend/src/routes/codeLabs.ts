@@ -20,6 +20,7 @@ import {
   SubmitCodeRequest,
   SubmitCodeResponse,
 } from '../types/index.js';
+import { getChallengeTimeout, getChallengeMemoryLimit } from '../config/challengeConfig.js';
 
 const router = Router();
 
@@ -105,12 +106,21 @@ router.post('/:id/execute', async (req: Request, res: Response) => {
 
     // Get challenge if it exists, but allow execution even if challenge doesn't exist
     const challenge = getChallenge(id);
-    const timeLimit = timeout || challenge?.time_limit || 5;
-    const memoryLimit = challenge?.memory_limit;
-    
+
+    // Use challenge-specific configuration from config/challengeConfig.ts
+    // Falls back to challenge definition, then user-provided timeout, then config defaults
+    const configTimeout = getChallengeTimeout(id); // in milliseconds
+    const configMemoryLimit = getChallengeMemoryLimit(id); // in MB
+
+    const timeLimit = timeout || challenge?.time_limit || (configTimeout / 1000);
+    const memoryLimit = challenge?.memory_limit || configMemoryLimit;
+
+    // Log execution configuration
+    console.log(`[CodeLabs] Executing challenge '${id}' with timeout: ${timeLimit}s, memory: ${memoryLimit}MB`);
+
     // Log if challenge not found (for debugging) but continue execution
     if (!challenge) {
-      console.log(`[CodeLabs] Challenge '${id}' not found, using default time limit: ${timeLimit}s`);
+      console.log(`[CodeLabs] Challenge '${id}' not in challenge loader, using category-based config`);
     }
 
     // Execute code with test input appended using compatibility wrapper

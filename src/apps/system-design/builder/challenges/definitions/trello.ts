@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Trello - Project Management Platform
@@ -463,3 +464,6 @@ def get_board_content(board_id: str) -> Dict:
     return board
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(trelloProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(trelloProblemDefinition);

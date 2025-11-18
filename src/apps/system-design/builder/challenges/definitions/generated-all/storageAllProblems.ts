@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Storage Problems - Complete Set
@@ -6229,3 +6230,5 @@ def handle_node_failures_transparently(**kwargs) -> Dict:
     return {'status': 'success', 'data': kwargs}`,
 };
 
+// Auto-generate code challenges from functional requirements
+(basicDatabaseDesignProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(basicDatabaseDesignProblemDefinition);

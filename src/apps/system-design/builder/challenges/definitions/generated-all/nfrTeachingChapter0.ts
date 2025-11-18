@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution
@@ -8459,3 +8460,6 @@ export const nfrTeachingChapter0Problems = [
   readAfterWriteConsistencyProblem,
   consistencyLevelsProblem,
 ];
+
+// Auto-generate code challenges from functional requirements
+(throughputCalculationProblem as any).codeChallenges = generateCodeChallengesFromFRs(throughputCalculationProblem);

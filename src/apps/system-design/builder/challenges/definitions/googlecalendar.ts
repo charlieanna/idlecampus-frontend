@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Google Calendar - Calendar Management
@@ -170,3 +171,6 @@ def get_events(calendar_id: str, start_date: str = None, end_date: str = None) -
     return calendar_events
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(googlecalendarProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(googlecalendarProblemDefinition);

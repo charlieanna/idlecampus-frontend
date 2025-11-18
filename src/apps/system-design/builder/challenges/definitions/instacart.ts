@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Instacart - Grocery Delivery Platform
@@ -189,3 +190,6 @@ def get_order_status(order_id: str) -> Dict:
     }
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(instacartProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(instacartProblemDefinition);

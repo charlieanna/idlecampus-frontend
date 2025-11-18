@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Basic RDBMS Design - Blog Database
@@ -197,3 +198,6 @@ def get_posts_by_tag(tag_name: str) -> List[Dict]:
     return tagged_posts
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(basicDatabaseDesignProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(basicDatabaseDesignProblemDefinition);

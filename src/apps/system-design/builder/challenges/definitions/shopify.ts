@@ -7,6 +7,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Shopify - E-commerce Platform
@@ -311,3 +312,6 @@ def process_payment(payment_id: str, order_id: str, amount: float) -> Dict:
     return payments[payment_id]
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(shopifyProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(shopifyProblemDefinition);

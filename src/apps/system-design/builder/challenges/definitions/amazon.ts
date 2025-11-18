@@ -7,6 +7,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Amazon - E-commerce Marketplace
@@ -356,3 +357,6 @@ def get_order_history(user_id: str) -> List[Dict]:
     return user_orders
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(amazonProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(amazonProblemDefinition);

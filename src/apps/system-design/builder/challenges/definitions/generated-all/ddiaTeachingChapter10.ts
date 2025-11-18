@@ -21,6 +21,7 @@
 
 import { ProblemDefinition } from '../../../types/problemDefinition';
 import { generateScenarios } from '../../scenarioGenerator';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 // ============================================================================
 // MAPREDUCE (5 PROBLEMS)
@@ -1249,3 +1250,6 @@ export const ddiaChapter10Problems = [
   cachingIntermediateResultsProblemDefinition,
   lineageFaultToleranceProblemDefinition,
 ];
+
+// Auto-generate code challenges from functional requirements
+(mapFunctionProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(mapFunctionProblemDefinition);

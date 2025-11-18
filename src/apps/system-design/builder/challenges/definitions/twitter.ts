@@ -12,6 +12,7 @@ import {
 } from '../../validation/validators/cachingValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Twitter - Microblogging Platform
@@ -343,3 +344,6 @@ def search_users(query: str) -> List[Dict]:
     return results
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(twitterProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(twitterProblemDefinition);

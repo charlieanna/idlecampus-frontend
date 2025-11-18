@@ -16,6 +16,7 @@
 
 import { ProblemDefinition } from '../../../types/problemDefinition';
 import { generateScenarios } from '../../scenarioGenerator';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 // ============================================================================
 // DATA ENCODING (4 PROBLEMS)
@@ -1000,3 +1001,6 @@ export const ddiaChapter4Problems = [
   schemaVersioningProblemDefinition,
   migrationStrategiesProblemDefinition,
 ];
+
+// Auto-generate code challenges from functional requirements
+(jsonEncodingProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(jsonEncodingProblemDefinition);

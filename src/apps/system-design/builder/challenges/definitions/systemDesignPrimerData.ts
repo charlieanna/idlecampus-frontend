@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../validation/validators/common
 import { basicFunctionalValidator } from '../../validation/validators/featureValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * System Design Primer - Data & Communication Concepts
@@ -2942,3 +2943,6 @@ export const systemDesignPrimerDataProblems = [
 // Note: This file focuses on the highest-impact System Design Primer data & communication problems.
 // Additional database and security-related topics from the plan can be added in future iterations
 // to reach the full target of 52 problems.
+
+// Auto-generate code challenges from functional requirements
+(denormalizationProblem as any).codeChallenges = generateCodeChallengesFromFRs(denormalizationProblem);

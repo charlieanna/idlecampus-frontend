@@ -8,6 +8,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Airbnb - Vacation Rental Platform
@@ -410,3 +411,6 @@ def get_listing_reviews(listing_id: str) -> List[Dict]:
     return listing_reviews
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(airbnbProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(airbnbProblemDefinition);

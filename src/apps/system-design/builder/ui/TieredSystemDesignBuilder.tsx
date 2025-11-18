@@ -33,6 +33,21 @@ import { apiService } from '../../../../services/api';
 // Import example challenges
 import { tieredChallenges } from '../challenges/tieredChallenges';
 
+/**
+ * Extract function names from Python code
+ */
+function extractFunctionNames(code: string): string[] {
+  const functionRegex = /def\s+(\w+)\s*\(/g;
+  const functions: string[] = [];
+  let match;
+
+  while ((match = functionRegex.exec(code)) !== null) {
+    functions.push(match[1]);
+  }
+
+  return functions;
+}
+
 // TinyURL database schema for Python schema validation
 const TINY_URL_DATABASE_SCHEMA: DatabaseSchema = {
   tables: [
@@ -241,7 +256,7 @@ export function TieredSystemDesignBuilder({
           mergedConfig.schema = challengeSchema.tables || challengeSchema;
           console.log(`  📋 ${comp.type}: Adding schema from challenge:`, mergedConfig.schema);
         } else if (selectedChallenge?.id === 'tiny_url') {
-          // Fallback: Use default TinyURL schema
+          // Fallback: Use default TinyURL schema (relational)
           mergedConfig.schema = [
             {
               name: 'url_mapping',
@@ -253,7 +268,55 @@ export function TieredSystemDesignBuilder({
               ],
             }
           ];
+          mergedConfig.dataModel = 'relational';
           console.log(`  📋 ${comp.type}: Adding default TinyURL schema`);
+        } else if (selectedChallenge?.id === 'facebook') {
+          // Facebook: Use document/graph model for social graph
+          mergedConfig.schema = [
+            {
+              name: 'users',
+              columns: [
+                { name: 'id', type: 'string', primaryKey: true, nullable: false, indexed: true },
+                { name: 'name', type: 'string', nullable: false },
+                { name: 'email', type: 'string', nullable: false, indexed: true },
+                { name: 'profile_photo_url', type: 'string', nullable: true },
+                { name: 'friend_count', type: 'integer', nullable: false },
+                { name: 'created_at', type: 'timestamp', nullable: false, indexed: true },
+              ],
+            },
+            {
+              name: 'posts',
+              columns: [
+                { name: 'id', type: 'string', primaryKey: true, nullable: false, indexed: true },
+                { name: 'user_id', type: 'string', nullable: false, indexed: true },
+                { name: 'content', type: 'text', nullable: false },
+                { name: 'media_url', type: 'string', nullable: true },
+                { name: 'like_count', type: 'integer', nullable: false },
+                { name: 'created_at', type: 'timestamp', nullable: false, indexed: true },
+              ],
+            },
+            {
+              name: 'friendships',
+              columns: [
+                { name: 'user_id_1', type: 'string', nullable: false, indexed: true },
+                { name: 'user_id_2', type: 'string', nullable: false, indexed: true },
+                { name: 'status', type: 'string', nullable: false },
+                { name: 'created_at', type: 'timestamp', nullable: false, indexed: true },
+              ],
+            },
+            {
+              name: 'comments',
+              columns: [
+                { name: 'id', type: 'string', primaryKey: true, nullable: false, indexed: true },
+                { name: 'post_id', type: 'string', nullable: false, indexed: true },
+                { name: 'user_id', type: 'string', nullable: false, indexed: true },
+                { name: 'text', type: 'text', nullable: false },
+                { name: 'created_at', type: 'timestamp', nullable: false, indexed: true },
+              ],
+            },
+          ];
+          mergedConfig.dataModel = 'document'; // Document DB or Graph DB for flexible social graph
+          console.log(`  📋 ${comp.type}: Adding default Facebook schema (document model)`);
         }
       }
 
@@ -333,7 +396,7 @@ export function TieredSystemDesignBuilder({
     setCurrentTestIndex(0);
   }, [selectedChallenge]);
 
-  // Run Python TinyURL code tests via backend executor
+  // Run Python code tests via backend executor (generic for all challenges)
   const handleRunPythonTests = useCallback(
     async (code: string, panelTestCases: any[]) => {
       const results: any[] = [];
@@ -344,18 +407,18 @@ export function TieredSystemDesignBuilder({
 
       // Determine which code to use: multi-server or legacy single code
       let combinedCode = code;
-      
+
       // Check if we have any non-empty server-specific code with assigned APIs
       // Validate against current systemGraph to ensure servers still exist and have APIs
       const validServerEntries = Object.entries(pythonCodeByServer).filter(([serverId, entry]) => {
         // Check entry has code and APIs
         if (!entry.code || entry.code.trim().length === 0) return false;
         if (!entry.apis || entry.apis.length === 0) return false;
-        
+
         // Verify server still exists in systemGraph with APIs assigned
         const currentServer = systemGraph.components.find(c => c.id === serverId);
         if (!currentServer || currentServer.type !== 'app_server') return false;
-        
+
         const currentAPIs = currentServer.config.handledAPIs || [];
         return currentAPIs.length > 0;
       });
@@ -366,6 +429,9 @@ export function TieredSystemDesignBuilder({
         combinedCode = validCodes.join('\n\n# ---\n\n');
       }
       // Otherwise, fall back to legacy pythonCode (already set to `code` parameter)
+
+      // Extract function names from the combined code
+      const functionNames = extractFunctionNames(combinedCode);
 
       for (const testCase of panelTestCases) {
         const operationsJson = JSON.stringify(testCase.operations || []);
@@ -407,16 +473,17 @@ def run_test():
                     raise IndexError("Invalid RESULT_FROM_PREV index")
                 actual_input = codes[idx]
 
-        if method == "shorten":
-            actual_output = shorten(actual_input, context)
-            codes.append(actual_output)
-        elif method == "expand":
-            # expand is an alias for redirect
-            actual_output = redirect(actual_input, context)
-        elif method == "redirect":
-            actual_output = redirect(actual_input, context)
-        else:
+        # Dynamic function call - call the function by name
+        # Available functions: ${functionNames.join(', ')}
+        if method not in globals():
             raise ValueError(f"Unknown method: {method}")
+
+        func = globals()[method]
+        actual_output = func(actual_input, context)
+
+        # Store codes for methods that generate codes (like shorten)
+        if method in ["shorten", "generate", "create"]:
+            codes.append(actual_output)
 
         # Evaluate expected result
         passed = False
@@ -465,8 +532,9 @@ if __name__ == "__main__":
         print("__TEST_RESULT__", json.dumps(failure))
 `;
 
-        // Use an existing code lab ID just to leverage the Python executor
-        const response = await apiService.executeCode('tinyurl_hash_function', script);
+        // Use the actual challenge ID for execution (backend will use category-based config)
+        const challengeId = selectedChallenge?.id || 'generic';
+        const response = await apiService.executeCode(challengeId, script);
         const output: string = response.output || '';
 
         const marker = '__TEST_RESULT__';

@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * DoorDash - Food Delivery Platform
@@ -185,3 +186,6 @@ def get_order_status(order_id: str) -> Dict:
     }
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(doordashProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(doordashProblemDefinition);

@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Dropbox - File Storage and Sync
@@ -203,3 +204,6 @@ def get_user_files(user_id: str, folder_id: str = None) -> List[Dict]:
     return user_files
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(dropboxProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(dropboxProblemDefinition);

@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * DDIA Teaching Problems - Chapter 7: Transactions
@@ -1250,3 +1251,6 @@ export const ddiaTransactionProblems = [
   optimisticConcurrencyProblemDefinition,
   deadlockDetectionProblemDefinition,
 ];
+
+// Auto-generate code challenges from functional requirements
+(atomicityProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(atomicityProblemDefinition);

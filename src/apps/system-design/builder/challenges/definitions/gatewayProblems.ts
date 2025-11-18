@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Basic API Gateway - Route requests to microservices
@@ -306,3 +307,6 @@ export const graphqlGatewayProblemDefinition: ProblemDefinition = {
     },
   ],
 };
+
+// Auto-generate code challenges from functional requirements
+(basicApiGatewayProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(basicApiGatewayProblemDefinition);

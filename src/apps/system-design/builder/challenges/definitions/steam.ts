@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Steam - Gaming Platform
@@ -183,3 +184,6 @@ def get_user_achievements(user_id: str, game_id: str = None) -> List[Dict]:
     return user_achievements
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(steamProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(steamProblemDefinition);

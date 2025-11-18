@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * DDIA Teaching Problems - Chapter 2: Data Models and Query Languages
@@ -1002,3 +1003,6 @@ export const ddiaChapter2Problems = [
   propertyGraphsProblemDefinition,
   cypherQueryProblemDefinition,
 ];
+
+// Auto-generate code challenges from functional requirements
+(relationalSchemaProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(relationalSchemaProblemDefinition);

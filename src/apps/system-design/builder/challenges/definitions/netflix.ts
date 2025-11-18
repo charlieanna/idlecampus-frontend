@@ -11,6 +11,7 @@ import {
 } from '../../validation/validators/cachingValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Netflix - Video Streaming Platform
@@ -540,3 +541,6 @@ def get_recommendations(user_id: str, limit: int = 10) -> List[Dict]:
     return list(videos.values())[:limit]
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(netflixProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(netflixProblemDefinition);

@@ -72,6 +72,7 @@ from typing import Dict, Optional
 import hashlib
 import random
 import string
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 # In-memory storage (naive implementation)
 pastes = {}
@@ -145,3 +146,6 @@ def delete_expired_pastes() -> int:
     return len(expired)
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(pastebinProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(pastebinProblemDefinition);

@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Spotify - Music Streaming Platform
@@ -438,3 +439,6 @@ def follow_user(follower_id: str, following_id: str) -> Dict:
     return follows[follow_key]
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(spotifyProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(spotifyProblemDefinition);

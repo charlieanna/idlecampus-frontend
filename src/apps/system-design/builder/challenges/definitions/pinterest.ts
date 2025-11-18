@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Pinterest - Visual Bookmarking Platform
@@ -242,3 +243,6 @@ def follow_user(follower_id: str, following_id: str) -> Dict:
     return follows[follow_id]
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(pinterestProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(pinterestProblemDefinition);

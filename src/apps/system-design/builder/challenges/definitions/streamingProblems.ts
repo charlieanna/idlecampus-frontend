@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Real-time Push Notifications - WebSocket delivery for live updates
@@ -326,3 +327,6 @@ export const realtimeChatMessagesProblemDefinition: ProblemDefinition = {
     },
   ],
 };
+
+// Auto-generate code challenges from functional requirements
+(realtimeNotificationsProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(realtimeNotificationsProblemDefinition);

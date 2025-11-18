@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Tutorial 3: Real-Time Chat System
@@ -123,3 +124,6 @@ export const tutorialRealtimeChatProblemDefinition: ProblemDefinition = {
     },
   ],
 };
+
+// Auto-generate code challenges from functional requirements
+(tutorialRealtimeChatProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(tutorialRealtimeChatProblemDefinition);

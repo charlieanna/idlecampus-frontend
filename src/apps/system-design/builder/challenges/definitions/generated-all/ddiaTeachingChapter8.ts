@@ -28,6 +28,7 @@
 
 import { ProblemDefinition } from '../../../types/problemDefinition';
 import { generateScenarios } from '../../scenarioGenerator';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 // ============================================================================
 // NETWORK ISSUES (5 PROBLEMS)
@@ -1874,3 +1875,6 @@ export const ddiaChapter8Problems = [
   pbftAlgorithmProblemDefinition,
   blockchainBasicsProblemDefinition,
 ];
+
+// Auto-generate code challenges from functional requirements
+(networkPartitionsProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(networkPartitionsProblemDefinition);

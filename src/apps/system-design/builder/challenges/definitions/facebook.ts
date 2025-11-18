@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Facebook - Social Networking Platform
@@ -273,3 +274,6 @@ def comment_on_post(comment_id: str, post_id: str, user_id: str, text: str) -> D
     return comments[comment_id]
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(facebookProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(facebookProblemDefinition);

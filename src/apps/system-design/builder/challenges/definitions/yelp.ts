@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Yelp - Business Review Platform
@@ -228,3 +229,6 @@ def get_business_reviews(business_id: str, limit: int = 20) -> List[Dict]:
     return business_reviews[:limit]
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(yelpProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(yelpProblemDefinition);

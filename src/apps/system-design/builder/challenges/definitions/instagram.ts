@@ -12,6 +12,7 @@ import {
 } from '../../validation/validators/cachingValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Instagram - Photo Sharing Platform
@@ -602,3 +603,6 @@ def search_content(query: str) -> List[Dict]:
     return results
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(instagramProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(instagramProblemDefinition);

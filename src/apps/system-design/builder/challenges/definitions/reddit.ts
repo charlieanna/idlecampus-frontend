@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Reddit - Discussion Forum Platform
@@ -676,3 +677,6 @@ def get_subreddit_feed(subreddit_id: str, sort_by: str = "hot") -> List[Dict]:
     return subreddit_posts
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(redditProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(redditProblemDefinition);

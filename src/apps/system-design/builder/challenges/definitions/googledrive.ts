@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Google Drive - Cloud Storage Platform
@@ -221,3 +222,6 @@ def share_file(permission_id: str, file_id: str, user_id: str,
     return permissions[permission_id]
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(googledriveProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(googledriveProblemDefinition);

@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * NFR Teaching - Chapter 0: Introduction to the Framework
@@ -520,3 +521,6 @@ Start with Module 1 and work through systematically. Each problem uses the frame
 export const nfrTeachingIntroProblems = [
   nfrFrameworkIntroProblem,
 ];
+
+// Auto-generate code challenges from functional requirements
+(nfrFrameworkIntroProblem as any).codeChallenges = generateCodeChallengesFromFRs(nfrFrameworkIntroProblem);

@@ -6,6 +6,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Telegram - Cloud Messaging Platform
@@ -262,3 +263,6 @@ def broadcast_to_channel(message_id: str, channel_id: str, content: str) -> Dict
     return message
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(telegramProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(telegramProblemDefinition);

@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Basic Multi-Region Setup - Deploy app in two regions
@@ -334,3 +335,6 @@ export const crossRegionDrProblemDefinition: ProblemDefinition = {
     },
   ],
 };
+
+// Auto-generate code challenges from functional requirements
+(basicMultiRegionProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(basicMultiRegionProblemDefinition);

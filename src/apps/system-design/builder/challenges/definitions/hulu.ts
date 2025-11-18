@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Hulu - Video Streaming Platform
@@ -176,3 +177,6 @@ def delete_recording(recording_id: str) -> bool:
     return False
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(huluProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(huluProblemDefinition);

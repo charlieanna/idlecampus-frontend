@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Basic Full-Text Search - Search documents with keywords
@@ -291,3 +292,6 @@ export const geoSearchProblemDefinition: ProblemDefinition = {
     },
   ],
 };
+
+// Auto-generate code challenges from functional requirements
+(basicTextSearchProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(basicTextSearchProblemDefinition);

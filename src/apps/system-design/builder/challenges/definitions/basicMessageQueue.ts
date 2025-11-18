@@ -83,6 +83,7 @@ export const basicMessageQueueProblemDefinition: ProblemDefinition = {
   pythonTemplate: `from datetime import datetime
 from typing import List, Dict, Optional
 import time
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 # In-memory storage (naive implementation)
 queues = {}
@@ -196,3 +197,6 @@ def get_queue_stats(queue_id: str) -> Dict:
     }
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(basicMessageQueueProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(basicMessageQueueProblemDefinition);

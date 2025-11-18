@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Static Content CDN - Easy caching problem
@@ -172,3 +173,6 @@ def get_cdn_stats() -> Dict:
     }
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(staticContentCdnProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(staticContentCdnProblemDefinition);

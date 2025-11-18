@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Snapchat - Ephemeral Messaging Platform
@@ -199,3 +200,6 @@ def cleanup_expired_content() -> Dict:
     }
 `,
 };
+
+// Auto-generate code challenges from functional requirements
+(snapchatProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(snapchatProblemDefinition);
