@@ -140,6 +140,11 @@ export function TieredSystemDesignBuilder({
       connections,
     });
 
+    // Load the complete Python implementation from template
+    if (selectedChallenge.pythonTemplate) {
+      setPythonCode(selectedChallenge.pythonTemplate);
+    }
+
     // Close modal and go back to design view
     setShowSolutionModal(false);
     setHasSubmitted(false);
