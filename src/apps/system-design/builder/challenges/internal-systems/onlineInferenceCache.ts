@@ -29,7 +29,8 @@ Key challenges:
     budget: '$4,000/month',
   },
 
-  availableComponents: ['app_server', 'cache', 'database', 'message_queue'],
+  availableComponents: [
+    'client','app_server', 'cache', 'database', 'message_queue'],
 
   testCases: [
     {

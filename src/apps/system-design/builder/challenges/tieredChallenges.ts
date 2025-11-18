@@ -23,6 +23,10 @@ if (process.env.NODE_ENV === 'development') {
   console.log(`   Total challenges: ${tieredChallenges.length}`);
   console.log(`   All with Python templates for Tier 1 (write code)`);
 
+  // Count challenges with solutions
+  const withSolutions = tieredChallenges.filter(c => c.solution).length;
+  console.log(`   Challenges with solutions: ${withSolutions}/${tieredChallenges.length}`);
+
   // Debug: Show sample challenges
   const samples = tieredChallenges.slice(0, 5);
   console.log('   Sample challenges:', samples.map(c => c.title).join(', '));

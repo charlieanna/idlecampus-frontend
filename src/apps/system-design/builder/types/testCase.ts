@@ -120,4 +120,5 @@ export interface Challenge {
   }[];
   pythonTemplate?: string; // Python implementation template for the problem
   requiredAPIs?: string[]; // Required context APIs: ['db', 'cache', 'queue', 'cdn', 'search']
+  solution?: Solution; // Complete solution that passes all test cases
 }

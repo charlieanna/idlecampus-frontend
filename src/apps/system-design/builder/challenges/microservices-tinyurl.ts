@@ -21,7 +21,8 @@ export const microservicesTinyUrlChallenge: Challenge = {
     budget: '$50K/month',
   },
 
-  availableComponents: ['all'],
+  availableComponents: [
+    'client','all'],
 
   testCases: [
     {

@@ -26,6 +26,7 @@ Example:
   },
 
   availableComponents: [
+    'client',
     'load_balancer',
     'app_server',
     'database',
@@ -644,4 +645,50 @@ def handle_request(request: dict, context: dict) -> dict:
 
     return {'status': 404, 'body': {'error': 'Not found'}}
 `,
+
+  // Complete solution that passes ALL test cases
+  solution: {
+    components: [
+      { type: 'client', config: {} },
+      { type: 'load_balancer', config: {} },
+      { type: 'app_server', config: { instances: 10 } },
+      { type: 'redis', config: { memorySizeGB: 64 } },
+      { type: 'postgresql', config: { readCapacity: 20000, writeCapacity: 5000 } },
+    ],
+    connections: [
+      { from: 'client', to: 'load_balancer' },
+      { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 'redis' },
+      { from: 'app_server', to: 'postgresql' },
+    ],
+    explanation: `# Complete Solution for Tiny URL Shortener
+
+## Architecture Components
+- **client**: End users making requests
+- **load_balancer**: Distributes traffic across app servers
+- **app_server** (10 instances): Handles business logic, generates short codes
+- **redis** (64GB): Caches URL mappings for fast redirects
+- **postgresql** (20k read, 5k write capacity): Persistent storage with replication
+
+## Data Flow
+1. Client → Load Balancer: User sends request
+2. Load Balancer → App Server: Routes to available server
+3. App Server → Redis: Check cache first (90%+ hit rate)
+4. App Server → PostgreSQL: On cache miss or for writes
+
+## Why This Works
+This architecture handles:
+- **Normal traffic**: 1,000 RPS reads, 100 RPS writes
+- **Peak traffic**: 2,200+ RPS (2000 reads, 200 writes)
+- **10x write spikes**: 1,000 writes/sec during campaigns
+- **Cache failures**: DB has capacity to handle full load
+- **DB failures**: Replication for failover
+
+## Key Design Decisions
+1. **10 app server instances** provide horizontal scaling and redundancy
+2. **Large Redis cache (64GB)** stores millions of URL mappings
+3. **High DB capacity** handles traffic when cache fails
+4. **Load balancer** ensures even distribution and health checks
+5. **No single point of failure** - all components can scale or failover`,
+  },
 };

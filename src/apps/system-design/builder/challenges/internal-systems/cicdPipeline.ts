@@ -43,6 +43,7 @@ Key challenges:
   },
 
   availableComponents: [
+    'client',
     'load_balancer',
     'app_server',
     'database',

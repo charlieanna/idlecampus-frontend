@@ -36,6 +36,7 @@ Key challenges:
   },
 
   availableComponents: [
+    'client',
     'load_balancer',
     'database',
     'cache',

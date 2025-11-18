@@ -224,6 +224,7 @@ The system must handle:
   },
 
   availableComponents: [
+    'client',
     'load_balancer',
     'app_server',
     'worker',

@@ -15,6 +15,7 @@ import { ProblemDescriptionPanel } from './components/ProblemDescriptionPanel';
 import { SubmissionResultsPanel } from './components/SubmissionResultsPanel';
 import { ComponentPalette } from './components/ComponentPalette';
 import { EnhancedInspector } from './components/EnhancedInspector';
+import { SolutionModal } from './components/SolutionModal';
 
 // Import types and services
 import { Challenge } from '../types/testCase';
@@ -84,6 +85,7 @@ export function TieredSystemDesignBuilder({
   const [isRunning, setIsRunning] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [currentLevel, setCurrentLevel] = useState(1);
+  const [showSolutionModal, setShowSolutionModal] = useState(false);
 
   // Simulation test runner for system design FR/NFR testCases
   const [testRunner] = useState(() => new TestRunner());
@@ -94,6 +96,56 @@ export function TieredSystemDesignBuilder({
   const isFoodBlog = selectedChallenge?.id === 'food_blog';
   const hasCodeChallenges = selectedChallenge?.codeChallenges && selectedChallenge.codeChallenges.length > 0;
   const hasPythonTemplate = selectedChallenge?.pythonTemplate && selectedChallenge.pythonTemplate.length > 0;
+
+  // Load solution to canvas
+  const loadSolutionToCanvas = useCallback(() => {
+    if (!selectedChallenge?.solution) return;
+
+    const solution = selectedChallenge.solution;
+
+    // Convert solution components to SystemGraph components with full config
+    const components = solution.components.map((comp, index) => {
+      // Get default config and merge with solution config
+      const defaultCfg = getDefaultConfig(comp.type);
+      const mergedConfig = { ...defaultCfg, ...comp.config };
+
+      return {
+        id: `${comp.type}_${Date.now()}_${index}`,
+        type: comp.type as any,
+        config: mergedConfig,
+      };
+    });
+
+    // Convert solution connections to use actual component IDs
+    const connections = solution.connections.map(conn => {
+      // Find the component IDs by type
+      const fromComp = components.find(c => c.type === conn.from);
+      const toComp = components.find(c => c.type === conn.to);
+
+      if (!fromComp || !toComp) {
+        console.warn(`Missing component for connection: ${conn.from} -> ${conn.to}`);
+        return null;
+      }
+
+      return {
+        from: fromComp.id,
+        to: toComp.id,
+        type: 'read_write' as const,
+      };
+    }).filter(c => c !== null) as any[];
+
+    // Update the system graph
+    setSystemGraph({
+      components,
+      connections,
+    });
+
+    // Close modal and go back to design view
+    setShowSolutionModal(false);
+    setHasSubmitted(false);
+    setTestResults(new Map());
+    setCurrentTestIndex(0);
+  }, [selectedChallenge]);
 
   // Run Python TinyURL code tests via backend executor
   const handleRunPythonTests = useCallback(
@@ -839,7 +891,7 @@ if __name__ == "__main__":
                   setTestResults(new Map());
                   setCurrentTestIndex(0);
                 }}
-                onShowSolution={() => {}}
+                onShowSolution={loadSolutionToCanvas}
               />
             ) : (
               <ProblemDescriptionPanel challenge={selectedChallenge} />
@@ -1111,6 +1163,14 @@ if __name__ == "__main__":
         })}
       </div>
 
+      {/* Solution Modal */}
+      {showSolutionModal && (
+        <SolutionModal
+          solution={selectedChallenge.solution}
+          challengeTitle={selectedChallenge.title}
+          onClose={() => setShowSolutionModal(false)}
+        />
+      )}
     </div>
   );
 }

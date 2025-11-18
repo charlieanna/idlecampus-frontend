@@ -176,6 +176,7 @@ Example:
 
   // Components available for system design
   availableComponents: [
+    'client',
     'load_balancer',
     'app_server',
     'worker',

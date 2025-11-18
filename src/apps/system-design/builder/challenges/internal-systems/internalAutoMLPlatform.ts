@@ -28,7 +28,8 @@ Key challenges:
     budget: '$10,000/month',
   },
 
-  availableComponents: ['app_server', 'database', 's3', 'worker_pool'],
+  availableComponents: [
+    'client','app_server', 'database', 's3', 'worker_pool'],
 
   testCases: [
     {

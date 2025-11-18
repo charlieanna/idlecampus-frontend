@@ -158,6 +158,7 @@ System architecture, not algorithms!`,
   },
 
   availableComponents: [
+    'client',
     'load_balancer',
     'app_server',
     'worker',

@@ -27,6 +27,7 @@ Example:
   },
 
   availableComponents: [
+    'client',
     'load_balancer',
     'app_server',
     'database',
@@ -608,4 +609,53 @@ def handle_request(request: dict, context: dict) -> dict:
 
     return {'status': 404, 'body': 'Not found'}
 `,
+
+  // Complete solution that passes ALL test cases
+  solution: {
+    components: [
+      { type: 'client', config: {} },
+      { type: 'cdn', config: { cacheHitRate: 0.95, bandwidthGbps: 100 } },
+      { type: 'load_balancer', config: {} },
+      { type: 'app_server', config: { instances: 3 } },
+      { type: 's3', config: { storageSizeGB: 1000 } },
+      { type: 'postgresql', config: { readCapacity: 500, writeCapacity: 100 } },
+    ],
+    connections: [
+      { from: 'client', to: 'cdn' },
+      { from: 'cdn', to: 'load_balancer' },
+      { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 's3' },
+      { from: 'app_server', to: 'postgresql' },
+    ],
+    explanation: `# Complete Solution for Food Blog with Images
+
+## Architecture Components
+- **client**: Blog readers worldwide
+- **cdn** (95% cache hit rate): Serves images and static content globally
+- **load_balancer**: Routes requests to origin servers
+- **app_server** (3 instances): Serves HTML pages, handles logic
+- **s3** (1TB): Stores original high-res images
+- **postgresql** (500 read): Blog post metadata, comments
+
+## Data Flow
+1. Client → CDN: First stop for all requests (images cached)
+2. CDN → Load Balancer: On cache miss only (~5% of requests)
+3. Load Balancer → App Server: Generate HTML or fetch from S3
+4. App Server → S3: Retrieve original images
+5. App Server → PostgreSQL: Blog post data
+
+## Why This Works
+This architecture handles:
+- **2,000 RPS** with CDN serving 95% from edge
+- **Viral traffic spikes** (10x) absorbed by CDN
+- **Low latency** (<500ms) via global edge caching
+- **Budget under $300/month** - CDN is cost-effective at scale
+
+## Key Design Decisions
+1. **CDN-first architecture** - 95% traffic never hits origin
+2. **S3 for images** - cheap, durable, unlimited storage
+3. **Small app server footprint** - only ~100 RPS reaches origin
+4. **Lightweight DB** - only metadata, not images
+5. **High CDN cache rate** - images are static, cache forever`,
+  },
 };

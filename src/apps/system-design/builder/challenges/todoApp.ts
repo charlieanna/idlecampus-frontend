@@ -29,6 +29,7 @@ Example:
   },
 
   availableComponents: [
+    'client',
     'load_balancer',
     'app_server',
     'database',
@@ -616,4 +617,50 @@ def handle_request(request: dict, context: dict) -> dict:
 
     return {'status': 404, 'body': {'error': 'Not found'}}
 `,
+
+  // Complete solution that passes ALL test cases
+  solution: {
+    components: [
+      { type: 'client', config: {} },
+      { type: 'load_balancer', config: {} },
+      { type: 'app_server', config: { instances: 5 } },
+      { type: 'redis', config: { memorySizeGB: 16 } },
+      { type: 'postgresql', config: { readCapacity: 5000, writeCapacity: 2000 } },
+    ],
+    connections: [
+      { from: 'client', to: 'load_balancer' },
+      { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 'redis' },
+      { from: 'app_server', to: 'postgresql' },
+    ],
+    explanation: `# Complete Solution for Collaborative Todo App
+
+## Architecture Components
+- **client**: Team members accessing the app
+- **load_balancer**: Distributes traffic and handles failover
+- **app_server** (5 instances): CRUD operations, session management
+- **redis** (16GB): Session cache and frequently accessed todos
+- **postgresql** (5k read, 2k write): Persistent storage with consistency
+
+## Data Flow
+1. Client → Load Balancer: User makes request
+2. Load Balancer → App Server: Routes based on health/load
+3. App Server → Redis: Session and hot data cache
+4. App Server → PostgreSQL: Persistent writes, cache misses
+
+## Why This Works
+This architecture handles:
+- **500 RPS** (300 reads, 200 writes) with headroom
+- **99.9% availability** through redundant components
+- **Data consistency** via ACID transactions
+- **Server restarts** without data loss (DB persists)
+- **Concurrent users** with proper locking
+
+## Key Design Decisions
+1. **PostgreSQL for writes** ensures data consistency (no lost updates)
+2. **Redis caching** reduces DB load for reads
+3. **Multiple app servers** handle server failures gracefully
+4. **Load balancer health checks** route around failures
+5. **Budget-friendly** - stays under $800/month`,
+  },
 };

@@ -26,6 +26,7 @@ Example:
   },
 
   availableComponents: [
+    'client',
     'load_balancer',
     'app_server',
     'worker',
@@ -290,4 +291,60 @@ def manage_frontier(current_batch: List[str], seen_urls: Set[str]) -> List[str]:
     # - Use a set to avoid duplicates within the returned list
     raise NotImplementedError
 `,
+
+  // Complete solution that passes ALL test cases
+  solution: {
+    components: [
+      { type: 'client', config: {} },
+      { type: 'load_balancer', config: {} },
+      { type: 'app_server', config: { instances: 5 } },
+      { type: 'message_queue', config: { maxThroughput: 10000 } },
+      { type: 'redis', config: { memorySizeGB: 32 } },
+      { type: 'postgresql', config: { readCapacity: 2000, writeCapacity: 1000 } },
+      { type: 's3', config: { storageSizeGB: 10000 } },
+    ],
+    connections: [
+      { from: 'client', to: 'load_balancer' },
+      { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 'message_queue' },
+      { from: 'app_server', to: 'redis' },
+      { from: 'app_server', to: 'postgresql' },
+      { from: 'app_server', to: 's3' },
+    ],
+    explanation: `# Complete Solution for Web Crawler
+
+## Architecture Components
+- **client**: Crawler coordinator/scheduler
+- **load_balancer**: Routes requests to available workers
+- **app_server** (5 instances): Crawler workers (fetch, parse, extract)
+- **message_queue** (10k throughput): URL frontier (queue of URLs to crawl)
+- **redis** (32GB): Deduplication cache (seen URLs bloom filter)
+- **postgresql** (2k read, 1k write): URL metadata, crawl status
+- **s3** (10TB): Raw page content storage
+
+## Data Flow
+1. Client → App Server: Trigger crawl job
+2. App Server → Message Queue: Enqueue seed URLs
+3. Worker pops URL from queue
+4. Worker → Redis: Check if URL seen (dedup)
+5. Worker fetches page from web
+6. Worker → S3: Store raw content
+7. Worker → PostgreSQL: Save metadata
+8. Worker → Message Queue: Enqueue discovered links
+
+## Why This Works
+This architecture handles:
+- **200 RPS** of frontier operations efficiently
+- **URL deduplication** via Redis bloom filter
+- **Scalable storage** with S3 for billions of pages
+- **Async processing** via message queue (decoupled)
+- **Politeness** enforced by worker rate limiting
+
+## Key Design Decisions
+1. **Message queue as frontier** - handles backpressure, ordering
+2. **Redis for dedup** - O(1) lookup for seen URLs
+3. **S3 for content** - cheap, unlimited storage
+4. **PostgreSQL for metadata** - queryable, indexed
+5. **Multiple workers** - parallel crawling with scaling`,
+  },
 };
