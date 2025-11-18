@@ -691,7 +691,7 @@ if __name__ == "__main__":
         print("__TEST_RESULT__", json.dumps(failure))
 `;
 
-        const response = await apiService.executeCode('tinyurl_hash_function', script);
+        const response = await apiService.executeCode(selectedChallenge?.id || 'web_crawler', script);
         const output: string = response.output || '';
 
         const marker = '__TEST_RESULT__';

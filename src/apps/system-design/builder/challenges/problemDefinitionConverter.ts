@@ -1,5 +1,6 @@
 import { ProblemDefinition } from '../types/problemDefinition';
 import { Challenge, TestCase } from '../types/testCase';
+import { generateCodeChallengesFromFRs } from '../utils/codeChallengeGenerator';
 
 /**
  * Converts a ProblemDefinition to a Challenge
@@ -95,6 +96,11 @@ export function convertProblemDefinitionToChallenge(
     referenceLinks: getReferenceLinks(def.id),
     pythonTemplate: def.pythonTemplate, // Pass through Python template
   };
+
+  // Generate code challenges from functional requirements (if pythonTemplate exists)
+  if (def.pythonTemplate) {
+    challenge.codeChallenges = generateCodeChallengesFromFRs(def);
+  }
 
   // Generate a basic solution if not already present
   // Note: Solutions can be manually refined later
@@ -758,6 +764,7 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
   let replicationMode = 'single-leader';
   let replicas = 0;
   let shards = 1;
+  let shardKey = 'id'; // Default shard key, will be updated if database is needed
   
   if (needsDatabase) {
     // Account for cache misses: if cache has 90% hit ratio, 10% of reads go to DB
@@ -792,7 +799,6 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
     }
 
     // Determine sharding key based on data model entities (not patterns!)
-    let shardKey = 'id';
     if (hasGeospatial) {
       shardKey = 'region_id'; // Geospatial: shard by region for locality
     } else if (entities.includes('user')) {
