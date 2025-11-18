@@ -28,7 +28,6 @@
 
 import { ProblemDefinition } from '../../../types/problemDefinition';
 import { generateScenarios } from '../../scenarioGenerator';
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 // ============================================================================
 // MESSAGING SYSTEMS (5 PROBLEMS)
@@ -1870,5 +1869,3 @@ export const ddiaChapter11Problems = [
   checkpointingProblemDefinition,
 ];
 
-// Auto-generate code challenges from functional requirements
-(messageBrokersProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(messageBrokersProblemDefinition);

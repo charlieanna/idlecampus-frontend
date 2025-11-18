@@ -3,7 +3,6 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Multiregion Problems - Complete Set
@@ -6010,5 +6009,3 @@ def update_item(item_id: str, **kwargs) -> Dict:
     return None`,
 };
 
-// Auto-generate code challenges from functional requirements
-(basicMultiRegionProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(basicMultiRegionProblemDefinition);

@@ -3,7 +3,6 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Api-platform Problems - Complete Set
@@ -2285,5 +2284,3 @@ def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
     return events[event_id]`,
 };
 
-// Auto-generate code challenges from functional requirements
-(l5ApiGatewayFacebookProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(l5ApiGatewayFacebookProblemDefinition);

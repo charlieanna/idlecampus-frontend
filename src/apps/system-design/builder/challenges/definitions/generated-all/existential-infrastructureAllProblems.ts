@@ -3,7 +3,6 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Existential-infrastructure Problems - Complete Set
@@ -2254,5 +2253,3 @@ def provide_10x_improvement_over_current_sys(**kwargs) -> Dict:
     return {'status': 'success', 'data': kwargs}`,
 };
 
-// Auto-generate code challenges from functional requirements
-(l6ExistentialNuclearResilientProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(l6ExistentialNuclearResilientProblemDefinition);

@@ -142,7 +142,6 @@ export const tinyurlProblemDefinition: ProblemDefinition = {
 
   pythonTemplate: `# tinyurl.py
 import hashlib
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 from typing import Optional
 
 # You can create your own data structures here
@@ -7420,5 +7419,3 @@ def historical_trend_queries_avg_delivery_t(**kwargs) -> Dict:
     return {'status': 'success', 'data': kwargs}`,
 };
 
-// Auto-generate code challenges from functional requirements
-(tinyurlProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(tinyurlProblemDefinition);

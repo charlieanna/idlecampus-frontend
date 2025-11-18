@@ -3,7 +3,6 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * DDIA Teaching Problems - Chapter 6: Partitioning
@@ -1003,5 +1002,3 @@ export const ddiaPartitioningProblems = [
   automaticRebalancingProblemDefinition,
 ];
 
-// Auto-generate code challenges from functional requirements
-(hashPartitioningProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(hashPartitioningProblemDefinition);

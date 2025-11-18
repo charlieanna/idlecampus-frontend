@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Pastebin - Text Sharing Service
@@ -72,7 +73,6 @@ from typing import Dict, Optional
 import hashlib
 import random
 import string
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 # In-memory storage (naive implementation)
 pastes = {}

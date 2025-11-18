@@ -246,7 +246,6 @@ Key challenges:
   pythonTemplate: `# explicit_sharding_design.py
 from typing import Optional, List
 import hashlib
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 # Shard configuration
 NUM_SHARDS = 1000
@@ -710,5 +709,3 @@ def pagerank(iterations: int = 10, damping: float = 0.85) -> Dict[str, float]:
     pass`,
 };
 
-// Auto-generate code challenges from functional requirements
-(batchProcessingMapreduceProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(batchProcessingMapreduceProblemDefinition);

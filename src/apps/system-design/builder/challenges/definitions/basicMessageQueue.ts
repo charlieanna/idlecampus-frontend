@@ -2,6 +2,7 @@ import { ProblemDefinition } from '../../types/problemDefinition';
 import { validConnectionFlowValidator } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Basic Message Queue - Pub/Sub with RabbitMQ
@@ -83,7 +84,6 @@ export const basicMessageQueueProblemDefinition: ProblemDefinition = {
   pythonTemplate: `from datetime import datetime
 from typing import List, Dict, Optional
 import time
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 # In-memory storage (naive implementation)
 queues = {}

@@ -3,7 +3,6 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * DDIA Teaching Problems - Chapter 5: Replication
@@ -1358,5 +1357,3 @@ export const ddiaReplicationProblems = [
   antiEntropyProblemDefinition,
 ];
 
-// Auto-generate code challenges from functional requirements
-(readReplicasProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(readReplicasProblemDefinition);

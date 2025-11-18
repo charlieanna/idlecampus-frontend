@@ -41,24 +41,38 @@ async function updateChallengeFile(filePath: string): Promise<void> {
   let updatedContent = content;
 
   if (!content.includes('generateCodeChallengesFromFRs')) {
-    // Find the last import statement
-    const importLines = content.split('\n');
+    // Find the last import statement at the TOP of the file (before any multi-line strings or comments)
+    const lines = content.split('\n');
     let lastImportIndex = -1;
+    let inMultilineString = false;
 
-    for (let i = 0; i < importLines.length; i++) {
-      if (importLines[i].startsWith('import ')) {
+    for (let i = 0; i < Math.min(lines.length, 50); i++) { // Only check first 50 lines
+      const line = lines[i].trim();
+
+      // Track if we're inside a multiline string (backticks)
+      if (line.includes('`')) {
+        inMultilineString = !inMultilineString;
+      }
+
+      // Only count imports that are not inside strings
+      if (!inMultilineString && line.startsWith('import ')) {
         lastImportIndex = i;
+      }
+
+      // Stop searching after we pass the import section
+      if (lastImportIndex >= 0 && !line.startsWith('import ') && line && !line.startsWith('//') && !line.startsWith('/*')) {
+        break;
       }
     }
 
     if (lastImportIndex >= 0) {
       // Insert import after last import
-      importLines.splice(
+      lines.splice(
         lastImportIndex + 1,
         0,
         "import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';"
       );
-      updatedContent = importLines.join('\n');
+      updatedContent = lines.join('\n');
     }
   }
 

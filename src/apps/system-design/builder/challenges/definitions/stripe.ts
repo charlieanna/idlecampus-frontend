@@ -7,6 +7,7 @@ import {
 } from '../../validation/validators/commonValidators';
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
+import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Stripe - Payment Processing Platform
@@ -393,7 +394,6 @@ Learning Objectives (DDIA Ch. 7, 12):
 from typing import List, Dict, Optional
 import random
 import string
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 # In-memory storage (naive implementation)
 merchants = {}

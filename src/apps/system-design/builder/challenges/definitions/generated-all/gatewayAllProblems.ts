@@ -3,7 +3,6 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Gateway Problems - Complete Set
@@ -6408,5 +6407,3 @@ def handle_service_failures_gracefully(**kwargs) -> Dict:
     return {'status': 'success', 'data': kwargs}`,
 };
 
-// Auto-generate code challenges from functional requirements
-(rateLimiterProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(rateLimiterProblemDefinition);

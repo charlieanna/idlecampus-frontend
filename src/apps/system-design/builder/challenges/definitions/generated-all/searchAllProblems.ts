@@ -3,7 +3,6 @@ import { validConnectionFlowValidator } from '../../../validation/validators/com
 import { basicFunctionalValidator } from '../../../validation/validators/featureValidators';
 import { generateScenarios } from '../../scenarioGenerator';
 import { problemConfigs } from '../../problemConfigs';
-import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 
 /**
  * Search Problems - Complete Set
@@ -5382,5 +5381,3 @@ def folder_hierarchy(**kwargs) -> Dict:
     return {'status': 'success', 'data': kwargs}`,
 };
 
-// Auto-generate code challenges from functional requirements
-(basicTextSearchProblemDefinition as any).codeChallenges = generateCodeChallengesFromFRs(basicTextSearchProblemDefinition);
