@@ -75,33 +75,67 @@ export function DesignCanvas({
       const existingNodeIds = new Set(currentNodes.map((n) => n.id));
       const componentIds = new Set(systemGraph.components.map((c) => c.id));
 
+      // Helper function to calculate node position based on component type and layer
+      const calculateNodePosition = (comp: any, allComponents: any[]): { x: number; y: number } => {
+        const isClient = comp.type === 'client';
+        
+        if (isClient) {
+          // Clients on the left, stacked vertically
+          const clientIndex = allComponents.filter(c => c.type === 'client' && allComponents.indexOf(c) <= allComponents.indexOf(comp)).length - 1;
+          return {
+            x: 50,
+            y: 150 + (clientIndex * 120)
+          };
+        }
+
+        // Define layer positions (horizontal spacing) - left to right flow
+        const layerPositions: Record<string, number> = {
+          load_balancer: 300,
+          app_server: 500,
+          cache: 700,
+          redis: 700,
+          database: 900,
+          postgresql: 900,
+          mongodb: 900,
+          dynamodb: 900,
+          cassandra: 900,
+          message_queue: 700,
+          kafka: 700,
+          rabbitmq: 700,
+          sqs: 700,
+          cdn: 1100,
+          s3: 1100,
+        };
+
+        const x = layerPositions[comp.type] || 500;
+        
+        // Count components of the same type before this one (for vertical stacking)
+        const sameTypeBefore = allComponents.filter(
+          c => c.type === comp.type && allComponents.indexOf(c) < allComponents.indexOf(comp)
+        ).length;
+        
+        // Vertical spacing: stack same-type components with 120px spacing
+        const baseY = 200;
+        const y = baseY + (sameTypeBefore * 120);
+
+        return { x, y };
+      };
+
       // Find new components that need nodes
       const newComponents = systemGraph.components.filter(
         (comp) => !existingNodeIds.has(comp.id)
       );
 
       // Create nodes for new components
-      const newNodes: Node[] = newComponents.map((comp, index) => {
+      const newNodes: Node[] = newComponents.map((comp) => {
         const componentInfo = getComponentInfo(comp.type);
         const isClient = comp.type === 'client';
-
-        // Count total number of clients in the entire system (including existing ones)
-        const totalClientsBeforeThis = systemGraph.components
-          .filter(c => c.type === 'client' && systemGraph.components.indexOf(c) < systemGraph.components.indexOf(comp))
-          .length;
+        const position = calculateNodePosition(comp, systemGraph.components);
 
         return {
           id: comp.id,
           type: 'custom',
-          position: isClient
-            ? {
-                x: 50,
-                y: 150 + (totalClientsBeforeThis * 120) // Stack clients vertically with 120px spacing
-              }
-            : {
-                x: 300 + (currentNodes.length + index) * 40,
-                y: 100 + (currentNodes.length + index) * 25,
-              },
+          position,
           draggable: !isClient, // Client is not draggable
           selectable: isClient, // Client is selectable (for info, but locked position)
           data: {
@@ -115,15 +149,18 @@ export function DesignCanvas({
         };
       });
 
-      // Update existing nodes and remove deleted ones
+      // Update existing nodes: update data and recalculate position if needed
       const updatedNodes = currentNodes.map((node) => {
         const component = systemGraph.components.find(c => c.id === node.id);
         if (!component) return null; // Will be filtered out
 
-        // Update node data if config has changed
+        // Recalculate position to ensure proper layout (especially when loading solutions)
+        const newPosition = calculateNodePosition(component, systemGraph.components);
         const componentInfo = getComponentInfo(component.type);
+        
         return {
           ...node,
+          position: newPosition, // Update position to ensure proper layout
           data: {
             ...node.data,
             label: componentInfo.label,
@@ -134,7 +171,7 @@ export function DesignCanvas({
             onUpdateConfig: (newConfig: Record<string, any>) => onUpdateConfig(component.id, newConfig),
           },
         };
-      }).filter(node => node !== null);
+      }).filter(node => node !== null) as Node[];
 
       // Return updated nodes if there are changes
       if (newNodes.length > 0 || updatedNodes.length !== currentNodes.length) {
