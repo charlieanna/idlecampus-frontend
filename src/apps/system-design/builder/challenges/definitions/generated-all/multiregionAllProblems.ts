@@ -3271,67 +3271,85 @@ def get_item(item_id: str) -> Dict:
  */
 export const edgeComputingProblemDefinition: ProblemDefinition = {
   id: 'edge-computing',
-  title: 'Edge Computing with Serverless Functions',
-  description: `Design an edge computing platform running serverless functions at 100+ global edge locations for sub-50ms latency.
-- Deploy functions globally
-- Request routing to nearest edge
-- Edge-to-origin communication
-- Edge state management`,
+  title: 'Edge API Gateway Platform (Cloudflare Workers)',
+  description: `Design an edge API gateway platform like Cloudflare Workers that runs serverless functions at 100+ global edge locations. The platform handles authentication, rate limiting, request routing, and A/B testing at the edge for sub-50ms latency.
+
+**Real-world example:** Cloudflare Workers, AWS Lambda@Edge, Vercel Edge Functions
+
+**Key Challenge:** Process requests at the edge (closest to users) instead of routing all traffic to origin servers, reducing latency from 200ms to <50ms.
+
+- Authenticate API requests at edge (JWT validation)
+- Route requests to nearest backend service based on geo-location
+- Cache responses at edge for frequently accessed data
+- Perform A/B testing and feature flags at edge
+- Rate limit users at edge before hitting origin servers`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
-    'Deploy functions globally',
-    'Request routing to nearest edge',
-    'Edge-to-origin communication',
-    'Edge state management',
-    'A/B testing at edge'
+    'Authenticate API requests at edge using JWT tokens (validate without hitting origin)',
+    'Route requests to nearest backend service based on user geo-location',
+    'Cache API responses at edge (Edge KV) for frequently accessed data',
+    'Perform A/B testing at edge (route 10% traffic to new feature)',
+    'Rate limit users at edge (block abusive requests before origin)',
+    'Transform requests/responses at edge (add headers, modify JSON)',
+    'Handle edge-to-origin communication when cache misses occur'
   ],
   userFacingNFRs: [
-    'Latency: P95 < 50ms',
-    'Request Rate: 50M req/s globally',
-    'Dataset Size: 10k functions, 100+ edge locations',
-    'Availability: 99.99% uptime'
+    'Latency: P95 < 50ms for edge-processed requests (vs 200ms to origin)',
+    'Request Rate: 50M requests/sec globally across 100+ edge locations',
+    'Cache Hit Ratio: 80% of requests handled at edge (no origin call)',
+    'Availability: 99.99% uptime (edge locations are distributed)',
+    'Geographic Distribution: 100+ edge locations worldwide'
   ],
 
   functionalRequirements: {
     mustHave: [
       {
         type: 'compute',
-        reason: 'Need Users (redirect_client) for run code at the edge globally',
+        reason: 'Need edge functions (serverless compute) to run code at edge locations',
       },
       {
         type: 'cdn',
-        reason: 'Need Edge Network (cdn) for run code at the edge globally',
+        reason: 'Need edge network (CDN) to route requests to nearest edge location',
       },
       {
         type: 'cache',
-        reason: 'Need Edge KV (cache) for run code at the edge globally',
+        reason: 'Need Edge KV (key-value store) to cache responses and rate limit counters at edge',
       },
       {
         type: 'load_balancer',
-        reason: 'Need LB for high availability and traffic distribution',
+        reason: 'Need load balancer to route edge cache misses to origin backend services',
+      },
+      {
+        type: 'storage',
+        reason: 'Need origin database for data that cannot be cached at edge',
       }
     ],
     mustConnect: [
       {
-        from: 'compute',
+        from: 'client',
+        to: 'cdn',
+        reason: 'Client requests go to nearest edge location (CDN routes based on geo)',
+      },
+      {
+        from: 'cdn',
         to: 'compute',
-        reason: 'Users routes to Edge Network',
+        reason: 'Edge network routes requests to edge functions for processing',
       },
       {
         from: 'compute',
-        to: 'compute',
-        reason: 'Edge Network routes to Edge Functions',
+        to: 'cache',
+        reason: 'Edge functions check Edge KV for cached responses and rate limit counters',
       },
       {
         from: 'compute',
-        to: 'compute',
-        reason: 'Edge Functions routes to Edge KV',
+        to: 'load_balancer',
+        reason: 'Edge functions route cache misses to origin backend via load balancer',
       },
       {
-        from: 'compute',
-        to: 'compute',
-        reason: 'Edge Functions routes to Origin',
+        from: 'load_balancer',
+        to: 'storage',
+        reason: 'Origin backend services query database for uncached data',
       }
     ],
     dataModel: {
@@ -3347,11 +3365,13 @@ export const edgeComputingProblemDefinition: ProblemDefinition = {
   },
 
   scenarios: generateScenarios('edge-computing', problemConfigs['edge-computing'], [
-    'Deploy functions globally',
-    'Request routing to nearest edge',
-    'Edge-to-origin communication',
-    'Edge state management',
-    'A/B testing at edge'
+    'Authenticate API requests at edge using JWT tokens (validate without hitting origin)',
+    'Route requests to nearest backend service based on user geo-location',
+    'Cache API responses at edge (Edge KV) for frequently accessed data',
+    'Perform A/B testing at edge (route 10% traffic to new feature)',
+    'Rate limit users at edge (block abusive requests before origin)',
+    'Transform requests/responses at edge (add headers, modify JSON)',
+    'Handle edge-to-origin communication when cache misses occur'
   ]),
 
   validators: [

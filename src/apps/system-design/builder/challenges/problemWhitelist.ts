@@ -151,7 +151,9 @@ export const patternProblems = [
 ];
 
 /**
- * L5: Complex Platforms - KEEP 48 (was 85, removed 37 migration problems)
+ * L5: Complex Platforms - KEEP 9 (was 70, removed 61 migration problems)
+ * All numbered L5 problems (l5-*-1, l5-*-2, etc.) are migration problems and have been removed.
+ * Only keeping named problems (Facebook, Netflix, Salesforce, Uber, Google, Apple, Datadog, Kubernetes, Meta, TikTok)
  */
 export const platformProblems = [
   // Platform Migration (0) - Removed (migration problems are too abstract, focus on building systems first)
@@ -160,109 +162,58 @@ export const platformProblems = [
   // - 18 generic platform-migration problems
   // See lesson: platform-migration-strategies for migration concepts
 
-  // API Platform (10 of 19) - Best examples
+  // API Platform (2 of 19) - Best examples only
   'l5-api-gateway-facebook',
   'l5-api-graphql-federation',
-  'l5-api-platform-1',
-  'l5-api-platform-2',
-  'l5-api-platform-3',
-  'l5-api-platform-4',
-  'l5-api-platform-5',
-  'l5-api-platform-6',
-  'l5-api-platform-7',
-  'l5-api-platform-8',
+  // 'l5-api-platform-1' through '-8' - Removed (all migration problems, duplicates of removed migration problems)
 
-  // Multi-tenant (8 of 18)
+  // Multi-tenant (1 of 18) - Best example only
   'l5-multitenant-salesforce',
-  'l5-multi-tenant-1',
-  'l5-multi-tenant-2',
-  'l5-multi-tenant-3',
-  'l5-multi-tenant-4',
-  'l5-multi-tenant-5',
-  'l5-multi-tenant-6',
-  'l5-multi-tenant-7',
+  // 'l5-multi-tenant-1' through '-7' - Removed (all migration problems)
 
-  // Data Platform (10 of 18)
+  // Data Platform (1 of 18) - Best example only
   'l5-data-platform-uber',
-  'l5-data-platform-1',
-  'l5-data-platform-2',
-  'l5-data-platform-3',
-  'l5-data-platform-4',
-  'l5-data-platform-5',
-  'l5-data-platform-6',
-  'l5-data-platform-7',
-  'l5-data-platform-8',
-  'l5-data-platform-9',
+  // 'l5-data-platform-1' through '-9' - Removed (all migration problems)
 
-  // Developer Productivity (8 of 18)
+  // Developer Productivity (1 of 18) - Best example only
   'l5-devprod-google-ci',
-  'l5-developer-productivity-1',
-  'l5-developer-productivity-2',
-  'l5-developer-productivity-3',
-  'l5-developer-productivity-4',
-  'l5-developer-productivity-5',
-  'l5-developer-productivity-6',
-  'l5-developer-productivity-7',
+  // 'l5-developer-productivity-1' through '-7' - Removed (all migration problems)
 
-  // Compliance & Security (10 of 18)
+  // Compliance & Security (1 of 18) - Best example only
   'l5-security-apple-encryption',
-  'l5-compliance-security-1',
-  'l5-compliance-security-2',
-  'l5-compliance-security-3',
-  'l5-compliance-security-4',
-  'l5-compliance-security-5',
-  'l5-compliance-security-6',
-  'l5-compliance-security-7',
-  'l5-compliance-security-8',
-  'l5-compliance-security-9',
+  // 'l5-compliance-security-1' through '-9' - Removed (all migration problems)
 
-  // Observability (8 of 18)
+  // Observability (1 of 18) - Best example only
   'l5-observability-datadog',
-  'l5-observability-1',
-  'l5-observability-2',
-  'l5-observability-3',
-  'l5-observability-4',
-  'l5-observability-5',
-  'l5-observability-6',
-  'l5-observability-7',
+  // 'l5-observability-1' through '-7' - Removed (all migration problems)
 
-  // Infrastructure (8 of 18)
+  // Infrastructure (1 of 18) - Best example only
   'l5-infra-kubernetes-platform',
-  'l5-infrastructure-1',
-  'l5-infrastructure-2',
-  'l5-infrastructure-3',
-  'l5-infrastructure-4',
-  'l5-infrastructure-5',
-  'l5-infrastructure-6',
-  'l5-infrastructure-7',
+  // 'l5-infrastructure-1' through '-7' - Removed (all migration problems)
 
-  // ML Platform (8 of 18)
+  // ML Platform (1 of 18) - Best example only
   'l5-ml-platform-meta',
-  'l5-ml-platform-1',
-  'l5-ml-platform-2',
-  'l5-ml-platform-3',
-  'l5-ml-platform-4',
-  'l5-ml-platform-5',
-  'l5-ml-platform-6',
-  'l5-ml-platform-7',
+  // 'l5-ml-platform-1' through '-7' - Removed (all migration problems)
 ];
 
 /**
- * L6: Next-Generation - KEEP 10 (only practical/interview-relevant)
+ * L6: Next-Generation - KEEP 5 (only practical/interview-relevant)
+ * Removed all speculative problems (quantum, DNA, interplanetary, biological, energy, economic)
  */
 export const nextGenProblems = [
   // Next-gen Protocols (2 of 22) - Only practical ones
   'l6-protocol-6g-architecture',      // 5G/6G networking
   'l6-protocol-tcp-replacement',       // QUIC/HTTP3
 
-  // Novel Databases (2 of 22) - Practical distributed systems
+  // Novel Databases (1 of 22) - Practical distributed systems only
   'l6-db-cap-theorem-breaker',         // NewSQL/Spanner-like
-  'l6-novel-databases-1',              // CRDTs
+  // 'l6-novel-databases-1' - Removed (actually "DNA Storage Infrastructure" - speculative, not CRDTs as comment said)
 
-  // AI Infrastructure (3 of 21) - Practical ML/AI patterns
-  'l6-ai-infrastructure-1',            // LLM serving
-  'l6-ai-infrastructure-2',            // Vector databases
-  'l6-ai-infrastructure-3',            // Model fine-tuning
+  // AI Infrastructure (0) - Removed (all 21 problems are speculative: AGI, consciousness, quantum, biological computing)
+  // Practical ML problems are covered by l5-ml-platform-* problems (Meta, OpenAI, MLflow, SageMaker, etc.)
+  // 'l6-ai-infrastructure-1' - Removed (was labeled "LLM serving" but actually "AGI Training Infrastructure")
+  // 'l6-ai-infrastructure-2' - Removed (was labeled "Vector databases" but actually "Consciousness Simulation Infrastructure")
+  // 'l6-ai-infrastructure-3' - Removed (was labeled "Model fine-tuning" but actually "Swarm Intelligence Infrastructure")
 
   // Distributed Consensus (2 of 19) - Core algorithms
   'l6-distributed-consensus-1',        // Paxos/Raft
