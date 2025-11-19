@@ -1,5 +1,5 @@
 import { tinyUrlChallenge } from './tinyUrl';
-import { tinyUrlL6Challenge } from './tinyUrlL6';
+// Note: tinyUrlL6Challenge removed - converted to ProblemDefinition (tiny-url-l6)
 import { foodBlogChallenge } from './foodBlog';
 import { todoAppChallenge } from './todoApp';
 import { webCrawlerChallenge } from './webCrawler';
@@ -27,14 +27,15 @@ const l6EnhancedChallenges = baseChallenges.map(challenge =>
 
 // Export all challenges with L6 enhancements
 export const challenges: Challenge[] = [
-  // Keep the manually created L6 challenge as an example
-  tinyUrlL6Challenge, // Google L6-level version (manually created example)
+  // Note: tinyUrlL6Challenge removed - converted to ProblemDefinition (tiny-url-l6)
+  // See: challenges/definitions/generated-all/cachingAllProblems.ts
 
   // All other challenges with automatic L6 enhancement
   ...l6EnhancedChallenges,
 ];
 
-export { tinyUrlChallenge, tinyUrlL6Challenge, foodBlogChallenge, todoAppChallenge, webCrawlerChallenge };
+export { tinyUrlChallenge, foodBlogChallenge, todoAppChallenge, webCrawlerChallenge };
+// Note: tinyUrlL6Challenge removed - converted to ProblemDefinition (tiny-url-l6)
 
 // Re-export all generated challenges
 export * from './generatedChallenges';

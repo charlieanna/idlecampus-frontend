@@ -29,8 +29,11 @@ export const basicMultiRegionProblemDefinition: ProblemDefinition = {
 Key Learning Objectives:
 - Single-leader multi-region architecture (primary for writes, secondary for reads)
 - Geographic routing with GeoDNS
-- Cross-region data replication
-- Automatic failover on regional failures`,
+- Cross-region data replication (async replication, replication lag handling)
+- Automatic failover on regional failures
+- Read replicas for scaling read traffic
+- Conflict resolution for concurrent writes
+- Quorum-based reads and writes`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
@@ -39,6 +42,9 @@ Key Learning Objectives:
     'Articles published in primary region are available in all regions',
     'Readers can access articles even if one region fails (automatic failover)',
     'System automatically routes users to the region with lowest latency',
+    'System uses read replicas in each region to scale read traffic',
+    'System handles replication lag (reads may see slightly stale data)',
+    'System resolves write conflicts when same article edited in multiple regions',
   ],
   userFacingNFRs: [
     'Latency: P95 < 100ms same-region, < 300ms cross-region',

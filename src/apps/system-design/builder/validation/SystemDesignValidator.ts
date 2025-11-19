@@ -135,12 +135,13 @@ export class SystemDesignValidator {
     }
 
     const typeMapping: Record<string, string[]> = {
-      'compute': ['app_server'],
-      'cache': ['redis'],
+      'client': ['client'],
+      'compute': ['app_server', 'lambda', 'ecs'],
+      'cache': ['redis', 'memcached', 'elasticache'],
       'load_balancer': ['load_balancer'],
-      'message_queue': ['message_queue'],
-      'object_storage': ['s3'],
-      'cdn': ['cdn'],
+      'message_queue': ['message_queue', 'kafka', 'rabbitmq', 'sqs'],
+      'object_storage': ['s3', 'blob_storage', 'gcs'],
+      'cdn': ['cdn', 'cloudfront'],
     };
 
     const validTypes = typeMapping[type] || [type];
@@ -149,14 +150,36 @@ export class SystemDesignValidator {
 
   /**
    * Check if there's a connection path from -> to
+   * Maps abstract types (compute, cache, storage) to actual component types (app_server, redis, postgresql)
    */
   private hasConnectionPath(graph: SystemGraph, from: string, to: string): boolean {
-    // Build adjacency map
+    // Map abstract requirement types to actual component types
+    const abstractToConcrete: Record<string, string[]> = {
+      'client': ['client'],
+      'compute': ['app_server', 'lambda', 'ecs'],
+      'cache': ['redis', 'memcached', 'elasticache'],
+      'storage': ['database', 'postgresql', 'mysql', 'mongodb', 'cassandra', 'dynamodb'],
+      'load_balancer': ['load_balancer'],
+      'message_queue': ['message_queue', 'kafka', 'rabbitmq', 'sqs'],
+      'object_storage': ['s3', 'blob_storage', 'gcs'],
+      'cdn': ['cdn', 'cloudfront'],
+    };
+
+    // Get concrete types for from and to
+    const fromTypes = abstractToConcrete[from] || [from];
+    const toTypes = abstractToConcrete[to] || [to];
+
+    // Build adjacency map using actual component types
     const adjacency = new Map<string, Set<string>>();
 
     for (const conn of graph.connections) {
-      const fromType = this.getComponentType(graph, conn.from);
-      const toType = this.getComponentType(graph, conn.to);
+      const fromComponent = graph.components.find(c => c.id === conn.from);
+      const toComponent = graph.components.find(c => c.id === conn.to);
+      
+      if (!fromComponent || !toComponent) continue;
+
+      const fromType = fromComponent.type;
+      const toType = toComponent.type;
 
       if (!adjacency.has(fromType)) {
         adjacency.set(fromType, new Set());
@@ -164,22 +187,25 @@ export class SystemDesignValidator {
       adjacency.get(fromType)!.add(toType);
     }
 
-    // BFS to find path
-    const queue = [from];
-    const visited = new Set<string>([from]);
+    // BFS to find path - check if any fromType can reach any toType
+    for (const startType of fromTypes) {
+      const queue = [startType];
+      const visited = new Set<string>([startType]);
 
-    while (queue.length > 0) {
-      const current = queue.shift()!;
+      while (queue.length > 0) {
+        const current = queue.shift()!;
 
-      if (current === to) {
-        return true;
-      }
+        // Check if current type matches any target type
+        if (toTypes.includes(current)) {
+          return true;
+        }
 
-      const neighbors = adjacency.get(current) || new Set();
-      for (const neighbor of neighbors) {
-        if (!visited.has(neighbor)) {
-          visited.add(neighbor);
-          queue.push(neighbor);
+        const neighbors = adjacency.get(current) || new Set();
+        for (const neighbor of neighbors) {
+          if (!visited.has(neighbor)) {
+            visited.add(neighbor);
+            queue.push(neighbor);
+          }
         }
       }
     }

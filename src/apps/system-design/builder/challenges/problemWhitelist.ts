@@ -96,100 +96,69 @@ export const originalProblems = [
  * L2-4: Pattern Extraction - KEEP 35 (30 original + 5 DDIA gaps)
  */
 export const patternProblems = [
-  // Tutorials (4) - Keep all
-  'tutorial-simple-blog',
-  'tutorial-intermediate-images',
-  'tutorial-advanced-chat',
-  'boe-walkthrough-chat',
+  // Tutorials (0) - Removed (tutorials are filtered out from problem catalog)
+  // 'tutorial-simple-blog' - Removed
+  // 'tutorial-intermediate-images' - Removed
+  // 'tutorial-advanced-chat' - Removed
+  // 'boe-walkthrough-chat' - Removed
 
-  // DDIA Gap Problems (5) - Fill missing DDIA concepts
-  'batch-processing-mapreduce',     // Ch 10: Batch Processing (MapReduce/Spark)
-  'explicit-sharding-design',       // Ch 6: Partitioning (sharding strategy)
-  'transaction-isolation-levels',   // Ch 7: Transactions (isolation levels)
-  'data-warehouse-olap',            // Ch 3: Storage (columnar, OLAP)
-  'graph-database-social',          // Ch 2: Data Models (graph databases)
+  // DDIA Gap Problems (0) - All covered in comprehensive problems and DDIA lessons
+  // 'batch-processing-mapreduce' - Removed (covered in comprehensive-ecommerce-platform + DDIA lessons)
+  // 'explicit-sharding-design' - Removed (covered in comprehensive-cloud-storage-platform + DDIA lessons)
+  // 'transaction-isolation-levels' - Removed (covered in comprehensive-ecommerce-platform + DDIA lessons)
+  // 'data-warehouse-olap' - Removed (covered in DDIA lessons)
+  // 'graph-database-social' - Removed (covered in DDIA lessons)
 
-  // Caching (5 of 36) - Distinct patterns only
-  'tinyurl',                    // URL shortener, classic caching
-  'session-store-basic',        // Distributed session management
-  'social-feed-cache',          // Nested/hierarchical caching (like Reddit comments)
-  'config-cache-basic',         // Configuration caching
-  'multi-tenant-saas-cache',    // Multi-tenant caching patterns
+  // Caching (2 of 36) - Distinct patterns only
+  'tiny-url-l6',                // URL shortener L6-level (percentile-based latency, tail amplification, cascading failures)
+  'tinyurl',                    // URL shortener, classic caching (advanced version)
+  // 'tiny_url' - Removed (simpler version, keep advanced 'tinyurl' instead)
+  // 'session-store-basic' - Removed (covered in comprehensive-ecommerce-platform)
+  // 'social-feed-cache' - Removed (covered in comprehensive-ecommerce-platform)
+  // 'config-cache-basic' - Integrated into comprehensive-api-gateway-platform
+  // 'multi-tenant-saas-cache' - Removed (covered in comprehensive-ecommerce-platform)
 
-  // Gateway (3 of 36) - Core gateway patterns
-  'rate-limiter',               // Rate limiting (essential)
-  'basic-api-gateway',          // API gateway basics
-  'authentication-gateway',     // OAuth/JWT authentication
+  // Gateway (0 of 36) - All covered in comprehensive-api-gateway-platform
+  // 'rate-limiter' - Removed (covered in comprehensive-api-gateway-platform)
+  // 'basic-api-gateway' - Removed (covered in comprehensive-api-gateway-platform)
+  // 'authentication-gateway' - Removed (covered in comprehensive-api-gateway-platform)
 
-  // Streaming (5 of 37) - Key streaming patterns
-  'chat',                       // Real-time chat/WebSocket
-  'ingestion',                  // Log aggregation (Kafka/Kinesis)
-  'clickstream-analytics',      // Stream processing/real-time analytics
-  'event-sourcing-basic',       // Event sourcing pattern
-  'kafka-streaming-pipeline',   // CDC/Change data capture
+  // Streaming (1 of 37) - Key streaming patterns
+  // 'chat' - Removed (covered in comprehensive-social-media-platform)
+  // 'ingestion' - Removed (covered in comprehensive-social-media-platform)
+  // 'clickstream-analytics' - Removed (covered in comprehensive-social-media-platform)
+  // 'event-sourcing-basic' - Removed (covered in comprehensive-social-media-platform)
+  'kafka-streaming-pipeline',   // CDC/Change data capture (advanced, keep standalone)
 
-  // Storage (4 of 35) - Distinct storage patterns
-  'basic-database-design',      // Relational DB design
-  'nosql-basics',               // NoSQL (document/key-value)
-  'time-series-metrics',        // Time-series DB
-  'distributed-database',       // Distributed storage (HDFS-like)
+  // Storage (0 of 35) - All covered in comprehensive-cloud-storage-platform
+  // 'basic-database-design' - Removed (conceptual, better as lesson)
+  // 'nosql-basics' - Removed (conceptual, better as lesson)
+  // 'time-series-metrics' - Removed (conceptual, better as lesson)
+  // 'distributed-database' - Removed (conceptual, better as lesson)
 
-  // Search (4 of 35) - Core search patterns
-  'basic-text-search',          // Full-text search (Elasticsearch)
-  'autocomplete-search',        // Autocomplete/typeahead
-  'geo-search',                 // Geo-spatial search
-  'faceted-search',             // Faceted search/filtering
+  // Search (0 of 35) - All covered in comprehensive-search-platform
+  // 'basic-text-search' - Removed (covered in comprehensive-search-platform)
+  // 'autocomplete-search' - Removed (covered in comprehensive-search-platform)
+  // 'geo-search' - Removed (covered in comprehensive-search-platform)
+  // 'faceted-search' - Removed (covered in comprehensive-search-platform)
 
-  // Multiregion (5 of 35) - Key multi-region patterns
-  'active-active-regions',      // Active-active replication
-  'global-load-balancing',      // GeoDNS/global LB
-  'cross-region-failover',      // Disaster recovery
-  'conflict-resolution',        // CRDT/conflict resolution
-  'edge-computing',             // Edge computing (Cloudflare Workers)
+  // Multiregion (3 of 35) - Key multi-region patterns
+  'active-active-regions',      // Active-active replication (user-facing problem)
+  // 'global-load-balancing' - Removed (covered in comprehensive problems)
+  'cross-region-failover',      // Disaster recovery (user-facing problem)
+  // 'conflict-resolution' - Removed (covered in comprehensive problems)
+  'edge-computing',             // Edge computing (Cloudflare Workers) - unique concept
 ];
 
 /**
- * L5: Complex Platforms - KEEP 85
+ * L5: Complex Platforms - KEEP 48 (was 85, removed 37 migration problems)
  */
 export const platformProblems = [
-  // Platform Migration (37) - Keep all, these are valuable real-world case studies
-  'l5-migration-netflix-microservices',
-  'l5-migration-twitter-event-driven',
-  'l5-migration-spotify-serverless',
-  'l5-migration-uber-multi-region',
-  'l5-migration-airbnb-graphql',
-  'l5-migration-stripe-database',
-  'l5-migration-slack-websocket',
-  'l5-migration-github-monorepo',
-  'l5-migration-instagram-cassandra',
-  'l5-migration-doordash-routing',
-  'l5-migration-zoom-webrtc',
-  'l5-migration-pinterest-recommendation',
-  'l5-migration-linkedin-kafka',
-  'l5-migration-reddit-postgres',
-  'l5-migration-snapchat-storage',
-  'l5-migration-shopify-multi-cloud',
-  'l5-migration-twitch-low-latency',
-  'l5-migration-coinbase-matching',
-  'l5-migration-figma-collaboration',
-  'l5-platform-migration-1',
-  'l5-platform-migration-2',
-  'l5-platform-migration-3',
-  'l5-platform-migration-4',
-  'l5-platform-migration-5',
-  'l5-platform-migration-6',
-  'l5-platform-migration-7',
-  'l5-platform-migration-8',
-  'l5-platform-migration-9',
-  'l5-platform-migration-10',
-  'l5-platform-migration-11',
-  'l5-platform-migration-12',
-  'l5-platform-migration-13',
-  'l5-platform-migration-14',
-  'l5-platform-migration-15',
-  'l5-platform-migration-16',
-  'l5-platform-migration-17',
-  'l5-platform-migration-18',
+  // Platform Migration (0) - Removed (migration problems are too abstract, focus on building systems first)
+  // All 37 migration problems removed:
+  // - 19 named migration problems (netflix, twitter, spotify, uber, etc.)
+  // - 18 generic platform-migration problems
+  // See lesson: platform-migration-strategies for migration concepts
 
   // API Platform (10 of 19) - Best examples
   'l5-api-gateway-facebook',
@@ -305,314 +274,59 @@ export const nextGenProblems = [
 
 /**
  * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (16 total)
+ * Converted to lessons (see src/apps/system-design/builder/data/lessons/nfr/)
+ * Concepts are also integrated into comprehensive problems (see comprehensive/*.ts)
  */
-export const nfrTeachingProblems = [
-  // Module 1: Throughput & Horizontal Scaling (4)
-  'nfr-ch0-throughput-calc',
-  'nfr-ch0-peak-vs-avg',
-  'nfr-ch0-read-write-ratio',
-  'nfr-ch0-autoscaling',
-  // Module 2: Burst Handling & Write Queues (2)
-  'nfr-ch0-burst-qps',
-  'nfr-ch0-write-queue-batching',
-  // Module 3: Latency - Request-Response & Data Processing (4)
-  'nfr-ch0-request-response-latency',
-  'nfr-ch0-data-processing-latency',
-  'nfr-ch0-caching-strategies',
-  'nfr-ch0-replication-patterns',
-  // Module 4: Data Durability & Persistence (2)
-  'nfr-ch0-durability-requirement',
-  'nfr-ch0-durability-levels',
-  // Module 5: Dataset Size & Sharding (2)
-  'nfr-ch0-sharding-requirement',
-  'nfr-ch0-sharding-strategies',
-  // Module 6: Consistency Models & Guarantees (2)
-  'nfr-ch0-read-after-write',
-  'nfr-ch0-consistency-levels',
+export const nfrTeachingProblems: string[] = [
+  // All 16 problems converted to 2 comprehensive lessons:
+  // - nfr-fundamentals (Throughput, Peak vs Average, Read-Write Ratio, Autoscaling, Burst Handling, Latency)
+  // - nfr-data-consistency (Durability, Sharding, Consistency Models)
 ];
 
 /**
  * DDIA Teaching Problems - Concept-focused learning (151 total - ALL CHAPTERS)
  */
 export const ddiaTeachingProblems = [
-  // Chapter 1: Reliability, Scalability, Maintainability (15)
-  'ddia-ch1-spof',
-  'ddia-ch1-hardware-faults',
-  'ddia-ch1-software-errors',
-  'ddia-ch1-human-errors',
-  'ddia-ch1-chaos-engineering',
-  'ddia-ch1-vertical-scaling',
-  'ddia-ch1-horizontal-scaling',
-  'ddia-ch1-load-parameters',
-  'ddia-ch1-performance-metrics',
-  'ddia-ch1-fanout',
-  'ddia-ch1-operability',
-  'ddia-ch1-simplicity',
-  'ddia-ch1-evolvability',
-  'ddia-ch1-observability',
-  'ddia-ch1-technical-debt',
+  // Chapter 1: Reliability, Scalability, Maintainability
+  // Note: All concepts are covered in comprehensive problems or converted to lessons
+  // Fan-out has been integrated into comprehensive-social-media-platform
 
-  // Chapter 2: Data Models & Query Languages (12)
-  'ddia-ch2-relational-schema',
-  'ddia-ch2-foreign-keys',
-  'ddia-ch2-sql-optimization',
-  'ddia-ch2-indexing',
-  'ddia-ch2-document-schema',
-  'ddia-ch2-embedded-vs-referenced',
-  'ddia-ch2-schema-on-read',
-  'ddia-ch2-json-bson',
-  'ddia-ch2-graph-basics',
-  'ddia-ch2-graph-traversal',
-  'ddia-ch2-property-graphs',
-  'ddia-ch2-cypher-queries',
+  // Chapter 2-4: Converted to lessons (concepts covered in comprehensive problems or lessons)
+  // See: ddia-ch2-data-models, ddia-ch3-storage-retrieval, ddia-ch4-encoding-evolution lessons
 
-  // Chapter 3: Storage & Retrieval (10)
-  'ddia-ch3-append-only-log',
-  'ddia-ch3-lsm-trees',
-  'ddia-ch3-bloom-filters',
-  'ddia-ch3-btrees',
-  'ddia-ch3-wal',
-  'ddia-ch3-copy-on-write',
-  'ddia-ch3-star-schema',
-  'ddia-ch3-snowflake-schema',
-  'ddia-ch3-columnar-storage',
-  'ddia-ch3-materialized-views',
+  // Chapter 5-6: Converted to lessons (concepts integrated into comprehensive problems)
+  // See: ddia-ch5-replication, ddia-ch6-partitioning lessons
+  // Concepts are also integrated into:
+  // - Multi-region problems (Ch. 5: Replication, read replicas, failover)
+  // - Cloud Storage Platform (Ch. 5: Replication, Ch. 6: Partitioning, consistent hashing)
 
-  // Chapter 4: Encoding & Evolution (8)
-  'ddia-ch4-json-encoding',
-  'ddia-ch4-binary-encoding',
-  'ddia-ch4-avro-schema',
-  'ddia-ch4-thrift',
-  'ddia-ch4-forward-compatibility',
-  'ddia-ch4-backward-compatibility',
-  'ddia-ch4-schema-versioning',
-  'ddia-ch4-migration-strategies',
-
-  // Chapter 5: Replication (16)
-  'ddia-read-replicas',
-  'ddia-async-replication',
-  'ddia-sync-replication',
-  'ddia-replication-lag',
-  'ddia-failover',
-  'ddia-multi-datacenter',
-  'ddia-write-conflicts',
-  'ddia-conflict-resolution',
-  'ddia-circular-topology',
-  'ddia-star-topology',
-  'ddia-quorum',
-  'ddia-dynamo-style',
-  'ddia-sloppy-quorum',
-  'ddia-hinted-handoff',
-  'ddia-read-repair',
-  'ddia-anti-entropy',
-
-  // Chapter 6: Partitioning (12)
-  'ddia-hash-partitioning',
-  'ddia-range-partitioning',
-  'ddia-consistent-hashing',
-  'ddia-hot-spot-avoidance',
-  'ddia-composite-partitioning',
-  'ddia-local-secondary-index',
-  'ddia-global-secondary-index',
-  'ddia-index-maintenance',
-  'ddia-fixed-partitions',
-  'ddia-dynamic-partitioning',
-  'ddia-proportional-partitioning',
-  'ddia-automatic-rebalancing',
-
-  // Chapter 7: Transactions (16)
-  'ddia-atomicity',
-  'ddia-consistency',
-  'ddia-isolation',
-  'ddia-durability',
-  'ddia-read-committed',
-  'ddia-snapshot-isolation',
-  'ddia-serializable',
-  'ddia-repeatable-read',
-  'ddia-dirty-reads',
-  'ddia-dirty-writes',
-  'ddia-read-skew',
-  'ddia-write-skew',
-  'ddia-phantom-reads',
-  'ddia-two-phase-locking',
-  'ddia-optimistic-concurrency',
-  'ddia-deadlock-detection',
-
-  // Chapter 8: Distributed Systems (15)
-  'ddia-ch8-network-partitions',
-  'ddia-ch8-timeouts',
-  'ddia-ch8-circuit-breakers',
-  'ddia-ch8-idempotency',
-  'ddia-ch8-tcp-vs-udp',
-  'ddia-ch8-time-of-day-clocks',
-  'ddia-ch8-monotonic-clocks',
-  'ddia-ch8-lamport-timestamps',
-  'ddia-ch8-vector-clocks',
-  'ddia-ch8-ntp',
-  'ddia-ch8-byzantine-faults',
-  'ddia-ch8-merkle-trees',
-  'ddia-ch8-digital-signatures',
-  'ddia-ch8-pbft',
-  'ddia-ch8-blockchain',
-
-  // Chapter 9: Consensus (14)
-  'ddia-linearizability',
-  'ddia-eventual-consistency',
-  'ddia-causal-consistency',
-  'ddia-read-your-writes',
-  'ddia-monotonic-reads',
-  'ddia-paxos',
-  'ddia-raft',
-  'ddia-leader-election',
-  'ddia-distributed-locks',
-  'ddia-fencing-tokens',
-  'ddia-g-counter',
-  'ddia-pn-counter',
-  'ddia-lww-register',
-  'ddia-or-set',
-
-  // Chapter 10: Batch Processing (10)
-  'ddia-ch10-map-function',
-  'ddia-ch10-reduce-function',
-  'ddia-ch10-combiner',
-  'ddia-ch10-distributed-sort',
-  'ddia-ch10-join-algorithms',
-  'ddia-ch10-spark-rdds',
-  'ddia-ch10-dag-execution',
-  'ddia-ch10-lazy-evaluation',
-  'ddia-ch10-caching-results',
-  'ddia-ch10-lineage-recovery',
-
-  // Chapter 11: Stream Processing (15)
-  'ddia-ch11-message-brokers',
-  'ddia-ch11-pubsub',
-  'ddia-ch11-partitioned-logs',
-  'ddia-ch11-consumer-groups',
-  'ddia-ch11-offset-management',
-  'ddia-ch11-tumbling-windows',
-  'ddia-ch11-sliding-windows',
-  'ddia-ch11-session-windows',
-  'ddia-ch11-event-time',
-  'ddia-ch11-watermarks',
-  'ddia-ch11-stream-joins',
-  'ddia-ch11-stream-aggregations',
-  'ddia-ch11-stream-table-duality',
-  'ddia-ch11-exactly-once',
-  'ddia-ch11-checkpointing',
-
-  // Chapter 12: Future of Data Systems (8)
-  'ddia-ch12-lambda-architecture',
-  'ddia-ch12-kappa-architecture',
-  'ddia-ch12-cdc',
-  'ddia-ch12-event-sourcing',
-  'ddia-ch12-materialized-views-derived',
-  'ddia-ch12-cache-invalidation-derived',
-  'ddia-ch12-search-index-maintenance',
-  'ddia-ch12-cqrs',
+  // Chapter 7-12: Converted to lessons (concepts integrated into comprehensive problems or lessons)
+  // See: ddia-ch7-transactions, ddia-ch8-distributed-systems, ddia-ch9-consensus,
+  //      ddia-ch10-batch-processing, ddia-ch11-stream-processing, ddia-ch12-future-data-systems lessons
+  // Concepts are also integrated into:
+  // - E-commerce Platform (Ch. 7: Transactions, Ch. 10: Batch, Ch. 11: Stream, Ch. 12: Event Sourcing, CQRS)
+  // - Social Media Platform (Ch. 11: Stream, Ch. 12: Event Sourcing, CQRS, Lambda/Kappa, CDC)
+  // - API Gateway Platform (Ch. 8: Circuit breakers, timeouts, idempotency)
+  // - Cloud Storage Platform (Ch. 9: Consensus/Raft, Ch. 10: Batch)
 ];
 
 /**
  * System Design Primer Problems (77 total)
+ * Converted to lessons (see src/apps/system-design/builder/data/lessons/sdp/)
+ * Concepts are also integrated into comprehensive problems (see comprehensive/*.ts)
  */
-export const systemDesignPrimerProblems = [
-  // Performance & Scalability (10)
-  'sdp-performance-vs-scalability',
-  'sdp-latency-vs-throughput',
-  'sdp-cap-theorem',
-  'sdp-amdahls-law',
-  'sdp-littles-law',
-  'sdp-load-testing',
-  'sdp-stress-testing',
-  'sdp-capacity-planning',
-  'sdp-performance-profiling',
-  'sdp-cost-optimization',
-
-  // DNS (5)
-  'sdp-dns-basics',
-  'sdp-dns-records',
-  'sdp-dns-caching',
-  'sdp-dns-load-balancing',
-  'sdp-geo-routing',
-
-  // CDN (6)
-  'sdp-cdn-basics',
-  'sdp-push-cdn',
-  'sdp-pull-cdn',
-  'sdp-cdn-cache-invalidation',
-  'sdp-cdn-ssl-termination',
-  'sdp-cdn-ddos-protection',
-
-  // Load Balancers (8)
-  'sdp-layer4-load-balancing',
-  'sdp-layer7-load-balancing',
-  'sdp-round-robin-lb',
-  'sdp-least-connections-lb',
-  'sdp-ip-hash-lb',
-  'sdp-health-checks-lb',
-  'sdp-session-affinity-lb',
-  'sdp-active-passive-failover',
-
-  // Reverse Proxy (4)
-  'sdp-nginx-reverse-proxy',
-  'sdp-ssl-termination-proxy',
-  'sdp-compression-proxy',
-  'sdp-static-asset-proxy',
-
-  // Application Layer (8)
-  'sdp-microservices',
-  'sdp-service-discovery',
-  'sdp-bff',
-  'sdp-sidecar',
-  'sdp-bulkhead',
-  'sdp-retry-backoff',
-  'sdp-rate-limiting',
-  'sdp-api-versioning',
-
-  // Database (4)
-  'sdp-denormalization',
-  'sdp-sql-optimization',
-  'sdp-key-value-store',
-  'sdp-wide-column-store',
-
-  // Caching (6)
-  'sdp-client-side-caching',
-  'sdp-web-server-caching',
-  'sdp-cache-aside',
-  'sdp-write-behind-cache',
-  'sdp-refresh-ahead-cache',
-  'sdp-cache-eviction-policies',
-
-  // Asynchronism (5)
-  'sdp-task-queues',
-  'sdp-producer-consumer',
-  'sdp-priority-queues',
-  'sdp-dead-letter-queues',
-  'sdp-back-pressure',
-
-  // Communication (12)
-  'sdp-http-methods',
-  'sdp-http-status-codes',
-  'sdp-http2',
-  'sdp-http3',
-  'sdp-grpc',
-  'sdp-thrift',
-  'sdp-json-rpc',
-  'sdp-xml-rpc',
-  'sdp-restful-api-design',
-  'sdp-hateoas',
-  'sdp-graphql',
-  'sdp-websocket',
-
-  // Security (9)
-  'sdp-https-tls',
-  'sdp-ssl-certificates',
-  'sdp-authentication',
-  'sdp-authorization',
-  'sdp-api-keys',
-  'sdp-oauth2',
-  'sdp-sql-injection-prevention',
-  'sdp-xss-prevention',
-  'sdp-csrf-prevention',
+export const systemDesignPrimerProblems: string[] = [
+  // All 77 problems converted to 10 comprehensive lessons:
+  // - sdp-performance-scalability (Performance, Scalability, CAP, Amdahl's Law, Little's Law)
+  // - sdp-dns (DNS basics, records, caching, load balancing, geo-routing)
+  // - sdp-cdn (CDN basics, push/pull, cache invalidation, SSL termination)
+  // - sdp-load-balancers (Layer 4/7, algorithms, health checks, session affinity)
+  // - sdp-application-layer (Microservices, service discovery, BFF, sidecar, bulkhead, retry, rate limiting)
+  // - sdp-database (Denormalization, SQL optimization, NoSQL models)
+  // - sdp-caching (Cache-aside, write-through, write-behind, refresh-ahead, eviction policies)
+  // - sdp-asynchronism (Message queues, producer-consumer, priority queues, DLQ, backpressure)
+  // - sdp-communication (HTTP, REST, gRPC, GraphQL, WebSocket)
+  // - sdp-security (HTTPS/TLS, authentication, authorization, OAuth, SQL injection, XSS, CSRF)
 ];
 
 /**

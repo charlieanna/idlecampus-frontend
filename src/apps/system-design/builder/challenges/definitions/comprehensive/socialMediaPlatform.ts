@@ -53,13 +53,17 @@ export const comprehensiveSocialMediaPlatformDefinition: ProblemDefinition = {
   **Key Learning Objectives:**
   This problem teaches you to build a production-grade real-time system with:
   - WebSocket connections for real-time updates
+  - Fan-out pattern for timeline updates (write fan-out for normal users, read fan-out for celebrities)
   - Pub/sub pattern for fan-out notifications
   - Message queues (Kafka) for reliable delivery
-  - Event sourcing for audit logs
+  - Event sourcing for audit logs and timeline reconstruction - DDIA Ch. 12
   - Presence tracking with Redis
   - Message ordering and consistency
   - Backpressure handling
-  - Stream processing for analytics
+  - Stream processing for analytics (real-time engagement metrics) - DDIA Ch. 11
+  - CQRS pattern (separate read model for feeds, write model for posts) - DDIA Ch. 12
+  - Change Data Capture (CDC) to sync data across services - DDIA Ch. 12
+  - Lambda/Kappa architecture for analytics (batch + stream processing) - DDIA Ch. 12
   
   **Progressive Approach:**
   Start simple with basic posts, then progressively add:
@@ -78,6 +82,12 @@ export const comprehensiveSocialMediaPlatformDefinition: ProblemDefinition = {
     'Users can like, comment, and share posts',
     'Users can delete their own posts',
     
+    // Fan-out Pattern (Twitter Timeline Problem)
+    'When a user with <10K followers posts, system writes to all follower timelines immediately (write fan-out)',
+    'When a celebrity with >10K followers posts, system stores post in their timeline only (read fan-out)',
+    'When reading timeline, system merges posts from followed users + celebrity posts (hybrid approach)',
+    'System handles users with 1M+ followers efficiently without blocking',
+    
     // Real-time Features
     'Users see new posts appear in their feed in real-time (no refresh needed)',
     'Users receive instant notifications for likes, comments, and mentions',
@@ -95,12 +105,21 @@ export const comprehensiveSocialMediaPlatformDefinition: ProblemDefinition = {
     'Users can see who is currently online',
     'Users can set their status (online, away, do not disturb)',
     'Users can see when someone was last active',
+    
+    // Event Sourcing & CQRS (DDIA Ch. 12)
+    'All post actions (create, edit, delete) are stored as immutable events',
+    'Timeline can be reconstructed from event log',
+    'System uses CQRS - separate read model (optimized timeline queries) and write model (post creation)',
+    'Analytics use Lambda architecture - batch processing for accuracy, stream processing for real-time',
+    'Data changes are captured via CDC and synced to search index and analytics systems',
   ],
 
   userFacingNFRs: [
     // Performance
     'Feed loads in <500ms at P95',
     'New posts appear in feed within 100ms',
+    'Post latency: <100ms for normal users (<10K followers)',
+    'Timeline read: <200ms including celebrity post merge',
     'Notifications delivered within 50ms at P95',
     'Chat messages delivered within 100ms',
     'Presence updates propagate within 5 seconds',
@@ -108,6 +127,7 @@ export const comprehensiveSocialMediaPlatformDefinition: ProblemDefinition = {
     // Scale
     'Support 100M active users',
     'Handle 10,000 posts/sec during peak hours',
+    'Handle celebrity posts with 1M+ followers efficiently',
     'Deliver 100,000 notifications/sec',
     'Maintain 10M concurrent WebSocket connections',
     'Process 20,000 chat messages/sec',

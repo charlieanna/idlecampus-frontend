@@ -168,7 +168,7 @@ export const CHALLENGE_CATEGORY_MAP: Record<string, ChallengeCategory> = {
   // URL Shorteners
   tiny_url: 'gateway',
   'tiny_url_tiered': 'gateway',
-  'tiny_url_l6': 'gateway',
+  'tiny-url-l6': 'caching', // L6-level URL shortener (converted from Challenge to ProblemDefinition)
   'tiny_url_progressive': 'gateway',
 
   // Food & Blogs

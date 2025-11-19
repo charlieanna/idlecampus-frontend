@@ -59,6 +59,13 @@ export const comprehensiveEcommercePlatformDefinition: ProblemDefinition = {
   - Global inventory management
   - Real-time updates and consistency
   - Scalability patterns for extreme traffic
+  - ACID transactions for checkout (order + payment atomicity) - DDIA Ch. 7
+  - Serializable isolation to prevent overselling (write skew prevention) - DDIA Ch. 7
+  - Optimistic/pessimistic locking for inventory management - DDIA Ch. 7
+  - Batch processing for analytics (Map/Reduce for sales reports) - DDIA Ch. 10
+  - Stream processing for real-time recommendations - DDIA Ch. 11
+  - CQRS pattern (separate read/write models for performance) - DDIA Ch. 12
+  - Event sourcing for order history and audit logs - DDIA Ch. 12
   
   **Progressive Approach:**
   Start simple with basic connectivity, then progressively add:
@@ -76,6 +83,9 @@ export const comprehensiveEcommercePlatformDefinition: ProblemDefinition = {
     'Users can view detailed product information (images, description, price, reviews)',
     'Users can add products to shopping cart',
     'Users can checkout and place orders',
+    'Checkout is atomic - both order creation and payment processing succeed or both fail (ACID transactions)',
+    'System prevents overselling using serializable isolation (no two users can buy the last item)',
+    'Inventory updates use optimistic locking to handle concurrent purchases',
     
     // User Account Management
     'Users can create accounts and login',
@@ -86,6 +96,8 @@ export const comprehensiveEcommercePlatformDefinition: ProblemDefinition = {
     'Sellers can list products with descriptions and images',
     'Sellers can manage inventory and pricing',
     'Sellers can view sales analytics dashboard',
+    'Analytics dashboard shows real-time metrics (stream processing) and historical reports (batch processing)',
+    'Sales reports are generated using batch processing (Map/Reduce) for accuracy',
     
     // Personalization
     'Users see personalized product recommendations',
@@ -121,6 +133,8 @@ export const comprehensiveEcommercePlatformDefinition: ProblemDefinition = {
     'User sees their own actions immediately (read-after-write consistency)',
     'Inventory updates propagate within 100ms',
     'Price changes take effect within 1 second',
+    'Order history uses event sourcing - all order state changes are stored as immutable events',
+    'System uses CQRS - separate read model (optimized for queries) and write model (optimized for transactions)',
     
     // Security
     'API rate limiting: 1000 requests/hour per user',

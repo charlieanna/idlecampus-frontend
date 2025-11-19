@@ -19,8 +19,9 @@ import { generateCodeChallengesFromFRs } from '../../../utils/codeChallengeGener
  * 6. Circuit Breaking - Prevent cascading failures
  * 7. Load Balancing - Distribute traffic across service instances
  * 8. API Versioning - Support multiple API versions
- * 9. Caching - Cache responses at gateway level
- * 10. Monitoring - Track API metrics and logs
+ * 9. Response Caching - Cache responses at gateway level
+ * 10. Configuration Caching - Local caching of routing rules, rate limits, and auth configs
+ * 11. Monitoring - Track API metrics and logs
  * 
  * The problem is designed for progressive learning:
  * - Start with basic routing
@@ -50,11 +51,13 @@ export const comprehensiveApiGatewayPlatformDefinition: ProblemDefinition = {
   - Request/response sanitization
   
   **Reliability Features:**
-  - Circuit breaking for failing services
+  - Circuit breaking for failing services (DDIA Ch. 8)
   - Automatic retries with exponential backoff
+  - Idempotency keys for safe retries (DDIA Ch. 8)
   - Health checks and service discovery
-  - Graceful degradation
-  - Timeout management
+  - Graceful degradation when services fail
+  - Timeout management (prevent hanging requests) - DDIA Ch. 8
+  - Network partition handling (continue operating when backend unreachable) - DDIA Ch. 8
   
   **Scale Requirements:**
   - Support 50k requests/sec
@@ -68,11 +71,17 @@ export const comprehensiveApiGatewayPlatformDefinition: ProblemDefinition = {
   - Request routing with path matching
   - Token bucket rate limiting
   - JWT validation with caching
-  - Circuit breaker pattern
+  - Circuit breaker pattern - DDIA Ch. 8
   - Response caching strategies
+  - Configuration caching (local cache of routing rules, rate limits, auth configs)
+  - Hot reload of configurations without gateway restarts
+  - Change notifications for config updates
   - Load balancing algorithms
   - Service discovery
   - API metrics and monitoring
+  - Request timeouts to prevent hanging requests - DDIA Ch. 8
+  - Idempotency keys for safe retries - DDIA Ch. 8
+  - Network partition handling (graceful degradation) - DDIA Ch. 8
   
   **Progressive Approach:**
   Start simple with basic routing, then progressively add:
@@ -107,6 +116,12 @@ export const comprehensiveApiGatewayPlatformDefinition: ProblemDefinition = {
     'Cache can be bypassed with Cache-Control: no-cache header',
     'POST/PUT/DELETE requests invalidate related cache entries',
     
+    // Distributed Systems Patterns (DDIA Ch. 8)
+    'Gateway sets 3-second timeout on all backend service calls',
+    'Gateway uses circuit breaker - opens after 5 consecutive failures',
+    'Gateway supports idempotency keys - same request with same key returns same result',
+    'Gateway handles network partitions gracefully - returns cached data or error, never hangs',
+    
     // Transformation
     'Gateway adds request ID to all requests',
     'Gateway adds user context headers (X-User-Id, X-User-Roles)',
@@ -118,6 +133,13 @@ export const comprehensiveApiGatewayPlatformDefinition: ProblemDefinition = {
     'Gateway opens circuit breaker after 5 consecutive failures',
     'Gateway returns 503 when circuit is open',
     'Gateway performs health checks every 30 seconds',
+    
+    // Configuration Caching
+    'Gateway caches routing rules, rate limits, and auth configs locally on each instance',
+    'Gateway supports hot reload of configurations without restarting instances',
+    'Gateway receives change notifications when configs are updated',
+    'Gateway tracks config versions for rollback capability',
+    'Gateway can start with cached configs even if config database is temporarily unavailable',
   ],
 
   userFacingNFRs: [
@@ -139,10 +161,16 @@ export const comprehensiveApiGatewayPlatformDefinition: ProblemDefinition = {
     'Zero downtime deployments',
     'Graceful shutdown with connection draining',
     
-    // Caching
+    // Response Caching
     'Cache hit ratio >70% for GET requests',
     'Cache invalidation propagates within 1 second',
     'Cache memory usage <10GB per gateway instance',
+    
+    // Configuration Caching
+    'Config reads from local cache <5ms at P95 (no database query)',
+    'Config updates propagate to all gateway instances within 10 seconds',
+    'Gateway instances can start with cached configs (99.99% availability)',
+    'Config version tracking supports rollback to previous versions',
   ],
 
   functionalRequirements: {
@@ -181,6 +209,10 @@ export const comprehensiveApiGatewayPlatformDefinition: ProblemDefinition = {
       {
         type: 'storage',
         reason: 'Need database for gateway configuration (routes, rate limits, API keys)',
+      },
+      {
+        type: 'message_queue',
+        reason: 'Need message queue for config change notifications (pub/sub)',
       },
       
       // Service Discovery
@@ -270,7 +302,22 @@ export const comprehensiveApiGatewayPlatformDefinition: ProblemDefinition = {
       {
         from: 'compute',
         to: 'storage',
-        reason: 'Gateway loads routing rules and rate limits from config database',
+        reason: 'Gateway loads routing rules and rate limits from config database (on startup or cache miss)',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'Gateway caches routing rules, rate limits, and auth configs locally in Redis',
+      },
+      {
+        from: 'compute',
+        to: 'message_queue',
+        reason: 'Gateway subscribes to config change notifications',
+      },
+      {
+        from: 'storage',
+        to: 'message_queue',
+        reason: 'Config database publishes change notifications when configs are updated',
       },
       
       // Monitoring Flow
@@ -298,19 +345,19 @@ export const comprehensiveApiGatewayPlatformDefinition: ProblemDefinition = {
         'metric',
       ],
       fields: {
-        route: ['id', 'path_pattern', 'service_id', 'methods', 'auth_required', 'rate_limit_id'],
+        route: ['id', 'path_pattern', 'service_id', 'methods', 'auth_required', 'rate_limit_id', 'version', 'updated_at'],
         service: ['id', 'name', 'base_url', 'health_check_url', 'timeout_ms', 'retry_count'],
         api_key: ['id', 'key_hash', 'user_id', 'tier', 'rate_limit_id', 'created_at'],
-        rate_limit: ['id', 'requests_per_hour', 'burst_size'],
+        rate_limit: ['id', 'requests_per_hour', 'burst_size', 'version', 'updated_at'],
         jwt_public_key: ['kid', 'algorithm', 'public_key', 'expires_at'],
         circuit_breaker: ['service_id', 'state', 'failure_count', 'last_failure_time'],
         cache_entry: ['cache_key', 'response_body', 'headers', 'ttl', 'created_at'],
         metric: ['timestamp', 'route_id', 'status_code', 'latency_ms', 'user_id'],
       },
       accessPatterns: [
-        { type: 'read_by_key', frequency: 'very_high' },   // Route lookups, cache checks
+        { type: 'read_by_key', frequency: 'very_high' },   // Route lookups, cache checks, config reads
         { type: 'write', frequency: 'very_high' },         // Rate limit updates, metrics
-        { type: 'read_by_query', frequency: 'medium' },    // Config queries
+        { type: 'read_by_query', frequency: 'low' },      // Config queries (rare, mostly from cache)
       ],
     },
   },

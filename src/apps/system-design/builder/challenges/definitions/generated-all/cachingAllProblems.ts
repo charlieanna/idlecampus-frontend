@@ -11,6 +11,273 @@ import { problemConfigs } from '../../problemConfigs';
  */
 
 /**
+ * TinyURL L6 – URL Shortener (Google L6 Standards)
+ * Advanced version with percentile-based latency requirements, tail amplification, and cascading failure prevention
+ */
+export const tinyUrlL6ProblemDefinition: ProblemDefinition = {
+  id: 'tiny-url-l6',
+  title: 'TinyURL – URL Shortener (L6 Standards)',
+  description: `Design a URL shortening service like bit.ly with Google L6-level requirements.
+
+**Critical L6 Principle:** NEVER use "average" for latency. The P99+ is where interesting things happen (GC, slow services, etc.).
+
+In distributed systems, overall latency = max(downstream latencies). The more services you call, the higher probability of hitting P99 events.
+
+- Given a long URL, generate a short URL
+- Redirect users from short URL to original URL via HTTP 301/302
+- Support custom aliases for premium users
+- Handle viral events (5x traffic) and Super Bowl ads (10x traffic)
+- Zero data loss - URLs must work forever once created
+- Prevent cascading failures when cache or database fails`,
+
+  // User-facing requirements (interview-style)
+  userFacingFRs: [
+    'Given a long URL, generate a short URL',
+    'Redirect users from short URL to original URL via HTTP 301/302',
+    'Short codes must be unique and permanent',
+    'Support custom aliases for premium users',
+    'Handle viral events with 5x traffic spike',
+    'Survive Super Bowl ads with 10x traffic spike',
+    'Zero data loss - all URL mappings must persist forever',
+    'Prevent cascading failures when components fail',
+  ],
+  userFacingNFRs: [
+    'Latency: P50 < 30ms | P90 < 50ms | P99 < 100ms | P999 < 500ms (NO averages!)',
+    'Tail Amplification: P99/P50 ratio must be < 3.5x',
+    'Request Rate: Baseline 10K reads/sec, 1K writes/sec | Peak 50K reads/sec during viral events',
+    'Availability: 99.99% (four 9s) = max 52 min downtime/year',
+    'Data Durability: ZERO data loss acceptable (RPO=0, RTO<60s)',
+    'Time Variance: Handle 5x traffic during viral events, 10x during Super Bowl ads',
+    'Distribution: 80% of traffic hits 20% of URLs (power law), top 1% URLs get 10% of traffic',
+    'Budget: $2,000/month',
+  ],
+
+  functionalRequirements: {
+    mustHave: [
+      {
+        type: 'compute',
+        reason: 'Need app servers to process URL shortening and redirect requests',
+      },
+      {
+        type: 'load_balancer',
+        reason: 'Need load balancer to distribute traffic across app servers',
+      },
+      {
+        type: 'cache',
+        reason: 'Need Redis cache for read-heavy redirects (90% reads) to meet P99 latency',
+      },
+      {
+        type: 'storage',
+        reason: 'Need database to store URL mappings with zero data loss (replication required)',
+      }
+    ],
+    mustConnect: [
+      {
+        from: 'compute',
+        to: 'load_balancer',
+        reason: 'App servers receive traffic from load balancer',
+      },
+      {
+        from: 'compute',
+        to: 'cache',
+        reason: 'App servers check cache before database for redirects (cache-aside pattern)',
+      },
+      {
+        from: 'compute',
+        to: 'storage',
+        reason: 'App servers write new URLs and read on cache miss',
+      },
+    ],
+    dataModel: {
+      entities: ['url_mapping'],
+      fields: {
+        url_mapping: ['short_code', 'long_url', 'created_at', 'expires_at', 'click_count'],
+      },
+      accessPatterns: [
+        { type: 'read_by_key', frequency: 'very_high' },  // Redirect lookups (10K/sec)
+        { type: 'write', frequency: 'medium' },           // URL creation (1K/sec)
+      ],
+    },
+  },
+
+  scenarios: [
+    // ========== L6 LATENCY TESTS (Percentile-based) ==========
+    {
+      name: 'L6-LAT-1: Baseline Latency Profile',
+      description: 'Verify latency percentiles meet L6 standards. Remember: P99 is where GC and interesting events happen! At 10K RPS, even 0.1% at P999 = 10 requests/sec experiencing 500ms latency!',
+      traffic: {
+        rps: 11000, // 10K reads + 1K writes
+        readWriteRatio: 0.91, // 91% reads
+      },
+      passCriteria: {
+        maxLatency: 100, // P99 < 100ms
+        maxErrorRate: 0.001, // 0.1% error rate
+        // Custom L6 criteria
+        p50Latency: 30,  // P50 < 30ms
+        p90Latency: 50,  // P90 < 50ms
+        p99Latency: 100, // P99 < 100ms
+        tailAmplification: 3.5, // P99/P50 < 3.5x
+      },
+    },
+    {
+      name: 'L6-LAT-2: Tail Latency Amplification',
+      description: 'Test tail latency amplification. When you call multiple services, P99 events multiply! If service A has P99=100ms and service B has P99=100ms, calling both: P(at least one P99) = 1 - (0.99 * 0.99) = 1.99% ≈ P98!',
+      traffic: {
+        rps: 11000,
+        readWriteRatio: 0.91,
+      },
+      passCriteria: {
+        maxLatency: 150, // Higher tolerance for tail
+        maxErrorRate: 0.01,
+        tailAmplification: 3.5, // P99/P50 < 3.5x
+      },
+    },
+
+    // ========== L6 TIME VARIANCE TESTS ==========
+    {
+      name: 'L6-SCALE-1: Viral Event (5x traffic)',
+      description: 'Handle 5x traffic spike during viral event. P99 degradation must be < 2x. Viral events are predictable in aggregate (happen daily somewhere). Design for 5x surge as normal, not exceptional.',
+      traffic: {
+        rps: 55000, // 5x baseline
+        readWriteRatio: 0.95, // More reads during viral
+      },
+      passCriteria: {
+        maxLatency: 200, // 2x normal P99
+        maxErrorRate: 0.01,
+        availability: 0.999,
+      },
+    },
+    {
+      name: 'L6-SCALE-2: Super Bowl Ad (10x spike)',
+      description: 'Survive 10x traffic during Super Bowl commercial. System must not crash! Short spike (30 seconds) - OK to degrade but must stay up.',
+      traffic: {
+        rps: 110000, // 10x baseline
+        readWriteRatio: 0.98, // Almost all reads
+      },
+      passCriteria: {
+        maxLatency: 500, // OK to degrade
+        maxErrorRate: 0.05, // 5% errors acceptable
+        availability: 0.95, // Don't crash!
+      },
+    },
+
+    // ========== L6 DISTRIBUTION TESTS ==========
+    {
+      name: 'L6-DIST-1: Hot Partition (Power Law)',
+      description: '80% of traffic hits 20% of URLs (power law). Top 1% URLs get 10% traffic. If not cached, these hot URLs will destroy your database. Power law means cache is EXTREMELY effective. Even small cache captures most traffic.',
+      traffic: {
+        rps: 11000,
+        readWriteRatio: 0.91,
+      },
+      passCriteria: {
+        maxLatency: 100,
+        maxErrorRate: 0.001,
+      },
+    },
+
+    // ========== L6 DURABILITY TESTS ==========
+    {
+      name: 'L6-DUR-1: Zero Data Loss',
+      description: 'Database fails. ZERO URL mappings can be lost (durability requirement). RPO = 0 (Zero data loss), RTO < 60s (Recovery in 1 minute). URLs must work FOREVER once created. For URL shorteners, losing a mapping breaks user trust forever. Better to reject new URLs than lose existing ones.',
+      traffic: {
+        rps: 11000,
+        readWriteRatio: 0.91,
+      },
+      failureInjection: {
+        component: 'storage',
+        at: 60,
+        recoveryAt: 120,
+      },
+      passCriteria: {
+        availability: 0.999, // Three 9s during failure
+        maxErrorRate: 0.01,
+        dataLoss: false, // ZERO data loss
+      },
+    },
+
+    // ========== L6 ADVANCED TESTS ==========
+    {
+      name: 'L6-REL-1: Cascading Failures',
+      description: 'Cache fails, causing DB overload. Test cascading failure resilience. The Cascade: 1) Cache fails → All traffic hits DB, 2) DB overloaded → Connections pile up, 3) App servers run out of connections → Everything fails. Systems don\'t fail, they cascade. Design for cascade prevention.',
+      traffic: {
+        rps: 11000,
+        readWriteRatio: 0.91,
+      },
+      failureInjection: {
+        component: 'cache',
+        at: 30,
+      },
+      passCriteria: {
+        maxLatency: 300, // Degraded but not dead
+        maxErrorRate: 0.05,
+        availability: 0.95,
+      },
+    },
+  ],
+
+  validators: [
+    { name: 'Basic Functionality', validate: basicFunctionalValidator },
+    {
+      name: 'Valid Connection Flow',
+      validate: validConnectionFlowValidator,
+    },
+  ],
+
+  pythonTemplate: `# tinyurl_l6.py
+import hashlib
+from typing import Optional
+
+# L6-Level URL Shortener
+# Focus: Percentile-based latency, tail amplification, zero data loss
+
+def shorten(url: str) -> Optional[str]:
+    """
+    Create a short code for the given URL.
+    L6 Requirement: Must be durable (zero data loss).
+
+    Args:
+        url: The long URL to shorten
+
+    Returns:
+        A short code string, or None if invalid
+    """
+    # TODO: Implement with durability guarantees
+    # Hint: Use synchronous replication for zero data loss
+    pass
+
+def expand(code: str) -> Optional[str]:
+    """
+    Retrieve the original URL from a short code.
+    L6 Requirement: P99 < 100ms, P50 < 30ms.
+
+    Args:
+        code: The short code to expand
+
+    Returns:
+        The original URL, or None if not found
+    """
+    # TODO: Implement with cache-first strategy
+    # Hint: Check cache first, then database
+    # Hint: Use connection pooling to reduce tail latency
+    pass
+
+# ===========================================
+# L6 ADVANCED FEATURES
+# ===========================================
+# def handle_viral_traffic(code: str) -> Optional[str]:
+#     '''Handle 5x-10x traffic spikes'''
+#     pass
+#
+# def prevent_cascading_failure():
+#     '''Circuit breakers, connection limits, graceful degradation'''
+#     pass
+#
+# def track_percentiles():
+#     '''Monitor P50, P90, P99, P999 latencies'''
+#     pass`,
+};
+
+/**
  * TinyURL – URL Shortener
  * From extracted-problems/system-design/caching.md
  */

@@ -885,60 +885,18 @@ if __name__ == "__main__":
   const handleSubmit = async () => {
     if (!selectedChallenge) return;
 
-    // Step 1: Smart Validation - Only validate connections for components on canvas
-    // If user has database/cache on canvas but not connected, that's an error
-    // If user doesn't have database/cache on canvas, that's OK (uses in-memory)
-    const connectionValidation = validateSmartConnections(pythonCode, systemGraph);
-
-    if (!connectionValidation.valid) {
-      console.error('❌ Connection validation failed:', connectionValidation.errors);
-      // Instead of showing alert, create failed test results for all test cases
-      const resultsMap = new Map<number, TestResult>();
-
-      if (selectedChallenge.testCases && selectedChallenge.testCases.length > 0) {
-        selectedChallenge.testCases.forEach((testCase, index) => {
-          resultsMap.set(index, {
-            passed: false,
-            message: 'Failed - ' + connectionValidation.errors[0]?.message || 'Connection error',
-            executionTime: 0
-          });
-        });
-      }
-
-      setTestResults(resultsMap);
-      setCurrentTestIndex(0);
-      setHasSubmitted(true);
-      return;
-    }
+    // Check if this is a ProblemDefinition (has scenarios) vs Challenge (has testCases)
+    // ProblemDefinition uses SystemDesignValidator, Challenge uses Python code validation
+    const isProblemDefinition = 'scenarios' in selectedChallenge;
     
-    console.log('✅ Connection validation passed');
+    // Step 1: Smart Validation - Only for Python code challenges (not ProblemDefinition)
+    if (!isProblemDefinition) {
+      // If user has database/cache on canvas but not connected, that's an error
+      // If user doesn't have database/cache on canvas, that's OK (uses in-memory)
+      const connectionValidation = validateSmartConnections(pythonCode, systemGraph);
 
-    // Step 2: Validate Python code against database schema (if challenge has schema)
-    const tieredChallenge = selectedChallenge as TieredChallenge;
-    let databaseSchema: DatabaseSchema | undefined =
-      tieredChallenge.componentBehaviors?.database?.schema;
-    let databaseType: 'relational' | 'document' | 'key-value' =
-      (tieredChallenge.componentBehaviors?.database?.dataModel as
-        | 'relational'
-        | 'document'
-        | 'key-value') || 'key-value';
-
-    // Fallback: TinyURL specific schema for key-value URL mapping
-    if (!databaseSchema && selectedChallenge.id === 'tiny_url') {
-      databaseSchema = TINY_URL_DATABASE_SCHEMA;
-      databaseType = 'key-value';
-    }
-
-    if (databaseSchema) {
-      const schemaValidation = validateDatabaseSchema(
-        pythonCode,
-        databaseSchema,
-        databaseType
-      );
-
-      if (!schemaValidation.valid) {
-        console.error('❌ Schema validation failed:', schemaValidation.errors);
-        console.error('Schema validation details:', JSON.stringify(schemaValidation.errors, null, 2));
+      if (!connectionValidation.valid) {
+        console.error('❌ Connection validation failed:', connectionValidation.errors);
         // Instead of showing alert, create failed test results for all test cases
         const resultsMap = new Map<number, TestResult>();
 
@@ -946,7 +904,7 @@ if __name__ == "__main__":
           selectedChallenge.testCases.forEach((testCase, index) => {
             resultsMap.set(index, {
               passed: false,
-              message: 'Failed - ' + (schemaValidation.errors?.[0] || 'Schema validation error'),
+              message: 'Failed - ' + connectionValidation.errors[0]?.message || 'Connection error',
               executionTime: 0
             });
           });
@@ -958,7 +916,58 @@ if __name__ == "__main__":
         return;
       }
       
-      console.log('✅ Schema validation passed');
+      console.log('✅ Connection validation passed');
+
+      // Step 2: Validate Python code against database schema (if challenge has schema)
+      const tieredChallenge = selectedChallenge as TieredChallenge;
+      let databaseSchema: DatabaseSchema | undefined =
+        tieredChallenge.componentBehaviors?.database?.schema;
+      let databaseType: 'relational' | 'document' | 'key-value' =
+        (tieredChallenge.componentBehaviors?.database?.dataModel as
+          | 'relational'
+          | 'document'
+          | 'key-value') || 'key-value';
+
+      // Fallback: TinyURL specific schema for key-value URL mapping
+      if (!databaseSchema && selectedChallenge.id === 'tiny_url') {
+        databaseSchema = TINY_URL_DATABASE_SCHEMA;
+        databaseType = 'key-value';
+      }
+
+      if (databaseSchema) {
+        const schemaValidation = validateDatabaseSchema(
+          pythonCode,
+          databaseSchema,
+          databaseType
+        );
+
+        if (!schemaValidation.valid) {
+          console.error('❌ Schema validation failed:', schemaValidation.errors);
+          console.error('Schema validation details:', JSON.stringify(schemaValidation.errors, null, 2));
+          // Instead of showing alert, create failed test results for all test cases
+          const resultsMap = new Map<number, TestResult>();
+
+          if (selectedChallenge.testCases && selectedChallenge.testCases.length > 0) {
+            selectedChallenge.testCases.forEach((testCase, index) => {
+              resultsMap.set(index, {
+                passed: false,
+                message: 'Failed - ' + (schemaValidation.errors?.[0] || 'Schema validation error'),
+                executionTime: 0
+              });
+            });
+          }
+
+          setTestResults(resultsMap);
+          setCurrentTestIndex(0);
+          setHasSubmitted(true);
+          return;
+        }
+        
+        console.log('✅ Schema validation passed');
+      }
+    } else {
+      // For ProblemDefinition, skip Python validation - SystemDesignValidator handles it
+      console.log('✅ Skipping Python validation for ProblemDefinition - using SystemDesignValidator');
     }
 
     // Step 3: Run system design simulation tests (FR + NFR) if testCases are defined

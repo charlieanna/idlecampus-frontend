@@ -71,6 +71,10 @@ export const comprehensiveCloudStoragePlatformDefinition: ProblemDefinition = {
   - Version control system
   - Real-time sync protocol
   - CDN for global distribution
+  - Data partitioning (sharding files across multiple storage nodes using consistent hashing) - DDIA Ch. 6
+  - Replication (replicate files across multiple storage nodes for durability) - DDIA Ch. 5
+  - Consensus for leader election in distributed storage (Raft) - DDIA Ch. 9
+  - Batch processing for deduplication analysis (Map/Reduce) - DDIA Ch. 10
   
   **Progressive Approach:**
   Start simple with basic upload/download, then progressively add:
@@ -107,6 +111,13 @@ export const comprehensiveCloudStoragePlatformDefinition: ProblemDefinition = {
     'System keeps last 30 versions of each file',
     'Users can view version history',
     'Users can restore previous versions',
+    
+    // Partitioning & Replication (DDIA Chapter 5-6)
+    'System partitions files across multiple storage nodes using consistent hashing',
+    'Files are replicated to 3 storage nodes for durability (11 nines)',
+    'System automatically rebalances partitions when storage nodes are added/removed',
+    'System handles hot spots by redistributing popular files',
+    'Metadata database is sharded by user_id for horizontal scaling',
     'Users can download specific versions',
     
     // Search
@@ -141,6 +152,10 @@ export const comprehensiveCloudStoragePlatformDefinition: ProblemDefinition = {
     'Handle 10,000 file uploads/sec',
     'Handle 50,000 file downloads/sec',
     'Sync 1M devices in real-time',
+    'Partition data across 1000+ storage nodes',
+    'Replicate each file to 3 storage nodes',
+    'Handle storage node failures without data loss',
+    'Rebalance partitions automatically when nodes added/removed',
     
     // Durability & Availability
     'Data durability: 99.999999999% (11 nines)',
