@@ -20,7 +20,7 @@ import { EnhancedInspector } from './components/EnhancedInspector';
 import { SolutionModal } from './components/SolutionModal';
 
 // Import types and services
-import { Challenge } from '../types/testCase';
+import { Challenge, Solution } from '../types/testCase';
 import { SystemGraph } from '../types/graph';
 import { TestResult } from '../types/testCase';
 import { validateConnections, validateSmartConnections, formatValidationErrors } from '../services/connectionValidator';
@@ -202,28 +202,6 @@ export function TieredSystemDesignBuilder({
   const isFoodBlog = selectedChallenge?.id === 'food_blog';
   const hasCodeChallenges = selectedChallenge?.codeChallenges && selectedChallenge.codeChallenges.length > 0;
   const hasPythonTemplate = selectedChallenge?.pythonTemplate && selectedChallenge.pythonTemplate.length > 0;
-
-  // Load solution to canvas with disclaimer (wrapped version for UI buttons)
-  const loadSolutionWithDisclaimer = useCallback((solutionOverride?: Solution) => {
-    const confirmed = window.confirm(
-      "💡 Reference Architecture\n\n" +
-      "This shows ONE valid way to meet the requirements.\n" +
-      "Your design may differ and still pass all tests!\n\n" +
-      "The traffic simulator validates ANY architecture that:\n" +
-      "✅ Has all required components (mustHave)\n" +
-      "✅ Has all required connections (mustConnect)\n" +
-      "✅ Meets performance targets (latency, cost, errors)\n\n" +
-      "There are often multiple valid solutions. This reference is optimized for:\n" +
-      "• Simplicity: Minimal components needed\n" +
-      "• Best practices: Industry-standard patterns\n" +
-      "• Education: Demonstrates DDIA/SDP concepts\n\n" +
-      "Click OK to load this reference architecture to the canvas."
-    );
-
-    if (confirmed) {
-      loadSolutionToCanvas(solutionOverride);
-    }
-  }, []);
 
   // Load solution to canvas (can be challenge-level or test-case-specific)
   const loadSolutionToCanvas = useCallback((solutionOverride?: Solution) => {
@@ -1073,29 +1051,44 @@ if __name__ == "__main__":
             
             if (totalCost > budgetLimit) {
               console.warn(`⚠️ Challenge budget exceeded: $${totalCost.toFixed(0)} > $${budgetLimit} (infrastructure cost, excluding CDN/S3)`);
-              // Budget is a challenge-level concern - don't overwrite individual test results
-              // Instead, add a budget warning to the explanation of each test result
-              const budgetExceededMsg = `\n\n⚠️ Challenge Budget Exceeded: Total cost $${totalCost.toFixed(0)}/month exceeds budget of $${budgetLimit}/month.\n\n💡 Note: Individual tests may pass, but the overall solution exceeds the budget. Optimize your architecture to reduce costs (reduce shards, use single-leader replication, smaller cache, fewer app server instances).`;
+              // Budget exceedance fails the entire challenge - mark all tests as failed
+              const budgetExceededMsg = `\n\n❌ Challenge Budget Exceeded: Total cost $${totalCost.toFixed(0)}/month exceeds budget of $${budgetLimit}/month.\n\n💡 Optimize your architecture to reduce costs:\n• Reduce shards (if using multi-leader replication)\n• Use single-leader replication instead of multi-leader\n• Reduce cache size\n• Use fewer app server instances\n• Consider removing unnecessary components`;
               
-              console.log(`⚠️ Budget exceeded - adding warning to all test results (not marking as failed)`);
+              console.log(`⚠️ Budget exceeded - marking all tests as failed`);
               allTestCasesToRun.forEach((testCase, index) => {
                 const originalIndex = selectedChallenge.testCases.indexOf(testCase);
                 const existingResult = resultsMap.get(originalIndex);
                 if (existingResult) {
-                  // Keep the original passed/failed status, just add budget warning to explanation
+                  // Mark as failed due to budget exceedance
                   resultsMap.set(originalIndex, {
                     ...existingResult,
-                    // Keep passed status as-is - don't overwrite with false
+                    passed: false, // Budget exceedance fails the challenge
                     explanation: existingResult.explanation 
                       ? `${existingResult.explanation}${budgetExceededMsg}`
-                      : budgetExceededMsg,
+                      : `Budget exceeded.${budgetExceededMsg}`,
+                  });
+                } else {
+                  // Create a failed result if none exists
+                  resultsMap.set(originalIndex, {
+                    passed: false,
+                    metrics: {
+                      errorRate: 0,
+                      p50Latency: 0,
+                      p99Latency: 0,
+                      monthlyCost: totalCost,
+                      infrastructureCost: totalCost,
+                      availability: 1.0,
+                    },
+                    bottlenecks: [],
+                    explanation: `Budget exceeded.${budgetExceededMsg}`,
+                    componentMetrics: new Map(),
                   });
                 }
               });
               console.log(`📊 Results Map after budget check:`, {
                 mapSize: resultsMap.size,
                 passedInMap: Array.from(resultsMap.values()).filter(r => r.passed).length,
-                note: 'Budget warning added but test results preserved'
+                note: 'All tests marked as failed due to budget exceedance'
               });
             } else {
               console.log(`✅ Challenge budget met: $${totalCost.toFixed(0)} ≤ $${budgetLimit}`);
@@ -1321,7 +1314,7 @@ if __name__ == "__main__":
                   setTestResults(new Map());
                   setCurrentTestIndex(0);
                 }}
-                onShowSolution={loadSolutionWithDisclaimer}
+                onShowSolution={loadSolutionToCanvas}
                 hasChallengeSolution={!!selectedChallenge?.solution}
               />
             ) : (

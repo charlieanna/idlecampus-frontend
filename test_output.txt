@@ -1,0 +1,27 @@
+
+[1m[46m RUN [49m[22m [36mv4.0.7 [39m[90m/Users/ankurkothari/Documents/workspace/idlecampus/frontend[39m
+
+ [31m❯[39m src/apps/system-design/builder/__tests__/performanceVsScalability.test.ts [2m([22m[2m2 tests[22m[2m | [22m[31m1 failed[39m[2m)[22m[32m 3[2mms[22m[39m
+     [32m✓[39m should have a pythonTemplate defined[32m 1[2mms[22m[39m
+[31m     [31m×[31m should generate code challenges[39m[32m 2[2mms[22m[39m
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Failed Tests 1 [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯[39m
+
+[41m[1m FAIL [22m[49m src/apps/system-design/builder/__tests__/performanceVsScalability.test.ts[2m > [22mPerformance vs Scalability Problem[2m > [22mshould generate code challenges
+[31m[1mAssertionError[22m: expected 0 to be greater than 0[39m
+[36m [2m❯[22m src/apps/system-design/builder/__tests__/performanceVsScalability.test.ts:[2m15:31[22m[39m
+    [90m 13| [39m  [34mit[39m([32m'should generate code challenges'[39m[33m,[39m () [33m=>[39m {
+    [90m 14| [39m    const challenges = generateCodeChallengesFromFRs(performanceVsScal…
+    [90m 15| [39m    [34mexpect[39m(challenges[33m.[39mlength)[33m.[39m[34mtoBeGreaterThan[39m([34m0[39m)[33m;[39m
+    [90m   | [39m                              [31m^[39m
+    [90m 16| [39m
+    [90m 17| [39m    const traceChallenge = challenges.find(c => c.functionSignature.in…
+
+[31m[2m⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯[22m[39m
+
+
+[2m Test Files [22m [1m[31m1 failed[39m[22m[90m (1)[39m
+[2m      Tests [22m [1m[31m1 failed[39m[22m[2m | [22m[1m[32m1 passed[39m[22m[90m (2)[39m
+[2m   Start at [22m 16:16:33
+[2m   Duration [22m 774ms[2m (transform 112ms, setup 133ms, collect 109ms, tests 3ms, environment 397ms, prepare 7ms)[22m
+

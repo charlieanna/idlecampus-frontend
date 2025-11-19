@@ -208,13 +208,27 @@ export function DesignCanvas({
 
   // Sync edges with systemGraph connections
   useEffect(() => {
-    const newEdges: Edge[] = systemGraph.connections.map((conn) => ({
-      id: `${conn.from}-${conn.to}`,
-      source: conn.from,
-      target: conn.to,
-      ...defaultEdgeOptions,
-      data: { connectionType: conn.type },
-    }));
+    // Deduplicate connections and create unique edge IDs
+    const seenConnections = new Set<string>();
+    const newEdges: Edge[] = [];
+    
+    systemGraph.connections.forEach((conn) => {
+      // Create a unique key for this connection (include type to allow multiple connection types between same components)
+      const connectionKey = `${conn.from}-${conn.to}-${conn.type}`;
+      
+      // Only add if we haven't seen this exact connection before
+      if (!seenConnections.has(connectionKey)) {
+        seenConnections.add(connectionKey);
+        newEdges.push({
+          id: connectionKey, // Use connectionKey as unique ID
+          source: conn.from,
+          target: conn.to,
+          ...defaultEdgeOptions,
+          data: { connectionType: conn.type },
+        });
+      }
+    });
+    
     setEdges(newEdges);
   }, [systemGraph.connections, setEdges]);
 

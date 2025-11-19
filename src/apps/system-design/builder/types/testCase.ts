@@ -23,6 +23,54 @@ export interface PassCriteria {
 }
 
 /**
+ * Architecture decision details
+ */
+export interface ArchitectureDecision {
+  decision: string;
+  rationale: string;
+  alternatives?: string;
+  tradeoffs?: string;
+}
+
+/**
+ * Component rationale details
+ */
+export interface ComponentRationale {
+  component: string;
+  why: string;
+  configuration: string;
+}
+
+/**
+ * Requirement mapping details
+ */
+export interface RequirementMapping {
+  requirement: string; // FR-1, NFR-P1, etc.
+  howAddressed: string;
+}
+
+/**
+ * Optimization strategy details
+ */
+export interface OptimizationStrategy {
+  area: string;
+  strategy: string;
+  impact: string;
+}
+
+/**
+ * Solution walkthrough for educational purposes
+ */
+export interface SolutionWalkthrough {
+  overview: string;
+  architectureDecisions: ArchitectureDecision[];
+  componentRationale: ComponentRationale[];
+  requirementMapping: RequirementMapping[];
+  optimizations?: OptimizationStrategy[];
+  keyTakeaways: string[];
+}
+
+/**
  * Solution for a test case
  */
 export interface Solution {
@@ -35,6 +83,7 @@ export interface Solution {
     to: string; // component type
   }[];
   explanation: string;
+  walkthrough?: SolutionWalkthrough; // Optional detailed walkthrough
 }
 
 /**

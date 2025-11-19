@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Solution } from '../../types/testCase';
 
 interface SolutionModalProps {
@@ -7,6 +8,17 @@ interface SolutionModalProps {
 }
 
 export function SolutionModal({ solution, challengeTitle, onClose }: SolutionModalProps) {
+  const [expandedDecisions, setExpandedDecisions] = useState<Set<number>>(new Set());
+
+  const toggleDecision = (index: number) => {
+    const newExpanded = new Set(expandedDecisions);
+    if (newExpanded.has(index)) {
+      newExpanded.delete(index);
+    } else {
+      newExpanded.add(index);
+    }
+    setExpandedDecisions(newExpanded);
+  };
   // Build flow paths from connections
   const buildFlowPaths = () => {
     if (!solution || !solution.connections || !Array.isArray(solution.connections)) return [];
@@ -133,6 +145,160 @@ export function SolutionModal({ solution, challengeTitle, onClose }: SolutionMod
                   </pre>
                 </div>
               </div>
+
+              {/* Solution Walkthrough Section */}
+              {solution.walkthrough && (
+                <div className="border-t-2 border-gray-300 pt-6">
+                  <div className="flex items-center gap-2 mb-4">
+                    <span className="text-2xl">🎓</span>
+                    <h3 className="text-xl font-bold text-gray-900">Solution Walkthrough</h3>
+                  </div>
+
+                  {/* Overview */}
+                  <div className="mb-6">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                      <h4 className="text-sm font-semibold text-blue-900 mb-2">Overview</h4>
+                      <p className="text-sm text-blue-800 leading-relaxed">{solution.walkthrough.overview}</p>
+                    </div>
+                  </div>
+
+                  {/* Architecture Decisions */}
+                  {solution.walkthrough.architectureDecisions.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="text-base font-semibold text-gray-900 mb-3">Architecture Decisions</h4>
+                      <div className="space-y-3">
+                        {solution.walkthrough.architectureDecisions.map((decision, idx) => (
+                          <div key={idx} className="border border-gray-300 rounded-lg overflow-hidden">
+                            <button
+                              onClick={() => toggleDecision(idx)}
+                              className="w-full flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+                            >
+                              <div className="flex items-center gap-3">
+                                <span className="text-lg">{expandedDecisions.has(idx) ? '▼' : '▶'}</span>
+                                <span className="font-semibold text-gray-900">{decision.decision}</span>
+                              </div>
+                            </button>
+                            {expandedDecisions.has(idx) && (
+                              <div className="p-4 bg-white space-y-3">
+                                <div>
+                                  <span className="text-xs font-semibold text-gray-600 uppercase">Rationale</span>
+                                  <p className="text-sm text-gray-800 mt-1">{decision.rationale}</p>
+                                </div>
+                                {decision.alternatives && (
+                                  <div>
+                                    <span className="text-xs font-semibold text-gray-600 uppercase">Alternatives Considered</span>
+                                    <p className="text-sm text-gray-700 mt-1">{decision.alternatives}</p>
+                                  </div>
+                                )}
+                                {decision.tradeoffs && (
+                                  <div>
+                                    <span className="text-xs font-semibold text-gray-600 uppercase">Trade-offs</span>
+                                    <p className="text-sm text-gray-700 mt-1">{decision.tradeoffs}</p>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Component Rationale */}
+                  {solution.walkthrough.componentRationale.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="text-base font-semibold text-gray-900 mb-3">Component Rationale</h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {solution.walkthrough.componentRationale.map((comp, idx) => (
+                          <div key={idx} className="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="text-lg">🔧</span>
+                              <h5 className="font-semibold text-purple-900">{comp.component}</h5>
+                            </div>
+                            <p className="text-sm text-purple-800 mb-2">{comp.why}</p>
+                            <div className="text-xs text-purple-700 bg-purple-100 rounded px-2 py-1">
+                              Config: {comp.configuration}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Requirement Mapping */}
+                  {solution.walkthrough.requirementMapping.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="text-base font-semibold text-gray-900 mb-3">Requirement Coverage</h4>
+                      <div className="bg-gray-50 border border-gray-200 rounded-lg overflow-hidden">
+                        <table className="w-full">
+                          <thead className="bg-gray-100">
+                            <tr>
+                              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase">Requirement</th>
+                              <th className="px-4 py-2 text-left text-xs font-semibold text-gray-600 uppercase">How Addressed</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-gray-200">
+                            {solution.walkthrough.requirementMapping.map((req, idx) => (
+                              <tr key={idx} className="hover:bg-gray-50">
+                                <td className="px-4 py-3">
+                                  <span className={`text-xs font-medium px-2 py-1 rounded ${
+                                    req.requirement.startsWith('FR')
+                                      ? 'bg-green-100 text-green-700'
+                                      : 'bg-blue-100 text-blue-700'
+                                  }`}>
+                                    {req.requirement}
+                                  </span>
+                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-800">{req.howAddressed}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Optimizations */}
+                  {solution.walkthrough.optimizations && solution.walkthrough.optimizations.length > 0 && (
+                    <div className="mb-6">
+                      <h4 className="text-base font-semibold text-gray-900 mb-3">Optimizations</h4>
+                      <div className="space-y-3">
+                        {solution.walkthrough.optimizations.map((opt, idx) => (
+                          <div key={idx} className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                            <div className="flex items-start gap-3">
+                              <span className="text-lg mt-0.5">⚡</span>
+                              <div className="flex-1">
+                                <h5 className="font-semibold text-orange-900 mb-1">{opt.area}</h5>
+                                <p className="text-sm text-orange-800 mb-2">{opt.strategy}</p>
+                                <div className="text-xs text-orange-700 bg-orange-100 rounded px-2 py-1 inline-block">
+                                  Impact: {opt.impact}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Key Takeaways */}
+                  {solution.walkthrough.keyTakeaways.length > 0 && (
+                    <div>
+                      <h4 className="text-base font-semibold text-gray-900 mb-3">Key Takeaways</h4>
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <ul className="space-y-2">
+                          {solution.walkthrough.keyTakeaways.map((takeaway, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="text-yellow-600 font-bold mt-0.5">•</span>
+                              <span className="text-sm text-yellow-900">{takeaway}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           ) : (
             <div className="text-center py-12">
