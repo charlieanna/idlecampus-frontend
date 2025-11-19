@@ -52,12 +52,12 @@ export const coreProblems: CoreProblemMeta[] = [
   { id: 'basic-multi-region', stage: 3 },
 
   // Stage 4 – Stretch / L6-style
-  { id: 'multiRegionSocialCacheProblemDefinition', stage: 4 }, // from generated-all
-  { id: 'multiTenantSaasCacheProblemDefinition', stage: 4 },
-  { id: 'globalInventoryMasteryProblemDefinition', stage: 4 },
-  { id: 'rtbAdCacheProblemDefinition', stage: 4 },
-  { id: 'financialTradingCacheProblemDefinition', stage: 4 },
-  { id: 'sportsBettingCacheProblemDefinition', stage: 4 },
+  { id: 'multi-region-social-cache', stage: 4 },
+  { id: 'multi-tenant-saas-cache', stage: 4 },
+  { id: 'global-inventory-mastery', stage: 4 },
+  { id: 'rtb-ad-cache', stage: 4 },
+  { id: 'financial-trading-cache', stage: 4 },
+  { id: 'sports-betting-cache', stage: 4 },
 ];
 
 export const coreProblemIdSet: Set<string> = new Set(coreProblems.map(p => p.id));

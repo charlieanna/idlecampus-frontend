@@ -123,6 +123,41 @@ function determineDifficulty(
     return 'intermediate'; // Default to intermediate if no requirements defined
   }
 
+  // Check for advanced complexity indicators in description
+  // These indicate configuration complexity, not just component count
+  const description = (def.description || '').toLowerCase();
+  const advancedIndicators = [
+    // Scale indicators
+    /\d+m\+?\s*(requests|ops|qps|rps|users|tenants)/i,  // 100M+ requests, 10M QPS, etc.
+    /\d+b\+?\s*(objects|items|records|users)/i,          // 1B+ objects
+
+    // Latency indicators
+    /(microsecond|μs|<\s*\d+μs)/i,                       // microsecond latency
+    /(sub-millisecond|<\s*\d+ms)/i,                      // sub-millisecond
+
+    // Advanced technologies
+    /(rdma|nvram|crdt)/i,                                // RDMA, NVRAM, CRDTs
+
+    // Complex patterns
+    /(optimistic locking|pessimistic locking)/i,         // Advanced concurrency
+    /(conflict resolution|conflict-free)/i,              // Distributed conflicts
+    /(multi-region|multi-tenant)/i,                      // Global distribution
+    /(eventual consistency|strong consistency)/i,        // Complex consistency
+    /(hierarchical.*quota|tenant.*isolation)/i,          // Multi-tenancy complexity
+
+    // Financial/Trading
+    /(trading|financial|stock market|real-time bidding)/i,  // High-stakes systems
+
+    // Cost indicators
+    /\$\d+m.*month.*budget/i,                            // $500M/month budget
+  ];
+
+  const hasAdvancedIndicator = advancedIndicators.some(pattern => pattern.test(description));
+
+  if (hasAdvancedIndicator) {
+    return 'advanced';
+  }
+
   const componentCount = def.functionalRequirements.mustHave?.length || 0;
   const connectionCount = def.functionalRequirements.mustConnect?.length || 0;
 

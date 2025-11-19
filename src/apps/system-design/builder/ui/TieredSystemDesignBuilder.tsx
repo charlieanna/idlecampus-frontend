@@ -18,6 +18,11 @@ import { AppServerConfigPanel } from './components/AppServerConfigPanel';
 import { LoadBalancerConfigPanel } from './components/LoadBalancerConfigPanel';
 import { EnhancedInspector } from './components/EnhancedInspector';
 import { SolutionModal } from './components/SolutionModal';
+import { LessonHub } from './components/LessonHub';
+import { SystemDesignLessonViewer } from './components/SystemDesignLessonViewer';
+import { ContextualHelpPanel } from './components/ContextualHelpPanel';
+import type { SystemDesignLesson } from '../types/lesson';
+import { getLessonBySlug } from '../data/lessons';
 
 // Import types and services
 import { Challenge, Solution } from '../types/testCase';
@@ -711,6 +716,8 @@ if __name__ == "__main__":
   // UI state matching original
   const [canvasCollapsed, setCanvasCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState<string>('canvas');
+  const [selectedLesson, setSelectedLesson] = useState<SystemDesignLesson | null>(null);
+  const [showContextualHelp, setShowContextualHelp] = useState(false);
 
   // Load challenge from URL if challengeId is provided
   useEffect(() => {
@@ -1268,6 +1275,18 @@ if __name__ == "__main__":
             </button>
           )}
 
+          {/* Lessons Tab - Always show */}
+          <button
+            onClick={() => setActiveTab('lessons')}
+            className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'lessons'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+            }`}
+          >
+            📖 Lessons
+          </button>
+
           {/* APIs Reference Tab - Always show */}
           <button
             onClick={() => setActiveTab('apis')}
@@ -1361,6 +1380,36 @@ if __name__ == "__main__":
                     <span className="text-sm">▶</span>
                   </div>
                 </button>
+
+                {/* Floating Help Button */}
+                {hasSubmitted && testResults.size > 0 && (
+                  <button
+                    onClick={() => setShowContextualHelp(true)}
+                    className="absolute bottom-4 right-4 px-4 py-3 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 transition-all z-10 flex items-center gap-2"
+                    title="Get Help"
+                  >
+                    <span className="text-lg">💡</span>
+                    <span className="font-medium">Help</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Contextual Help Modal */}
+            {showContextualHelp && hasSubmitted && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <div className="bg-white rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto">
+                  <ContextualHelpPanel
+                    currentCanvas={systemGraph}
+                    failedTests={Array.from(testResults.values()).filter(r => !r.passed)}
+                    onClose={() => setShowContextualHelp(false)}
+                    onOpenLesson={(lesson) => {
+                      setSelectedLesson(lesson);
+                      setShowContextualHelp(false);
+                      setActiveTab('lessons');
+                    }}
+                  />
+                </div>
               </div>
             )}
 
@@ -1567,6 +1616,34 @@ if __name__ == "__main__":
                 </button>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Lessons Tab Content */}
+        {activeTab === 'lessons' && (
+          <div className="flex-1 overflow-hidden">
+            {selectedLesson ? (
+              <SystemDesignLessonViewer
+                lesson={selectedLesson}
+                onComplete={() => {
+                  // Lesson completed
+                }}
+                onExit={() => {
+                  setSelectedLesson(null);
+                }}
+                initialCanvas={systemGraph}
+                onCanvasChange={(canvas) => {
+                  setSystemGraph(canvas);
+                }}
+              />
+            ) : (
+              <LessonHub
+                currentChallenge={selectedChallenge?.id}
+                onSelectLesson={(lesson) => {
+                  setSelectedLesson(lesson);
+                }}
+              />
+            )}
           </div>
         )}
 
