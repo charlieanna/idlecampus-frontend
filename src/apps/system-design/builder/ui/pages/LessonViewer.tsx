@@ -1,35 +1,168 @@
-import { useState } from 'react';
+import { useState, isValidElement } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { allLessons } from '../../data/lessons';
+
+import { 
+  H1, H2, H3, P, Strong, Code, CodeBlock, UL, LI, Section, 
+  ComparisonTable, KeyPoint, Example, Divider 
+} from '../components/LessonContent';
+
+// Simple markdown parser that converts to React components
+function parseMarkdownToReact(markdown: string) {
+  const lines = markdown.split('\n');
+  const elements: JSX.Element[] = [];
+  let currentList: string[] = [];
+  let inCodeBlock = false;
+  let codeBlockContent = '';
+  let codeBlockLanguage = '';
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    // Code blocks
+    if (line.startsWith('```')) {
+      if (inCodeBlock) {
+        // End code block
+        elements.push(<CodeBlock key={`code-${i}`} language={codeBlockLanguage}>{codeBlockContent.trim()}</CodeBlock>);
+        codeBlockContent = '';
+        codeBlockLanguage = '';
+        inCodeBlock = false;
+      } else {
+        // Start code block
+        codeBlockLanguage = line.slice(3).trim();
+        inCodeBlock = true;
+      }
+      continue;
+    }
+
+    if (inCodeBlock) {
+      codeBlockContent += line + '\n';
+      continue;
+    }
+
+    // Headers
+    if (line.startsWith('### ')) {
+      if (currentList.length > 0) {
+        elements.push(<UL key={`ul-${i}`}>{currentList.map((item, idx) => <LI key={idx}>{parseInlineMarkdown(item)}</LI>)}</UL>);
+        currentList = [];
+      }
+      elements.push(<H3 key={`h3-${i}`}>{parseInlineMarkdown(line.slice(4))}</H3>);
+      continue;
+    }
+
+    if (line.startsWith('## ')) {
+      if (currentList.length > 0) {
+        elements.push(<UL key={`ul-${i}`}>{currentList.map((item, idx) => <LI key={idx}>{parseInlineMarkdown(item)}</LI>)}</UL>);
+        currentList = [];
+      }
+      elements.push(<H2 key={`h2-${i}`}>{parseInlineMarkdown(line.slice(3))}</H2>);
+      continue;
+    }
+
+    if (line.startsWith('# ')) {
+      if (currentList.length > 0) {
+        elements.push(<UL key={`ul-${i}`}>{currentList.map((item, idx) => <LI key={idx}>{parseInlineMarkdown(item)}</LI>)}</UL>);
+        currentList = [];
+      }
+      elements.push(<H1 key={`h1-${i}`}>{parseInlineMarkdown(line.slice(2))}</H1>);
+      continue;
+    }
+
+    // Lists
+    if (line.match(/^[\-\*] /)) {
+      currentList.push(line.replace(/^[\-\*] /, ''));
+      continue;
+    }
+
+    if (line.match(/^\d+\. /)) {
+      currentList.push(line.replace(/^\d+\. /, ''));
+      continue;
+    }
+
+    // Empty line - flush list and add paragraph
+    if (line.trim() === '') {
+      if (currentList.length > 0) {
+        elements.push(<UL key={`ul-${i}`}>{currentList.map((item, idx) => <LI key={idx}>{parseInlineMarkdown(item)}</LI>)}</UL>);
+        currentList = [];
+      }
+      continue;
+    }
+
+    // Regular paragraph
+    if (currentList.length > 0) {
+      elements.push(<UL key={`ul-${i}`}>{currentList.map((item, idx) => <LI key={idx}>{parseInlineMarkdown(item)}</LI>)}</UL>);
+      currentList = [];
+    }
+    elements.push(<P key={`p-${i}`}>{parseInlineMarkdown(line)}</P>);
+  }
+
+  // Flush remaining list
+  if (currentList.length > 0) {
+    elements.push(<UL key="ul-final">{currentList.map((item, idx) => <LI key={idx}>{parseInlineMarkdown(item)}</LI>)}</UL>);
+  }
+
+  return <Section>{elements}</Section>;
+}
+
+// Parse inline markdown (bold, italic, code)
+function parseInlineMarkdown(text: string): React.ReactNode {
+  const parts: React.ReactNode[] = [];
+  let current = text;
+  let key = 0;
+
+  // Handle code blocks first
+  current = current.replace(/`([^`]+)`/g, (_, code) => {
+    parts.push(<Code key={key++}>{code}</Code>);
+    return `__CODE_${key - 1}__`;
+  });
+
+  // Handle bold
+  current = current.replace(/\*\*([^*]+)\*\*/g, (_, bold) => {
+    parts.push(<Strong key={key++}>{bold}</Strong>);
+    return `__BOLD_${key - 1}__`;
+  });
+
+  // Handle italic
+  current = current.replace(/\*([^*]+)\*/g, (_, italic) => {
+    parts.push(<Em key={key++}>{italic}</Em>);
+    return `__ITALIC_${key - 1}__`;
+  });
+
+  // Split by placeholders and reconstruct
+  const segments = current.split(/(__(?:CODE|BOLD|ITALIC)_\d+__)/);
+  const result: React.ReactNode[] = [];
+  
+  segments.forEach((segment, idx) => {
+    const match = segment.match(/__(CODE|BOLD|ITALIC)_(\d+)__/);
+    if (match) {
+      const index = parseInt(match[2]);
+      result.push(parts[index]);
+    } else if (segment) {
+      result.push(segment);
+    }
+  });
+
+  return result.length > 0 ? <>{result}</> : text;
+}
 
 // Helper to render stage content
 function renderStageContent(stage: any) {
   // If content is a React element, render it directly
-  if (stage.content && typeof stage.content === 'object' && 'type' in stage.content) {
+  if (isValidElement(stage.content)) {
     return stage.content;
   }
   
-  // If content has markdown property, render it as text (for now)
+  // If content has markdown property, parse and render with Tailwind
   if (stage.content && typeof stage.content === 'object' && 'markdown' in stage.content) {
-    return (
-      <div className="prose prose-lg max-w-none">
-        <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-          {stage.content.markdown}
-        </div>
-      </div>
-    );
+    return parseMarkdownToReact(stage.content.markdown);
   }
   
-  // If content is a string, render it as text
+  // If content is a string, parse and render with Tailwind
   if (typeof stage.content === 'string') {
-    return (
-      <div className="whitespace-pre-wrap text-gray-700 leading-relaxed">
-        {stage.content}
-      </div>
-    );
+    return parseMarkdownToReact(stage.content);
   }
   
-  return <p className="text-gray-500">No content available</p>;
+  return <p className="text-slate-500">No content available</p>;
 }
 
 export function LessonViewer() {

@@ -4,9 +4,9 @@
 import type { SystemDesignLesson } from '../../types/lesson';
 
 // Fundamentals lessons (Level 1)
-import { introductionLesson } from './fundamentals/01-introduction';
-import { componentsLesson } from './fundamentals/02-components';
-import { capacityPlanningLesson } from './fundamentals/03-capacity-planning';
+import { introductionLesson } from './fundamentals/01-introduction.tsx';
+import { componentsLesson } from './fundamentals/02-components.tsx';
+import { capacityPlanningLesson } from './fundamentals/03-capacity-planning.tsx';
 
 // Component lessons (Level 2)
 import { cachingLesson } from './components/05-caching';

@@ -31,7 +31,6 @@ export class PostgreSQL extends Component {
     }
     
     super(id, 'postgresql', {
-      instanceType: 'commodity-db', // Always use commodity spec
       replication: false,
       replicationMode: 'single-leader',
       sharding: { enabled: false, shards: 1, shardKey: '' },
