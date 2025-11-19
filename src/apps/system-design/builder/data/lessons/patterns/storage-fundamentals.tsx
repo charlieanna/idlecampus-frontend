@@ -8,10 +8,10 @@ export const storageFundamentalsLesson: SystemDesignLesson = {
   id: 'storage-fundamentals',
   slug: 'storage-fundamentals',
   title: 'Storage Fundamentals',
-  description: 'Learn the core concepts of data storage systems',
+  description: 'Master storage trade-offs: WHEN to use SQL vs NoSQL vs Key-Value vs Object Storage, HOW to choose between storage types based on query needs and schema flexibility, and WHICH replication strategy (leader-follower vs multi-leader vs leaderless) based on global distribution and consistency requirements.',
   category: 'patterns',
   difficulty: 'intermediate',
-  estimatedMinutes: 25,
+  estimatedMinutes: 50,
   stages: [
     {
       id: 'storage-types',
@@ -165,6 +165,252 @@ DELETE /bucket/photos/vacation.jpg`}
               ['Analytics', 'Data Warehouse', 'BigQuery'],
             ]}
           />
+
+          <Divider />
+
+          <H2>🎯 Critical Trade-Off: SQL vs NoSQL vs Key-Value vs Object Storage</H2>
+
+          <ComparisonTable
+            headers={['Storage Type', 'Query Power', 'Scalability', 'Consistency', 'Cost/TB', 'Latency', 'Best For', 'Worst For']}
+            rows={[
+              [
+                'SQL\n(PostgreSQL)',
+                'Very High\n(JOINs, aggregations)',
+                'Low\n(vertical scaling)',
+                'Strong\n(ACID)',
+                '$500-2000/mo',
+                'Medium\n10-50ms',
+                '• Financial\n• E-commerce\n• Complex relationships\n• Transactions',
+                '• Flexible schema\n• Billions of records\n• Rapid iteration\n• Simple key lookups'
+              ],
+              [
+                'NoSQL Document\n(MongoDB)',
+                'Medium\n(single doc queries)',
+                'Very High\n(horizontal)',
+                'Eventual\n(BASE)',
+                '$200-800/mo',
+                'Low\n5-20ms',
+                '• User profiles\n• Content management\n• Flexible schema\n• Rapid dev',
+                '• Complex JOINs\n• ACID transactions\n• Strict schema\n• Financial data'
+              ],
+              [
+                'Key-Value\n(Redis, DynamoDB)',
+                'Low\n(get/set only)',
+                'Very High\n(horizontal)',
+                'Tunable',
+                '$100-500/mo',
+                'Very Low\n1-5ms',
+                '• Cache\n• Sessions\n• Counters\n• Real-time\n• Simple lookups',
+                '• Complex queries\n• JOINs\n• Analytics\n• Large objects'
+              ],
+              [
+                'Object Storage\n(S3)',
+                'None\n(no queries)',
+                'Unlimited',
+                'Eventual',
+                '$23/mo',
+                'High\n50-200ms',
+                '• Media files\n• Backups\n• Archives\n• Large files\n• Static assets',
+                '• Small files\n• Hot data\n• Frequent updates\n• Complex queries'
+              ],
+            ]}
+          />
+
+          <Example title="Real Decision: User Management System">
+            <P><Strong>Scenario:</Strong> Store user accounts (1M users), need login, profile updates, order history</P>
+
+            <P><Strong>Option 1: MongoDB (wrong for this use case)</Strong></P>
+            <CodeBlock>
+{`Data model:
+{
+  "userId": "123",
+  "email": "user@example.com",
+  "orders": [
+    {"orderId": "order1", "total": 99.99, "items": [...]},
+    {"orderId": "order2", "total": 149.99, "items": [...]}
+  ]
+}
+
+Problems:
+1. Duplicate order data (order stored in user doc AND orders collection)
+2. Update order → Must update ALL users who have that order
+3. Query: "Find all users who bought product X"
+   → Must scan ALL user documents (slow!)
+4. Data integrity: No foreign keys → Easy to have orphaned data
+
+Cost: $400/mo
+Query time: 500ms (scanning all users)
+Data duplication: 3x storage needed
+
+Result: ❌ NoSQL is WRONG for transactional data with relationships`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: PostgreSQL (Correct Choice)</Strong></P>
+            <CodeBlock>
+{`Data model:
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  email VARCHAR UNIQUE,
+  created_at TIMESTAMP
+);
+
+CREATE TABLE orders (
+  id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(id),
+  total DECIMAL,
+  created_at TIMESTAMP
+);
+
+CREATE TABLE order_items (
+  id SERIAL PRIMARY KEY,
+  order_id INT REFERENCES orders(id),
+  product_id INT,
+  quantity INT
+);
+
+Benefits:
+1. No data duplication (normalized)
+2. Update order → Update ONE row
+3. Query: "Find all users who bought product X"
+   → JOIN query: 10ms (indexed)
+4. Data integrity: Foreign keys prevent orphans
+5. ACID transactions: Atomic order creation
+
+Cost: $300/mo
+Query time: 10ms (indexed JOIN)
+Data duplication: None (normalized)
+
+Result: ✅ SQL is RIGHT for transactional, relational data
+
+Trade-off: Fixed schema (migrations needed) vs 50x faster queries`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> SQL requires migrations but provides JOINs, ACID, and data integrity.
+              For user/order data with relationships, SQL is 50x faster than NoSQL document store.
+            </KeyPoint>
+          </Example>
+
+          <Example title="Real Decision: Content Management System (CMS)">
+            <P><Strong>Scenario:</Strong> Store blog posts with flexible content (text, images, videos, custom fields)</P>
+
+            <P><Strong>Option 1: PostgreSQL (wrong for this use case)</Strong></P>
+            <CodeBlock>
+{`Data model:
+CREATE TABLE posts (
+  id SERIAL PRIMARY KEY,
+  title VARCHAR,
+  body TEXT,
+  author_id INT,
+  -- Problem: What about video posts? Image galleries? Podcasts?
+);
+
+-- Need to add columns for each content type
+ALTER TABLE posts ADD COLUMN video_url VARCHAR;
+ALTER TABLE posts ADD COLUMN gallery_images JSONB;
+ALTER TABLE posts ADD COLUMN podcast_url VARCHAR;
+
+Problems:
+1. Schema changes for each new content type (slow iteration)
+2. Most columns NULL for most posts (sparse data)
+3. Complex validation logic (if video_url, then body must be empty)
+4. Migrations needed for every feature
+
+Developer velocity: 2 weeks per new content type
+Schema: Rigid, many migrations
+Cost: $300/mo
+
+Result: ❌ SQL is TOO RIGID for flexible content types`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: MongoDB (Correct Choice)</Strong></P>
+            <CodeBlock>
+{`Data model:
+// Text post
+{
+  "postId": "123",
+  "type": "text",
+  "title": "My Blog Post",
+  "body": "Lorem ipsum...",
+  "author": "Alice"
+}
+
+// Video post
+{
+  "postId": "124",
+  "type": "video",
+  "title": "My Video",
+  "videoUrl": "https://...",
+  "duration": 120,
+  "subtitles": [...],
+  "author": "Bob"
+}
+
+// Photo gallery post
+{
+  "postId": "125",
+  "type": "gallery",
+  "images": [
+    {"url": "https://...", "caption": "Photo 1"},
+    {"url": "https://...", "caption": "Photo 2"}
+  ],
+  "author": "Charlie"
+}
+
+Benefits:
+1. No schema changes needed (add new fields instantly)
+2. Each post has only relevant fields (no sparse data)
+3. Fast iteration (ship new content types in 1 day vs 2 weeks)
+4. No migrations
+
+Developer velocity: 1 day per new content type
+Schema: Flexible, no migrations
+Cost: $200/mo
+
+Result: ✅ NoSQL is RIGHT for flexible, rapidly-evolving schemas
+
+Trade-off: No JOINs (must denormalize author data) vs 14x faster development`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> NoSQL enables 14x faster development for flexible schemas
+              but requires denormalization. For CMS with varied content types, worth it.
+            </KeyPoint>
+          </Example>
+
+          <H3>Decision Framework: Choosing Storage Type</H3>
+          <CodeBlock>
+{`Do you need ACID transactions or complex JOINs?
+
+├─ YES (financial, e-commerce, multi-table relationships) → SQL
+│   └─ Examples: User accounts, orders, payments, inventory
+│   └─ Accept: Fixed schema, migrations, vertical scaling limits
+│   └─ Benefit: ACID, JOINs, data integrity, mature tooling
+│
+└─ NO → Is your schema flexible/evolving?
+    │
+    ├─ YES (CMS, user profiles, varied data) → NoSQL Document Store
+    │   └─ Examples: Blog posts, user profiles, product catalogs
+    │   └─ Accept: No JOINs (denormalize), eventual consistency
+    │   └─ Benefit: Flexible schema, fast iteration, horizontal scaling
+    │
+    └─ NO → Is it simple key-value lookups?
+        │
+        ├─ YES (cache, sessions, counters) → Key-Value Store
+        │   └─ Examples: Session data, cache, rate limiting
+        │   └─ Accept: No complex queries, just get/set
+        │   └─ Benefit: Extremely fast (1-5ms), simple, cheap
+        │
+        └─ NO → Is it large files (>1MB)?
+            │
+            ├─ YES → Object Storage (S3)
+            │   └─ Examples: Images, videos, backups
+            │   └─ Accept: High latency (50-200ms), no queries
+            │   └─ Benefit: Unlimited storage, 11 nines durability, $23/TB
+            │
+            └─ Complex → Use multiple storage types!
+                └─ SQL for transactions, NoSQL for flexibility, Redis for cache, S3 for files`}
+          </CodeBlock>
         </Section>
       ),
     },
@@ -580,9 +826,234 @@ Solution: Sticky sessions (always read from same replica)`}
           </Example>
 
           <KeyPoint>
-            Replication improves availability and read performance, but introduces 
+            Replication improves availability and read performance, but introduces
             <Strong>eventual consistency</Strong> challenges!
           </KeyPoint>
+
+          <Divider />
+
+          <H2>🎯 Critical Trade-Off: Leader-Follower vs Multi-Leader vs Leaderless Replication</H2>
+
+          <ComparisonTable
+            headers={['Strategy', 'Write Latency', 'Read Latency', 'Availability', 'Consistency', 'Complexity', 'Best For', 'Worst For']}
+            rows={[
+              [
+                'Leader-Follower\n(Primary-Replica)',
+                'Medium\n10-50ms',
+                'Low\n5-10ms',
+                'Medium\n(failover needed)',
+                'Eventual\n(replication lag)',
+                'Low',
+                '• Read-heavy apps\n• Simple architecture\n• Most use cases',
+                '• Global writes\n• Zero downtime writes\n• Multi-datacenter active-active'
+              ],
+              [
+                'Multi-Leader\n(Active-Active)',
+                'Low\n5-20ms\n(write to nearest)',
+                'Low\n5-10ms',
+                'Very High\n(no single point)',
+                'Conflicts!\n(need resolution)',
+                'Very High',
+                '• Global apps\n• Multi-datacenter\n• Offline-first apps',
+                '• Simple apps\n• Strong consistency needs\n• Small teams'
+              ],
+              [
+                'Leaderless\n(Quorum)',
+                'Medium\n20-100ms\n(quorum wait)',
+                'Medium\n20-100ms\n(quorum read)',
+                'Very High\n(no leader)',
+                'Tunable\n(R+W>N)',
+                'High',
+                '• High availability\n• No single point\n• Read-heavy OR write-heavy',
+                '• Low latency needs\n• Simple architecture\n• Small teams'
+              ],
+            ]}
+          />
+
+          <Example title="Real Decision: Global E-commerce Platform">
+            <P><Strong>Scenario:</Strong> Users in US, EU, Asia. Need low-latency reads + writes globally.</P>
+
+            <P><Strong>Option 1: Leader-Follower (wrong for global writes)</Strong></P>
+            <CodeBlock>
+{`Setup:
+- Primary: US-West
+- Replica 1: EU
+- Replica 2: Asia
+
+Write flow from Asia:
+1. User in Tokyo writes → Routes to US-West primary
+2. Cross-continent latency: 150ms
+3. Replication to Asia replica: +100ms = 250ms total
+
+User experience:
+- US users: 10ms write latency ✅
+- EU users: 80ms write latency (acceptable)
+- Asia users: 250ms write latency ❌ (feels slow!)
+
+Problem: Single primary in US = high latency for global writes
+
+Result: ❌ Leader-follower is WRONG for global, write-heavy apps`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Multi-Leader (Correct for this scenario)</Strong></P>
+            <CodeBlock>
+{`Setup:
+- Primary US: Handles US writes
+- Primary EU: Handles EU writes
+- Primary Asia: Handles Asia writes
+- All sync with each other
+
+Write flow from Asia:
+1. User in Tokyo writes → Routes to Asia primary
+2. Local write: 10ms ✅
+3. Async replication to US + EU: background
+
+User experience:
+- US users: 10ms write latency ✅
+- EU users: 10ms write latency ✅
+- Asia users: 10ms write latency ✅
+
+Conflict resolution example:
+- User A (US) updates product price to $100
+- User B (EU) updates same product price to $105
+- Conflict! Both writes accepted locally
+- Resolution strategy:
+  → Last-write-wins (use timestamp)
+  → OR: Business logic (highest price wins for customer protection)
+  → OR: Merge (average: $102.50)
+
+Cost:
+- 3 primary databases: $3,000/mo vs $1,000/mo for leader-follower
+- Conflict resolution logic: +2 weeks dev time
+
+Result: ✅ Multi-leader is RIGHT for global, low-latency writes
+
+Trade-off: 3x cost + conflict resolution complexity vs 25x faster writes globally`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> Multi-leader costs 3x more + adds conflict resolution complexity
+              but provides 25x faster writes for global users. Worth it for global e-commerce.
+            </KeyPoint>
+          </Example>
+
+          <Example title="Real Decision: Social Media Feed (Read-Heavy)">
+            <P><Strong>Scenario:</Strong> 100M users, 10k writes/sec, 1M reads/sec (100:1 read/write ratio)</P>
+
+            <P><Strong>Option 1: Leaderless Quorum (over-engineering)</Strong></P>
+            <CodeBlock>
+{`Setup:
+- 5 nodes, W=3, R=3 (quorum: R+W>N for consistency)
+
+Write flow:
+1. Write to 3 out of 5 nodes (wait for all 3)
+2. Latency: 50ms (wait for slowest node)
+3. 10k writes/sec × 50ms = high load
+
+Read flow:
+1. Read from 3 out of 5 nodes (wait for all 3)
+2. Latency: 50ms (wait for slowest node)
+3. 1M reads/sec × 50ms = VERY high load
+4. Must compare values from 3 nodes (extra CPU)
+
+Cost:
+- 5 nodes: $2,500/mo
+- Higher latency: 50ms reads (vs 5ms with leader-follower)
+- Complex: Quorum logic, version vectors, conflict resolution
+
+Result: ❌ Leaderless is WRONG for read-heavy, latency-sensitive apps`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Leader-Follower (Correct Choice)</Strong></P>
+            <CodeBlock>
+{`Setup:
+- 1 Primary (handles all 10k writes/sec)
+- 10 Replicas (each handles 100k reads/sec)
+
+Write flow:
+1. Write to primary: 10ms
+2. Async replication to 10 replicas: background
+3. 10k writes/sec on 1 node (easy)
+
+Read flow:
+1. Read from any of 10 replicas: 5ms
+2. 1M reads/sec ÷ 10 replicas = 100k reads/sec per replica (easy)
+3. No quorum needed (simple)
+
+Cost:
+- 1 primary + 10 replicas: $1,500/mo (vs $2,500/mo for leaderless)
+- Lower latency: 5ms reads (vs 50ms)
+- Simple: Standard replication, mature tooling
+
+Result: ✅ Leader-follower is RIGHT for read-heavy apps
+
+Trade-off: Replication lag (eventual consistency) vs 10x faster reads + 40% cheaper
+
+Business decision:
+- Seeing friend's post 100ms late = acceptable
+- 5ms vs 50ms latency = better UX
+- $1,500/mo vs $2,500/mo = save $12k/year`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> Leader-follower is 10x faster for reads + 40% cheaper than leaderless
+              for read-heavy apps. Accept eventual consistency for massive performance gain.
+            </KeyPoint>
+          </Example>
+
+          <H3>Decision Framework: Choosing Replication Strategy</H3>
+          <CodeBlock>
+{`Do you need global low-latency writes? (users worldwide writing frequently)
+
+├─ YES → Multi-Leader
+│   └─ Examples: Global e-commerce, collaborative editing, CRDTs
+│   └─ Accept: Conflict resolution, 3x cost, high complexity
+│   └─ Benefit: Low write latency globally (10-20ms anywhere)
+│
+└─ NO → What's your read/write ratio?
+    │
+    ├─ Read-heavy (>10:1 read:write) → Leader-Follower
+    │   └─ Examples: Social media, blogs, content sites (90% of apps)
+    │   └─ Accept: Replication lag (eventual consistency)
+    │   └─ Benefit: Simple, cheap, fast reads, mature tooling
+    │   └─ Cost: $1,500/mo for 1 primary + 10 replicas
+    │
+    └─ Write-heavy OR need high availability → Leaderless Quorum
+        │
+        ├─ Need tunable consistency → Leaderless (Cassandra, DynamoDB)
+        │   └─ Examples: Time-series data, IoT, high availability critical
+        │   └─ Accept: Higher latency (quorum reads/writes), complexity
+        │   └─ Benefit: No single point of failure, tunable consistency
+        │   └─ Cost: $2,500/mo for 5-node cluster
+        │
+        └─ Simple use case → Leader-Follower (good enough for 90% of apps)
+            └─ Don't over-engineer! Leader-follower handles billions of users (Instagram, Twitter)`}
+          </CodeBlock>
+
+          <H3>Common Mistakes</H3>
+          <UL>
+            <LI>
+              <Strong>❌ Using multi-leader for non-global apps</Strong>
+              <UL>
+                <LI>Problem: Conflict resolution complexity for no benefit (users in one region)</LI>
+                <LI>Fix: Leader-follower is simpler and faster for single-region apps</LI>
+              </UL>
+            </LI>
+            <LI>
+              <Strong>❌ Using leaderless for read-heavy apps</Strong>
+              <UL>
+                <LI>Problem: Quorum reads are 10x slower (50ms vs 5ms)</LI>
+                <LI>Fix: Leader-follower with read replicas is faster + cheaper</LI>
+              </UL>
+            </LI>
+            <LI>
+              <Strong>❌ Not implementing read-your-writes consistency</Strong>
+              <UL>
+                <LI>Problem: User posts comment → Refreshes → Doesn't see own comment (replication lag)</LI>
+                <LI>Fix: Route user's own reads to primary (sticky sessions)</LI>
+              </UL>
+            </LI>
+          </UL>
         </Section>
       ),
     },
