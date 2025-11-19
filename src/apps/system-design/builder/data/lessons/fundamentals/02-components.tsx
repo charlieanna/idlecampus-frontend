@@ -9,9 +9,9 @@ export const componentsLesson: SystemDesignLesson = {
   id: 'sd-components',
   slug: 'basic-components',
   title: 'Basic Components',
-  description: 'Master the fundamental building blocks: clients, servers, databases, caches, and load balancers through focused practice',
+  description: 'Master component trade-offs: WHEN to scale horizontally vs vertically, WHICH load balancing algorithm to use, WHETHER to add cache vs database replicas',
   difficulty: 'beginner',
-  estimatedMinutes: 50, // Increased due to focused mini-exercises
+  estimatedMinutes: 60, // Increased due to trade-off content
   category: 'fundamentals',
   tags: ['components', 'architecture', 'basics'],
   prerequisites: ['what-is-system-design'],
@@ -892,6 +892,229 @@ Result: All traffic goes to Server1 and Server2`}
             <LI><Strong>Health check interval:</Strong> How often to check servers</LI>
             <LI><Strong>Sticky sessions:</Strong> Send same user to same server (usually avoid)</LI>
           </UL>
+
+          <Divider />
+
+          <H2>🎯 Critical Decision: Which Load Balancing Algorithm?</H2>
+
+          <ComparisonTable
+            headers={['Scenario', 'Best Algorithm', 'Why?', 'Avoid']}
+            rows={[
+              [
+                'All servers same specs\nShort HTTP requests\n(REST API)',
+                'Round Robin',
+                '• Simple, fair distribution\n• Works great when servers identical\n• Low overhead',
+                '❌ Weighted (unnecessary complexity)\n❌ Least-conn (overkill for short requests)'
+              ],
+              [
+                'Different server sizes\n(New servers 2x CPU)',
+                'Weighted Round Robin',
+                '• Send 2x traffic to 2x CPU servers\n• Efficient use of resources\n• Prevents overloading weak servers',
+                '❌ Round robin (overloads weak servers)\n❌ Random (uneven distribution)'
+              ],
+              [
+                'Long-lived connections\n(WebSockets, streaming)',
+                'Least Connections',
+                '• Tracks active connections per server\n• Prevents one server from getting all long requests\n• Balances actual load, not just request count',
+                '❌ Round robin (Server1 gets 10 long connections, Server2 gets 0)'
+              ],
+              [
+                'Variable request times\n(Some 10ms, some 1000ms)',
+                'Least Connections',
+                '• Servers finish slow requests go to "least connections"\n• Self-balancing based on actual load',
+                '❌ Round robin (Server1 processing 10 slow requests while Server2 idle)'
+              ]
+            ]}
+          />
+
+          <Example title="Real-World Scenario: E-commerce Flash Sale">
+            <P><Strong>Setup:</Strong> 5 app servers, 3 are new (4 CPU cores), 2 are old (2 CPU cores)</P>
+
+            <P><Strong>❌ WRONG: Round-Robin (sends equal traffic to all servers)</Strong></P>
+            <CodeBlock>
+{`Round robin: Each server gets 20% traffic
+- New servers (4 cores): 20% utilization → wasted capacity
+- Old servers (2 cores): 80% utilization → overloaded, slow responses
+
+Result: p99 latency = 500ms because old servers are bottleneck`}
+            </CodeBlock>
+
+            <P><Strong>✅ RIGHT: Weighted Round-Robin (weight by CPU)</Strong></P>
+            <CodeBlock>
+{`Weighted config:
+- New servers (4 cores): weight = 2
+- Old servers (2 cores): weight = 1
+
+Traffic distribution:
+- 3 new servers: 2+2+2 = 6 parts = 60% traffic
+- 2 old servers: 1+1 = 2 parts = 20% traffic
+
+Result: All servers at 60% utilization, p99 latency = 50ms`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> Weighted is more complex to configure (must know server specs), but 10x better performance when servers differ.
+            </KeyPoint>
+          </Example>
+
+          <Divider />
+
+          <H2>🎯 Critical Decision: Horizontal vs Vertical Scaling</H2>
+
+          <ComparisonTable
+            headers={['Factor', 'Horizontal (Add Servers)', 'Vertical (Bigger Server)', 'Winner']}
+            rows={[
+              ['Max capacity', 'Unlimited (add more)', 'Limited (64 cores max)', 'Horizontal'],
+              ['High availability', 'Yes (10 servers, 1 fails = 90% up)', 'No (1 server fails = 100% down)', 'Horizontal'],
+              ['Cost (short-term)', '$1000/mo (10×$100)', '$800/mo (1×$800)', 'Vertical'],
+              ['Cost (long-term)', 'Scales linearly', 'Gets expensive (16 cores = 4x cost)', 'Horizontal'],
+              ['Complexity', 'High (load balancer, distributed state)', 'Low (single machine)', 'Vertical'],
+              ['Latency', 'Slower (network hops)', 'Faster (local memory)', 'Vertical'],
+              ['Deploy speed', 'Slow (add server, wait 5-10 min)', 'Medium (restart with more RAM)', 'Vertical'],
+              ['Database friendly', 'Hard (sharding complex)', 'Easy (single DB, no sharding)', 'Vertical']
+            ]}
+          />
+
+          <H3>Decision Tree:</H3>
+          <CodeBlock>
+{`
+Can you fit on one big server (<10,000 RPS, <100GB RAM)?
+├─ YES → Start with Vertical scaling (simpler)
+│   └─ Scale up as you grow (2 cores → 4 cores → 8 cores)
+│
+└─ NO → Need Horizontal scaling
+    │
+    ├─ >10,000 RPS → Need multiple servers for capacity
+    ├─ Need HA → Can't rely on single server
+    └─ Outgrew biggest server → Must distribute load
+
+**Best practice:** Start vertical, switch to horizontal when:
+- Traffic >10,000 RPS (single server can't handle)
+- Need 99.9%+ uptime (high availability required)
+- Cost of big server >3x cost of smaller servers
+`}
+          </CodeBlock>
+
+          <Example title="Scaling Timeline: Typical Startup">
+            <P><Strong>Month 1-3: Vertical scaling</Strong></P>
+            <UL>
+              <LI>Start: 1 server, 2 cores, 4GB RAM → 500 RPS capacity</LI>
+              <LI>Growth: Upgrade to 4 cores, 8GB RAM → 2,000 RPS</LI>
+              <LI>Cost: $100/mo</LI>
+              <LI>Complexity: Low (single server, easy to debug)</LI>
+            </UL>
+
+            <P><Strong>Month 4-6: Hit vertical limits</Strong></P>
+            <UL>
+              <LI>Traffic: 8,000 RPS (server at 80% CPU)</LI>
+              <LI>Upgrade to 16 cores, 32GB RAM → $800/mo</LI>
+              <LI>Problem: Still single point of failure!</LI>
+            </UL>
+
+            <P><Strong>Month 7+: Switch to horizontal</Strong></P>
+            <UL>
+              <LI>Add load balancer + 4 servers (4 cores each)</LI>
+              <LI>Capacity: 4 × 2,000 RPS = 8,000 RPS total</LI>
+              <LI>Cost: $400/mo for servers + $50/mo LB = $450/mo (cheaper!)</LI>
+              <LI>Benefit: 1 server fails → 75% capacity remains (HA)</LI>
+            </UL>
+
+            <KeyPoint>
+              <Strong>Trade-off made:</Strong> Accepted complexity (load balancer, distributed system) to gain high availability and lower cost.
+            </KeyPoint>
+          </Example>
+
+          <Divider />
+
+          <H2>🎯 Critical Decision: Add Cache or Database Replicas?</H2>
+
+          <P>When your database is overloaded, you have two options. Which do you choose?</P>
+
+          <ComparisonTable
+            headers={['Solution', 'Use When', 'Avoid When', 'Cost', 'Benefit']}
+            rows={[
+              [
+                'Add Cache\n(Redis)',
+                '• Read-heavy (90%+ reads)\n• Same data read repeatedly\n• Staleness acceptable\n• Small dataset (<100GB)',
+                '• Write-heavy workload\n• Strong consistency needed\n• Unique queries (no cache hits)',
+                '$100-300/mo',
+                '10-100x speedup\n20x fewer DB queries'
+              ],
+              [
+                'Add Read Replicas\n(DB copies)',
+                '• Need strong consistency\n• Complex SQL queries\n• Large dataset (>100GB)\n• Can't accept staleness',
+                '• Write-heavy workload\n• Simple key-value lookups\n• Budget constrained',
+                '$300-1000/mo per replica',
+                '3-5x more read capacity\nStrong consistency'
+              ]
+            ]}
+          />
+
+          <H3>Decision Matrix:</H3>
+
+          <ComparisonTable
+            headers={['Scenario', 'Add Cache?', 'Add Replicas?', 'Why?']}
+            rows={[
+              [
+                'Product catalog\n10k reads/sec\n10 writes/sec',
+                '✅ YES (Redis)',
+                '❌ NO',
+                'Read-heavy (1000:1 ratio) → Cache hit rate will be 95%+, reduces DB load 20x for $100/mo'
+              ],
+              [
+                'Analytics dashboard\nComplex SQL JOINs\n1-hour staleness OK',
+                '✅ YES (Redis)',
+                '❌ NO',
+                'Pre-compute results, cache for 1 hour → Even complex queries served in <5ms'
+              ],
+              [
+                'Bank transactions\nNeed real-time balance\nStrong consistency required',
+                '❌ NO',
+                '✅ YES (Replicas)',
+                'Can\'t accept stale data for financial transactions → Need real-time reads from DB'
+              ],
+              [
+                'Social media feed\nPersonalized per user\nEach query unique',
+                '❌ NO',
+                '✅ YES (Replicas)',
+                'Every user has different feed → Low cache hit rate (<10%) → Replicas better'
+              ]
+            ]}
+          />
+
+          <Example title="Real Decision: E-commerce Site">
+            <P><Strong>Problem:</Strong> Database at 90% CPU, 10,000 read queries/sec</P>
+
+            <P><Strong>Analysis:</Strong></P>
+            <UL>
+              <LI>Traffic breakdown: 8,000 product views/sec, 2,000 unique queries/sec</LI>
+              <LI>80% of reads are for top 20% products (classic 80/20 distribution)</LI>
+              <LI>Product data changes 1x/hour (new arrivals, price updates)</LI>
+            </UL>
+
+            <P><Strong>Solution: Add Redis cache with 60s TTL</Strong></P>
+
+            <CodeBlock>
+{`Before (no cache):
+- Database: 10,000 queries/sec
+- Database CPU: 90% (near limit)
+- p99 latency: 50ms
+
+After (with Redis cache):
+- Cache hit rate: 80% (for popular products)
+- Cache serves: 8,000 queries/sec
+- Database serves: 2,000 queries/sec
+- Database CPU: 20% (comfortable!)
+- p99 latency: 5ms (10x faster)
+
+Cost: $150/mo for Redis vs $800/mo for 3 read replicas
+Savings: $650/mo`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> Accepted 60s staleness (price changes take 1 min to show) for 10x better performance and 5x cost savings.
+            </KeyPoint>
+          </Example>
         </Section>
       ),
       keyPoints: [
