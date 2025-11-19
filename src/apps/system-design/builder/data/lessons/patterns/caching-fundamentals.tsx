@@ -8,10 +8,10 @@ export const cachingFundamentalsLesson: SystemDesignLesson = {
   id: 'caching-fundamentals',
   slug: 'caching-fundamentals',
   title: 'Caching Fundamentals',
-  description: 'Master caching patterns through theory, real-world examples, and hands-on practice',
+  description: 'Master caching patterns and trade-offs: Learn WHEN to use Redis vs Memcached vs CDN, WHEN to cache vs not cache, and HOW to choose the right strategy',
   category: 'patterns',
   difficulty: 'intermediate',
-  estimatedMinutes: 60, // Increased due to practice exercises
+  estimatedMinutes: 75, // Increased due to practice exercises + trade-off content
 
   // NEW: Connect to challenges
   relatedChallenges: ['tiny_url', 'social-feed', 'e-commerce'],
@@ -321,6 +321,269 @@ Read Flow:
               ]
             ]}
           />
+
+          <Divider />
+
+          <H2>🎯 Critical Decision: Redis vs Memcached vs CDN Cache</H2>
+
+          <P>Choosing the right caching technology is just as important as choosing the right pattern.</P>
+
+          <ComparisonTable
+            headers={['Technology', 'Best For', 'Avoid When', 'Cost/mo @ 10k RPS', 'Complexity']}
+            rows={[
+              [
+                'Redis',
+                '• Need data structures (lists, sets, sorted sets)\n• Need pub/sub messaging\n• Need persistence\n• Application cache (<100GB)',
+                '• Simple key-value only\n• Data >1TB\n• Extremely cost-sensitive\n• Don\'t need persistence',
+                '$100-300',
+                'Medium'
+              ],
+              [
+                'Memcached',
+                '• Simple key-value cache\n• Multi-threaded workload\n• Cost-sensitive\n• Session storage',
+                '• Need data structures\n• Need persistence\n• Need pub/sub\n• Need replication',
+                '$50-150',
+                'Low'
+              ],
+              [
+                'CDN (CloudFront/Cloudflare)',
+                '• Static assets (images, CSS, JS)\n• Geographically distributed users\n• Public content\n• Video streaming',
+                '• Dynamic content\n• Personalized data\n• Frequent updates (<1 min)\n• Private user data',
+                '$50-200 (+ bandwidth)',
+                'Low'
+              ],
+              [
+                'Application memory (in-process)',
+                '• Very small data (<100MB)\n• Ultra-low latency (<0.1ms)\n• Configuration data\n• Single-server deployments',
+                '• Need sharing across servers\n• Data >1GB\n• Need persistence\n• Horizontal scaling',
+                '$0 (included)',
+                'Very Low'
+              ]
+            ]}
+          />
+
+          <H3>Decision Tree:</H3>
+          <CodeBlock>
+{`
+What type of data are you caching?
+
+Static assets (images, videos, CSS, JS)?
+├─ YES → Use CDN (CloudFront, Cloudflare)
+│   └─ $0.085/GB, global edge locations, built for static content
+│
+└─ NO → Is data user-specific or dynamic?
+    │
+    ├─ How big is your dataset?
+    │   ├─ <100MB AND single server → In-process cache (Map, LRU)
+    │   ├─ <100GB AND need simple key-value → Memcached
+    │   └─ <100GB AND need data structures → Redis
+    │
+    └─ Do you need special features?
+        ├─ Need pub/sub? → Redis
+        ├─ Need persistence? → Redis
+        ├─ Need sorted sets/leaderboards? → Redis
+        └─ Just simple key-value? → Memcached (cheaper, simpler)
+`}
+          </CodeBlock>
+
+          <Example title="Real-World Example: E-Commerce Site">
+            <P><Strong>Scenario:</Strong> Building an e-commerce site like Amazon</P>
+
+            <P><Strong>Cache Strategy (use multiple cache layers!):</Strong></P>
+            <UL>
+              <LI><Strong>CDN (CloudFront):</Strong> Product images, CSS, JavaScript files → Reduces bandwidth costs by 80%</LI>
+              <LI><Strong>Redis:</Strong> Product catalog, inventory counts, shopping cart sessions → Fast lookups with data structures</LI>
+              <LI><Strong>In-process cache:</Strong> Category navigation, site configuration → Ultra-fast, rarely changes</LI>
+            </UL>
+
+            <P><Strong>Why this mix?</Strong></P>
+            <UL>
+              <LI>CDN for static assets → $0.085/GB vs $0.50+/GB from origin</LI>
+              <LI>Redis for dynamic data → Need sorted sets for "trending products", hash for cart items</LI>
+              <LI>In-process for config → No network call, &lt;0.1ms latency</LI>
+            </UL>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> Multiple cache layers = more complexity, but optimizes cost and performance for each data type.
+            </KeyPoint>
+          </Example>
+
+          <Divider />
+
+          <H2>🎯 Critical Decision: When to Cache vs When NOT to Cache</H2>
+
+          <P>Caching isn't always the answer. Sometimes it makes things worse.</P>
+
+          <ComparisonTable
+            headers={['Scenario', 'Should Cache?', 'Why / Why Not']}
+            rows={[
+              [
+                'Product catalog (read 1000x/sec, update 1x/hour)',
+                '✅ YES',
+                'Read-heavy, infrequent updates → Perfect for cache-aside. 99.9% cache hit rate.'
+              ],
+              [
+                'Stock prices (change every second)',
+                '❌ NO',
+                'Data changes faster than you read it → Cache is always stale. Use optimized DB queries instead.'
+              ],
+              [
+                'User session data',
+                '✅ YES',
+                'Accessed on every request → Redis with 30-min TTL. Reduces DB load by 100x.'
+              ],
+              [
+                'Database query that takes 2ms',
+                '❌ NO',
+                'Already fast → Adding cache adds complexity (1ms network + 1ms Redis = same 2ms). Not worth it.'
+              ],
+              [
+                'Video thumbnails',
+                '✅ YES (CDN)',
+                'Static, never change → CDN caching with 1-year TTL. Saves 90% bandwidth costs.'
+              ],
+              [
+                'Real-time chat messages',
+                '❌ NO',
+                'Need immediate consistency → Caching adds latency and staleness. Use optimized pub/sub instead.'
+              ],
+              [
+                'Analytics dashboards (1-hour old data OK)',
+                '✅ YES',
+                'Expensive queries, staleness acceptable → Pre-compute and cache for 1 hour. Reduces DB load 3600x.'
+              ],
+              [
+                'Bank account balance',
+                '❌ MAYBE',
+                'Depends: Read-only view? Cache with 30s TTL. Transaction? Never cache (need strong consistency).'
+              ]
+            ]}
+          />
+
+          <KeyPoint>
+            <Strong>Rule of Thumb - Cache When:</Strong>
+            <UL>
+              <LI>Read:Write ratio &gt; 10:1 (read-heavy)</LI>
+              <LI>Data doesn't change often (or staleness is acceptable)</LI>
+              <LI>Query is slow (&gt;10ms) and repeated frequently</LI>
+              <LI>Cost savings justify complexity</LI>
+            </UL>
+          </KeyPoint>
+
+          <KeyPoint>
+            <Strong>DON'T Cache When:</Strong>
+            <UL>
+              <LI>Data changes faster than it's read (write-heavy)</LI>
+              <LI>Strong consistency required (financial transactions)</LI>
+              <LI>Query is already fast (&lt;5ms)</LI>
+              <LI>Data is unique per request (can't share cache)</LI>
+            </UL>
+          </KeyPoint>
+
+          <Divider />
+
+          <H2>❌ When NOT to Use Cache-Aside (Anti-Patterns)</H2>
+
+          <Example title="Anti-Pattern 1: Caching Rapidly Changing Data">
+            <P><Strong>❌ WRONG: Cache-aside for stock prices with 60s TTL</Strong></P>
+
+            <CodeBlock language="typescript">
+{`// ❌ DANGEROUS: Stock prices change every second!
+async function getStockPrice(symbol: string) {
+  const cached = await redis.get(\`price:\${symbol}\`);
+  if (cached) return cached; // Could be 60 seconds old!
+
+  const price = await db.getPrice(symbol);
+  await redis.set(\`price:\${symbol}\`, price, 'EX', 60);
+  return price;
+}
+
+// User sees $100, clicks buy, actual price is $105 → LAWSUIT`}
+            </CodeBlock>
+
+            <P><Strong>Why this fails:</Strong></P>
+            <UL>
+              <LI>Stock prices change every millisecond</LI>
+              <LI>Even 1-second staleness is unacceptable</LI>
+              <LI>Users make financial decisions based on stale data</LI>
+            </UL>
+
+            <P><Strong>✅ RIGHT: Use write-through or don't cache</Strong></P>
+
+            <CodeBlock language="typescript">
+{`// ✅ OPTION 1: Write-through (cache always fresh)
+async function updateStockPrice(symbol: string, newPrice: number) {
+  await Promise.all([
+    redis.set(\`price:\${symbol}\`, newPrice), // Update cache
+    db.updatePrice(symbol, newPrice)          // Update DB
+  ]);
+}
+
+// ✅ OPTION 2: Don't cache, optimize DB instead
+// Use materialized views, read replicas, proper indexes`}
+            </CodeBlock>
+          </Example>
+
+          <Example title="Anti-Pattern 2: Caching Without User Segmentation">
+            <P><Strong>❌ WRONG: Same cache key for all users</Strong></P>
+
+            <CodeBlock language="typescript">
+{`// ❌ PRIVACY BREACH: Everyone gets same cached data!
+async function getHomepage() {
+  const cached = await redis.get('homepage');
+  if (cached) return cached;
+
+  const homepage = await generatePersonalizedFeed(currentUser);
+  await redis.set('homepage', homepage, 'EX', 300);
+  return homepage;
+}
+
+// User A logs in → sees their feed → cached
+// User B logs in → gets User A's feed → PRIVACY VIOLATION!`}
+            </CodeBlock>
+
+            <P><Strong>✅ RIGHT: Include user ID in cache key</Strong></P>
+
+            <CodeBlock language="typescript">
+{`// ✅ CORRECT: User-specific cache key
+async function getHomepage(userId: string) {
+  const cacheKey = \`homepage:\${userId}\`;
+  const cached = await redis.get(cacheKey);
+  if (cached) return cached;
+
+  const homepage = await generatePersonalizedFeed(userId);
+  await redis.set(cacheKey, homepage, 'EX', 300);
+  return homepage;
+}`}
+            </CodeBlock>
+          </Example>
+
+          <Example title="Anti-Pattern 3: Caching Already-Fast Queries">
+            <P><Strong>❌ WRONG: Caching a 2ms query</Strong></P>
+
+            <P><Strong>Analysis:</Strong></P>
+            <CodeBlock>
+{`Database query: 2ms (with proper index)
+Network to Redis: 1ms
+Redis lookup: 1ms
+Total with cache: 2ms
+
+Cache doesn't help! Just adds complexity for zero benefit.`}
+            </CodeBlock>
+
+            <P><Strong>✅ RIGHT: Only cache slow queries (&gt;10ms)</Strong></P>
+          </Example>
+
+          <KeyPoint>
+            <Strong>Summary: When NOT to Use Caching</Strong>
+            <UL>
+              <LI><Strong>Rapidly changing data:</Strong> Stock prices, live sports scores → Use optimized DB or pub/sub</LI>
+              <LI><Strong>User-specific data without segmentation:</Strong> Always include userId in cache key</LI>
+              <LI><Strong>Already-fast queries:</Strong> If DB query &lt;5ms, caching won't help</LI>
+              <LI><Strong>Write-heavy workloads:</Strong> If writes &gt; reads, cache-aside hurts performance</LI>
+              <LI><Strong>Strong consistency required:</Strong> Financial transactions → Use write-through or no cache</LI>
+            </UL>
+          </KeyPoint>
         </Section>
       ),
     },
@@ -1336,6 +1599,237 @@ cache.set('shopping-cart:user:' + userId, userCart);
           </InfoBox>
         </Section>
       ),
+    },
+
+    // NEW: Trade-Off Decision Quiz
+    {
+      id: 'tradeoff-quiz-caching',
+      type: 'quiz',
+      title: 'Trade-Off Exercise: Choose the Right Cache Strategy',
+      description: 'Test your ability to make caching trade-off decisions',
+      estimatedMinutes: 8,
+      questions: [
+        {
+          id: 'cache-tech-choice-1',
+          question: `**Scenario:** You're building a notification system that sends push notifications to mobile apps.
+
+**Requirements:**
+- 10,000 notifications/second
+- Must be fast (<50ms processing time)
+- If notification fails, retry 3 times then discard
+- Don't need to replay old notifications
+
+**Which queue/cache should you use?**`,
+          options: [
+            'Kafka (durable, can replay events, high throughput)',
+            'Redis List (simple, fast, ephemeral)',
+            'RabbitMQ (reliable delivery with acknowledgment)',
+            'Memcached (simple key-value cache)'
+          ],
+          correctAnswer: 'Redis List (simple, fast, ephemeral)',
+          explanation: `**Correct: Redis List**
+
+**Why Redis List wins:**
+- ✅ Fast (<10ms latency, well under 50ms requirement)
+- ✅ Simple to set up (no ZooKeeper, no complex config)
+- ✅ Ephemeral data is fine (don't need to replay notifications)
+- ✅ Low cost (~$100/mo vs $500+ for Kafka)
+- ✅ Built-in retry (BRPOPLPUSH for safe retries)
+
+**Why NOT Kafka:**
+- ❌ Overkill - you don't need event replay
+- ❌ Higher latency (5-50ms just for queue operations)
+- ❌ Complex setup (ZooKeeper + brokers + consumer groups)
+- ❌ 5-10x more expensive for this use case
+
+**Why NOT RabbitMQ:**
+- ❌ Slower than Redis (10-100ms typical latency)
+- ❌ More complex than needed for simple queue
+
+**Why NOT Memcached:**
+- ❌ Not designed for queues (just key-value cache)
+- ❌ No list/queue data structures
+
+**Trade-off made:** Chose simplicity + speed over durability (acceptable since notifications are ephemeral).`
+        },
+        {
+          id: 'cache-tech-choice-2',
+          question: `**Scenario:** E-commerce product catalog with:
+- 100,000 products
+- Read 10,000 times/sec
+- Updated 10 times/sec (new products, price changes)
+- Need <20ms latency
+- Staleness up to 60 seconds is acceptable
+
+**Which caching strategy?**`,
+          options: [
+            'Cache-aside with Redis, 60s TTL',
+            'Write-through with Redis (update cache + DB together)',
+            'Write-behind with Redis (async DB writes)',
+            'No caching - use optimized database queries'
+          ],
+          correctAnswer: 'Cache-aside with Redis, 60s TTL',
+          explanation: `**Correct: Cache-aside with Redis, 60s TTL**
+
+**Why cache-aside wins:**
+- ✅ Read-heavy (10,000 reads vs 10 writes = 1000:1 ratio)
+- ✅ Staleness acceptable (60s TTL is fine for product catalog)
+- ✅ Simple to implement (app controls cache population)
+- ✅ Database fallback on cache miss (resilient)
+- ✅ Cost-effective (cache hit rate will be ~95%+)
+
+**Analysis:**
+- 95% cache hit → Only 500 DB queries/sec (vs 10,000 without cache)
+- Database load reduced 20x
+- Latency: 2ms (cache) vs 20ms (DB)
+
+**Why NOT write-through:**
+- ❌ Overkill - you don't need immediate consistency
+- ❌ Every write updates cache + DB (slower writes)
+- ❌ More complex for no benefit (staleness is acceptable)
+
+**Why NOT write-behind:**
+- ❌ Risk of data loss (cache crashes before DB write)
+- ❌ Way too complex for this use case
+
+**Why NOT "no caching":**
+- ❌ Database would handle 10,000 reads/sec (expensive, slow)
+- ❌ Higher latency (20ms vs 2ms)
+
+**Trade-off made:** Chose eventual consistency (60s stale) for 10x better performance and 20x lower cost.`
+        },
+        {
+          id: 'cache-pattern-choice',
+          question: `**Scenario:** Banking app showing account balance.
+
+**Requirements:**
+- User checks balance 50 times/day
+- Transactions happen 2 times/day
+- Balance must be accurate for transactions
+- Balance view can be 30s stale (for non-transaction reads)
+
+**Which caching strategy?**`,
+          options: [
+            'Cache-aside for all reads (30s TTL)',
+            'Write-through for transactions, cache-aside for balance views',
+            'Write-through for everything (always consistent)',
+            'No caching (too risky for financial data)'
+          ],
+          correctAnswer: 'Write-through for transactions, cache-aside for balance views',
+          explanation: `**Correct: Write-through for transactions, cache-aside for balance views**
+
+**Why this hybrid approach wins:**
+- ✅ Transactions need strong consistency → write-through (cache + DB updated together)
+- ✅ Balance views can be stale → cache-aside with 30s TTL (faster, cheaper)
+- ✅ Best of both worlds: accuracy when needed, speed for reads
+
+**Implementation:**
+\`\`\`typescript
+// For transactions: write-through (strong consistency)
+async function makeTransaction(accountId, amount) {
+  const newBalance = currentBalance - amount;
+  await Promise.all([
+    redis.set(\`balance:\${accountId}\`, newBalance),
+    db.updateBalance(accountId, newBalance)
+  ]);
+}
+
+// For balance view: cache-aside (eventual consistency OK)
+async function getBalance(accountId) {
+  const cached = await redis.get(\`balance:\${accountId}\`);
+  if (cached) return cached;
+
+  const balance = await db.getBalance(accountId);
+  await redis.set(\`balance:\${accountId}\`, balance, 'EX', 30);
+  return balance;
+}
+\`\`\`
+
+**Why NOT cache-aside for everything:**
+- ❌ Transaction reads could see stale data
+- ❌ User withdraws $100, balance shows old amount → overdraft!
+
+**Why NOT write-through for everything:**
+- ❌ Overkill - balance views don't need strong consistency
+- ❌ Slower reads (always check cache freshness)
+- ❌ More complex than needed for read-only views
+
+**Why NOT no caching:**
+- ❌ Database would handle 50 balance checks/day per user
+- ❌ Unnecessary load when staleness is acceptable for views
+
+**Trade-off made:** Hybrid strategy optimizes for accuracy where needed (transactions) and speed where acceptable (balance views).`
+        },
+        {
+          id: 'redis-vs-memcached',
+          question: `**Scenario:** Building a leaderboard for a mobile game showing top 100 players.
+
+**Requirements:**
+- Update scores 1000 times/sec
+- Query top 100 players 5000 times/sec
+- Need sorted ranking (1st, 2nd, 3rd, etc.)
+- Must be real-time (<100ms staleness)
+
+**Which cache technology?**`,
+          options: [
+            'Redis (has sorted sets for rankings)',
+            'Memcached (simple and fast)',
+            'PostgreSQL with caching (use materialized views)',
+            'In-process cache (fast, no network)'
+          ],
+          correctAnswer: 'Redis (has sorted sets for rankings)',
+          explanation: `**Correct: Redis with Sorted Sets**
+
+**Why Redis wins:**
+- ✅ Has SORTED SETS data structure (perfect for leaderboards!)
+- ✅ O(log N) insert/update with \`ZADD\`
+- ✅ O(log N) range queries with \`ZRANGE\` (get top 100)
+- ✅ Atomic operations (no race conditions)
+- ✅ Real-time updates (<1ms latency)
+
+**Redis Implementation:**
+\`\`\`typescript
+// Update score (O(log N) - very fast)
+await redis.zadd('leaderboard', score, playerId);
+
+// Get top 100 (O(log N + 100) - very fast)
+const top100 = await redis.zrange(
+  'leaderboard',
+  0,
+  99,
+  'WITHSCORES',
+  'REV' // Reverse order (highest first)
+);
+
+// Get player rank (O(log N))
+const rank = await redis.zrevrank('leaderboard', playerId);
+\`\`\`
+
+**Why NOT Memcached:**
+- ❌ No sorted set data structure
+- ❌ Would need to maintain sorted array manually (slow!)
+- ❌ Race conditions with concurrent updates
+
+**Why NOT PostgreSQL:**
+- ❌ Too slow (20ms+ for queries vs <1ms for Redis)
+- ❌ High write load would kill performance
+- ❌ Would need manual caching layer anyway
+
+**Why NOT in-process cache:**
+- ❌ Can't share across multiple app servers
+- ❌ Each server would have different leaderboard (inconsistent!)
+- ❌ Doesn't scale horizontally
+
+**Trade-off made:** Redis complexity is worth it for built-in sorted set data structure (vs manual implementation with Memcached).`
+        }
+      ],
+      keyPoints: [
+        'Choose technology based on requirements, not familiarity',
+        'Redis for data structures (lists, sets, sorted sets), Memcached for simple key-value',
+        'Cache-aside for read-heavy + staleness OK, write-through for consistency required',
+        'Hybrid strategies (mixing patterns) optimize for different access patterns',
+        'Always analyze: Read/write ratio, latency requirements, consistency needs, cost'
+      ]
     },
 
     // NEW: Connection to challenges and next steps
