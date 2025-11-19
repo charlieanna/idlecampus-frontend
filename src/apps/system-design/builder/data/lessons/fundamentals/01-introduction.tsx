@@ -8,9 +8,9 @@ export const introductionLesson: SystemDesignLesson = {
   id: 'sd-introduction',
   slug: 'what-is-system-design',
   title: 'What is System Design?',
-  description: 'Master the fundamentals of system design: components, trade-offs, and requirements gathering through interactive exercises',
+  description: 'Learn trade-off thinking: The heart of system design. Understand WHEN to choose speed vs freshness, simple vs scalable, consistency vs availability',
   difficulty: 'beginner',
-  estimatedMinutes: 45, // Increased due to mini-exercises
+  estimatedMinutes: 50, // Increased due to comprehensive trade-off content
   category: 'fundamentals',
   tags: ['introduction', 'basics', 'overview'],
   prerequisites: [],
@@ -629,6 +629,269 @@ This handles the scale. Should I dive deeper into ID generation?"`}
         'Understanding terminology helps communicate designs',
         'Metrics help quantify system requirements',
         'Patterns are reusable solutions to common problems',
+      ],
+    },
+
+    // NEW: Trade-Off Thinking Section
+    {
+      id: 'tradeoff-thinking',
+      type: 'concept',
+      title: 'Trade-Off Thinking: The Heart of System Design',
+      description: 'Learn to make informed trade-off decisions',
+      estimatedMinutes: 8,
+      content: (
+        <Section>
+          <H1>Trade-Off Thinking: The Heart of System Design</H1>
+
+          <P>
+            <Strong>The most important lesson in system design:</Strong> There is no perfect system. Every decision is a trade-off.
+          </P>
+
+          <KeyPoint>
+            <Strong>Core principle:</Strong> You can't optimize for everything. When you gain something, you give up something else.
+          </KeyPoint>
+
+          <Divider />
+
+          <H2>The Classic Trade-Offs</H2>
+
+          <ComparisonTable
+            headers={['Trade-Off', 'Option A', 'Option B', 'Choose Based On']}
+            rows={[
+              [
+                'Speed vs Freshness',
+                'Cache (fast, stale data)',
+                'Database (slow, fresh data)',
+                'Can users tolerate 60s stale data?'
+              ],
+              [
+                'Consistency vs Availability',
+                'CP: Always consistent, may go down',
+                'AP: Always available, may be inconsistent',
+                'Is downtime worse than stale data?'
+              ],
+              [
+                'Simple vs Scalable',
+                'Single server (simple, limited scale)',
+                'Distributed (complex, unlimited scale)',
+                'Do you have <10k RPS or >100k RPS?'
+              ],
+              [
+                'Cost vs Performance',
+                'Cheap (slow, limited resources)',
+                'Expensive (fast, ample resources)',
+                'What\'s your budget vs performance needs?'
+              ],
+              [
+                'Build vs Buy',
+                'Build (flexible, time-consuming)',
+                'Buy/SaaS (quick, vendor lock-in)',
+                'Do you need customization or speed-to-market?'
+              ]
+            ]}
+          />
+
+          <Divider />
+
+          <H2>🎯 Example: Adding a Cache</H2>
+
+          <P><Strong>Decision:</Strong> Should I add Redis cache to my application?</P>
+
+          <Example title="What You Gain">
+            <UL>
+              <LI>✅ <Strong>Speed:</Strong> 10-50x faster reads (2ms vs 20ms)</LI>
+              <LI>✅ <Strong>Database relief:</Strong> 90% fewer database queries</LI>
+              <LI>✅ <Strong>Better UX:</Strong> Pages load faster</LI>
+              <LI>✅ <Strong>Cost savings:</Strong> Can use smaller database</LI>
+            </UL>
+          </Example>
+
+          <Example title="What You Give Up">
+            <UL>
+              <LI>❌ <Strong>Freshness:</Strong> Data may be stale (cache not updated immediately)</LI>
+              <LI>❌ <Strong>Complexity:</Strong> Cache invalidation is hard ("2 hard problems in CS")</LI>
+              <LI>❌ <Strong>Cost:</Strong> Redis server costs $100-500/mo</LI>
+              <LI>❌ <Strong>Memory:</Strong> Cache takes RAM, limited capacity</LI>
+              <LI>❌ <Strong>Failure mode:</Strong> If cache crashes, system slower</LI>
+            </UL>
+          </Example>
+
+          <P><Strong>Decision framework:</Strong></P>
+          <CodeBlock>
+{`If (read-heavy workload AND staleness acceptable AND have budget):
+    → Add cache (gains outweigh costs)
+Else:
+    → Don't add cache (costs outweigh gains)`}
+          </CodeBlock>
+
+          <Divider />
+
+          <H2>🎯 Example: Horizontal vs Vertical Scaling</H2>
+
+          <P><Strong>Decision:</Strong> Traffic growing from 5k RPS to 20k RPS. How to scale?</P>
+
+          <ComparisonTable
+            headers={['Factor', 'Vertical (Bigger Server)', 'Horizontal (More Servers)', 'Winner?']}
+            rows={[
+              ['Max capacity', 'Limited (64 cores max)', 'Unlimited (add servers)', 'Horizontal'],
+              ['Implementation time', 'Fast (restart with more RAM)', 'Slow (setup LB, distribute)', 'Vertical'],
+              ['Cost @ 20k RPS', '$800/mo (single big server)', '$600/mo (6 small servers)', 'Horizontal'],
+              ['Complexity', 'Low (single machine)', 'High (distributed state)', 'Vertical'],
+              ['High Availability', 'No (single point of failure)', 'Yes (1 server fails = 83% up)', 'Horizontal'],
+              ['When to fail?', 'Works until 64 cores (then stuck)', 'Works forever (keep adding)', 'Horizontal']
+            ]}
+          />
+
+          <P><Strong>The Trade-Off:</Strong></P>
+          <UL>
+            <LI><Strong>Short-term:</Strong> Vertical scaling wins (faster, simpler, cheaper)</LI>
+            <LI><Strong>Long-term:</Strong> Horizontal scaling wins (unlimited capacity, HA, no ceiling)</LI>
+          </UL>
+
+          <KeyPoint>
+            <Strong>Real-world approach:</Strong> Start vertical (simpler), switch to horizontal when you hit limits (~10k RPS) or need HA. Don't over-engineer early!
+          </KeyPoint>
+
+          <Divider />
+
+          <H2>🎯 Example: Strong vs Eventual Consistency</H2>
+
+          <P><Strong>Scenario:</Strong> Social media app with user profile photos</P>
+
+          <ComparisonTable
+            headers={['Approach', 'User Experience', 'Performance', 'Cost']}
+            rows={[
+              [
+                'Strong Consistency\n(Wait for all replicas)',
+                'User always sees latest photo\n(Refresh = latest)',
+                'Slow writes (110ms)\nWait for sync',
+                'High\n(synchronous replication)'
+              ],
+              [
+                'Eventual Consistency\n(Update replicas async)',
+                'User might see old photo for 1-2 sec\n(Then latest)',
+                'Fast writes (10ms)\nNo waiting',
+                'Low\n(async replication)'
+              ]
+            ]}
+          />
+
+          <P><Strong>The Trade-Off:</Strong></P>
+          <UL>
+            <LI><Strong>Strong consistency:</Strong> Correct BUT slow</LI>
+            <LI><Strong>Eventual consistency:</Strong> Fast BUT might show stale data briefly</LI>
+          </UL>
+
+          <P><Strong>What Instagram chose:</Strong> Eventual consistency</P>
+          <UL>
+            <LI>✅ 11x faster writes (better UX)</LI>
+            <LI>❌ Rare edge case: see old photo for 1-2 seconds (acceptable!)</LI>
+          </UL>
+
+          <KeyPoint>
+            <Strong>Lesson:</Strong> Profile photos aren't life-or-death. 1-2 seconds of staleness is acceptable for 11x performance gain.
+          </KeyPoint>
+
+          <Divider />
+
+          <H2>How to Think About Trade-Offs</H2>
+
+          <P><Strong>Step 1: Ask "What are my requirements?"</Strong></P>
+          <UL>
+            <LI>Is this financial data (strict consistency) or social media (eventual OK)?</LI>
+            <LI>Do I have 1,000 RPS or 100,000 RPS?</LI>
+            <LI>Can users tolerate 60s stale data or need real-time?</LI>
+            <LI>What's my budget: $100/mo or $10,000/mo?</LI>
+          </UL>
+
+          <P><Strong>Step 2: Ask "What am I giving up?"</Strong></P>
+          <UL>
+            <LI>If I cache: I gain speed, I lose freshness</LI>
+            <LI>If I horizontal scale: I gain capacity, I lose simplicity</LI>
+            <LI>If I choose AP: I gain availability, I lose consistency</LI>
+          </UL>
+
+          <P><Strong>Step 3: Ask "Is the trade-off worth it?"</Strong></P>
+          <UL>
+            <LI>For TinyURL: Cache staleness is fine (URLs never change) → Cache!</LI>
+            <LI>For banking: Consistency is critical (money is at stake) → Strong consistency!</LI>
+            <LI>For startup: Simplicity matters more than scale → Start vertical!</LI>
+          </UL>
+
+          <Divider />
+
+          <H2>Common Mistakes</H2>
+
+          <Example title="❌ Mistake 1: Optimizing prematurely">
+            <P>
+              <Strong>Wrong:</Strong> "Let's use Kafka for 100 requests/day because it's what Netflix uses!"
+            </P>
+            <P>
+              <Strong>Right:</Strong> "We have 100 requests/day. A simple queue (Redis List) is fine. If we grow to 100k/day, we'll switch to Kafka."
+            </P>
+            <P>
+              <Strong>Trade-off insight:</Strong> Netflix needs Kafka's scale. You need simplicity. Don't copy solutions without understanding trade-offs.
+            </P>
+          </Example>
+
+          <Example title="❌ Mistake 2: Ignoring business context">
+            <P>
+              <Strong>Wrong:</Strong> "We need 5 nines availability (99.999%) because that's industry standard!"
+            </P>
+            <P>
+              <Strong>Right:</Strong> "We're a blog with 1,000 daily users. 99.9% (8 hours downtime/year) is fine and costs 10x less than 5 nines."
+            </P>
+            <P>
+              <Strong>Trade-off insight:</Strong> 5 nines costs $50,000/year. 3 nines costs $5,000/year. What's the business impact of 8 hours downtime?
+            </P>
+          </Example>
+
+          <Example title="❌ Mistake 3: Not asking 'Why not X?'">
+            <P>
+              <Strong>Wrong:</Strong> "Let's use PostgreSQL!" (without considering why NOT MongoDB)
+            </P>
+            <P>
+              <Strong>Right:</Strong> "PostgreSQL gives us ACID, but MongoDB gives us schema flexibility. We need ACID for inventory, so PostgreSQL wins."
+            </P>
+            <P>
+              <Strong>Trade-off insight:</Strong> Always articulate what you're giving up by NOT choosing the alternative.
+            </P>
+          </Example>
+
+          <Divider />
+
+          <H2>Key Principles</H2>
+
+          <KeyPoint>
+            <Strong>1. There are no silver bullets</Strong>
+            <P>Every technology, pattern, and architecture has trade-offs. The best solution depends on YOUR specific requirements.</P>
+          </KeyPoint>
+
+          <KeyPoint>
+            <Strong>2. Optimize for your bottleneck</Strong>
+            <P>If reads are your problem, optimize reads (cache). If writes are your problem, optimize writes (sharding). Don't optimize everything.</P>
+          </KeyPoint>
+
+          <KeyPoint>
+            <Strong>3. Start simple, scale when needed</Strong>
+            <P>A single server is fine for 99% of startups. Don't build for Netflix scale on day one. Trade complexity for simplicity early on.</P>
+          </KeyPoint>
+
+          <KeyPoint>
+            <Strong>4. Business requirements drive technical decisions</Strong>
+            <P>Banking app needs strong consistency (money!). Social media accepts eventual consistency (likes can be stale). Requirements >> technology preferences.</P>
+          </KeyPoint>
+
+          <P>
+            <Strong>Remember:</Strong> System design interviews don't have "right answers" - they have "well-reasoned trade-offs". Your job is to understand WHEN to use WHAT and WHY.
+          </P>
+        </Section>
+      ),
+      keyPoints: [
+        'Every technical decision involves trade-offs - you gain something and lose something',
+        'No perfect system - optimize based on YOUR requirements, not others\'',
+        'Always ask: What am I giving up? Is it worth what I\'m gaining?',
+        'Start simple, add complexity only when necessary',
       ],
     },
 
