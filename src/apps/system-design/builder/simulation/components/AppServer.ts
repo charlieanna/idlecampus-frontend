@@ -12,7 +12,6 @@ export class AppServer extends Component {
   constructor(id: string, config: { instances?: number; instanceType?: string } = {}) {
     super(id, 'app_server', {
       instances: 1,
-      instanceType: 'commodity-app', // Always use commodity spec
       ...config,
       // Override instanceType to always be commodity-app
       instanceType: 'commodity-app',

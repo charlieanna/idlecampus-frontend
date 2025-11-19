@@ -292,6 +292,20 @@ Learning Objectives (DDIA Ch. 8, 11):
    - Transactional outbox pattern
    - Idempotent stream processing`,
 
+  userFacingFRs: [
+    '**POST /api/riders/:id/request** - Rider requests ride (pickup + dropoff location)',
+    '**GET /api/riders/:id/nearby-drivers** - Find available drivers within radius (geospatial query)',
+    '**POST /api/rides** - Create ride and assign driver (with double-allocation prevention)',
+    '**POST /api/drivers/:id/accept** - Driver accepts ride request',
+    '**POST /api/drivers/:id/location** - Driver updates GPS location (real-time streaming)',
+    '**GET /api/rides/:id** - Get current ride status and driver location',
+    '**POST /api/rides/:id/complete** - Complete ride and trigger payment',
+    '**POST /api/payments** - Process payment for ride (with idempotency)',
+    '**GET /api/drivers/:id/status** - Check driver availability (online/offline/on-ride)',
+    'Real-time location updates streamed via WebSocket to rider during ride',
+    'Ride matching uses stream processing (join rider requests with driver locations)',
+  ],
+
   // DDIA/SDP Non-Functional Requirements
   userFacingNFRs: [
     'No driver double-allocation: 100% guarantee (DDIA Ch. 8: CAS with version numbers)',

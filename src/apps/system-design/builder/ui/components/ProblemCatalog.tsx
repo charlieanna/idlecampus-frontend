@@ -246,6 +246,14 @@ export function ProblemCatalog() {
       <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
         <div className="max-w-[1800px] mx-auto p-6">
           <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => navigate('/system-design/lessons')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
+              >
+                📚 Study Lessons
+              </button>
+            </div>
             <div>
               <h1 className="text-3xl font-bold text-gray-900">System Design Problems</h1>
               <p className="text-sm text-gray-600 mt-1">

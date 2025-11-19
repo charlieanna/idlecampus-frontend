@@ -17,6 +17,20 @@ export const staticContentCdnProblemDefinition: ProblemDefinition = {
 - Delivers content with <50ms latency globally
 - Handles 20k requests/sec for static assets`,
 
+  userFacingFRs: [
+    '**POST /api/assets/upload** - Upload static asset (image, CSS, JS) to origin storage (S3)',
+    '**GET /cdn/{filename}** - Serve static asset from CDN edge cache with automatic origin fallback',
+    '**POST /api/assets/{filename}/invalidate** - Invalidate CDN cache for a specific asset',
+    '**GET /api/cdn/stats** - Get CDN cache statistics (hit rate, cached items)',
+  ],
+
+  userFacingNFRs: [
+    '**Throughput**: Handle 20k requests/sec for static assets globally',
+    '**Cache Hit Rate**: Achieve 95% cache hit rate to minimize origin load',
+    '**Latency**: Deliver content with <50ms latency from edge locations worldwide',
+    '**Availability**: Serve content from edge caches even during origin failures',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

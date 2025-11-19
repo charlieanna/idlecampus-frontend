@@ -18,6 +18,22 @@ export const redditCommentSystemProblemDefinition: ProblemDefinition = {
 - Handles cache stampede during failures
 - Maintains sub-100ms P99 latency`,
 
+  userFacingFRs: [
+    '**POST /api/threads** - Create a new discussion thread',
+    '**POST /api/comments** - Add a comment to a thread (supports nested comments)',
+    '**GET /api/threads/{thread_id}/comments** - Read all comments for a thread with multi-layer caching',
+    '**POST /api/comments/{comment_id}/vote** - Vote on a comment (upvote/downvote, processed via message queue)',
+    '**POST /api/threads/{thread_id}/mark-viral** - Mark a thread as viral for hot-key protection',
+  ],
+
+  userFacingNFRs: [
+    '**Throughput**: Handle 5M reads/sec during normal operation and 50M reads/sec during viral events',
+    '**Cache Hit Rate**: Achieve 98% cache hit rate for hot comment threads',
+    '**Latency**: Maintain sub-100ms P99 latency for comment reads',
+    '**Scalability**: Support thousands of app servers with load balancing',
+    '**Availability**: Handle cache stampede gracefully during cache failures',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

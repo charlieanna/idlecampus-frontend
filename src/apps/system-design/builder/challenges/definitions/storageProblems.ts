@@ -17,6 +17,20 @@ export const nosqlBasicsProblemDefinition: ProblemDefinition = {
 - Supports 20k ops/sec with 100M documents
 - Enables complex queries with compound indexes`,
 
+  userFacingFRs: [
+    '**GET /api/users/:id/profile** - Retrieve user profile with nested preferences and settings',
+    '**PUT /api/users/:id/profile** - Update user profile with flexible schema',
+    '**PATCH /api/users/:id/preferences** - Update nested preference fields',
+    '**POST /api/users/search** - Query users with complex filters (age, location, interests)',
+  ],
+
+  userFacingNFRs: [
+    'Profile reads must complete in <50ms at P95',
+    'Support 20,000 operations/sec across 100M user documents',
+    'Support schema evolution without downtime or migrations',
+    'Enable complex queries on nested fields with compound indexes',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -89,6 +103,20 @@ export const keyValueStoreProblemDefinition: ProblemDefinition = {
 - Handles 100k ops/sec with 10GB in-memory
 - Provides replication for high availability`,
 
+  userFacingFRs: [
+    '**GET /api/kv/:key** - Retrieve value by key with <1ms latency',
+    '**POST /api/kv/:key** - Set key-value pair with optional TTL',
+    '**DELETE /api/kv/:key** - Delete key-value pair',
+    '**POST /api/kv/:key/expire** - Set TTL expiration on existing key',
+  ],
+
+  userFacingNFRs: [
+    'GET operations must complete in <1ms at P95',
+    'SET operations must complete in <2ms at P95',
+    'Support 100,000 operations/sec with 10GB in-memory storage',
+    'Implement LRU eviction when memory limit reached',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -159,6 +187,20 @@ export const productCatalogProblemDefinition: ProblemDefinition = {
 - Supports category hierarchies and faceted search
 - Handles 5k reads/sec and 500 writes/sec
 - Enables real-time inventory tracking`,
+
+  userFacingFRs: [
+    '**GET /api/products/:id** - Retrieve product details with all variants',
+    '**GET /api/products/category/:path** - Browse products by category hierarchy',
+    '**GET /api/products/:id/inventory** - Check real-time inventory across warehouses',
+    '**PUT /api/products/:id/inventory** - Update inventory levels for variants',
+  ],
+
+  userFacingNFRs: [
+    'Product reads must complete in <100ms at P95',
+    'Support 5,000 reads/sec and 500 writes/sec',
+    'Store 1M products with 10M variants (size, color combinations)',
+    'Inventory updates must be reflected in real-time (<1 second)',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -242,6 +284,20 @@ export const objectStorageSystemProblemDefinition: ProblemDefinition = {
 - Provides 99.999999999% durability (11 nines)
 - Handles 10k file operations/sec
 - Supports multipart uploads and CDN integration`,
+
+  userFacingFRs: [
+    '**POST /api/buckets/:bucket/files** - Upload file with multipart support for large files',
+    '**GET /api/buckets/:bucket/files/:key** - Download file by key',
+    '**DELETE /api/buckets/:bucket/files/:key** - Delete file from storage',
+    '**POST /api/buckets/:bucket/files/:key/multipart** - Initialize multipart upload for files >100MB',
+  ],
+
+  userFacingNFRs: [
+    'File uploads must support files from 1MB to 5GB',
+    'Support 10,000 file operations/sec (uploads + downloads)',
+    'Provide 99.999999999% durability (11 nines) through replication',
+    'Files served via CDN with <100ms access time globally',
+  ],
 
   functionalRequirements: {
     mustHave: [

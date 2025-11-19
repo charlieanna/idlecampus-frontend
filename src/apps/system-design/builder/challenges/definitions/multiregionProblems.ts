@@ -17,6 +17,24 @@ export const basicMultiRegionProblemDefinition: ProblemDefinition = {
 - Handles regional failures with automatic failover
 - Maintains P95 < 100ms same-region, < 300ms cross-region`,
 
+  userFacingFRs: [
+    '**GET /api/data/:id** - Read data from the nearest region (US-East or EU-West)',
+    '**POST /api/data** - Create new data in the primary region (writes go to US-East)',
+    '**PUT /api/data/:id** - Update data in the primary region',
+    '**DELETE /api/data/:id** - Delete data from the primary region',
+    'Users are automatically routed to their nearest region based on geographic location (GeoDNS)',
+    'Data written in US-East is asynchronously replicated to EU-West (eventually consistent reads)',
+    'If primary region (US-East) fails, traffic automatically fails over to EU-West',
+  ],
+
+  userFacingNFRs: [
+    '**Same-Region Latency**: < 100ms p95 for reads/writes within the same region',
+    '**Cross-Region Latency**: < 300ms p95 for cross-region requests (if user hits wrong region)',
+    '**Replication Lag**: Data replicates from US-East to EU-West within 1-2 seconds',
+    '**Availability**: 99.9% uptime (failover to secondary region if primary fails)',
+    '**Geographic Distribution**: Users in North America → US-East, Users in Europe → EU-West',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -97,6 +115,24 @@ export const activeActiveRegionsProblemDefinition: ProblemDefinition = {
 - Resolves write conflicts using vector clocks and CRDTs
 - Maintains eventual consistency within 5 seconds
 - Handles 5k writes/sec per region`,
+
+  userFacingFRs: [
+    '**POST /api/records** - Create a new record in the local region (US-East or EU-West)',
+    '**PUT /api/records/:id** - Update an existing record in the local region',
+    '**GET /api/records/:id** - Read a record from the local region (returns latest version available locally)',
+    '**GET /api/records** - List all records visible in the local region',
+    'System automatically replicates changes bidirectionally between US-East ↔ EU-West',
+    'Conflict resolution: When the same record is updated in both regions simultaneously, use Last-Write-Wins (LWW) with vector clocks or CRDTs to merge changes',
+  ],
+
+  userFacingNFRs: [
+    '**Write Latency**: < 50ms p99 for local writes (user writes to nearest region)',
+    '**Read Latency**: < 10ms p99 for local reads (user reads from nearest region)',
+    '**Replication Lag**: Changes propagate to other region within 5 seconds (eventual consistency)',
+    '**Throughput**: 5,000 writes/sec per region (10,000 writes/sec globally across both regions)',
+    '**Availability**: 99.99% uptime per region (each region operates independently if cross-region link fails)',
+    '**Consistency**: Eventual consistency across regions, strong consistency within a region',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -184,6 +220,25 @@ export const globalCdnProblemDefinition: ProblemDefinition = {
 - Handles 10M requests/sec with P95 < 50ms globally
 - Stores 1PB of static assets`,
 
+  userFacingFRs: [
+    '**GET /assets/:key** - Download static assets (images, videos, CSS, JS) from the nearest CDN edge location',
+    '**POST /api/assets** - Upload new assets to origin storage (S3)',
+    '**DELETE /api/assets/:key** - Delete assets from origin storage',
+    'Content is automatically cached at 100+ global edge locations for fast delivery',
+    'On cache miss, CDN pulls content from the nearest origin server',
+    'Origin servers failover automatically if primary region is unavailable',
+    'Assets are versioned and support cache invalidation',
+  ],
+
+  userFacingNFRs: [
+    '**Global Latency**: < 50ms p95 for cached content (served from nearest edge)',
+    '**Cache Hit Ratio**: > 90% (most requests served from edge, not origin)',
+    '**Origin Latency**: < 200ms p95 for cache misses (pull from origin)',
+    '**Throughput**: 10M requests/sec globally across all edge locations',
+    '**Storage Capacity**: 1PB of static assets in origin storage (S3)',
+    '**Availability**: 99.99% uptime with automatic origin failover',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -258,6 +313,25 @@ export const crossRegionDrProblemDefinition: ProblemDefinition = {
 - Achieves RTO < 5 minutes, RPO < 1 minute
 - Performs automated failover on region failure
 - Handles data backup and recovery`,
+
+  userFacingFRs: [
+    '**GET /api/data/:id** - Read data from the active region (US-East primary)',
+    '**POST /api/data** - Create data in the primary region',
+    '**PUT /api/data/:id** - Update data in the primary region',
+    'Primary region (US-East) handles all traffic during normal operation',
+    'Hot standby in secondary region (EU-West) continuously replicates data from primary',
+    'Automatic failover: If primary region fails, DNS switches traffic to secondary region within 5 minutes',
+    'Data backups stored in cross-region S3 for disaster recovery',
+  ],
+
+  userFacingNFRs: [
+    '**RTO (Recovery Time Objective)**: < 5 minutes - System recovers and serves traffic from secondary region within 5 minutes of primary failure',
+    '**RPO (Recovery Point Objective)**: < 1 minute - Maximum 1 minute of data loss during failover (replication lag)',
+    '**Normal Operation Latency**: < 100ms p95 when primary region is healthy',
+    '**Failover Detection**: System detects primary region failure within 30 seconds',
+    '**Availability**: 99.95% uptime including failover scenarios',
+    '**Backup Frequency**: Continuous replication to standby + hourly S3 snapshots',
+  ],
 
   functionalRequirements: {
     mustHave: [

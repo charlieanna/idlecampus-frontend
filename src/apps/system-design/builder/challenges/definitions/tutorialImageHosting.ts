@@ -17,6 +17,26 @@ export const tutorialImageHostingProblemDefinition: ProblemDefinition = {
 - Uses CDN for global content delivery with 90% cache hit rate
 - Optimizes costs with proper storage strategy`,
 
+  userFacingFRs: [
+    '**POST /api/images** - Upload a new image (max 10MB, supports JPG/PNG/GIF)',
+    '**GET /api/images/:id** - Get image metadata (filename, size, upload date, S3 URL)',
+    '**GET /cdn/images/:id** - Download the actual image file from CDN (served from edge locations)',
+    '**DELETE /api/images/:id** - Delete an image (removes from S3 and invalidates CDN cache)',
+    '**GET /api/users/:id/images** - List all images uploaded by a specific user',
+    'Images are automatically cached at CDN edge locations for fast global delivery',
+    'Metadata (image info) is cached in Redis for sub-10ms lookups',
+  ],
+
+  userFacingNFRs: [
+    '**Image Download Latency**: < 100ms p95 globally when served from CDN (cache hit)',
+    '**Metadata Latency**: < 50ms p95 for fetching image metadata from cache',
+    '**Upload Latency**: < 2s p95 for uploading images to S3',
+    '**CDN Cache Hit Rate**: > 90% (most image requests served from edge, not origin)',
+    '**Throughput**: 10,000 requests/sec globally distributed',
+    '**Storage Capacity**: Support 1M images (~5TB total)',
+    '**Cost Optimization**: Use S3 Standard for recent images, S3 Glacier for old images (> 1 year)',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

@@ -17,6 +17,24 @@ export const multiTenantSaasCacheProblemDefinition: ProblemDefinition = {
 - Prevent noisy neighbor impact (<1% degradation)
 - Hierarchical quotas (org/workspace/user)`,
 
+  userFacingFRs: [
+    'GET /api/v1/tenants/{tenantId}/data/{key} - Retrieve cached data for a tenant',
+    'PUT /api/v1/tenants/{tenantId}/data/{key} - Store data in tenant-specific cache',
+    'DELETE /api/v1/tenants/{tenantId}/data/{key} - Evict data from tenant cache',
+    'GET /api/v1/tenants/{tenantId}/quotas - Get current quota usage and limits',
+    'POST /api/v1/tenants/{tenantId}/cache/flush - Flush tenant cache partition',
+    'GET /api/v1/admin/tenants/{tenantId}/metrics - Get tenant cache performance metrics',
+  ],
+
+  userFacingNFRs: [
+    'P99 latency < 5ms for all cache operations across all tenant tiers',
+    'Support 10M cache operations/sec distributed across 100M+ tenants',
+    'Noisy neighbor impact limited to <1% degradation for other tenants',
+    'System availability of 99.999% (5.26 minutes downtime/year)',
+    'Support enterprise tenants with up to 1B cached objects',
+    'Zero data leakage between tenant partitions with GDPR compliance',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -102,6 +120,24 @@ export const cmsCacheProblemDefinition: ProblemDefinition = {
 - Implement tag-based cache invalidation
 - Handle content dependencies (articles reference authors)
 - Support versioned content with preview mode`,
+
+  userFacingFRs: [
+    'GET /api/v1/content/{contentId} - Retrieve published content with edge caching',
+    'GET /api/v1/articles?author={authorId} - Query articles by author with dependency tracking',
+    'POST /api/v1/content/{contentId}/publish - Publish content and invalidate related caches',
+    'DELETE /api/v1/cache/tags/{tag} - Invalidate all content with specific cache tag',
+    'GET /api/v1/content/{contentId}/preview?version={version} - Preview unpublished content version',
+    'POST /api/v1/cache/purge - Purge cache by surrogate keys or patterns',
+  ],
+
+  userFacingNFRs: [
+    'CDN edge cache hit ratio >95% for published content',
+    'Cache invalidation propagation across all edge locations within 500ms',
+    'Support dependency graphs with up to 1000 dependent content items',
+    'Content delivery latency <50ms from edge locations globally',
+    'Handle 10M content requests/sec during traffic spikes',
+    'Zero stale content served after invalidation propagation completes',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -202,6 +238,24 @@ export const authTokenCacheProblemDefinition: ProblemDefinition = {
 - Support refresh token rotation
 - Handle token expiration and renewal`,
 
+  userFacingFRs: [
+    'POST /api/v1/auth/validate - Validate JWT token with cached claims lookup',
+    'POST /api/v1/auth/revoke - Revoke active token and add to blacklist',
+    'POST /api/v1/auth/refresh - Rotate refresh token and issue new access token',
+    'GET /api/v1/auth/session - Get current session info from cached token data',
+    'POST /api/v1/auth/logout - Logout user and invalidate all tokens',
+    'GET /api/v1/auth/blacklist/check/{tokenId} - Check if token is blacklisted',
+  ],
+
+  userFacingNFRs: [
+    'Token validation latency <2ms using cached JWT claims',
+    'Revocation propagation to all microservices within 1 second',
+    'Support 100K concurrent token validations/sec',
+    'Blacklist lookup latency <1ms for revoked tokens',
+    'Token cache hit ratio >99% for active sessions',
+    'Zero false negatives for revoked tokens after propagation completes',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -297,6 +351,24 @@ export const pricingEngineCacheProblemDefinition: ProblemDefinition = {
 - ML-based price optimization in real-time
 - Handle Prime Day surge (10x normal load)`,
 
+  userFacingFRs: [
+    'GET /api/v1/pricing/{sku}?userId={userId}&region={region} - Get personalized price for SKU',
+    'POST /api/v1/pricing/batch - Calculate prices for multiple SKUs in single request',
+    'GET /api/v1/pricing/promotions/active?sku={sku} - Get active promotions for SKU',
+    'POST /api/v1/pricing/precompute - Trigger batch price pre-computation for hot SKUs',
+    'GET /api/v1/pricing/{sku}/rules - Get pricing rules and ML model predictions',
+    'POST /api/v1/pricing/surge/update - Update surge pricing multipliers in real-time',
+  ],
+
+  userFacingNFRs: [
+    'Price calculation latency <5ms P99 including ML model inference',
+    'Support 100M pricing calculations/sec during Prime Day events',
+    'Handle 10x surge load (1B calculations/sec) without degradation',
+    'Price cache hit ratio >90% for top 10M SKUs',
+    'Support 1B+ SKUs with personalized pricing per user cohort',
+    'Pricing consistency across regions within 100ms of rule updates',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -387,6 +459,24 @@ export const recommendationEngineCacheProblemDefinition: ProblemDefinition = {
 - Store user feature vectors for real-time scoring
 - Handle cold start with trending item fallback
 - Update recommendations hourly from ML pipeline`,
+
+  userFacingFRs: [
+    'GET /api/v1/recommendations/user/{userId} - Get personalized recommendations from cache',
+    'GET /api/v1/recommendations/trending?category={category} - Get trending items for cold start',
+    'POST /api/v1/recommendations/refresh/{userId} - Trigger real-time recommendation refresh',
+    'GET /api/v1/recommendations/features/{userId} - Get cached user feature vectors',
+    'POST /api/v1/recommendations/batch/warm - Warm cache with batch-computed recommendations',
+    'GET /api/v1/recommendations/segment/{segmentId} - Get recommendations for user segment',
+  ],
+
+  userFacingNFRs: [
+    'Recommendation retrieval latency <10ms from cache',
+    'Cache top-50 recommendations for 100M+ active users',
+    'Handle hourly batch updates without cache disruption',
+    'Cold start latency <50ms using trending fallback',
+    'Recommendation freshness within 1 hour of ML model updates',
+    'Cache hit ratio >95% for active users during peak hours',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -486,6 +576,24 @@ export const rtbAdCacheProblemDefinition: ProblemDefinition = {
 - Track campaign budgets in real-time (approximate)
 - Select top bid ad within latency budget
 - Support frequency capping per user`,
+
+  userFacingFRs: [
+    'POST /api/v1/rtb/bid - Process bid request and select winning ad within 10ms',
+    'GET /api/v1/ads/{adId}/creative - Retrieve cached ad creative and metadata',
+    'GET /api/v1/campaigns/{campaignId}/budget - Get real-time budget utilization',
+    'POST /api/v1/ads/impression - Record ad impression and update frequency caps',
+    'GET /api/v1/targeting/rules/{userId} - Get cached targeting rules for user',
+    'POST /api/v1/campaigns/{campaignId}/budget/update - Update campaign budget in real-time',
+  ],
+
+  userFacingNFRs: [
+    'Total RTB response time <10ms P99 including ad selection',
+    'Support 1M bid requests/sec during peak traffic',
+    'Budget tracking accuracy within 5% using probabilistic counters',
+    'Frequency cap accuracy >98% using bloom filters',
+    'Ad creative cache hit ratio >99.5% for active campaigns',
+    'Targeting rule evaluation latency <2ms from cache',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -587,6 +695,24 @@ export const gamingMatchmakingCacheProblemDefinition: ProblemDefinition = {
 - Support party matchmaking (groups of friends)
 - Handle players leaving queue gracefully`,
 
+  userFacingFRs: [
+    'POST /api/v1/matchmaking/queue/join - Add player/party to matchmaking queue',
+    'DELETE /api/v1/matchmaking/queue/leave - Remove player from queue gracefully',
+    'GET /api/v1/matchmaking/queue/status - Get current queue position and estimated wait time',
+    'POST /api/v1/matchmaking/match/accept - Accept matched game',
+    'GET /api/v1/matchmaking/pool?skillTier={tier} - Get current player pool by skill tier',
+    'POST /api/v1/matchmaking/party/create - Create party for group matchmaking',
+  ],
+
+  userFacingNFRs: [
+    'Match formation time <3 seconds for 95% of players',
+    'Skill rating difference within 200 points for balanced matches',
+    'Support 1M concurrent players in matchmaking queues',
+    'Queue update latency <100ms when players join/leave',
+    'Party matchmaking success rate >90% within 10 seconds',
+    'Graceful handling of queue abandonment with <1s cleanup time',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -682,6 +808,24 @@ export const iotDeviceCacheProblemDefinition: ProblemDefinition = {
 - Support bulk queries (all devices in building)
 - Implement conflict resolution for concurrent updates`,
 
+  userFacingFRs: [
+    'GET /api/v1/devices/{deviceId}/shadow - Get cached device shadow state',
+    'PUT /api/v1/devices/{deviceId}/shadow/desired - Update desired state in cache',
+    'POST /api/v1/devices/{deviceId}/shadow/reported - Device reports current state with delta',
+    'GET /api/v1/devices/query?buildingId={buildingId} - Bulk query device shadows',
+    'POST /api/v1/devices/{deviceId}/sync - Sync offline device with state deltas',
+    'GET /api/v1/devices/{deviceId}/shadow/conflicts - Get unresolved state conflicts',
+  ],
+
+  userFacingNFRs: [
+    'Shadow state retrieval latency <5ms from cache',
+    'Support 10M+ IoT devices with varying update frequencies',
+    'Handle devices offline for up to 7 days with delta sync',
+    'Bulk query response time <100ms for up to 10K devices',
+    'Conflict resolution latency <10ms using vector clocks',
+    'State propagation from cache to devices within 500ms of reconnection',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -771,6 +915,24 @@ export const globalInventoryCacheProblemDefinition: ProblemDefinition = {
 - Prevent overselling with distributed locks
 - Support inventory reservations with timeout
 - Implement eventual consistency for browsing`,
+
+  userFacingFRs: [
+    'GET /api/v1/inventory/{sku}?region={region} - Get cached inventory count by region',
+    'POST /api/v1/inventory/{sku}/reserve - Reserve inventory with distributed lock',
+    'POST /api/v1/inventory/{sku}/release - Release expired or cancelled reservation',
+    'POST /api/v1/inventory/{sku}/commit - Commit reservation to actual purchase',
+    'GET /api/v1/inventory/global/{sku} - Get global inventory across all regions',
+    'POST /api/v1/inventory/{sku}/sync - Sync inventory updates across regions',
+  ],
+
+  userFacingNFRs: [
+    'Inventory read latency <10ms from regional cache',
+    'Zero overselling with distributed lock coordination',
+    'Reservation timeout at 10 minutes with automatic release',
+    'Cross-region inventory sync within 100ms of updates',
+    'Support 100K concurrent reservations during flash sales',
+    'Eventual consistency for browsing with <5 second staleness',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -901,6 +1063,24 @@ export const hybridCdnCacheProblemDefinition: ProblemDefinition = {
 - Peer-to-peer assisted delivery
 - Adaptive bitrate based on cache availability`,
 
+  userFacingFRs: [
+    'GET /api/v1/stream/{contentId}/manifest - Get adaptive bitrate manifest from ISP cache',
+    'GET /api/v1/stream/{contentId}/chunk/{chunkId} - Stream video chunk from nearest cache',
+    'POST /api/v1/placement/predict - Predict content to pre-cache at ISP locations',
+    'GET /api/v1/peers/discover?contentId={contentId} - Discover P2P peers for content',
+    'POST /api/v1/stream/quality/report - Report streaming quality for adaptive bitrate',
+    'GET /api/v1/cache/isp/{ispId}/capacity - Get ISP cache box capacity and usage',
+  ],
+
+  userFacingNFRs: [
+    'Streaming start latency <1 second from ISP cache',
+    'ISP cache hit ratio >95% for popular content',
+    'P2P delivery reduces origin bandwidth by 30%',
+    'Adaptive bitrate selection within 2 seconds of network changes',
+    'Support 100M concurrent streams globally',
+    'ML-based placement accuracy >85% for next-day viewing prediction',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1010,6 +1190,24 @@ export const globalInventoryMasteryProblemDefinition: ProblemDefinition = {
 - Prevent overselling with pessimistic or optimistic locking
 - Reserve inventory during checkout with timeout
 - Handle network partitions gracefully (AP with repair)`,
+
+  userFacingFRs: [
+    'GET /api/v1/inventory/{sku}/global - Get real-time inventory across all 5 regions',
+    'POST /api/v1/inventory/{sku}/reserve?region={region} - Reserve with optimistic locking',
+    'POST /api/v1/inventory/{sku}/commit - Commit reservation to purchase',
+    'DELETE /api/v1/inventory/{sku}/reservation/{reservationId} - Cancel and release reservation',
+    'GET /api/v1/inventory/{sku}/conflicts - Get CRDT conflict resolution history',
+    'POST /api/v1/inventory/sync/repair - Trigger anti-entropy repair after partition',
+  ],
+
+  userFacingNFRs: [
+    'Zero overselling guarantee using pessimistic or optimistic locking',
+    'Reservation latency <20ms P99 including cross-region coordination',
+    'Support 100K concurrent reservations during flash sales',
+    'Automatic reservation timeout and release after 10 minutes',
+    'Network partition detection and repair within 30 seconds',
+    'Cross-region inventory sync latency <100ms during normal operation',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1156,6 +1354,24 @@ export const financialTradingCacheProblemDefinition: ProblemDefinition = {
 - Replicate critical data to hot standby with RDMA
 - Support historical tick data queries (last 1 hour)`,
 
+  userFacingFRs: [
+    'GET /api/v1/orderbook/{symbol}/snapshot - Get cached order book snapshot',
+    'POST /api/v1/orders/submit - Submit order with microsecond position validation',
+    'GET /api/v1/positions/{accountId} - Get real-time position from NVRAM cache',
+    'GET /api/v1/market/ticks/{symbol}?duration=1h - Query historical tick data',
+    'POST /api/v1/risk/limits/check - Validate trade against cached risk limits',
+    'GET /api/v1/orderbook/{symbol}/depth - Get market depth from cached book',
+  ],
+
+  userFacingNFRs: [
+    'Order book snapshot access latency <100 microseconds',
+    'Position and risk limit validation latency <50 microseconds',
+    'RDMA replication to hot standby within 10 microseconds',
+    'Support 1M order book updates/sec per symbol',
+    'Historical tick data query latency <1ms for 1 hour window',
+    'Lock-free data structure updates with zero blocking',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1245,6 +1461,24 @@ export const gameAssetCdnMasteryProblemDefinition: ProblemDefinition = {
 - Chunk files into verifiable blocks (4MB each)
 - Peer discovery and selection based on bandwidth
 - Fallback to CDN if P2P peers unavailable`,
+
+  userFacingFRs: [
+    'GET /api/v1/assets/{assetId}/manifest - Get asset manifest with chunk hashes',
+    'GET /api/v1/assets/{assetId}/chunk/{chunkId} - Download chunk from CDN or peer',
+    'POST /api/v1/p2p/peers/discover?assetId={assetId} - Discover peers with asset chunks',
+    'POST /api/v1/assets/{assetId}/verify - Verify chunk integrity with hash validation',
+    'GET /api/v1/cdn/fallback/{assetId}/chunk/{chunkId} - Fallback to CDN for chunk',
+    'POST /api/v1/p2p/peers/announce - Announce chunks available for peer sharing',
+  ],
+
+  userFacingNFRs: [
+    'Download speed improvement of 40% using P2P vs CDN-only',
+    'Chunk integrity verification latency <10ms per 4MB chunk',
+    'P2P peer discovery latency <500ms',
+    'CDN fallback activation within 2 seconds if no peers available',
+    'Support asset distribution for 10M concurrent gamers',
+    'Bandwidth cost reduction of 50% through P2P offload',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1365,6 +1599,24 @@ export const sportsBettingCacheProblemDefinition: ProblemDefinition = {
 - Prevent arbitrage from regional odds discrepancies
 - Handle bet placement spikes during key moments`,
 
+  userFacingFRs: [
+    'GET /api/v1/odds/{eventId}/current - Get real-time odds with staleness timestamp',
+    'POST /api/v1/bets/place - Place bet with odds validation against fresh cache',
+    'GET /api/v1/odds/{eventId}/history?duration=5m - Get odds history for event',
+    'POST /api/v1/odds/update - Update odds based on game event (goal, foul, etc.)',
+    'GET /api/v1/arbitrage/check?eventId={eventId} - Check for regional arbitrage opportunities',
+    'GET /api/v1/odds/feed/{eventId}/stream - Subscribe to real-time odds update stream',
+  ],
+
+  userFacingNFRs: [
+    'Odds staleness guarantee <100ms from game event occurrence',
+    'Bet placement latency <50ms including odds validation',
+    'Support 500K concurrent bettors during major sporting events',
+    'Odds update propagation to all regions within 50ms',
+    'Arbitrage detection latency <200ms across global regions',
+    'Handle 10x bet placement spike during key moments (goals, penalties)',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1464,6 +1716,24 @@ export const autonomousVehicleCacheProblemDefinition: ProblemDefinition = {
 - Prefetch maps based on predicted route
 - Update maps incrementally (road closures, construction)
 - Fallback to cached maps if connectivity lost`,
+
+  userFacingFRs: [
+    'GET /api/v1/maps/tiles?route={route}&radius=50km - Prefetch HD map tiles for route',
+    'GET /api/v1/maps/updates/incremental?lastSync={timestamp} - Get incremental map updates',
+    'POST /api/v1/maps/predict/route - Predict route and trigger prefetch',
+    'GET /api/v1/maps/cached/status - Get on-vehicle cache status and coverage',
+    'POST /api/v1/maps/offline/fallback - Activate offline mode with cached maps',
+    'GET /api/v1/maps/construction?region={region} - Get cached road closure updates',
+  ],
+
+  userFacingNFRs: [
+    'Map prefetch latency <2 seconds for 50km route ahead',
+    '99.999% availability requirement for safety-critical operation',
+    'Offline operation support for up to 2 hours with cached maps',
+    'Incremental update download <100ms for real-time hazards',
+    'Map cache storage capacity for 500km of HD map data',
+    'Predictive prefetch accuracy >90% for typical commute routes',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1589,6 +1859,24 @@ export const stockMarketDataCacheProblemDefinition: ProblemDefinition = {
 - Handle burst traffic during market events
 - Support historical data queries (1min/5min OHLC)`,
 
+  userFacingFRs: [
+    'GET /api/v1/market/{symbol}/stream - Subscribe to real-time tick data stream',
+    'GET /api/v1/market/{symbol}/ticks?duration=1h - Get cached tick history',
+    'GET /api/v1/market/{symbol}/ohlc?interval=1m - Get 1-minute OHLC from cache',
+    'GET /api/v1/market/{symbol}/ohlc?interval=5m - Get 5-minute OHLC aggregation',
+    'POST /api/v1/market/stream/subscribe - Batch subscribe to multiple symbols',
+    'GET /api/v1/market/replay?from={timestamp}&to={timestamp} - Replay historical data',
+  ],
+
+  userFacingNFRs: [
+    'Real-time data stream latency <10ms from market tick',
+    'Support 1M market ticks/sec during high volatility bursts',
+    'Cache 1 hour of tick history for 10K actively traded symbols',
+    'OHLC aggregation query latency <5ms from cached data',
+    'Backpressure handling with graceful degradation (no data loss)',
+    'Historical replay latency <100ms for 1 hour window',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1688,6 +1976,24 @@ export const multiRegionSocialCacheProblemDefinition: ProblemDefinition = {
 - Replicate posts to all regions asynchronously
 - Detect concurrent edits (same post, different regions)
 - Resolve conflicts with last-write-wins or custom logic`,
+
+  userFacingFRs: [
+    'GET /api/v1/feed/{userId} - Get user feed from nearest regional cache',
+    'POST /api/v1/posts/create - Create post with read-after-write consistency',
+    'PUT /api/v1/posts/{postId}/edit - Edit post with conflict detection',
+    'GET /api/v1/posts/{postId}/versions - Get post version history with vector clocks',
+    'POST /api/v1/posts/{postId}/resolve - Manually resolve concurrent edit conflicts',
+    'GET /api/v1/feed/global/{userId} - Get globally consistent feed view',
+  ],
+
+  userFacingNFRs: [
+    'Feed read latency <20ms from nearest regional cache',
+    'Post replication to all regions within 500ms asynchronously',
+    'Read-after-write consistency guarantee for user\'s own posts',
+    'Concurrent edit detection latency <100ms using vector clocks',
+    'Support 1B+ users distributed across 5 global regions',
+    'Conflict resolution completion within 1 second of detection',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -1834,6 +2140,24 @@ export const healthcareRecordsCacheProblemDefinition: ProblemDefinition = {
 - Log all cache access with user ID, timestamp, and purpose
 - Support patient consent-based data sharing`,
 
+  userFacingFRs: [
+    'GET /api/v1/patients/{patientId}/records - Get encrypted patient records with RBAC',
+    'POST /api/v1/patients/{patientId}/access/log - Log access event for audit trail',
+    'GET /api/v1/patients/{patientId}/consent - Check patient consent for data sharing',
+    'PUT /api/v1/patients/{patientId}/records/update - Update encrypted cache record',
+    'GET /api/v1/audit/records?userId={userId}&date={date} - Query audit logs',
+    'POST /api/v1/cache/purge/patient/{patientId} - Purge patient data per retention policy',
+  ],
+
+  userFacingNFRs: [
+    'All patient records encrypted at rest and in transit (AES-256)',
+    'RBAC enforcement latency <5ms at cache layer',
+    '100% audit logging coverage for all cache access operations',
+    'Patient consent validation latency <10ms',
+    'Data retention policy enforcement with automatic purging',
+    'HIPAA compliance with encrypted cache access patterns',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -1928,6 +2252,24 @@ export const supplyChainCacheProblemDefinition: ProblemDefinition = {
 - Support supplier, warehouse, and customer views
 - Aggregate metrics by region, product category, etc.
 - Real-time updates as shipments scan at checkpoints`,
+
+  userFacingFRs: [
+    'GET /api/v1/shipments/{shipmentId} - Get shipment status from hierarchical cache',
+    'GET /api/v1/shipments/view?role={role}&tenantId={tenantId} - Get tenant-filtered view',
+    'GET /api/v1/metrics/aggregate?region={region}&category={category} - Get cached aggregates',
+    'POST /api/v1/shipments/{shipmentId}/checkpoint - Update shipment status at checkpoint',
+    'GET /api/v1/shipments/query?supplier={supplier}&status={status} - Query by criteria',
+    'GET /api/v1/metrics/realtime?tenantId={tenantId} - Get real-time tenant metrics',
+  ],
+
+  userFacingNFRs: [
+    'Shipment status query latency <10ms from hierarchical cache',
+    'Tenant-filtered view generation latency <20ms',
+    'Real-time checkpoint updates propagated within 500ms',
+    'Support 10M active shipments with multi-tenant access',
+    'Aggregate metrics refresh every 30 seconds',
+    'Data sovereignty compliance with geo-partitioned caching',
+  ],
 
   functionalRequirements: {
     mustHave: [

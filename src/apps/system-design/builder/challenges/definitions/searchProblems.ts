@@ -17,6 +17,20 @@ export const basicTextSearchProblemDefinition: ProblemDefinition = {
 - Ranks results by relevance using TF-IDF
 - Handles 1k searches/sec across 1M documents`,
 
+  userFacingFRs: [
+    '**GET /api/search?q=keywords** - Search documents with keywords and boolean operators (AND/OR)',
+    '**POST /api/documents** - Index new document with title and content',
+    '**PUT /api/documents/:id** - Update existing document and re-index',
+    '**DELETE /api/documents/:id** - Remove document from search index',
+  ],
+
+  userFacingNFRs: [
+    'Search queries must return results in <200ms at P95',
+    'Support 1,000 searches/sec across 1M documents',
+    'Rank results by relevance using TF-IDF scoring',
+    'Return top 20 results sorted by relevance score',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -87,6 +101,20 @@ export const autocompleteSearchProblemDefinition: ProblemDefinition = {
 - Ranks by popularity and recency
 - Supports fuzzy matching for typos
 - Handles 50k keystrokes/sec with <50ms P95 latency`,
+
+  userFacingFRs: [
+    '**GET /api/autocomplete?q=partial** - Get search suggestions for partial query',
+    '**POST /api/autocomplete/track** - Track completed searches to update popularity rankings',
+    '**GET /api/autocomplete/trending** - Get trending search queries',
+    '**Supports fuzzy matching** - Return suggestions even with typos (edit distance <= 2)',
+  ],
+
+  userFacingNFRs: [
+    'Autocomplete suggestions must return in <50ms at P95',
+    'Support 50,000 keystrokes/sec from concurrent users',
+    'Return top 10 suggestions ranked by popularity and recency',
+    'Support fuzzy matching with edit distance up to 2 characters',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -164,6 +192,20 @@ export const facetedSearchProblemDefinition: ProblemDefinition = {
 - Supports range filters
 - Handles 5k requests/sec with 1M products`,
 
+  userFacingFRs: [
+    '**GET /api/products/search** - Search products with multiple facet filters (brand, category, rating)',
+    '**GET /api/products/facets** - Retrieve available facets with dynamic counts',
+    '**GET /api/products/filter?price=min-max** - Apply price range filter',
+    '**POST /api/products/search/advanced** - Combine multiple filters (brand AND category AND price range)',
+  ],
+
+  userFacingNFRs: [
+    'Faceted search queries must complete in <300ms at P95',
+    'Support 5,000 requests/sec across 1M products',
+    'Return dynamic facet counts based on current filter selections',
+    'Support range filters for price, rating, and date fields',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -239,6 +281,20 @@ export const geoSearchProblemDefinition: ProblemDefinition = {
 - Supports bounding box queries
 - Sorts results by distance
 - Handles 20k requests/sec across 10M locations worldwide`,
+
+  userFacingFRs: [
+    '**GET /api/locations/nearby?lat=...&lon=...&radius=...** - Find locations within radius',
+    '**GET /api/locations/bbox?neLat=...&neLon=...&swLat=...&swLon=...** - Search within bounding box',
+    '**GET /api/locations/search?q=restaurant&lat=...&lon=...** - Search with keyword and location',
+    '**Results sorted by distance** - All responses include distance in meters and sort by proximity',
+  ],
+
+  userFacingNFRs: [
+    'Geo-search queries must complete in <100ms at P95',
+    'Support 20,000 requests/sec across 10M worldwide locations',
+    'Use geohash indexing for efficient radius searches',
+    'Return results sorted by distance from user location',
+  ],
 
   functionalRequirements: {
     mustHave: [

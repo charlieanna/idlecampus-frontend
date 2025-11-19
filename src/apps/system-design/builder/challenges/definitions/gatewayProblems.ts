@@ -17,6 +17,20 @@ export const basicApiGatewayProblemDefinition: ProblemDefinition = {
 - Implements basic health checks and service discovery
 - Handles 10k requests/sec with <50ms overhead`,
 
+  userFacingFRs: [
+    '**GET /api/users/*** - Route user service requests through gateway',
+    '**POST /api/orders/*** - Route order service requests through gateway',
+    '**GET /api/products/*** - Route product service requests through gateway',
+    '**GET /api/health** - Gateway health check and service status',
+  ],
+
+  userFacingNFRs: [
+    'Gateway routing overhead must be <50ms at P95',
+    'Support 10,000 requests/sec across all services',
+    'Maintain 99.9% availability with automatic service failover',
+    'All requests include authentication headers and request transformation',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -83,6 +97,20 @@ export const simpleRateLimiterProblemDefinition: ProblemDefinition = {
 - Supports burst allowance for traffic spikes
 - Returns 429 with retry-after header when exhausted
 - Validates 20k requests/sec with <10ms overhead`,
+
+  userFacingFRs: [
+    '**Any API endpoint** - All requests validated with token bucket rate limiting',
+    '**GET /api/rate-limit/status** - Check current token count and refill rate',
+    '**POST /api/resource** - Protected resource with burst allowance support',
+    '**Response headers** - Include X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset',
+  ],
+
+  userFacingNFRs: [
+    'Rate limiting must add <10ms overhead at P95',
+    'Support 20,000 requests/sec with rate limit validation',
+    'Default limit: 100 requests/minute per user with burst allowance',
+    'Return 429 Too Many Requests with Retry-After header when exhausted',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -159,6 +187,20 @@ export const authenticationGatewayProblemDefinition: ProblemDefinition = {
 - Caches public keys for verification (99% hit rate)
 - Extracts and forwards user context to backend services
 - Handles 30k authenticated requests/sec`,
+
+  userFacingFRs: [
+    '**Any API endpoint** - All requests validated with JWT token in Authorization header',
+    '**GET /api/auth/keys** - Retrieve public keys for JWT verification',
+    '**All authenticated requests** - Extract user context (id, roles, permissions) from JWT',
+    '**Response headers** - Include X-User-Id and X-User-Roles forwarded to backend',
+  ],
+
+  userFacingNFRs: [
+    'JWT validation must complete in <20ms at P95',
+    'Support 30,000 authenticated requests/sec',
+    'Achieve 99% cache hit rate for public key lookups',
+    'Return 401 Unauthorized for invalid or expired tokens',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -244,6 +286,20 @@ export const graphqlGatewayProblemDefinition: ProblemDefinition = {
 - Implements efficient data loading with DataLoader pattern
 - Handles N+1 query problems with batching
 - Supports 5k complex queries/sec`,
+
+  userFacingFRs: [
+    '**POST /graphql** - Execute GraphQL queries and mutations',
+    '**GET /graphql** - GraphQL playground and schema introspection',
+    '**Query: user(id: ID!)** - Fetch user data from user service',
+    '**Query: products(filter: ProductFilter)** - Fetch products from product service with batching',
+  ],
+
+  userFacingNFRs: [
+    'GraphQL queries must complete in <500ms at P95',
+    'Support 5,000 complex queries/sec with nested resolvers',
+    'Batch N+1 queries using DataLoader with <100ms batching window',
+    'Cache resolver results in Redis with configurable TTL',
+  ],
 
   functionalRequirements: {
     mustHave: [

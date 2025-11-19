@@ -1,6 +1,7 @@
 // Types for System Design Lessons
 // Extends the multi-stage lesson system with system design specific features
 
+import { ReactNode } from 'react';
 import { MultiStageLesson, MultiStage, BaseStage } from '../../../../types/multiStage';
 import { SystemGraph } from './graph';
 import { ComponentNode } from './component';
@@ -167,4 +168,21 @@ export interface SystemDesignLessonProgress {
   completedAt?: Date;
   timeSpentSeconds?: number;
 }
+
+/**
+ * Simplified lesson stage for pattern lessons
+ * Supports React content instead of just markdown
+ */
+export interface SimpleLessonStage {
+  id: string;
+  type: 'concept' | 'visualization' | 'example' | 'practice';
+  title: string;
+  content: ReactNode | string | { markdown: string }; // Support React, string, or markdown
+}
+
+/**
+ * Simplified lesson definition (alias for backward compatibility)
+ * Used for pattern lessons that don't need full SystemDesignLesson features
+ */
+export type LessonDefinition = SystemDesignLesson;
 

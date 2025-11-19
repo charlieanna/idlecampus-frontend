@@ -18,6 +18,29 @@ export const tutorialRealtimeChatProblemDefinition: ProblemDefinition = {
 - Implements message queues for reliability and ordering
 - Achieves <500ms P99 message delivery latency`,
 
+  userFacingFRs: [
+    '**POST /api/rooms** - Create a new chat room',
+    '**POST /api/rooms/:id/join** - Join an existing chat room',
+    '**GET /api/rooms/:id/messages** - Fetch message history (paginated, last 100 messages)',
+    '**POST /api/messages** - Send a message to a room (also published via WebSocket)',
+    '**WS /ws** - Establish WebSocket connection for real-time message delivery',
+    '**POST /api/attachments** - Upload a file attachment (images, documents)',
+    '**GET /api/rooms/:id/members** - Get list of active members in a room',
+    'Real-time message delivery via WebSockets to all room members',
+    'Messages are ordered and delivered reliably using Kafka message queue',
+  ],
+
+  userFacingNFRs: [
+    '**Message Delivery Latency**: < 500ms p99 end-to-end (send to receive)',
+    '**WebSocket Connection**: < 100ms to establish persistent connection',
+    '**History Fetch Latency**: < 200ms p95 to load last 100 messages from cache',
+    '**Throughput**: 50,000 messages/sec during peak hours',
+    '**Concurrent Users**: Support 100K simultaneous WebSocket connections',
+    '**Message Ordering**: Guaranteed in-order delivery within a room using Kafka',
+    '**Availability**: 99.9% uptime for WebSocket connections',
+    '**File Upload**: < 3s p95 for uploading attachments (up to 10MB)',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

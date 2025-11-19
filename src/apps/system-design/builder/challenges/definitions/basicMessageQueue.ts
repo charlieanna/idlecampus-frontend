@@ -18,6 +18,26 @@ export const basicMessageQueueProblemDefinition: ProblemDefinition = {
 - Implements reliable async message processing
 - Handles 5k messages/sec`,
 
+  userFacingFRs: [
+    '**POST /api/queues** - Create a new message queue',
+    '**POST /api/queues/:id/messages** - Publish message to a queue (producer)',
+    '**GET /api/queues/:id/messages** - Consume next message from queue (consumer)',
+    '**POST /api/messages/:id/ack** - Acknowledge successful message processing',
+    '**POST /api/messages/:id/retry** - Retry failed message (increments retry count)',
+    '**GET /api/queues/:id/stats** - Get queue statistics (pending, processing, completed)',
+    'Multiple consumers can process messages in parallel from same queue',
+    'Messages are durable - survive queue restarts',
+  ],
+
+  userFacingNFRs: [
+    '**Throughput**: 5,000 messages/sec (publish + consume)',
+    '**Message Durability**: Messages persist to disk, survive crashes',
+    '**Processing Latency**: < 10ms p95 for publish, < 50ms p95 for consume',
+    '**Parallel Processing**: Multiple consumers can read from same queue concurrently',
+    '**Reliability**: Unacknowledged messages return to queue after timeout (at-least-once delivery)',
+    '**Retry Strategy**: Failed messages retry up to 3 times with exponential backoff',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

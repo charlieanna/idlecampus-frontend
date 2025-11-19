@@ -17,6 +17,20 @@ export const realtimeNotificationsProblemDefinition: ProblemDefinition = {
 - Handles connection drops and reconnects gracefully
 - Delivers 100k notifications/sec with <50ms P95 latency`,
 
+  userFacingFRs: [
+    '**WebSocket ws://api/notifications** - Establish persistent connection for real-time notifications',
+    '**POST /api/notifications/send** - Send notification to user(s) via WebSocket push',
+    '**POST /api/notifications/subscribe** - Subscribe to notification topics',
+    '**Automatic reconnection** - Handle connection drops with exponential backoff',
+  ],
+
+  userFacingNFRs: [
+    'Notifications must be delivered in <50ms at P95',
+    'Support 100,000 notifications/sec to millions of concurrent connections',
+    'Maintain millions of persistent WebSocket connections',
+    'Handle reconnections gracefully with message queue for missed notifications',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -95,6 +109,20 @@ export const basicEventLogProblemDefinition: ProblemDefinition = {
 - Processes and enriches logs with workers
 - Enables real-time search with Elasticsearch`,
 
+  userFacingFRs: [
+    '**POST /api/logs/ingest** - Ingest application events from microservices',
+    '**GET /api/logs/search?q=query** - Search logs in real-time using Elasticsearch',
+    '**GET /api/logs/stream** - Stream live logs via Server-Sent Events (SSE)',
+    '**GET /api/logs/metrics** - Aggregate log metrics (error rate, latency)',
+  ],
+
+  userFacingNFRs: [
+    'Log ingestion must handle 50,000 events/sec',
+    'Search queries must return results in <500ms at P95',
+    'Logs must be searchable within 5 seconds of ingestion',
+    'Support log retention for 30 days with hot/cold storage tiering',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -170,6 +198,20 @@ export const simplePubsubProblemDefinition: ProblemDefinition = {
 - Routes to millions of subscribed workers
 - Filters by topic patterns
 - Handles 10k messages/sec with subscriber backpressure`,
+
+  userFacingFRs: [
+    '**POST /api/pubsub/publish** - Publish message to topic (e.g., "orders.created")',
+    '**POST /api/pubsub/subscribe** - Subscribe to topic with wildcard patterns (e.g., "orders.*")',
+    '**DELETE /api/pubsub/unsubscribe** - Unsubscribe from topic',
+    '**GET /api/pubsub/topics** - List available topics and subscriber counts',
+  ],
+
+  userFacingNFRs: [
+    'Message publishing must complete in <10ms at P95',
+    'Support 10,000 messages/sec with fan-out to millions of subscribers',
+    'Support wildcard topic patterns (e.g., "orders.*", "user.*.created")',
+    'Handle subscriber backpressure with message buffering',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -248,6 +290,20 @@ export const realtimeChatMessagesProblemDefinition: ProblemDefinition = {
 - Supports channels and direct messages
 - Shows online presence
 - Handles 20k messages/sec with message ordering`,
+
+  userFacingFRs: [
+    '**WebSocket ws://api/chat** - Connect to real-time chat with persistent connection',
+    '**POST /api/channels/:id/messages** - Send message to channel',
+    '**POST /api/users/:id/messages** - Send direct message to user',
+    '**GET /api/users/:id/presence** - Get user online status (online, away, offline)',
+  ],
+
+  userFacingNFRs: [
+    'Messages must be delivered in real-time with <100ms latency',
+    'Support 20,000 messages/sec with strict ordering per channel',
+    'Display online presence with <5 second update latency',
+    'Store message history with instant retrieval (<200ms for last 100 messages)',
+  ],
 
   functionalRequirements: {
     mustHave: [

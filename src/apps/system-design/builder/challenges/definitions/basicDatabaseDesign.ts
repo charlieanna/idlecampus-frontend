@@ -18,6 +18,27 @@ export const basicDatabaseDesignProblemDefinition: ProblemDefinition = {
 - Handles 10k reads/sec and 1k writes/sec
 - Uses read replicas for scaling reads`,
 
+  userFacingFRs: [
+    '**POST /api/users** - Register new user with username and email',
+    '**POST /api/posts** - Create new blog post with title, content, and tags',
+    '**GET /api/posts/:id** - View a specific blog post (increments view count)',
+    '**GET /api/posts** - List recent posts (paginated)',
+    '**POST /api/posts/:id/comments** - Add comment to a post',
+    '**GET /api/posts/:id/comments** - Get all comments for a post',
+    '**POST /api/users/:id/follow** - Follow another user',
+    '**GET /api/search/posts?q=keyword** - Full-text search for posts by keyword',
+    '**GET /api/tags/:name/posts** - Get all posts with a specific tag',
+  ],
+
+  userFacingNFRs: [
+    '**Read Performance**: < 100ms p95 for viewing posts (10,000 reads/sec)',
+    '**Write Performance**: < 200ms p95 for creating posts/comments (1,000 writes/sec)',
+    '**Search Performance**: < 500ms p95 for full-text search queries',
+    '**Database Design**: Properly normalized schema (3NF) with appropriate indexes',
+    '**Scalability**: Use read replicas to handle read-heavy traffic (90% reads, 10% writes)',
+    '**Cache Strategy**: Cache frequently viewed posts and query results',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

@@ -17,6 +17,20 @@ export const sessionStoreBasicProblemDefinition: ProblemDefinition = {
 - Authenticates users with <10ms session validation
 - Handles 10k requests/sec (9k reads, 1k writes)`,
 
+  userFacingFRs: [
+    '**POST /api/auth/login** - Authenticate user credentials and create session token',
+    '**GET /api/auth/validate** - Validate session token and return user context',
+    '**POST /api/auth/refresh** - Extend session TTL on user activity (sliding window)',
+    '**DELETE /api/auth/logout** - Invalidate and remove session token',
+  ],
+
+  userFacingNFRs: [
+    'Session validation must complete in <10ms at P95',
+    'Support 10,000 authentication requests/sec (9,000 reads, 1,000 writes)',
+    'Sessions must auto-expire after 30 minutes of inactivity',
+    'Achieve 99.9% cache hit rate for session lookups',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -93,6 +107,20 @@ export const databaseQueryCacheProblemDefinition: ProblemDefinition = {
 - Reduces database CPU usage by 50%
 - Handles 1k dashboard loads/sec generating 10k queries/sec
 - Implements query fingerprinting for cache keys`,
+
+  userFacingFRs: [
+    '**GET /api/analytics/dashboard/:id** - Load dashboard with multiple widget queries',
+    '**POST /api/analytics/query** - Execute custom analytics query with parameters',
+    '**GET /api/analytics/metrics** - Retrieve aggregated metrics (revenue, users, conversions)',
+    '**POST /api/analytics/reports/generate** - Generate complex report with multiple data sources',
+  ],
+
+  userFacingNFRs: [
+    'Dashboard loads must complete in <2 seconds with cache hits',
+    'Support 1,000 dashboard loads/sec generating 10,000 queries/sec',
+    'Reduce database CPU usage by 50% through effective caching',
+    'Cache hit rate must exceed 80% for repeated queries',
+  ],
 
   functionalRequirements: {
     mustHave: [
@@ -175,6 +203,20 @@ export const apiRateLimitCacheProblemDefinition: ProblemDefinition = {
 - Enforces 1000 req/hour limits with minimal latency
 - Validates 50k API requests/sec`,
 
+  userFacingFRs: [
+    '**GET /api/resource/:id** - Access protected API resource with rate limit enforcement',
+    '**POST /api/data** - Submit data with rate limit validation',
+    '**GET /api/rate-limit/status** - Check current rate limit usage and remaining quota',
+    '**Any API endpoint** - All requests validated against user rate limit (1000 req/hour)',
+  ],
+
+  userFacingNFRs: [
+    'Rate limit validation must add <5ms overhead at P95',
+    'Support 50,000 API requests/sec with rate limit checks',
+    'Enforce 1,000 requests/hour per user with sliding window algorithm',
+    'Return 429 status with Retry-After header when limit exceeded',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {
@@ -241,6 +283,20 @@ export const productCatalogCacheProblemDefinition: ProblemDefinition = {
 - Handles Black Friday traffic (100k requests/sec)
 - Warms cache before sales events
 - Prevents thundering herd on popular items`,
+
+  userFacingFRs: [
+    '**GET /api/products/:id** - Retrieve product details including price and description',
+    '**GET /api/products/:id/inventory** - Check real-time inventory availability',
+    '**GET /api/products/category/:category** - Browse products by category with details',
+    '**POST /api/products/search** - Search products with filters (price, brand, rating)',
+  ],
+
+  userFacingNFRs: [
+    'Product page loads must complete in <200ms at P95',
+    'Support 100,000 requests/sec during peak traffic (Black Friday)',
+    'Achieve 90% cache hit rate for product lookups',
+    'Prevent thundering herd on popular items with cache locking',
+  ],
 
   functionalRequirements: {
     mustHave: [

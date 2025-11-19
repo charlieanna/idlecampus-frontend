@@ -13,23 +13,32 @@ import { problemConfigs } from '../../problemConfigs';
 /**
  * Basic Multi-Region Setup
  * From extracted-problems/system-design/multiregion.md
+ * 
+ * This problem focuses on single-leader multi-region architecture (primary/secondary)
+ * for a content publishing application.
  */
 export const basicMultiRegionProblemDefinition: ProblemDefinition = {
   id: 'basic-multi-region',
-  title: 'Basic Multi-Region Setup',
-  description: `Deploy a simple web application across two regions with basic failover. Learn about DNS routing, health checks, and data replication fundamentals.
-- Deploy in US and EU regions
-- Route users to nearest region
-- Replicate data between regions
-- Handle region failures`,
+  title: 'News Publishing Platform',
+  description: `Design a news publishing platform (like Medium or news site) that:
+- Content creators publish articles from the primary region
+- Readers worldwide can read articles from their nearest region
+- System automatically routes users to the closest region
+- If primary region fails, secondary region takes over
+
+Key Learning Objectives:
+- Single-leader multi-region architecture (primary for writes, secondary for reads)
+- Geographic routing with GeoDNS
+- Cross-region data replication
+- Automatic failover on regional failures`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
-    'Deploy in US and EU regions',
-    'Route users to nearest region',
-    'Replicate data between regions',
-    'Handle region failures',
-    'Monitor cross-region latency'
+    'Content creators can publish articles from anywhere',
+    'Readers can access articles from their nearest geographic region',
+    'Articles published in primary region are available in all regions',
+    'Readers can access articles even if one region fails (automatic failover)',
+    'System automatically routes users to the region with lowest latency',
   ],
   userFacingNFRs: [
     'Latency: P95 < 100ms same-region, < 300ms cross-region',
@@ -187,25 +196,36 @@ def track_event(event_type: str, item_id: str, metadata: Dict = None) -> Dict:
 };
 
 /**
- * Active-Active Multi-Region
+ * Collaborative Document Editor (Google Docs)
  * From extracted-problems/system-design/multiregion.md
+ * 
+ * This problem focuses on active-active multi-region architecture as a key requirement
+ * for a collaborative document editing application.
  */
 export const activeActiveRegionsProblemDefinition: ProblemDefinition = {
   id: 'active-active-regions',
-  title: 'Active-Active Multi-Region',
-  description: `Build an active-active setup where both regions can handle writes. Learn about conflict resolution, vector clocks, and eventual consistency.
-- Accept writes in both regions
-- Resolve write conflicts
-- Maintain eventual consistency
-- Handle network partitions`,
+  title: 'Collaborative Document Editor',
+  description: `Design a collaborative document editor (like Google Docs) that:
+- Users can create, edit, and share documents
+- Multiple users can edit the same document simultaneously
+- Users can access documents from anywhere in the world
+- System must handle concurrent edits from users in different geographic regions
+- Documents remain available even during regional failures
+
+Key Learning Objectives:
+- Active-active multi-region architecture (both regions handle writes)
+- Conflict resolution for simultaneous edits (vector clocks, CRDTs)
+- Eventual consistency across regions
+- Network partition handling`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
-    'Accept writes in both regions',
-    'Resolve write conflicts',
-    'Maintain eventual consistency',
-    'Handle network partitions',
-    'Support regional preferences'
+    'Users can create, edit, and share documents',
+    'Multiple users can edit the same document simultaneously',
+    'Users worldwide can access and edit documents from any location',
+    'Users can edit documents even if one region fails (documents available from other regions)',
+    'Conflicts from simultaneous edits by different users in different regions are automatically resolved',
+    'Edits made in one region eventually sync to all regions',
   ],
   userFacingNFRs: [
     'Latency: P95 < 50ms for local writes',
@@ -380,20 +400,26 @@ def support_regional_preferences(**kwargs) -> Dict:
  */
 export const globalCdnProblemDefinition: ProblemDefinition = {
   id: 'global-cdn',
-  title: 'Global CDN with Regional Origins',
-  description: `Design a global CDN architecture with regional origin servers, cache invalidation, and edge optimization.
-- Edge caching in 100+ locations
-- Regional origin failover
-- Cache invalidation
-- Dynamic content bypass`,
+  title: 'Video Streaming Platform',
+  description: `Design a video streaming platform (like YouTube or Netflix) that:
+- Serves video content to users worldwide
+- Caches videos at edge locations close to users
+- Handles millions of concurrent viewers
+- Automatically routes to backup origins if primary fails
+
+Key Learning Objectives:
+- Global CDN architecture with edge caching
+- Regional origin servers with failover
+- Cache invalidation strategies
+- Handling massive scale (10M+ requests/sec)`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
-    'Edge caching in 100+ locations',
-    'Regional origin failover',
-    'Cache invalidation',
-    'Dynamic content bypass',
-    'DDoS protection'
+    'Users worldwide can watch videos with low latency',
+    'Videos are cached at edge locations close to users',
+    'Users can access videos even if one origin region fails',
+    'New videos become available globally within minutes',
+    'Popular videos load instantly from nearby cache',
   ],
   userFacingNFRs: [
     'Latency: P95 < 50ms globally',
@@ -1827,20 +1853,26 @@ def create_item(item_id: str, **kwargs) -> Dict:
  */
 export const crossRegionFailoverProblemDefinition: ProblemDefinition = {
   id: 'cross-region-failover',
-  title: 'Cross-Region Disaster Recovery',
-  description: `Design a multi-region system with automatic failover, data replication, and health monitoring to survive full region outages.
-- Health checks per region
-- Automatic DNS failover
-- Async data replication
-- RPO < 5 minutes`,
+  title: 'E-commerce Platform with Disaster Recovery',
+  description: `Design an e-commerce platform (like Amazon) that:
+- Handles millions of orders and transactions
+- Automatically fails over to backup region if primary fails
+- Maintains data backups for disaster recovery
+- Recovers from regional disasters within minutes
+
+Key Learning Objectives:
+- Hot standby disaster recovery architecture
+- Automatic failover mechanisms
+- Recovery Time Objective (RTO) and Recovery Point Objective (RPO)
+- Data replication and backup strategies`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
-    'Health checks per region',
-    'Automatic DNS failover',
-    'Async data replication',
-    'RPO < 5 minutes',
-    'RTO < 10 minutes'
+    'Users can place orders and make purchases',
+    'Users can access the platform even if one region completely fails',
+    'No data loss during regional disasters (automatic backups)',
+    'System automatically switches to backup region within minutes',
+    'Orders and transactions continue seamlessly after failover',
   ],
   userFacingNFRs: [
     'Latency: P95 < 100ms normal, < 500ms during failover',

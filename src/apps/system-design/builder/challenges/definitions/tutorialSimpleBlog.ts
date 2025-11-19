@@ -17,6 +17,26 @@ export const tutorialSimpleBlogProblemDefinition: ProblemDefinition = {
 - Implements read replicas for scaling reads
 - Handles both reads (90%) and writes (10%)`,
 
+  userFacingFRs: [
+    '**GET /api/posts** - List all blog posts (paginated, 20 posts per page)',
+    '**GET /api/posts/:id** - Read a specific blog post by ID',
+    '**POST /api/posts** - Create a new blog post (requires authentication)',
+    '**PUT /api/posts/:id** - Update an existing blog post (requires authentication)',
+    '**DELETE /api/posts/:id** - Delete a blog post (requires authentication)',
+    '**GET /api/posts/:id/comments** - Get all comments for a specific post',
+    '**POST /api/posts/:id/comments** - Add a comment to a post',
+    'System must handle 90% reads and 10% writes',
+  ],
+
+  userFacingNFRs: [
+    '**Read Latency**: < 200ms p95 for fetching posts and comments',
+    '**Write Latency**: < 500ms p95 for creating/updating posts',
+    '**Throughput**: Support 100-1,000 requests/sec (growing from launch to 6 months)',
+    '**Availability**: 99.9% uptime with load balancer failover',
+    '**Scalability**: Read replicas handle 90% of traffic (read-heavy workload)',
+    '**Response Time**: < 100ms p95 for cached responses',
+  ],
+
   functionalRequirements: {
     mustHave: [
       {

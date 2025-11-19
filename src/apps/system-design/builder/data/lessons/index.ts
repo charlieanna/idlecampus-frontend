@@ -13,7 +13,15 @@ import { cachingLesson } from './components/05-caching';
 import { replicationLesson } from './components/06-replication';
 
 // Pattern lessons (Level 3)
-// Will be added in Phase 6
+import { activeActiveMultiRegionLesson } from './patterns/active-active-multiregion';
+import { basicMultiRegionLesson } from './patterns/basic-multiregion';
+import { globalCdnLesson } from './patterns/global-cdn';
+import { crossRegionDrLesson } from './patterns/cross-region-dr';
+import { cachingFundamentalsLesson } from './patterns/caching-fundamentals.tsx';
+import { searchFundamentalsLesson } from './patterns/search-fundamentals.tsx';
+import { streamingFundamentalsLesson } from './patterns/streaming-fundamentals.tsx';
+import { gatewayFundamentalsLesson } from './patterns/gateway-fundamentals.tsx';
+import { storageFundamentalsLesson } from './patterns/storage-fundamentals.tsx';
 
 // Problem-solving lessons (Level 4)
 // Will be added in Phase 6
@@ -30,6 +38,17 @@ export const allLessons: SystemDesignLesson[] = [
   // Components
   cachingLesson,
   replicationLesson,
+  
+  // Patterns
+  activeActiveMultiRegionLesson,
+  basicMultiRegionLesson,
+  globalCdnLesson,
+  crossRegionDrLesson,
+  cachingFundamentalsLesson,
+  searchFundamentalsLesson,
+  streamingFundamentalsLesson,
+  gatewayFundamentalsLesson,
+  storageFundamentalsLesson,
 ];
 
 /**
