@@ -8,9 +8,9 @@ export const capacityPlanningLesson: SystemDesignLesson = {
   id: 'sd-capacity-planning',
   slug: 'understanding-scale',
   title: 'Understanding Scale',
-  description: 'Learn how to estimate capacity requirements, understand RPS, latency, and throughput with hands-on practice',
+  description: 'Master capacity planning trade-offs: WHEN to over-provision vs optimize costs, WHEN to use auto-scaling vs pre-provisioned infrastructure, and HOW to balance cost, reliability, and performance based on business context',
   difficulty: 'beginner',
-  estimatedMinutes: 45,
+  estimatedMinutes: 60,
   category: 'fundamentals',
   tags: ['capacity', 'scaling', 'metrics', 'rps', 'throughput', 'peak-planning'],
   prerequisites: ['basic-components'],
@@ -610,9 +610,333 @@ After:
 
           <Divider />
 
+          <H2>🎯 Critical Trade-Off: Over-Provisioning vs Cost Optimization</H2>
+
+          <P>
+            The eternal capacity planning dilemma: How much buffer should you add? Over-provision too much = wasted money. Under-provision = system crashes.
+          </P>
+
+          <ComparisonTable
+            headers={['Strategy', 'Cost', 'Risk', 'Use When']}
+            rows={[
+              [
+                'No Buffer\n(Provision for exact peak)',
+                '✅ Lowest\n$1000/mo for 10k RPS',
+                '❌ Highest\nAny spike >10k = crash',
+                '❌ Never use\n(Too risky)'
+              ],
+              [
+                '20% Buffer\n(12k RPS capacity)',
+                '⚖️ Low\n$1200/mo',
+                '⚖️ Medium\nHandles small spikes',
+                'Predictable traffic\nLow-stakes app'
+              ],
+              [
+                '50% Buffer\n(15k RPS capacity)',
+                '⚖️ Medium\n$1500/mo',
+                '✅ Low\nHandles 50% spike',
+                '✅ Recommended\nMost production apps'
+              ],
+              [
+                '100% Buffer\n(20k RPS capacity)',
+                '❌ High\n$2000/mo',
+                '✅ Very Low\nHandles 2x spike',
+                'Business-critical\nHigh revenue/request'
+              ],
+              [
+                '200%+ Buffer\n(30k+ RPS capacity)',
+                '❌ Very High\n$3000/mo',
+                '✅ Zero\nHandles any spike',
+                'Launches, sales events\nCan\'t afford downtime'
+              ]
+            ]}
+          />
+
+          <Example title="Real Decision: E-commerce Flash Sale">
+            <P><Strong>Scenario:</Strong> Black Friday sale, normal traffic 10k RPS, expect 50k RPS peak</P>
+
+            <P><Strong>Option 1: Under-Provision (20k RPS, 100% buffer over normal)</Strong></P>
+            <CodeBlock>
+{`Cost: $2000/mo
+Risk: 50k peak > 20k capacity → System crashes
+Impact: Lost sales during biggest revenue day
+
+Calculation:
+- Revenue/hour during sale: $100,000
+- Downtime: 2 hours (until you spin up more servers)
+- Lost revenue: $200,000
+- Save on infrastructure: $0 (still had to emergency scale)
+
+Result: ❌ Lost $200k trying to save $1k`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Over-Provision (60k RPS, 500% buffer over normal)</Strong></P>
+            <CodeBlock>
+{`Cost: $6000/mo (for Black Friday month)
+Risk: Can handle 60k RPS, only need 50k → Zero downtime
+Impact: Smooth sale, happy customers
+
+Calculation:
+- Extra cost vs normal: $6000 - $1000 = $5000 for the month
+- Revenue during sale: $1,000,000
+- Lost revenue: $0
+- Customer goodwill: Priceless
+
+Result: ✅ Spent $5k to protect $1M in revenue`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> $5k over-provisioning cost vs $200k downtime cost. Over-provisioning wins by 40x.
+            </KeyPoint>
+          </Example>
+
+          <H3>Decision Framework:</H3>
+
+          <ComparisonTable
+            headers={['Business Context', 'Buffer %', 'Why?']}
+            rows={[
+              [
+                'Personal blog\n1,000 visitors/day\n$0 revenue/visitor',
+                '20%',
+                'Downtime costs nothing. Save money, accept occasional slowness.'
+              ],
+              [
+                'SaaS startup\n10,000 users\n$50 revenue/user/year',
+                '50%',
+                'Downtime = churn. Invest in reliability to retain customers.'
+              ],
+              [
+                'E-commerce\n100,000 orders/day\n$50 revenue/order',
+                '100%',
+                'Revenue/hour = $200k+. 1 hour downtime >cost of 100% buffer.'
+              ],
+              [
+                'Banking app\nRegulatory requirements',
+                '100-200%',
+                'Legal penalties for downtime. Cost of buffer <<cost of fine.'
+              ],
+              [
+                'Product launch\nPress coverage, viral potential',
+                '200-500%',
+                'One shot to make first impression. Over-provision aggressively.'
+              ]
+            ]}
+          />
+
+          <Divider />
+
+          <H2>🎯 Critical Trade-Off: Auto-Scaling vs Pre-Provisioned</H2>
+
+          <P>
+            Should you auto-scale or pre-provision servers for peak? Both have trade-offs.
+          </P>
+
+          <ComparisonTable
+            headers={['Strategy', 'Cost', 'Speed', 'Complexity', 'Best For']}
+            rows={[
+              [
+                'Pre-Provisioned\n(Servers always running)',
+                '❌ High\n(Pay 24/7)',
+                '✅ Instant\n(Servers ready)',
+                '✅ Simple\n(No scaling logic)',
+                'Predictable peaks\n(9am-5pm daily)'
+              ],
+              [
+                'Auto-Scaling\n(Add servers on demand)',
+                '✅ Low\n(Pay per use)',
+                '❌ Slow\n(5-10 min delay)',
+                '❌ Complex\n(Scaling policies)',
+                'Unpredictable spikes\n(Viral traffic)'
+              ],
+              [
+                'Hybrid\n(Base + Auto-scale)',
+                '⚖️ Medium',
+                '✅ Fast\n(Base instant)',
+                '⚖️ Medium',
+                '✅ Most prod apps\n(Recommended)'
+              ]
+            ]}
+          />
+
+          <Example title="Real Scenario: News Site">
+            <P><Strong>Traffic Pattern:</Strong></P>
+            <UL>
+              <LI>Normal: 5k RPS (midnight-6am)</LI>
+              <LI>Business hours: 20k RPS (9am-5pm)</LI>
+              <LI>Breaking news: 100k RPS (unpredictable)</LI>
+            </UL>
+
+            <P><Strong>Option 1: Pre-Provision for Peak (100k RPS)</Strong></P>
+            <CodeBlock>
+{`Cost: 100 servers × $100/mo = $10,000/mo
+Utilization:
+- Normal hours (18h/day): 5% utilization (wasted 95%)
+- Business hours (6h/day): 20% utilization (wasted 80%)
+- Breaking news (1h/month): 100% utilization
+
+Average utilization: ~10%
+Waste: $9,000/mo on idle servers`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Auto-Scale from 0</Strong></P>
+            <CodeBlock>
+{`Cost: Pay per use, ~$2,000/mo average
+Problem: Breaking news hits → Auto-scale starts
+- Time to spin up 100 servers: 10 minutes
+- During those 10 min: Site crashes, users leave
+- By time servers ready: Viral moment over
+
+Result: Save $8k/mo but miss revenue opportunity`}
+            </CodeBlock>
+
+            <P><Strong>Option 3: Hybrid (Base + Auto-Scale)</Strong></P>
+            <CodeBlock>
+{`Base capacity: 30 servers (30k RPS) always running
+Auto-scale: Add up to 70 more servers when needed
+
+Cost breakdown:
+- Base: 30 × $100 = $3,000/mo (24/7)
+- Auto-scale: ~$500/mo average (only during spikes)
+- Total: $3,500/mo
+
+Benefits:
+- Instant handling of business hours (20k < 30k base)
+- Auto-scale kicks in for breaking news
+- Scale-up time: Start from 30k, only need 2-3 min for final 70k
+
+Result: ✅ Save $6,500/mo vs full provision, never crash`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> Hybrid approach balances cost ($3,500) vs reliability (instant base, quick auto-scale).
+            </KeyPoint>
+          </Example>
+
+          <Divider />
+
+          <H2>🎯 Critical Trade-Off: Reserved vs On-Demand Instances</H2>
+
+          <P>
+            Cloud pricing model affects your capacity planning. Do you commit long-term or pay as you go?
+          </P>
+
+          <ComparisonTable
+            headers={['Pricing Model', 'Cost/Server/Mo', 'Commitment', 'Best For']}
+            rows={[
+              [
+                'On-Demand\n(Pay per hour)',
+                '$100',
+                'None\n(Cancel anytime)',
+                '• Unpredictable traffic\n• Startups testing product-market fit\n• Temporary spikes'
+              ],
+              [
+                'Reserved (1-year)\n(Commit 1 year)',
+                '$60 (40% off)',
+                '1 year\n(Pay even if unused)',
+                '• Stable baseline traffic\n• Profitable company\n• Predictable growth'
+              ],
+              [
+                'Reserved (3-year)\n(Commit 3 years)',
+                '$40 (60% off)',
+                '3 years\n(Pay even if unused)',
+                '• Enterprise\n• Very stable traffic\n• High confidence in longevity'
+              ],
+              [
+                'Spot Instances\n(Bid for unused)',
+                '$20-40 (60-80% off)\n(Variable)',
+                'None\n(Can be terminated)',
+                '• Batch jobs\n• Fault-tolerant workloads\n• NOT for user-facing apps'
+              ]
+            ]}
+          />
+
+          <Example title="Real Decision: SaaS Company Growth">
+            <P><Strong>Current State:</Strong> 50 servers running 24/7 for baseline traffic</P>
+
+            <P><Strong>Option 1: All On-Demand</Strong></P>
+            <CodeBlock>
+{`Cost: 50 × $100/mo = $5,000/mo = $60,000/year
+Flexibility: Can cancel anytime
+Risk: None
+
+Good for: Early startup, traffic might drop`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: All Reserved (1-year)</Strong></P>
+            <CodeBlock>
+{`Cost: 50 × $60/mo = $3,000/mo = $36,000/year
+Savings: $24,000/year (40% off!)
+Risk: If traffic drops, still pay for unused servers
+
+Good for: Confident in baseline traffic staying stable`}
+            </CodeBlock>
+
+            <P><Strong>Option 3: Hybrid (40 Reserved + 10 On-Demand)</Strong></P>
+            <CodeBlock>
+{`Reserved (baseline): 40 × $60 = $2,400/mo
+On-Demand (flex): 10 × $100 = $1,000/mo
+Total: $3,400/mo = $40,800/year
+
+Savings: $19,200/year vs all on-demand
+Flexibility: Can scale down 10 servers if traffic drops
+Risk: Low (only committed to 40 servers)
+
+Result: ✅ Best of both worlds`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> Reserved = save 40-60% BUT commit long-term. Hybrid minimizes risk while capturing most savings.
+            </KeyPoint>
+          </Example>
+
+          <Divider />
+
+          <H2>Key Takeaways: Capacity Planning Trade-Offs</H2>
+
+          <KeyPoint>
+            <Strong>1. Buffer based on business impact, not arbitrary percentages</Strong>
+            <UL>
+              <LI>Blog: 20% buffer (downtime cheap)</LI>
+              <LI>E-commerce: 100% buffer (downtime = lost revenue)</LI>
+              <LI>Launch: 500% buffer (first impression matters)</LI>
+            </UL>
+          </KeyPoint>
+
+          <KeyPoint>
+            <Strong>2. Over-provisioning costs less than downtime for revenue-generating apps</Strong>
+            <UL>
+              <LI>$5k over-provision >$200k lost revenue (Black Friday example)</LI>
+              <LI>Better to waste 10% capacity than crash and lose customers</LI>
+            </UL>
+          </KeyPoint>
+
+          <KeyPoint>
+            <Strong>3. Hybrid approaches balance cost and reliability</Strong>
+            <UL>
+              <LI>Pre-provision base capacity (instant response)</LI>
+              <LI>Auto-scale for spikes (cost-effective)</LI>
+              <LI>Reserved for baseline + On-demand for flex (save 40% while staying flexible)</LI>
+            </UL>
+          </KeyPoint>
+
+          <KeyPoint>
+            <Strong>4. Different strategies for different traffic patterns</Strong>
+            <UL>
+              <LI>Predictable daily peaks → Pre-provision</LI>
+              <LI>Unpredictable viral spikes → Hybrid (base + auto-scale)</LI>
+              <LI>Steady 24/7 → Reserved instances (40-60% savings)</LI>
+            </UL>
+          </KeyPoint>
+
+          <P>
+            <Strong>Remember:</Strong> Capacity planning is a business decision, not just technical. Always calculate: What does downtime cost vs what does over-provisioning cost?
+          </P>
+
+          <Divider />
+
           <H2>Next Steps: Apply Your Knowledge</H2>
 
-          <P>Now that you understand capacity planning, try applying it to real challenges:</P>
+          <P>Now that you understand capacity planning trade-offs, try applying them to real challenges:</P>
 
           <UL>
             <LI>
