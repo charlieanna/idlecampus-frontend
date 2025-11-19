@@ -146,28 +146,22 @@ import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerato
 export const amazonProblemDefinition: ProblemDefinition = {
   id: 'amazon',
   title: 'Amazon - E-commerce Marketplace',
-  description: `Design an e-commerce marketplace like Amazon that:
-- Users can browse and search for products
-- Users can add items to cart and checkout
-- Users can track orders and view order history
-- Sellers can list and manage products
+  description: `Design an e-commerce marketplace like Amazon with inventory management and order processing.
 
-Learning Objectives (DDIA Ch. 7):
-1. Prevent inventory overselling with compare-and-set (DDIA Ch. 7)
-   - Atomic decrement: WHERE quantity >= qty
-   - Prevents lost updates when orders compete for inventory
-2. Implement optimistic locking with version numbers (DDIA Ch. 7)
-   - Update only succeeds if version unchanged
-   - Retry logic on concurrent modification
-3. Coordinate distributed transactions (DDIA Ch. 7)
-   - Two-phase commit: Order + Inventory + Payment
-   - All succeed or all rollback (atomicity)
-4. Handle multi-warehouse inventory allocation (DDIA Ch. 7)
-   - Lock multiple warehouse rows atomically
-   - Prefer closest warehouse, split orders if needed
-5. Use appropriate isolation levels (DDIA Ch. 7)
-   - Browsing: Read Committed (fast)
-   - Checkout: Serializable (prevent race conditions)`,
+Critical Requirement: Prevent inventory overselling. Multiple concurrent orders must never exceed available stock.
+
+The system must coordinate distributed transactions across orders, inventory, and payments. For multi-warehouse scenarios, intelligently allocate stock from the closest warehouse first.
+
+Requirements:
+• Users can browse and search for products
+• Users can add items to cart and checkout
+• Users can track orders and view order history
+• Sellers can list and manage products
+• Prevent inventory overselling with atomic operations
+• Coordinate distributed transactions across services
+• Multi-warehouse inventory allocation
+• Optimistic locking with version numbers for concurrent updates
+• Appropriate isolation levels (read committed for browsing, serializable for checkout)`,
 
   userFacingFRs: [
     'Users can browse and search for products',

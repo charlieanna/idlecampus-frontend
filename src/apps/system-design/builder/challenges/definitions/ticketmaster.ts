@@ -85,28 +85,19 @@ import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerato
 export const ticketmasterProblemDefinition: ProblemDefinition = {
   id: 'ticketmaster',
   title: 'Ticketmaster - Event Ticketing',
-  description: `Design an event ticketing platform like Ticketmaster that:
-- Users can browse and search for events
-- Users can purchase tickets with seat selection
-- Platform prevents double-booking of seats
-- Tickets are delivered digitally
+  description: `Design an event ticketing platform like Ticketmaster with strong consistency guarantees.
 
-Learning Objectives (DDIA Ch. 7):
-1. Prevent double-booking with pessimistic locking (DDIA Ch. 7)
-   - SELECT FOR UPDATE to lock seat row during purchase
-   - Understand exclusive locks vs shared locks
-2. Implement optimistic locking with version numbers (DDIA Ch. 7)
-   - Compare-and-set pattern for seat reservations
-   - Retry logic on version conflict
-3. Use snapshot isolation for browsing seats (DDIA Ch. 7)
-   - Consistent seat map view during selection
-   - Prevent phantom reads
-4. Handle write skew for last-seat scenarios (DDIA Ch. 7)
-   - Serializable isolation for high-demand events
-   - Only one concurrent purchase succeeds
-5. Design temporary reservations with timeout (DDIA Ch. 7)
-   - Reserve seat for checkout duration
-   - Compensating transaction on timeout`,
+Critical Requirement: Prevent double-booking at all costs. Two users must never be able to purchase the same seat.
+
+The system must handle high-demand ticket drops where thousands of users compete for limited inventory. During checkout, seats are temporarily reserved with a timeout mechanism.
+
+Requirements:
+• Users browse and search for events
+• Users purchase tickets with seat selection
+• Platform prevents double-booking (100% guarantee)
+• Temporary seat reservations expire after timeout
+• Handle payment failures with compensating transactions
+• Maintain consistency during high-concurrency scenarios`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
@@ -115,15 +106,14 @@ Learning Objectives (DDIA Ch. 7):
   ],
 
   userFacingNFRs: [
-    'No double-booking: 100% guarantee (DDIA Ch. 7: SELECT FOR UPDATE)',
-    'Isolation level: Serializable for purchases (DDIA Ch. 7: Prevent write skew)',
-    'Pessimistic locking: Seat locked during checkout (DDIA Ch. 7)',
-    'Optimistic locking: Version-based conflict detection (DDIA Ch. 7)',
-    'Snapshot isolation: Consistent seat map (DDIA Ch. 7: No phantom reads)',
-    'Temporary reservation: 10-minute timeout (DDIA Ch. 7: Compensating txn)',
-    'Unique constraint: (seat_id, event_id) index (DDIA Ch. 7)',
-    'Purchase latency: p99 < 500ms (DDIA Ch. 7: Lock wait time)',
-    'Concurrent bookings: Handle gracefully (DDIA Ch. 7: Serialization failure retry)',
+    'No double-booking: 100% guarantee',
+    'Purchase latency: p99 < 500ms',
+    'Concurrent bookings: Handle gracefully with retries',
+    'Temporary reservation: 10-minute timeout',
+    'Seat availability: Consistent view during selection',
+    'Payment failures: Automatic rollback',
+    'High concurrency: Support 1000+ simultaneous purchase attempts',
+    'Availability: 99.95% uptime',
   ],
 
   functionalRequirements: {

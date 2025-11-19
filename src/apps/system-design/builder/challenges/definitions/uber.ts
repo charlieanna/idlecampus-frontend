@@ -257,40 +257,23 @@ import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerato
 export const uberProblemDefinition: ProblemDefinition = {
   id: 'uber',
   title: 'Uber - Ride Sharing',
-  description: `Design a ride-sharing platform like Uber that:
-- Riders can request rides
-- Drivers can accept ride requests
-- Platform matches riders with nearby drivers
-- Real-time location tracking during rides
+  description: `Design a ride-sharing platform like Uber with real-time matching and location tracking.
 
-Learning Objectives (DDIA Ch. 8, 11):
-1. Prevent driver double-allocation with distributed consensus (DDIA Ch. 8)
-   - Use compare-and-swap (CAS) with version numbers
-   - Raft/Paxos consensus for distributed locking
-2. Handle network partitions in ride matching (DDIA Ch. 8)
-   - Fallback to local-only matching during partition
-   - Eventual consistency with bounded staleness (< 10s)
-3. Implement leader election for region coordinators (DDIA Ch. 8)
-   - Raft-based leader election per city
-   - Automatic failover if leader crashes (< 5s)
-4. Design split-brain prevention for driver state (DDIA Ch. 8)
-   - Quorum-based writes (2/3 datacenters)
-   - Fencing tokens to prevent stale writes
-5. Handle partial failures in payment processing (DDIA Ch. 8)
-   - Saga pattern with compensating transactions
-   - Idempotency keys for retry safety
-6. Manage bounded staleness for location updates (DDIA Ch. 8)
-   - Accept stale location data (< 10s) for availability
-7. Implement real-time matching with stream processing (DDIA Ch. 11)
-   - Stream-stream joins between ride requests and driver locations
-   - Stateful processing with windowed state stores
-   - Event-driven architecture for match workflow
-8. Handle out-of-order events with watermarks (DDIA Ch. 11)
-   - Event-time processing for late-arriving location updates
-   - Grace period for delayed events
-9. Ensure exactly-once semantics for assignments (DDIA Ch. 11)
-   - Transactional outbox pattern
-   - Idempotent stream processing`,
+Critical Requirement: Prevent driver double-allocation. A driver can only accept one ride at a time, even during network partitions or concurrent requests.
+
+The system must handle geo-distributed matching across multiple regions while maintaining consistency for driver state. When network partitions occur, the system should gracefully degrade to local-only matching.
+
+Requirements:
+• Riders can request rides
+• Drivers can accept ride requests
+• Platform matches riders with nearby drivers in real-time
+• Real-time location tracking during rides
+• Prevent driver double-allocation across all regions
+• Handle network partitions with fallback to local matching
+• Automatic failover for region coordinators
+• Compensating transactions for failed payments
+• Accept bounded staleness for location updates (under 10 seconds)
+• Exactly-once semantics for ride assignments`,
 
   userFacingFRs: [
     '**POST /api/riders/:id/request** - Rider requests ride (pickup + dropoff location)',

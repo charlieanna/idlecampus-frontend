@@ -169,38 +169,22 @@ import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerato
 export const airbnbProblemDefinition: ProblemDefinition = {
   id: 'airbnb',
   title: 'Airbnb - Vacation Rentals',
-  description: `Design a vacation rental platform like Airbnb that:
-- Hosts can list properties with photos and details
-- Guests can search and book properties
-- Platform handles payments and bookings
-- Users can leave reviews
+  description: `Design a vacation rental platform like Airbnb with search, booking, and review capabilities.
 
-Learning Objectives (DDIA/SDP):
-1. Design normalized SQL schema with foreign keys (DDIA Ch. 2)
-   - Proper relationships: users → listings, listings → bookings, bookings → reviews
-2. Implement complex joins for aggregations (DDIA Ch. 2)
-   - Average rating per listing from reviews table
-   - Availability checks across bookings table
-3. Create efficient indexes for common queries (DDIA Ch. 3)
-   - Geospatial index for location-based search
-   - Composite index (listing_id, check_in, check_out) for availability
-4. Ensure ACID transactions for bookings (DDIA Ch. 7)
-   - Atomic: Create booking + payment together
-   - Isolation: Prevent double-booking with serializable transactions
-5. Optimize query performance with denormalization (DDIA Ch. 2)
-   - Cache average_rating on listings table
-6. Implement lambda architecture for analytics (DDIA Ch. 12)
-   - Batch layer: Historical data processing with Spark
-   - Speed layer: Real-time stream processing with Kafka Streams
-   - Serving layer: Merge batch and real-time views
-7. Design batch processing for popularity scores (DDIA Ch. 12)
-   - Periodic jobs for comprehensive analytics
-   - Immutable event logs for reprocessing
-8. Build real-time views for fresh data (DDIA Ch. 12)
-   - Incremental updates from event streams
-   - Low-latency serving with Redis
-9. Compare lambda vs kappa architecture (DDIA Ch. 12)
-   - Trade-offs: complexity vs accuracy vs latency`,
+Critical Requirement: Prevent double-booking. Two guests must never be able to book the same property for overlapping dates.
+
+The system must handle geo-distributed data with both batch analytics for historical insights and real-time updates for current availability and reviews.
+
+Requirements:
+• Hosts can list properties with photos and details
+• Guests can search properties by location, dates, and amenities
+• Platform handles payments and bookings atomically
+• Users can leave reviews and ratings
+• Prevent double-booking with proper isolation
+• Geospatial search for location-based queries
+• Real-time availability updates
+• Batch processing for popularity scores and analytics
+• Denormalized views for fast query performance`,
 
   // User-facing requirements (interview-style)
   userFacingFRs: [
