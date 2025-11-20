@@ -8,10 +8,10 @@ export const platformMigrationStrategiesLesson: SystemDesignLesson = {
   id: 'platform-migration-strategies',
   slug: 'platform-migration-strategies',
   title: 'Platform Migration Strategies',
-  description: 'Learn how to approach system migration problems (L5) vs building from scratch (L1-L4)',
+  description: 'Master WHEN to use Strangler Fig vs Big Bang vs Parallel Running, WHICH database migration strategy (CDC vs dual write vs snapshot), and WHEN to migrate vs rewrite from scratch with real cost analysis (Netscape failure vs Discord success)',
   category: 'patterns',
   difficulty: 'advanced',
-  estimatedMinutes: 30,
+  estimatedMinutes: 55,
   stages: [
     {
       id: 'migration-vs-building',
@@ -182,6 +182,528 @@ Switch:
 
 Rollback:
   Load Balancer → Blue (old)`}
+          </CodeBlock>
+        </Section>
+      ),
+    },
+    {
+      id: 'migration-tradeoffs',
+      type: 'concept',
+      title: 'Migration Strategy Trade-Offs',
+      content: (
+        <Section>
+          <H1>🎯 Critical Trade-Off: Strangler Fig vs Big Bang vs Parallel Running</H1>
+
+          <ComparisonTable
+            headers={['Strategy', 'Timeline', 'Risk', 'Cost', 'Team Bandwidth', 'Rollback', 'Best For', 'Worst For']}
+            rows={[
+              [
+                'Strangler Fig\n(gradual replacement)',
+                '12-36 months\n(very slow)',
+                'Low\n(isolated failures)',
+                'High\n(run both 12+ mo)',
+                'Medium\n(incremental)',
+                'Easy\n(per service)',
+                '• Large monoliths\n• Business continuity critical\n• Limited team',
+                '• Time-sensitive\n• Simple systems\n• Startup pivots'
+              ],
+              [
+                'Big Bang\n(cutover weekend)',
+                '3-6 months\n(fast prep, instant switch)',
+                'Very High\n(all or nothing)',
+                'Low\n(no dual running)',
+                'Very High\n(crunch time)',
+                'Hard\n(full rollback)',
+                '• Small systems\n• Scheduled downtime OK\n• Complete rewrite',
+                '• 24/7 operations\n• Large user base\n• Complex systems'
+              ],
+              [
+                'Parallel Running\n(shadow mode)',
+                '6-12 months\n(medium)',
+                'Low\n(validation before switch)',
+                'Very High\n(2x infra)',
+                'High\n(maintain both)',
+                'Easy\n(instant switch back)',
+                '• Payment systems\n• Need exact validation\n• Can afford 2x cost',
+                '• Cost-sensitive\n• Simple migrations\n• Clear correctness'
+              ],
+              [
+                'Feature Flag Migration\n(per-user rollout)',
+                '6-18 months\n(medium-slow)',
+                'Very Low\n(5-25% exposure)',
+                'Medium\n(small % dual)',
+                'Medium\n(incremental)',
+                'Very Easy\n(toggle off)',
+                '• SaaS platforms\n• B2C apps\n• Risk aversion priority',
+                '• B2B (all clients same)\n• Hardware constraints\n• Embedded systems'
+              ]
+            ]}
+          />
+
+          <Example title="Real Decision: E-commerce Monolith → Microservices (500k daily users)">
+            <P><Strong>Context:</Strong> PHP monolith (8 years old, 2M LOC) → Node.js microservices</P>
+            <P><Strong>Business Constraints:</Strong> Cannot have downtime (Black Friday = $2M/day revenue)</P>
+
+            <P><Strong>Option 1: Big Bang Migration (wrong for this scale)</Strong></P>
+            <CodeBlock>
+{`Timeline:
+- 4 months: Build all microservices
+- 1 month: Testing in staging
+- Weekend: Switch production traffic
+
+Cost:
+- Development: 10 engineers × 5 months = $500k
+- Infrastructure (staging): $5k/mo × 5 = $25k
+- Production (new): $15k/mo (old terminated)
+- Total: $525k one-time cost
+
+Risk analysis:
+- All 500k users switch at once
+- If critical bug found Monday morning:
+  → Rollback requires re-deploying monolith
+  → Data written to new system incompatible with old
+  → 2-4 hours downtime
+  → Lost revenue: $2M/day × 4hrs/24hrs = $333k
+
+Real incident (similar company):
+- Big bang migration on Sunday night
+- Memory leak discovered Monday 9 AM
+- New system crashes under load
+- Rollback impossible (data schema incompatible)
+- 6 hours downtime fixing leak
+- Lost: $500k revenue + $2M customer trust damage
+
+Result: ❌ $525k saved in dual-running costs, risked $2.5M in one incident`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Strangler Fig Migration (correct for this case)</Strong></P>
+            <CodeBlock>
+{`Timeline:
+Month 1-3: Extract User Service
+  - New: User microservice (authentication, profile)
+  - Route: 5% → new, 95% → monolith (feature flag)
+  - Monitor: Error rate, latency, data consistency
+  - Cost: +$1k/mo infrastructure
+
+Month 4-6: Extract Product Catalog Service
+  - New: Product microservice (search, details)
+  - Route: 10% → new, 90% → monolith
+  - Cost: +$2k/mo infrastructure
+
+Month 7-9: Extract Order Service
+  - New: Order microservice (checkout, payments)
+  - Route: 25% → new, 75% → monolith
+  - Cost: +$4k/mo infrastructure
+
+Month 10-12: Extract Inventory Service
+  - New: Inventory microservice
+  - Route: 50% → new, 50% → monolith
+  - Cost: +$7k/mo infrastructure
+
+Month 13-18: Migrate remaining services
+  - New: Shipping, Returns, Analytics services
+  - Route: 100% → new, 0% → monolith
+  - Decommission monolith
+
+Cost breakdown:
+- Development: 10 engineers × 18 months = $1.8M
+- Dual infrastructure: ($1k + $2k + $4k + $7k + $10k) × avg 3mo each = $72k
+- Total: $1.872M
+
+Risk mitigation:
+- Each service migrated independently
+- If User Service has bug: Only 5% users affected, instant rollback
+- If Order Service has bug: Only 25% affected, rollback in 2 min
+- Actual incidents: 3 bugs caught at <10% rollout, $0 revenue loss
+
+Trade-off: $1.872M over 18 months vs $525k over 5 months, BUT:
+- Big bang risk: $2.5M potential loss in one incident
+- Strangler fig risk: $0 (all bugs caught at <25% rollout)
+
+Result: ✅ Spend extra $1.3M to eliminate $2.5M risk (1.9x ROI on risk mitigation)`}
+            </CodeBlock>
+
+            <P><Strong>Option 3: Parallel Running (too expensive for this case)</Strong></P>
+            <CodeBlock>
+{`Implementation:
+- Build complete microservices platform
+- Run both monolith + microservices at 100% capacity
+- Route: 100% → monolith (production)
+- Shadow: 100% → microservices (validation only)
+- Compare: Every response, every transaction
+- Switch: When 99.99% responses match
+
+Cost:
+- Development: 10 engineers × 8 months = $800k
+- Dual infrastructure: $30k/mo (both at full capacity) × 8 mo = $240k
+- Comparison infrastructure: $5k/mo × 8 mo = $40k
+- Total: $1.08M
+
+Benefits:
+- 100% validation before switch
+- Instant rollback (switch load balancer back)
+- Discover edge cases with real production traffic
+
+Problem:
+- For e-commerce, correctness is relatively clear
+- Don't need 100% validation (99% confidence sufficient)
+- Paying $240k for 1% extra confidence vs strangler fig
+
+Trade-off: $1.08M with 99.99% confidence vs $525k big bang (high risk) vs $1.872M strangler (99% confidence)
+
+Result: ❌ Middle ground is worst of both worlds
+- More expensive than big bang but still some risk
+- Faster than strangler but less incremental learning
+- Paying $240k for validation that strangler fig gives for free via gradual rollout`}
+            </CodeBlock>
+          </Example>
+
+          <Divider />
+
+          <H1>🎯 Critical Trade-Off: Database Migration Strategies</H1>
+
+          <ComparisonTable
+            headers={['Strategy', 'Downtime', 'Complexity', 'Cost/mo', 'Data Consistency', 'Risk', 'Best For']}
+            rows={[
+              [
+                'Snapshot + Restore\n(dump and load)',
+                'High\n(hours-days)',
+                'Low',
+                '$0\n(one-time)',
+                'Eventual\n(lag during copy)',
+                'Medium',
+                '• Small DBs (<100GB)\n• Scheduled maintenance OK\n• One-time migration'
+              ],
+              [
+                'Dual Write\n(app writes to both)',
+                'Zero',
+                'High\n(app changes)',
+                '$500-2k\n(2x storage)',
+                'Risk of divergence',
+                'High\n(write conflicts)',
+                '• Full control over writes\n• Simple data models\n• Can modify app code'
+              ],
+              [
+                'Change Data Capture\n(CDC - Debezium)',
+                'Zero',
+                'Medium',
+                '$500-1k\n(CDC infra)',
+                'Near real-time\n(<1s lag)',
+                'Low',
+                '• Large DBs (>100GB)\n• Can\'t modify app\n• Need real-time sync'
+              ],
+              [
+                'Read Replica + Cutover\n(DB replication)',
+                'Low\n(seconds)',
+                'Low',
+                '$1-3k\n(replica)',
+                'Consistent\n(DB-level replication)',
+                'Low',
+                '• Same DB type\n• Need consistency\n• Minimal app changes'
+              ]
+            ]}
+          />
+
+          <Example title="Real Decision: PostgreSQL → Cassandra (100M user records, 500GB)">
+            <P><Strong>Business Context:</Strong> Social media app, need horizontal scaling for 10x growth</P>
+
+            <P><Strong>Option 1: Snapshot + Restore (wrong for this size)</Strong></P>
+            <CodeBlock>
+{`Process:
+1. Friday 11 PM: Put app in maintenance mode
+2. pg_dump: 500GB → 6 hours
+3. Load into Cassandra: Transform relational → columnar → 8 hours
+4. Validation: Check record counts → 2 hours
+5. Saturday 5 PM: Resume app (18 hours downtime)
+
+Cost:
+- No dual infrastructure: $0 extra
+- Lost revenue: 18 hours × $10k/day ÷ 24 = $7.5k
+- User churn: 5% of daily actives leave (poor UX) = 50k users
+- Lifetime value lost: 50k × $20 = $1M
+
+Result: ❌ Saved infrastructure cost, lost $1M+ in churn and revenue`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Dual Write (wrong for consistency risk)</Strong></P>
+            <CodeBlock>
+{`Implementation:
+// In application code
+async function createUser(userData) {
+  // Write to both databases
+  await postgres.insert(userData);
+  await cassandra.insert(transformToCassandra(userData));
+}
+
+Problems:
+1. What if Cassandra write fails but Postgres succeeds?
+   → Data divergence: User in Postgres, not in Cassandra
+
+2. What if writes succeed but in different order?
+   → Cassandra sees update before create
+   → Inconsistent state
+
+3. What if network partition?
+   → Some writes to Postgres only
+   → Some writes to Cassandra only
+   → Impossible to reconcile
+
+Real incident:
+- 0.1% of writes failed to Cassandra (network blips)
+- 100M records × 0.1% = 100k missing records
+- Discovered after 2 weeks
+- Manual reconciliation: 200 engineering hours = $40k
+
+Cost:
+- Development: $100k (modify all write paths)
+- Infrastructure: $2k/mo × 6 months = $12k
+- Incident reconciliation: $40k
+- Total: $152k
+
+Trade-off: Low infrastructure cost vs high inconsistency risk
+
+Result: ❌ Saved CDC cost ($500/mo), paid $40k fixing inconsistencies`}
+            </CodeBlock>
+
+            <P><Strong>Option 3: Change Data Capture (correct choice)</Strong></P>
+            <CodeBlock>
+{`Implementation:
+1. Deploy Debezium to capture Postgres write-ahead log (WAL)
+2. Stream changes to Kafka
+3. Consumer transforms and writes to Cassandra
+4. Run for 2 weeks, validate data consistency
+5. Switch app to read from Cassandra
+6. Monitor for 1 week, then decommission Postgres
+
+Timeline:
+- Week 1-2: Setup CDC pipeline, backfill historical data
+- Week 3-4: Validate consistency (compare random samples)
+- Week 5: Route 10% reads to Cassandra
+- Week 6: Route 50% reads to Cassandra
+- Week 7: Route 100% reads to Cassandra
+- Week 8: Stop CDC, decommission Postgres
+
+Cost:
+- Debezium infrastructure: $500/mo (Kafka + connectors)
+- Cassandra cluster: $2k/mo
+- Postgres (keep during migration): $1k/mo
+- Total: $3.5k/mo × 2 months = $7k
+- Development: $50k (setup CDC, validation scripts)
+- Grand total: $57k
+
+Benefits:
+- Zero downtime
+- No application code changes
+- Real-time sync (<1s lag)
+- Can rollback at any point (just switch reads back to Postgres)
+
+Validation:
+- Automated daily: Compare 1M random records between DBs
+- Found 0 inconsistencies
+- Confidence: 99.99%
+
+Trade-off: $57k for zero-downtime migration vs $0 with 18hr downtime vs $152k dual write inconsistencies
+
+Result: ✅ $57k for professional migration with zero user impact
+ROI: Prevented $1M churn from downtime + $40k inconsistency fixes`}
+            </CodeBlock>
+          </Example>
+
+          <Divider />
+
+          <H1>🎯 Critical Trade-Off: Migrate vs Rewrite from Scratch</H1>
+
+          <ComparisonTable
+            headers={['Approach', 'Timeline', 'Risk', 'Cost', 'Business Continuity', 'Technical Debt', 'Best For']}
+            rows={[
+              [
+                'Migrate\n(refactor existing)',
+                '12-24 months',
+                'Low\n(incremental)',
+                '$1-3M\n(gradual)',
+                'Maintained',
+                'Partially reduced',
+                '• Working product\n• Profitable business\n• Complex domain logic\n• Large user base'
+              ],
+              [
+                'Rewrite from Scratch',
+                '18-36 months',
+                'Very High\n(big bang at end)',
+                '$3-10M\n(full rebuild)',
+                'At risk',
+                'Eliminated\n(new debt forms)',
+                '• Broken product\n• Simple domain\n• Technology shift\n• Small user base'
+              ],
+              [
+                'Hybrid\n(new features in new stack)',
+                '24-48 months',
+                'Medium',
+                '$2-5M',
+                'Maintained',
+                'Partially reduced',
+                '• Growing product\n• Clear service boundaries\n• Can afford slow migration\n• Recruiting advantage'
+              ]
+            ]}
+          />
+
+          <Example title="Real Decision: Netscape Navigator Rewrite (Cautionary Tale)">
+            <P><Strong>Context:</Strong> Netscape Navigator 4.0 (1997) - market leader with 80% browser share</P>
+
+            <P><Strong>Decision: Rewrite from Scratch</Strong></P>
+            <CodeBlock>
+{`Decision (1998):
+- Navigator 4.0 codebase is "too messy"
+- CEO decides: Rewrite from scratch (Navigator 5.0)
+- Goal: Modern architecture, better performance
+- Timeline estimate: 12 months
+
+Reality:
+- Year 1 (1998): Built rendering engine
+- Year 2 (1999): Built layout engine, DOM
+- Year 3 (2000): Built JavaScript engine, debugger
+- 2002 (4 years later): Finally shipped as Mozilla 1.0
+
+Meanwhile:
+- Competitors: IE 5.0 (1999), IE 5.5 (2000), IE 6.0 (2001)
+- Market share: 80% (1998) → 15% (2002)
+- Revenue: $200M/year (1998) → $20M/year (2002)
+- Company: Nearly bankrupt
+
+What went wrong:
+1. Threw away 10 years of bug fixes
+   - Old code had fixes for 1000s of edge cases
+   - New code: re-discovered same bugs over 4 years
+
+2. No revenue during rewrite
+   - Couldn't ship new features (in rewrite mode)
+   - Competitors shipped new features monthly
+
+3. Big bang risk
+   - 4 years → one massive release
+   - If it failed, no fallback
+
+Alternative (migration):
+- Keep Navigator 4.0 working
+- Gradually replace components:
+  Year 1: New JavaScript engine (ship it)
+  Year 2: New rendering engine (ship it)
+  Year 3: New layout engine (ship it)
+- Users get improvements yearly, not after 4 years
+- Competitors can't gain 4-year head start
+
+Cost comparison:
+- Rewrite: 100 engineers × 4 years = $80M
+- Lost market share value: $2B (company value drop)
+- Migration (estimated): 80 engineers × 4 years = $64M
+- Market share: Maintained (shipping features continuously)
+
+Result: ❌ Rewrite cost $80M + $2B company value vs migration $64M + maintained value
+
+Lesson: "The single worst strategic mistake that any software company can make" - Joel Spolsky`}
+            </CodeBlock>
+
+            <P><Strong>Counter-Example: When Rewrite Works - Discord (2015)</Strong></P>
+            <CodeBlock>
+{`Context:
+- Small startup (<10k users)
+- Initial product: Gaming voice chat built on Skype SDK
+- Problem: Skype SDK unreliable, high latency
+
+Decision: Rewrite from scratch
+- Why: Small user base (OK to pivot)
+- Why: Simple domain (voice chat, text)
+- Why: Existing product fundamentally broken (not just messy)
+- Why: No complex business logic to preserve
+
+Timeline:
+- 6 months: New WebRTC-based voice engine
+- Risk: Only 10k users, not 10M
+- Result: Latency 300ms → 50ms, quality 10x better
+
+Outcome:
+- Growth: 10k users → 150M users (2021)
+- Valuation: $0 → $15B
+- Right decision because:
+  1. Small user base (low rewrite risk)
+  2. Core product broken (migration wouldn't help)
+  3. Simple domain (no complex logic to preserve)
+
+Result: ✅ Rewrite enabled product-market fit that migration couldn't achieve`}
+            </CodeBlock>
+          </Example>
+
+          <H3>Decision Framework: Migrate vs Rewrite</H3>
+          <CodeBlock>
+{`Is your current product working and profitable?
+
+├─ YES → Almost always MIGRATE, not rewrite
+│   └─ How many users?
+│       ├─ >100k users → Strangler Fig Migration (12-24 months)
+│       │   └─ Rationale: Can't risk big bang with large user base
+│       │
+│       ├─ 10k-100k users → Feature Flag Migration (6-18 months)
+│       │   └─ Rationale: Gradual rollout reduces risk
+│       │
+│       └─ <10k users → Consider Hybrid (new features in new stack)
+│           └─ Rationale: Small enough to take moderate risk
+│
+└─ NO → Current product fundamentally broken?
+    ├─ YES → Rewrite may be justified
+    │   └─ But ONLY if:
+    │       1. User base is small (<50k users)
+    │       2. Domain logic is simple (not 10 years of edge cases)
+    │       3. Current tech is EOL or impossible to maintain
+    │       4. You have runway (18-36 months cash)
+    │
+    └─ NO → Still working somewhat?
+        └─ MIGRATE (strangler fig)
+            └─ Rewrite is almost never the right answer for working software`}
+          </CodeBlock>
+
+          <H2>Common Mistakes</H2>
+
+          <P>❌ <Strong>Mistake 1: Big Bang Migration for Large System</Strong></P>
+          <CodeBlock>
+{`Problem:
+- 200k daily users, 5M LOC monolith
+- "Let's rewrite in 6 months and switch over a weekend"
+- Weekend comes: Critical bug discovered, 12 hours downtime
+- Lost: $500k revenue + customer trust
+
+Fix: Strangler fig with 6-12 month gradual migration`}
+          </CodeBlock>
+
+          <P>❌ <Strong>Mistake 2: Dual Write Without Conflict Resolution</Strong></P>
+          <CodeBlock>
+{`Problem:
+- Write to both old and new DB
+- Network partition → writes succeed on old DB only
+- After partition: 100k records missing in new DB
+- Manual reconciliation: 1 week engineering time
+
+Fix: Use CDC (Debezium) for guaranteed consistency`}
+          </CodeBlock>
+
+          <P>❌ <Strong>Mistake 3: Rewriting Working Software</Strong></P>
+          <CodeBlock>
+{`Problem:
+- "Code is messy, let's rewrite from scratch"
+- 2 years later: Still in rewrite, no features shipped
+- Competitors gained market share
+- Company runs out of runway
+
+Fix: Migrate incrementally while shipping features (strangler fig)`}
+          </CodeBlock>
+
+          <P>❌ <Strong>Mistake 4: No Rollback Plan</Strong></P>
+          <CodeBlock>
+{`Problem:
+- Migrated to new system
+- Week later: Discovered data corruption bug
+- Can't rollback: Old system decommissioned
+- Lost: 1M user records
+
+Fix: Keep old system running for 2-4 weeks after migration, feature flag for instant rollback`}
           </CodeBlock>
         </Section>
       ),
