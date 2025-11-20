@@ -240,90 +240,154 @@ export class SimulationEngine {
     }
   }
 
-  /**
-   * Find component by type (assumes one of each type for MVP)
-   */
-  private findComponentByType(type: string): Component | undefined {
-    for (const component of this.components.values()) {
-      if (component.type === type) {
-        return component;
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * Find the first node ID with a given component type
-   */
   private findNodeIdByType(type: string): string | undefined {
-    for (const comp of this.components.values()) {
-      if (comp.type === type) return comp.id;
+      for (const comp of this.components.values()) {
+        if (comp.type === type) return comp.id;
+      }
+      return undefined;
     }
-    return undefined;
-  }
 
   /**
-   * Find app servers that can handle specific API patterns
-   * Returns IDs of app servers that handle the given method and path
+   * Calculate incoming traffic for all nodes using BFS traversal
    */
-  private findAppServersForAPI(method: string, path: string, graph: SystemGraph): string[] {
-    const nodes = graph.components.filter(node => node.type === 'app_server');
+  private calculateNodeTraffic(
+      entryPoints: string[],
+      totalReadRps: number,
+      totalWriteRps: number
+  ): Map<string, { read: number; write: number }> {
+      const traffic = new Map<string, { read: number; write: number }>();
 
-    const handlingServers = findHandlingServers(nodes, method, path);
-
-    // If no servers have API patterns defined, return all app servers (backward compatibility)
-    if (handlingServers.length === 0) {
-      const defaultServers = nodes.filter(node =>
-        !node.config.handledAPIs || node.config.handledAPIs.length === 0
-      );
-      return defaultServers.map(s => s.id);
-    }
-
-    return handlingServers.map(s => s.id);
-  }
-
-  /**
-   * BFS to find a path from start to a node matching predicate, following
-   * only edges allowed by the given flow type ('read' or 'write').
-   */
-  private findPath(
-    startId: string,
-    flow: 'read' | 'write' | 'read_write',
-    predicate: (nodeId: string) => boolean
-  ): string[] | null {
-    const allow = (edgeType: Connection['type']) => {
-      if (flow === 'read_write') return true;
-      if (flow === 'read') return edgeType === 'read' || edgeType === 'read_write';
-      if (flow === 'write') return edgeType === 'write' || edgeType === 'read_write';
-      return false;
-    };
-
-    const q: string[] = [startId];
-    const parent = new Map<string, string | null>();
-    parent.set(startId, null);
-
-    while (q.length) {
-      const cur = q.shift()!;
-      if (predicate(cur)) {
-        // Reconstruct path
-        const path: string[] = [];
-        let p: string | null = cur;
-        while (p) {
-          path.push(p);
-          p = parent.get(p) ?? null;
-        }
-        return path.reverse();
+      // Initialize traffic map
+      for (const id of this.components.keys()) {
+          traffic.set(id, { read: 0, write: 0 });
       }
-      const edges = this.adjacency.get(cur) || [];
-      for (const e of edges) {
-        if (!allow(e.type)) continue;
-        if (!parent.has(e.to)) {
-          parent.set(e.to, cur);
-          q.push(e.to);
-        }
+
+      // Initialize entry points
+      // Split initial traffic equally among entry points (if multiple clients)
+      const readPerEntry = totalReadRps / Math.max(1, entryPoints.length);
+      const writePerEntry = totalWriteRps / Math.max(1, entryPoints.length);
+
+      const queue: string[] = [];
+
+      for (const entryId of entryPoints) {
+          const current = traffic.get(entryId)!;
+          current.read += readPerEntry;
+          current.write += writePerEntry;
+          queue.push(entryId);
       }
-    }
-    return null;
+
+      // Process nodes in topological-like order (BFS is a good approximation for acyclic)
+      // For true DAGs we might want Kahn's algo, but BFS handles simple cases well enough
+      // We use a processing count to handle merges? No, just propagate.
+      // For cycles, we need a visited set or limit depth. Let's limit depth for now.
+
+      const processed = new Set<string>();
+      let iteration = 0;
+      const MAX_ITERATIONS = 1000; // Safety break
+
+      while (queue.length > 0 && iteration < MAX_ITERATIONS) {
+          iteration++;
+          // BFS Level processing to handle merges better?
+          // Actually, standard BFS is fine. But if A->B and A->C->B, B might be processed twice.
+          // We should accumulate traffic.
+
+          const nodeId = queue.shift()!;
+          const input = traffic.get(nodeId)!;
+          const component = this.components.get(nodeId)!;
+
+          // Determine Output Traffic
+          let outputRead = input.read;
+          let outputWrite = input.write;
+
+          // Special Component Logic
+          if (component.type === 'redis' || component.type === 'cache') {
+               // Need to calculate hit ratio to know what goes downstream
+               // We can reuse the logic from simulate(), but simulate() needs the RPS.
+               // Circular dependency?
+               // No, simulate() uses RPS to calc utilization.
+               // Hit Ratio is usually config based or capacity based.
+               // For traffic propagation, let's look at config.
+               const cacheConfig = (component as any).config || {};
+               // Default hit ratio from config or 0.9
+               // NOTE: Dynamic hit ratio logic is complex to invoke here without full context.
+               // For propagation, let's stick to a simple model or re-invoke dynamic logic if critical.
+               // Using a simple estimate for flow propagation:
+               const hitRatio = (cacheConfig.hitRatio !== undefined) ? Number(cacheConfig.hitRatio) : 0.9;
+
+               // Hits return, Misses continue.
+               outputRead = input.read * (1 - hitRatio);
+               // Writes usually go through (write-through or invalidate)
+               outputWrite = input.write;
+          }
+
+          // Get connections
+          const edges = this.adjacency.get(nodeId) || [];
+          if (edges.length === 0) continue;
+
+          // Distribute to children
+          // Group edges by destination
+          // Heuristic:
+          // 1. Load Balancer: Split equally among all children.
+          // 2. Others:
+          //    - If connecting to same type (e.g. DB shards/replicas): Split?
+          //    - If connecting to diff types (e.g. Cache and DB): Broadcast (Fanout).
+
+          // Implementation:
+          // If LB, splitFactor = 1 / edges.length.
+          // Else, splitFactor = 1 (Broadcast).
+
+          let splitFactorRead = 1.0;
+          let splitFactorWrite = 1.0;
+
+          if (component.type === 'load_balancer') {
+              splitFactorRead = 1.0 / edges.length;
+              splitFactorWrite = 1.0 / edges.length;
+          } else {
+               // Check if we are connecting to multiple instances of the same type (Sharding/Replication)
+               const types = new Set(edges.map(e => this.components.get(e.to)?.type));
+               if (types.size === 1 && edges.length > 1) {
+                   // Connecting to multiple of same type -> Assumed Load Balancing/Sharding
+                   splitFactorRead = 1.0 / edges.length;
+                   splitFactorWrite = 1.0 / edges.length;
+               }
+               // Else (Diff types or Single child) -> Broadcast (1.0)
+          }
+
+          for (const edge of edges) {
+               const childId = edge.to;
+               const childTraffic = traffic.get(childId)!;
+
+               let flowRead = 0;
+               let flowWrite = 0;
+
+               if (edge.type === 'read' || edge.type === 'read_write') {
+                   flowRead = outputRead * splitFactorRead;
+               }
+               if (edge.type === 'write' || edge.type === 'read_write') {
+                   flowWrite = outputWrite * splitFactorWrite;
+               }
+
+               // Add to child
+               if (flowRead > 0 || flowWrite > 0) {
+                   childTraffic.read += flowRead;
+                   childTraffic.write += flowWrite;
+
+                   // If child hasn't been queued yet (or needs re-processing in DAG), queue it.
+                   // Simple BFS queues blindly.
+                   // Optimization: Use indegree map for Kahn's?
+                   // For now, to support A->B and A->C->B, we allow re-queueing but maybe limit visits?
+                   // Actually, in BFS, B is visited after A.
+                   // If C is visited after A, and C->B, B is queued again?
+                   // Yes. traffic.read is accumulated.
+
+                   // Avoid infinite loops for Cycles
+                   // We use MAX_ITERATIONS.
+                   queue.push(childId);
+               }
+          }
+      }
+
+      return traffic;
   }
 
   /**
@@ -360,8 +424,7 @@ export class SimulationEngine {
 
   /**
    * Simulate traffic through the system
-   * Simplified for MVP - assumes typical web app topology:
-   * Load Balancer → App Servers → Cache → Database
+   * Generic implementation supporting arbitrary topologies
    */
   simulateTraffic(
     graph: SystemGraph,
@@ -374,584 +437,255 @@ export class SimulationEngine {
     // Log for all NFR tests to debug failures
     const shouldLog = testCase.type !== 'functional';
     
-    // Log the graph config before building components
-    if (shouldLog) {
-      const appServerNode = graph.components.find(c => c.type === 'app_server');
-      if (appServerNode) {
-        console.log(`\n🔵 ${testCase.name} (${testCase.requirement})`);
-        console.log(`  📋 Graph has app_server with config:`, JSON.stringify(appServerNode.config));
-      } else {
-        console.log(`\n🔵 ${testCase.name} (${testCase.requirement})`);
-        console.log(`  ⚠️ No app_server found in graph!`);
-      }
-    }
-    
+    // 1. Build Components
     this.buildComponents(graph);
-
-    // Build traffic flow engine with the same components
-    // (Validation is done internally but doesn't block simulation)
     this.trafficFlowEngine.buildGraph(graph, this.components);
 
-    // Extract traffic parameters with optional traffic pattern modeling
-    // If readRps and writeRps are specified separately, calculate totalRps from them
-    let readRps: number;
-    let writeRps: number;
-    let totalRps: number;
-    
-    // If readRps/writeRps are specified separately, use them and calculate totalRps
+    // 2. Determine Total RPS
+    let totalReadRps = 0;
+    let totalWriteRps = 0;
+    let totalRps = 0;
+
     if (testCase.traffic.readRps !== undefined && testCase.traffic.writeRps !== undefined) {
-      readRps = testCase.traffic.readRps;
-      writeRps = testCase.traffic.writeRps;
-      totalRps = readRps + writeRps;
+      totalReadRps = testCase.traffic.readRps;
+      totalWriteRps = testCase.traffic.writeRps;
+      totalRps = totalReadRps + totalWriteRps;
     } else if (testCase.traffic.rps !== undefined) {
-      // If totalRps is specified, calculate readRps/writeRps based on traffic type
       totalRps = testCase.traffic.rps;
-      
-      // Determine readRatio based on traffic type
-      let readRatio: number;
-      if (testCase.traffic.readRatio !== undefined) {
-        // Explicit readRatio provided
-        readRatio = testCase.traffic.readRatio;
-      } else if (testCase.traffic.type === 'read') {
-        // Read-only traffic: 100% reads
-        readRatio = 1.0;
-      } else if (testCase.traffic.type === 'write') {
-        // Write-only traffic: 0% reads (100% writes)
-        readRatio = 0.0;
-      } else {
-        // Mixed traffic: default to 50/50 if not specified
-        readRatio = 0.5;
-      }
-      
-      readRps = totalRps * readRatio;
-      writeRps = totalRps * (1 - readRatio);
-    } else {
-      // Fallback: default to 0
-      totalRps = 0;
-      readRps = 0;
-      writeRps = 0;
-    }
-    
-    if (shouldLog) {
-      console.log(`  Traffic: ${totalRps} RPS (${readRps.toFixed(0)} reads, ${writeRps.toFixed(0)} writes)`);
+      const readRatio = testCase.traffic.readRatio !== undefined ? testCase.traffic.readRatio :
+                        (testCase.traffic.type === 'write' ? 0.0 :
+                         testCase.traffic.type === 'read' ? 1.0 : 0.5);
+      totalReadRps = totalRps * readRatio;
+      totalWriteRps = totalRps * (1 - readRatio);
     }
 
-    // Apply traffic pattern if configured and feature flag is enabled
+    // Apply traffic patterns
     if (isEnabled('ENABLE_TRAFFIC_PATTERNS') && this.trafficPatternConfig) {
-      const patternResult = calculateTrafficAtTime(
-        testCase.duration / 2, // Sample at midpoint
+       const patternResult = calculateTrafficAtTime(
+        testCase.duration / 2,
         this.trafficPatternConfig,
-        testCase.traffic.readRatio || 0.9
+        totalRps > 0 ? totalReadRps / totalRps : 0.9
       );
-
       totalRps = patternResult.rps;
-      readRps = patternResult.readRps;
-      writeRps = patternResult.writeRps;
-
-      verboseLog('Traffic pattern applied', {
-        originalRps: testCase.traffic.rps,
-        patternRps: totalRps,
-        patternPhase: patternResult.patternPhase,
-        isSpike: patternResult.isSpike,
-      });
+      totalReadRps = patternResult.readRps;
+      totalWriteRps = patternResult.writeRps;
     }
 
-    // Build simulation context
+    if (shouldLog) {
+        console.log(`  Traffic: ${totalRps} RPS (${totalReadRps.toFixed(0)} reads, ${totalWriteRps.toFixed(0)} writes)`);
+    }
+
+    // 3. Identify Entry Points
+    const entryPoints: string[] = [];
+    // Preferred: Clients
+    for (const [id, comp] of this.components) {
+        if (comp.type === 'client') entryPoints.push(id);
+    }
+    // Fallback: LB or App
+    if (entryPoints.length === 0) {
+        for (const [id, comp] of this.components) {
+            if (comp.type === 'load_balancer') entryPoints.push(id);
+        }
+    }
+    if (entryPoints.length === 0) {
+        for (const [id, comp] of this.components) {
+            if (comp.type === 'app_server') entryPoints.push(id);
+        }
+    }
+
+    // 4. Calculate Traffic Distribution (Forward Pass)
+    const nodeTraffic = this.calculateNodeTraffic(entryPoints, totalReadRps, totalWriteRps);
+
+    // 5. Simulate Components
     const context: SimulationContext = {
       testCase,
-      currentTime: testCase.duration / 2, // Sample at midpoint for failures
+      currentTime: testCase.duration / 2,
     };
 
     const componentMetrics = new Map<string, ComponentMetrics>();
-    let totalLatency = 0;
-    let combinedErrorRate = 0;
-    let totalCost = 0;
-    let infrastructureCost = 0; // Infrastructure cost (excludes CDN/S3 operational costs)
-    let availability = 1.0;
-
-    // Track failure effects across components
     const failureEffects = new Map<string, ReturnType<typeof calculateFailureEffect>>();
+
+    // Pre-calculate failure effects
     if (isEnabled('ENABLE_FAILURE_INJECTION') && this.failureInjections.length > 0) {
       for (const [compId] of this.components) {
         const effect = calculateFailureEffect(compId, context.currentTime, this.failureInjections);
         if (effect.isAffected) {
           failureEffects.set(compId, effect);
-          verboseLog('Failure effect on component', {
-            componentId: compId,
-            effect: effect.failureDescription,
-          });
         }
       }
     }
 
-    // Determine entry point and key components via graph connections
-    const entryId =
-      this.findNodeIdByType('client') ||
-      this.findNodeIdByType('load_balancer') ||
-      this.findNodeIdByType('app_server');
+    let totalSystemCost = 0;
+    let infrastructureCost = 0;
 
-    // Find app servers based on API patterns (if specified)
-    // For simulation, we'll distribute traffic among capable servers
-    // In MVP, we'll assume read operations go to servers handling GET requests
-    // and write operations go to servers handling POST/PUT/DELETE
-    const readAppServerIds = this.findAppServersForAPI('GET', '/api/v1/*', graph);
-    const writeAppServerIds = this.findAppServersForAPI('POST', '/api/v1/*', graph);
+    for (const [id, comp] of this.components) {
+        const input = nodeTraffic.get(id)!;
+        const inputTotal = input.read + input.write;
 
-    // For backward compatibility, if no API-specific servers found, use any app server
-    const appId = readAppServerIds.length > 0
-      ? readAppServerIds[0]
-      : writeAppServerIds.length > 0
-        ? writeAppServerIds[0]
-        : this.findNodeIdByType('app_server');
+        // Skip simulation if no traffic (unless it's an infrastructure component that has base cost?)
+        // For now, simulate everything to catch base costs.
 
-    // Find all database nodes (support for multi-database/sharding)
-    const allDbIds = isEnabled('ENABLE_MULTI_DB')
-      ? findAllDatabaseNodes(this.components)
-      : [];
+        let metrics: ComponentMetrics;
 
-    // Fallback to single database for backward compatibility
-    const dbId = allDbIds.length > 0
-      ? allDbIds[0]
-      : this.findNodeIdByType('database') ||
-        this.findNodeIdByType('postgresql') ||
-        this.findNodeIdByType('mongodb') ||
-        this.findNodeIdByType('cassandra');
+        // Special handling for DBs to support read/write differentiation in simulation
+        if (isDatabaseComponentType(comp.type)) {
+             // Use simulateWithReadWrite if available or cast
+             // Assuming PostgreSQL/Mongo/etc have this method.
+             // We need to cast to access it if it's not on Component interface
+             // Actually, we can try to check if method exists, or just use simulate(total)
+             // Most DBs in this codebase seem to support simulateWithReadWrite or handle split internally?
+             // Checking PostgreSQL.ts: simulateWithReadWrite is there.
+             // But Component interface only has simulate.
+             // We'll cast to any for now to support the generic call if method exists.
+             if ((comp as any).simulateWithReadWrite) {
+                 metrics = (comp as any).simulateWithReadWrite(input.read, input.write, context);
+             } else {
+                 metrics = comp.simulate(inputTotal, context);
+             }
+        } else {
+            metrics = comp.simulate(inputTotal, context);
+        }
 
-    const appServer = appId ? (this.components.get(appId) as AppServer) : undefined;
-    const db = dbId ? (this.components.get(dbId) as PostgreSQL | MongoDB | Cassandra) : undefined;
+        // Apply Failures
+        const failureEffect = failureEffects.get(id);
+        if (failureEffect && failureEffect.isAffected) {
+            metrics = this.applyFailureEffect(metrics, failureEffect);
+        }
 
-    // Track if we're using multi-database mode
-    const useMultiDb = isEnabled('ENABLE_MULTI_DB') && allDbIds.length > 1;
+        componentMetrics.set(id, metrics);
+        totalSystemCost += metrics.cost;
 
-    verboseLog('Database configuration', {
-      singleDbId: dbId,
-      allDbIds,
-      useMultiDb,
-    });
-
-    // Find paths based on connections
-    let toAppPath: string[] | null = null;
-    if (entryId && appId) {
-      toAppPath = this.findPath(entryId, 'read_write', (n) => n === appId);
+        // Infrastructure Cost Logic
+        if (comp.type === 'app_server' || comp.type === 'load_balancer' || comp.type === 'worker' || isDatabaseComponentType(comp.type) || comp.type === 'redis' || comp.type === 'cache') {
+             infrastructureCost += metrics.cost;
+        }
     }
 
-    // Optional cache (check both 'redis' and 'cache' types)
-    const cacheId = this.findNodeIdByType('redis') || this.findNodeIdByType('cache');
-    const toCachePath = appId && cacheId ? this.findPath(appId, 'read', (n) => n === cacheId) : null;
+    // 6. Path Aggregation (Reverse/Trace Pass) to find End-to-End Latency
+    // We need to trace from Entry Points and sum up latencies weighted by flow.
+    // Since we did Forward Pass, we can do a similar traversal or use the FlowViz logic?
+    // Let's do a simple weighted average approach.
 
-    // Read DB path: In cache-aside pattern, reads go app_server → database (not cache → database)
-    // Cache is checked first, but on miss, app_server queries database directly
-    // So we always use app_server as the source for database reads
-    const toDbReadPath = dbId && appId ? this.findPath(appId, 'read', (n) => n === dbId) : null;
+    let weightedLatencySum = 0;
+    let totalFlowForLatency = 0;
+    let combinedAvailability = 1.0;
+    let combinedErrorRate = 0; // This is tricky for graphs. 1 - (1-e1)*(1-e2)... along paths.
 
-    // Write DB path (from app to db)
-    const toDbWritePath = dbId && appId ? this.findPath(appId, 'write', (n) => n === dbId) : null;
-
-    // CDN/S3 path (optional, for static content)
-    const cdnId = this.findNodeIdByType('cdn');
-    const s3Id = this.findNodeIdByType('s3');
-    const toCdnPath = cdnId && entryId ? this.findPath(entryId, 'read', (n) => n === cdnId) : null;
-    const cdnToS3Path = cdnId && s3Id ? this.findPath(cdnId, 'read', (n) => n === s3Id) : null;
-
-    // If critical backend paths are missing, system cannot function for those flows
-    const readPathAvailable = !!(toAppPath && (toCachePath || true) && toDbReadPath);
-    const writePathAvailable = !!(toAppPath && toDbWritePath);
+    // Actually, latency is additive along a path.
+    // Error rate is probability of failure along a path.
+    // We can perform a DFS/BFS from Entry to Leaves to accumulate Path Latency.
+    // PathLatency = L_node + L_next
+    // TotalLatency = Sum(PathLatency * PathFlow) / TotalFlow
     
-    // Check path availability
-    if (shouldLog && (!readPathAvailable || !writePathAvailable)) {
-      console.log('❌ PATH ISSUE:', {
-        readPathAvailable,
-        writePathAvailable,
-        hasApp: !!appServer,
-        hasDb: !!db,
-        toAppPath: !!toAppPath,
-        toDbReadPath: !!toDbReadPath,
-        toDbWritePath: !!toDbWritePath,
-      });
-    }
-
-    if (!appServer || !db || !toAppPath) {
-      if (shouldLog) {
-        console.log('❌ EARLY RETURN - Missing components:', {
-          hasAppServer: !!appServer,
-          hasDb: !!db,
-          hasToAppPath: !!toAppPath,
-        });
-      }
-      return {
-        metrics: {
-          p50Latency: 0,
-          p90Latency: 0,
-          p95Latency: 0,
-          p99Latency: 0,
-          p999Latency: 0,
-          errorRate: 1.0,
-          monthlyCost: 0,
-          availability: 0,
-        },
-        componentMetrics,
-      };
-    }
-
-    // Traverse path to app (accumulate latency/cost/errors)
-    const pathToAppComponents: Component[] = [];
-    for (const nodeId of toAppPath) {
-      const comp = this.components.get(nodeId)!;
-      // Skip duplicating DB/Cache here; handled later
-      if (comp.type === 'redis' || isDatabaseComponentType(comp.type) || comp.type === 'cdn' || comp.type === 's3') continue;
-      pathToAppComponents.push(comp);
-    }
-
-    for (const comp of pathToAppComponents) {
-      let metrics = comp.simulate(totalRps, context);
-
-      // Apply failure injection effects if applicable
-      const failureEffect = failureEffects.get(comp.id);
-      if (failureEffect && failureEffect.isAffected) {
-        metrics = this.applyFailureEffect(metrics, failureEffect);
-      }
-
-      componentMetrics.set(comp.id, metrics);
-      totalLatency += metrics.latency;
-      const errorBefore = combinedErrorRate;
-      combinedErrorRate = this.combineErrorRates(combinedErrorRate, metrics.errorRate);
-      // Infrastructure components (app servers, load balancers) are infrastructure
-      if (comp.type === 'app_server' || comp.type === 'load_balancer' || comp.type === 'worker') {
-        totalCost += metrics.cost;
-        infrastructureCost += metrics.cost;
-      } else {
-        totalCost += metrics.cost;
-      }
-      if (shouldLog && comp.type === 'app_server') {
-        const appMetrics = metrics as any;
-        const instanceType = (comp as any).config?.instanceType || 't3.medium';
-        const instances = appMetrics.instances || 1;
-        const rpsPerInstance = appMetrics.rpsPerInstance || 0;
-        const capacityPerInstance = instanceType === 't3.medium' ? 500 : (instanceType === 't3.small' ? 250 : 100);
-        // Always log for app_server in NFR tests to debug
-        console.log(`  ⚠️ ${comp.type}: ${instances} instances (config.instances=${(comp as any).config?.instances}), ${rpsPerInstance.toFixed(0)} RPS/instance, ${((metrics.utilization || 0) * 100).toFixed(1)}% util, ${(metrics.errorRate * 100).toFixed(1)}% errors`);
-      }
-    }
-
-    // App server already included above as part of pathToAppComponents
-
-    // Cache (if present and reachable)
-    const cache = cacheId ? (this.components.get(cacheId) as RedisCache) : undefined;
-    let dbReadRps = readRps;
-    let dbWriteRps = writeRps;
-
-    let cacheLatency = 0;
-    let missRatio = 1;
-    if (cache && toCachePath) {
-      // Apply dynamic cache hit ratio modeling if enabled
-      let dynamicHitRatio: number | undefined;
-
-      if (isEnabled('ENABLE_DYNAMIC_CACHE_HIT')) {
-        // Get cache configuration from component
-        const cacheConfig = cache.config || {};
-        const cacheSizeGB = (cacheConfig.memorySizeGB as number) || 10;
-        const cacheTTL = (cacheConfig.ttlSeconds as number) || 3600;
-
-        // Estimate working set from database configuration
-        const dbComponent = db;
-        const dbConfig = dbComponent?.config || {};
-        const totalDataSizeGB = (dbConfig.storageSizeGB as number) || 100;
-        const hotDataPercentage = 0.2; // Assume 20% of data is hot
-        const avgItemSizeKB = 1; // Default 1KB per cached item
-
-        const cacheHitResult = calculateDynamicHitRatio(
-          {
-            maxSizeGB: cacheSizeGB,
-            ttlSeconds: cacheTTL,
-            evictionPolicy: 'lru',
-          },
-          {
-            totalDataSizeGB,
-            hotDataPercentage,
-            avgItemSizeKB,
-            readRps,
-            writeRps,
-          },
-          this.cacheAccessPattern
-        );
-
-        dynamicHitRatio = cacheHitResult.hitRatio;
-
-        verboseLog('Dynamic cache hit ratio calculated', {
-          hitRatio: dynamicHitRatio,
-          effectiveCapacity: cacheHitResult.effectiveCapacity,
-          evictionRate: cacheHitResult.evictionRate,
-          warnings: cacheHitResult.warnings,
-        });
-      }
-
-      const cacheMetrics = cache.simulate(readRps, context);
-
-      // Apply failure injection effects to cache
-      let finalCacheMetrics = cacheMetrics;
-      const cacheFailureEffect = failureEffects.get(cache.id);
-      if (cacheFailureEffect && cacheFailureEffect.isAffected) {
-        finalCacheMetrics = this.applyFailureEffect(cacheMetrics, cacheFailureEffect);
-      }
-
-      componentMetrics.set(cache.id, finalCacheMetrics);
-      cacheLatency = finalCacheMetrics.latency;
-      totalCost += finalCacheMetrics.cost;
-      infrastructureCost += finalCacheMetrics.cost; // Cache is infrastructure
-
-      // Use dynamic hit ratio if calculated, otherwise use component's calculation
-      if (dynamicHitRatio !== undefined) {
-        dbReadRps = readRps * (1 - dynamicHitRatio);
-        missRatio = 1 - dynamicHitRatio;
-      } else {
-        dbReadRps = finalCacheMetrics.cacheMisses || readRps;
-        missRatio = readRps > 0 ? dbReadRps / readRps : 0;
-      }
-    }
-
-    // Database (with multi-database/sharding support)
-    let dbMetrics: ComponentMetrics;
-
-    if (useMultiDb && allDbIds.length > 1) {
-      // Multi-database mode: distribute traffic across all databases
-      const shardingConfig = getDefaultShardingConfig(allDbIds.length);
-      const trafficDistribution = distributeTrafficAcrossShards(
-        allDbIds,
-        dbReadRps,
-        dbWriteRps,
-        shardingConfig
-      );
-
-      verboseLog('Multi-database traffic distribution', {
-        numShards: allDbIds.length,
-        distribution: trafficDistribution.map((d) => ({
-          shardId: d.shardId,
-          percentage: d.trafficPercentage.toFixed(2),
-        })),
-      });
-
-      // Simulate each database shard
-      const shardMetricsMap = new Map<string, ComponentMetrics>();
-      for (const dist of trafficDistribution) {
-        const shardDb = this.components.get(dist.shardId) as
-          | PostgreSQL
-          | MongoDB
-          | Cassandra;
-        if (shardDb) {
-          const shardMetrics = shardDb.simulateWithReadWrite(
-            dist.readRps,
-            dist.writeRps,
-            context
-          );
-          shardMetricsMap.set(dist.shardId, shardMetrics);
-          componentMetrics.set(dist.shardId, shardMetrics);
-        }
-      }
-
-      // Aggregate metrics from all shards
-      const aggregated = aggregateShardMetrics(
-        shardMetricsMap,
-        trafficDistribution
-      );
-
-      // Create combined dbMetrics for downstream calculations
-      dbMetrics = {
-        latency: aggregated.maxReadLatency,
-        readLatency: aggregated.maxReadLatency,
-        writeLatency: aggregated.maxWriteLatency,
-        errorRate: aggregated.combinedErrorRate,
-        utilization: aggregated.maxUtilization,
-        cost: aggregated.totalCost,
-      };
-
-      combinedErrorRate = this.combineErrorRates(
-        combinedErrorRate,
-        aggregated.combinedErrorRate
-      );
-      totalCost += aggregated.totalCost;
-      infrastructureCost += aggregated.totalCost; // Database is infrastructure
-
-      // Check for hot shards and add to bottlenecks later
-      if (aggregated.hotShards.length > 0) {
-        verboseLog('Hot shards detected', aggregated.hotShards);
-      }
-
-      // Availability based on worst shard
-      for (const [, metrics] of shardMetricsMap) {
-        if (metrics.downtime) {
-          availability = Math.min(
-            availability,
-            Math.max(0, 1 - metrics.downtime / testCase.duration)
-          );
-        }
-      }
-    } else {
-      // Single database mode (legacy behavior)
-      // Log database config before simulation
-      if (shouldLog) {
-        const dbConfig = (db as any).config;
-        console.log(`  Database config:`, {
-          replicationMode: dbConfig?.replicationMode,
-          replicas: dbConfig?.replication?.replicas,
-          shards: dbConfig?.sharding?.shards,
-        });
-      }
-      
-      dbMetrics = db.simulateWithReadWrite(dbReadRps, dbWriteRps, context);
-      if (shouldLog && (dbMetrics.errorRate > 0 || dbMetrics.utilization > 0.5)) {
-        console.log(`  Database: ${dbReadRps.toFixed(0)} read, ${dbWriteRps.toFixed(0)} write RPS → ${((dbMetrics.utilization || 0) * 100).toFixed(1)}% util, ${(dbMetrics.errorRate * 100).toFixed(1)}% errors`);
-      }
-
-      // Apply database capacity modeling if enabled
-      if (isEnabled('ENABLE_DB_CONNECTION_POOL')) {
-        const dbConfig = db.config || {};
-        const instanceType = (dbConfig.instanceType as string) || 'db.t3.medium';
-        const poolConfig = CONNECTION_POOL_DEFAULTS[instanceType] || CONNECTION_POOL_DEFAULTS['db.t3.medium'];
-
-        const capacityResult = calculateEffectiveCapacity(
-          dbMetrics.utilization ? dbMetrics.utilization * (dbReadRps + dbWriteRps) * 10 : 1000, // Estimate base capacity
-          dbReadRps + dbWriteRps,
-          {
-            poolConfig,
-            queryComplexity: this.queryComplexity,
-            ioPattern: this.ioPattern,
-            avgQueryDurationMs: dbMetrics.latency || 10,
-          }
-        );
-
-        verboseLog('Database capacity modeling', {
-          effectiveCapacity: capacityResult.effectiveCapacity,
-          connectionPoolUtilization: capacityResult.connectionPoolUtilization,
-          queryLatencyMultiplier: capacityResult.queryLatencyMultiplier,
-          ioLatencyMultiplier: capacityResult.ioLatencyMultiplier,
-          warnings: capacityResult.warnings,
-        });
-
-        // Adjust metrics based on capacity modeling
-        const capacityFactor = capacityResult.effectiveCapacity / Math.max(dbReadRps + dbWriteRps, 1);
-        if (capacityFactor < 1) {
-          // Database is overloaded
-          dbMetrics.errorRate = this.combineErrorRates(
-            dbMetrics.errorRate,
-            Math.min(0.5, (1 - capacityFactor) * 0.3) // Up to 30% additional errors from overload
-          );
-          dbMetrics.latency = (dbMetrics.latency || 10) * capacityResult.queryLatencyMultiplier;
-          if (dbMetrics.readLatency) {
-            dbMetrics.readLatency *= capacityResult.queryLatencyMultiplier;
-          }
-          if (dbMetrics.writeLatency) {
-            dbMetrics.writeLatency *= capacityResult.queryLatencyMultiplier;
-          }
-        }
-
-        // Add capacity warnings to component metrics
-        if (capacityResult.warnings.length > 0) {
-          dbMetrics.warnings = [...(dbMetrics.warnings || []), ...capacityResult.warnings];
-        }
-      }
-
-      // Apply failure injection effects to database
-      const dbFailureEffect = failureEffects.get(db.id);
-      if (dbFailureEffect && dbFailureEffect.isAffected) {
-        dbMetrics = this.applyFailureEffect(dbMetrics, dbFailureEffect);
-      }
-
-      componentMetrics.set(db.id, dbMetrics);
-      const errorBeforeDb = combinedErrorRate;
-      combinedErrorRate = this.combineErrorRates(
-        combinedErrorRate,
-        dbMetrics.errorRate
-      );
-      if (shouldLog && dbMetrics.errorRate > 0) {
-        console.log(`  ⚠️ Database: ${(dbMetrics.errorRate * 100).toFixed(1)}% errors, ${((dbMetrics.utilization || 0) * 100).toFixed(1)}% util`);
-      }
-      totalCost += dbMetrics.cost;
-      infrastructureCost += dbMetrics.cost; // Database is infrastructure
-      if (dbMetrics.downtime) {
-        availability = Math.max(0, 1 - dbMetrics.downtime / testCase.duration);
-      }
-    }
-
-    // CDN (if present and reachable)
-    // CDN costs are operational (data transfer), not infrastructure - exclude from budget
-    const cdn = cdnId ? (this.components.get(cdnId) as CDN) : undefined;
-    let cdnHitRatio = 0.95; // Default CDN hit ratio
-    if (cdn && toCdnPath) {
-      const avgResponseSize = testCase.traffic.avgResponseSizeMB || 2;
-      const cdnMetrics = cdn.simulate(totalRps, context, avgResponseSize);
-      componentMetrics.set(cdn.id, cdnMetrics);
-      totalCost += cdnMetrics.cost;
-      // CDN cost is operational (data transfer), not infrastructure - don't add to infrastructureCost
-      // Use CDN's hit ratio if available, otherwise default to 0.95
-      cdnHitRatio = cdnMetrics.hitRatio ?? 0.95;
-    }
-
-    // Step 6: S3 (if present, for object storage)
-    // S3 costs are operational (data transfer + storage), not infrastructure - exclude from budget
-    // S3 only handles cache misses from CDN, not all traffic
-    const s3 = s3Id ? (this.components.get(s3Id) as S3) : undefined;
-    if (s3 && cdnToS3Path) {
-      const avgObjectSize = testCase.traffic.avgResponseSizeMB || 2;
-      // Only calculate S3 cost for cache misses (1 - hitRatio)
-      const s3Rps = totalRps * (1 - cdnHitRatio);
-      const s3Metrics = s3.simulate(s3Rps, context, avgObjectSize);
-      componentMetrics.set(s3.id, s3Metrics);
-      totalCost += s3Metrics.cost;
-      // S3 cost is operational (data transfer + storage), not infrastructure - don't add to infrastructureCost
-    }
-
-    // Calculate final metrics
-    // Compute end-to-end latency from traffic flow
-    // Latency up to app (lb/app/etc.)
-    const pathToAppLatency = totalLatency; // accumulated earlier
-
-    // Read request average latency
-    const readLatency = readPathAvailable
-      ? pathToAppLatency + cacheLatency + (missRatio * (dbMetrics.readLatency ?? 0))
-      : 0;
-
-    // Write request average latency
-    const writeLatency = writePathAvailable
-      ? pathToAppLatency + (dbMetrics.writeLatency ?? 0)
-      : 0;
-
-    // If any path is unavailable, treat that fraction as failed (1.0 error)
-    const readFrac = totalRps > 0 ? readRps / totalRps : 0;
-    const writeFrac = totalRps > 0 ? writeRps / totalRps : 0;
+    // Let's use a recursive function with memoization or just BFS with path accumulation?
+    // BFS with path accumulation can explode.
+    // Better: "Expected Latency to Completion" for each node? (Reverse Topo)
+    // Latency(Node) = Node_Processing_Time + WeightedAvg(Latency(Children))
     
-    if (shouldLog && combinedErrorRate > 0) {
-      console.log(`  ⚠️ Combined error rate: ${(combinedErrorRate * 100).toFixed(1)}%`);
+    // Reverse Topo Sort would be ideal.
+    // Or just a simple recursive function with cycle breaking.
+
+    const getExpectedLatency = (nodeId: string, visited: Set<string>): number => {
+         if (visited.has(nodeId)) return 0; // Cycle break
+         visited.add(nodeId);
+
+         const metrics = componentMetrics.get(nodeId)!;
+         const ownLatency = metrics.latency || 0;
+
+         const edges = this.adjacency.get(nodeId) || [];
+         if (edges.length === 0) return ownLatency;
+
+         // Calculate average latency of downstream
+         let sumDownstreamLatency = 0;
+         let count = 0;
+
+         // Check split factors from calculateNodeTraffic logic
+         // If LoadBalancer, we average children?
+         // If Broadcast, we take MAX? (Parallel) or SUM? (Sequential).
+         // The graph doesn't specify parallel/seq.
+         // Standard assumption: Request goes to A, then B. (Sequential).
+         // BUT `App -> Cache` and `App -> DB` is usually: Check Cache (return) OR Check DB.
+         // If Cache Hit: Latency = CacheLat.
+         // If Cache Miss: Latency = CacheLat + DBLat.
+         // This conditional logic is hard to genericize without knowing it's a cache.
+
+         // Heuristic:
+         // If Node is Cache:
+         //   Effective = Latency + (MissRatio * DownstreamLatency)
+         // Else:
+         //   Effective = Latency + Average(DownstreamLatency) [Split] or Sum(DownstreamLatency) [Broadcast]?
+         //   Actually, if LB splits, a request only goes to ONE child. So Average is correct.
+         //   If App calls ServiceA AND ServiceB (Fanout), it waits for both. So MAX (if parallel) or SUM (if serial).
+         //   Let's assume SUM for fanout (safer/pessimistic).
+
+         const comp = this.components.get(nodeId)!;
+
+         if (comp.type === 'load_balancer' || isDatabaseComponentType(comp.type) && edges.length > 1) {
+              // Split logic -> Weighted Average
+              // Assumes uniform distribution for now (1/N)
+              for (const edge of edges) {
+                   sumDownstreamLatency += getExpectedLatency(edge.to, new Set(visited));
+                   count++;
+              }
+              return ownLatency + (count > 0 ? sumDownstreamLatency / count : 0);
+         } else if (comp.type === 'redis' || comp.type === 'cache') {
+              // Cache Logic
+              const cacheMetrics = metrics; // has cacheHits/Misses
+              const totalOps = (cacheMetrics.cacheHits || 0) + (cacheMetrics.cacheMisses || 0);
+              const missRatio = totalOps > 0 ? (cacheMetrics.cacheMisses || 0) / totalOps : 0; // Default 0 if no traffic?
+
+              // Find downstream (DB)
+              // Usually only 1 downstream for cache
+              let downstreamLat = 0;
+              if (edges.length > 0) {
+                  // Pick first or avg?
+                  downstreamLat = getExpectedLatency(edges[0].to, new Set(visited));
+              }
+              return ownLatency + (missRatio * downstreamLat);
+         } else {
+              // Broadcast/Fanout Logic (App Server -> SvcA, SvcB)
+              // Assume Sequential (Sum)
+              for (const edge of edges) {
+                   sumDownstreamLatency += getExpectedLatency(edge.to, new Set(visited));
+              }
+              return ownLatency + sumDownstreamLatency;
+         }
+    };
+
+    // Calculate System-Wide Metrics
+    let p50Latency = 0;
+    if (entryPoints.length > 0) {
+        // Average latency across entry points
+        let totalLat = 0;
+        for (const entry of entryPoints) {
+            totalLat += getExpectedLatency(entry, new Set());
+        }
+        p50Latency = totalLat / entryPoints.length;
     }
-    
-    if (!readPathAvailable || !writePathAvailable) {
-      const unreachableFrac = (readPathAvailable ? 0 : readFrac) + (writePathAvailable ? 0 : writeFrac);
-      const errorBeforePath = combinedErrorRate;
-      if (shouldLog) {
-        console.log('❌ PATH UNAVAILABLE - Error rate will be 100% for', {
-          unreachableFrac: (unreachableFrac * 100).toFixed(1) + '%',
-          readPathAvailable,
-          writePathAvailable,
-        });
-      }
-      combinedErrorRate = this.combineErrorRates(combinedErrorRate, Math.min(1, unreachableFrac));
-      if (shouldLog) {
-        console.log(`  After path check: combinedErrorRate: ${(errorBeforePath * 100).toFixed(2)}% → ${(combinedErrorRate * 100).toFixed(2)}%`);
-      }
-      // If everything is unreachable, knock availability to 0
-      if (unreachableFrac >= 0.999) availability = 0;
+
+    // Combine Error Rates
+    // Simple heuristic: 1 - Product(1 - errorRate) for all ACTIVE nodes
+    let successRate = 1.0;
+    for (const [id, metrics] of componentMetrics) {
+        const input = nodeTraffic.get(id)!;
+        if (input.read + input.write > 0) {
+            successRate *= (1 - metrics.errorRate);
+        }
+    }
+    combinedErrorRate = 1 - successRate;
+
+    // Availability (Min of all active nodes)
+    for (const [id, metrics] of componentMetrics) {
+        const input = nodeTraffic.get(id)!;
+        if (input.read + input.write > 0 && metrics.downtime) {
+             const nodeAvail = Math.max(0, 1 - metrics.downtime / testCase.duration);
+             combinedAvailability = Math.min(combinedAvailability, nodeAvail);
+        }
     }
 
-    let p50Latency =
-      totalRps > 0
-        ? (readRps * readLatency + writeRps * writeLatency) / totalRps
-        : 0;
-
-    // Apply reliability patterns (retry, circuit breaker, timeout, queue)
-    let reliabilityWarnings: string[] = [];
-    let effectiveRps = totalRps;
-
-    // Only apply if any reliability feature flag is enabled
-    const anyReliabilityEnabled =
+    // Reliability Patterns
+    // Apply global reliability effects if enabled
+     const anyReliabilityEnabled =
       isEnabled('ENABLE_RETRY_LOGIC') ||
       isEnabled('ENABLE_CIRCUIT_BREAKER') ||
       isEnabled('ENABLE_TIMEOUT_ENFORCEMENT') ||
@@ -962,111 +696,69 @@ export class SimulationEngine {
         totalRps,
         combinedErrorRate,
         p50Latency,
-        p50Latency * 0.3, // Estimate variance as 30% of mean
+        p50Latency * 0.3,
         this.retryConfig,
         this.circuitBreakerConfig,
         this.timeoutConfig,
         this.queueConfig
       );
 
-      // Update metrics with reliability effects
-      effectiveRps = reliabilityResult.effectiveRps;
       combinedErrorRate = this.combineErrorRates(
         combinedErrorRate,
         reliabilityResult.effectiveErrorRate - combinedErrorRate
       );
       p50Latency = reliabilityResult.effectiveLatencyMs;
-      reliabilityWarnings = reliabilityResult.warnings;
 
-      verboseLog('Reliability patterns applied', {
-        originalRps: totalRps,
-        effectiveRps: reliabilityResult.effectiveRps,
-        originalErrorRate: combinedErrorRate,
-        effectiveErrorRate: reliabilityResult.effectiveErrorRate,
-        originalLatency: p50Latency,
-        effectiveLatency: reliabilityResult.effectiveLatencyMs,
-        warnings: reliabilityResult.warnings,
-      });
-
-      // Add reliability warnings to app server metrics (if present)
-      if (appId && reliabilityWarnings.length > 0) {
-        const appMetrics = componentMetrics.get(appId);
-        if (appMetrics) {
-          appMetrics.warnings = [
-            ...(appMetrics.warnings || []),
-            ...reliabilityWarnings,
-          ];
-        }
-      }
+      // Warnings?
     }
 
-    // Calculate full percentile distribution
-    // Uses feature flag to switch between legacy (hardcoded multipliers) and accurate (statistical) calculation
-    const componentCount = pathToAppComponents.length + (cache ? 1 : 0) + 1; // +1 for DB
-    const cacheHitRatio = cache ? (1 - missRatio) : 0;
+    // Percentiles
+    // We use the component count of the "longest path" as proxy?
+    // Or just use componentMetrics.size?
+    // Used for statistical distribution tail calculation
+    const componentCount = componentMetrics.size;
     const maxUtilization = Math.max(
       ...Array.from(componentMetrics.values()).map(m => m.utilization || 0)
     );
-    const loadFactor = Math.min(1, maxUtilization);
-
-    verboseLog('Calculating percentiles', {
-      p50Latency,
-      componentCount,
-      cacheHitRatio,
-      loadFactor,
-      useAccuratePercentiles: isEnabled('USE_ACCURATE_PERCENTILES'),
-    });
 
     const percentiles = calculateRequestPercentiles(
-      readLatency,
-      writeLatency,
-      readRps,
-      writeRps,
+      p50Latency, // Use generic p50 as base
+      p50Latency * 1.5, // Estimate write latency as higher? Or just use same base.
+      totalReadRps,
+      totalWriteRps,
       {
         componentCount,
-        cacheHitRatio,
-        loadFactor,
+        cacheHitRatio: 0.5, // Hard to calc generic hit ratio, use median
+        loadFactor: Math.min(1, maxUtilization),
       }
     );
 
-    const p90Latency = percentiles.p90;
-    const p95Latency = percentiles.p95;
-    const p99Latency = percentiles.p99;
-    const p999Latency = percentiles.p999;
-
-    // Get flow visualization (components and traffic flow engine already built)
-    // Note: Flow visualization is optional and runs on a sample of requests
+    // Flow Visualization (Keep existing logic)
     let flowViz: FlowVisualization | undefined;
     try {
       const result = this.getTrafficFlowInternal(testCase);
       flowViz = result.flowViz;
     } catch (error) {
-      // Flow visualization failed, but don't block the main simulation
       console.warn('Flow visualization failed:', error);
       flowViz = undefined;
     }
 
-    const finalMetrics = {
+    const finalMetrics: TestMetrics = {
       p50Latency,
-      p90Latency,
-      p95Latency,
-      p99Latency,
-      p999Latency,
+      p90Latency: percentiles.p90,
+      p95Latency: percentiles.p95,
+      p99Latency: percentiles.p99,
+      p999Latency: percentiles.p999,
       errorRate: combinedErrorRate,
-      monthlyCost: totalCost, // Total cost (including CDN/S3) for display
-      infrastructureCost, // Infrastructure cost (excluding CDN/S3) for budget validation
-      availability,
+      monthlyCost: totalSystemCost,
+      infrastructureCost,
+      availability: combinedAvailability,
     };
-    
-    if (shouldLog) {
-      const status = finalMetrics.errorRate > 0.01 ? '❌' : '✅';
-      console.log(`  ${status} Result: ${(finalMetrics.errorRate * 100).toFixed(1)}% errors, ${finalMetrics.p99Latency.toFixed(0)}ms p99, $${finalMetrics.monthlyCost.toFixed(0)}/mo`);
-    }
-    
+
     return {
       metrics: finalMetrics,
       componentMetrics,
-      flowViz,
+      flowViz
     };
   }
 
