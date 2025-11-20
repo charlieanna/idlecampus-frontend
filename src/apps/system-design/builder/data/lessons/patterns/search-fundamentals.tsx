@@ -8,10 +8,10 @@ export const searchFundamentalsLesson: SystemDesignLesson = {
   id: 'search-fundamentals',
   slug: 'search-fundamentals',
   title: 'Search Fundamentals',
-  description: 'Learn the core concepts of search systems and indexing',
+  description: 'Master search trade-offs: WHEN to use database LIKE vs Elasticsearch vs managed search (Algolia), HOW to choose based on dataset size and team capacity, understanding inverted indexes and TF-IDF ranking for relevance.',
   category: 'patterns',
   difficulty: 'intermediate',
-  estimatedMinutes: 25,
+  estimatedMinutes: 45,
   stages: [
     {
       id: 'what-is-search',
@@ -485,6 +485,242 @@ User selects: Brand=Apple, Price=$1000+
 
           <KeyPoint>
             Faceted search improves user experience by letting users narrow down results quickly!
+          </KeyPoint>
+        </Section>
+      ),
+    },
+    {
+      id: 'search-tradeoffs',
+      type: 'concept',
+      title: 'Search System Trade-Offs',
+      content: (
+        <Section>
+          <H1>🎯 Critical Trade-Off: Database LIKE vs Elasticsearch vs Specialized Search</H1>
+
+          <ComparisonTable
+            headers={['Approach', 'Query Speed', 'Relevance', 'Setup Time', 'Cost/mo', 'Best For', 'Worst For']}
+            rows={[
+              [
+                'Database LIKE\n(PostgreSQL)',
+                'Very Slow\n10-30s',
+                'None\n(no ranking)',
+                '0\n(already have DB)',
+                '$0\n(existing DB)',
+                '• <1k records\n• Exact matches\n• MVP/prototype\n• No search needed',
+                '• >10k records\n• Fuzzy search\n• Typos\n• Relevance ranking\n• Production apps'
+              ],
+              [
+                'Elasticsearch\n(Self-hosted)',
+                'Fast\n50-200ms',
+                'Good\n(TF-IDF, BM25)',
+                '1 week\n(setup + tuning)',
+                '$500-2000\n(cluster)',
+                '• >10k records\n• Full control\n• Custom scoring\n• Complex queries\n• Large teams',
+                '• <10k records\n• Simple search\n• Small teams\n• Fast iteration\n• Tight budget'
+              ],
+              [
+                'Algolia/Typesense\n(Managed)',
+                'Very Fast\n10-50ms',
+                'Excellent\n(typo-tolerant)',
+                '1 day\n(API integration)',
+                '$200-1000\n(hosted)',
+                '• Fast iteration\n• Typo tolerance\n• Small teams\n• SaaS products\n• Global CDN',
+                '• Large datasets\n• Custom scoring\n• Cost-sensitive\n• Need full control'
+              ],
+            ]}
+          />
+
+          <Example title="Real Decision: E-commerce Product Search (100k products)">
+            <P><Strong>Option 1: PostgreSQL LIKE queries (wrong)</Strong></P>
+            <CodeBlock>
+{`SELECT * FROM products
+WHERE name LIKE '%phone%'
+   OR description LIKE '%phone%'
+LIMIT 20;
+
+Performance:
+- Query time: 15 seconds (scans all 100k products)
+- No relevance ranking (results random order)
+- Can't handle typos ("phne" returns nothing)
+- Can't handle synonyms ("smartphone" vs "phone")
+
+User impact:
+- 15s wait time = 90% users abandon search
+- Random results = poor conversion
+- Typos = zero results = lost sales
+
+Revenue impact:
+- Search drives 30% of e-commerce sales
+- Bad search = lose 30% × 90% abandon rate = 27% lost revenue
+- $100k/mo revenue → Lose $27k/mo
+
+Result: ❌ Database LIKE is unusable for production search`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Elasticsearch (good for this scale)</Strong></P>
+            <CodeBlock>
+{`GET /products/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "phone",
+      "fields": ["name^2", "description"],
+      "fuzziness": "AUTO"
+    }
+  }
+}
+
+Performance:
+- Query time: 50ms (300x faster!)
+- Relevance ranking: TF-IDF scoring
+- Typo tolerance: "phne" → "phone"
+- Synonyms: Configure "smartphone" → "phone"
+
+Setup:
+- Initial: 1 week (cluster setup, indexing, tuning)
+- Ongoing: DevOps needed for cluster management
+- Cost: $500/mo for 3-node cluster
+
+User impact:
+- <100ms search = happy users
+- Relevant results = higher conversion
+- Typo tolerance = fewer zero-result searches
+
+Revenue impact:
+- Search conversion: +50% vs database LIKE
+- Extra revenue: $15k/mo
+- ROI: $15k / $500 = 30x return
+
+Result: ✅ Elasticsearch is right for 100k products
+
+Trade-off: $500/mo + ops overhead vs 300x speed + relevance ranking`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> Elasticsearch costs $500/mo + 1 week setup but provides 300x faster search
+              + relevance ranking. For e-commerce, $500 cost generates $15k extra revenue (30x ROI).
+            </KeyPoint>
+          </Example>
+
+          <Example title="Real Decision: SaaS Product with 5k Users">
+            <P><Strong>Option 1: Self-hosted Elasticsearch (over-engineering)</Strong></P>
+            <CodeBlock>
+{`Setup:
+- 3-node Elasticsearch cluster: $500/mo
+- Dev time: 2 weeks setup + tuning
+- Ongoing: DevOps for cluster management (monitoring, scaling, upgrades)
+
+Complexity:
+- Index management (mappings, analyzers)
+- Cluster health monitoring
+- Shard allocation
+- Version upgrades
+
+Team: 5 engineers (no dedicated DevOps)
+
+Result: ❌ Too much ops overhead for small team`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Algolia (right for SaaS + small team)</Strong></P>
+            <CodeBlock>
+{`Setup:
+- Sign up for Algolia
+- Push records via API: 1 hour
+- Configure search: 1 day
+- Total: 1 day vs 2 weeks
+
+Code:
+const index = client.initIndex('products');
+index.search('phone').then(({hits}) => {
+  // Instant results with typo tolerance
+});
+
+Cost:
+- $200/mo for 5k users (vs $500/mo for Elasticsearch)
+- Zero ops time (managed service)
+- Global CDN (50ms from anywhere)
+
+Features:
+- Typo tolerance: Built-in
+- Faceted search: Built-in
+- Geo-search: Built-in
+- Analytics: Built-in
+
+Result: ✅ Algolia is right for small teams
+
+Trade-off: $200/mo vendor lock-in vs 2 weeks saved + zero ops
+
+Business decision:
+- 2 weeks saved = $10k engineer time
+- Zero ops = focus on product
+- Global CDN = better UX worldwide
+- Worth the vendor lock-in`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> Managed search (Algolia) costs $200/mo but saves 2 weeks + ongoing ops.
+              For small teams, worth the vendor lock-in to focus on product instead of search infrastructure.
+            </KeyPoint>
+          </Example>
+
+          <H3>Decision Framework: Choosing Search Solution</H3>
+          <CodeBlock>
+{`How many records do you have?
+
+├─ <1,000 records → Database LIKE queries (good enough!)
+│   └─ Examples: Admin panels, internal tools
+│   └─ Accept: Slow search, no ranking
+│   └─ Benefit: $0 cost, use existing database
+│
+├─ 1k-100k records → Do you have DevOps capacity?
+│   │
+│   ├─ YES (team >10 engineers) → Elasticsearch (self-hosted)
+│   │   └─ Accept: 1-2 weeks setup, ongoing ops
+│   │   └─ Benefit: Full control, custom scoring, $500/mo
+│   │
+│   └─ NO (small team <10) → Algolia/Typesense (managed)
+│       └─ Accept: Vendor lock-in, $200-1000/mo
+│       └─ Benefit: 1 day setup, zero ops, global CDN
+│
+└─ >100k records → Need custom relevance scoring?
+    │
+    ├─ YES (e-commerce, complex ranking) → Elasticsearch
+    │   └─ Examples: Amazon, eBay (custom ranking algorithms)
+    │   └─ Accept: High ops cost, need search team
+    │
+    └─ NO (standard search) → Managed service
+        └─ Algolia for <1M records
+        └─ Elasticsearch Cloud for >1M records`}
+          </CodeBlock>
+
+          <H3>Common Mistakes</H3>
+          <UL>
+            <LI>
+              <Strong>❌ Using database LIKE for >10k records</Strong>
+              <UL>
+                <LI>Problem: 15s query time = users abandon search</LI>
+                <LI>Fix: Use search engine (Elasticsearch or managed)</LI>
+              </UL>
+            </LI>
+            <LI>
+              <Strong>❌ Self-hosting Elasticsearch with small team</Strong>
+              <UL>
+                <LI>Problem: 2 weeks setup + ongoing ops burden</LI>
+                <LI>Fix: Use managed service (Algolia, Typesense) - save time for product</LI>
+              </UL>
+            </LI>
+            <LI>
+              <Strong>❌ Not implementing typo tolerance</Strong>
+              <UL>
+                <LI>Problem: "iPhne" returns zero results = lost sales</LI>
+                <LI>Fix: Configure fuzzy matching (Elasticsearch fuzziness: AUTO)</LI>
+              </UL>
+            </LI>
+          </UL>
+
+          <KeyPoint>
+            <Strong>Golden Rule:</Strong> For <1k records, database is fine. For 1k-100k records, use managed search
+            (Algolia) unless you have DevOps capacity. For >100k+ records with custom needs, self-host Elasticsearch.
           </KeyPoint>
         </Section>
       ),

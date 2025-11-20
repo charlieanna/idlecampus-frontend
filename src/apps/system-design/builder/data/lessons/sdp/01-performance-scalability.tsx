@@ -8,10 +8,10 @@ export const sdpPerformanceScalabilityLesson: SystemDesignLesson = {
   id: 'sdp-performance-scalability',
   slug: 'sdp-performance-scalability',
   title: 'Performance vs Scalability',
-  description: 'Understand the difference between performance and scalability, and when to optimize for each.',
+  description: 'Master WHEN to optimize performance vs scale capacity, vertical vs horizontal scaling trade-offs ($2.5k hard limit vs $2.1k unlimited scaling), and WHY optimizing first saved $4,450/mo vs scaling a slow system (40x speedup for $50/mo)',
   category: 'fundamentals',
   difficulty: 'beginner',
-  estimatedMinutes: 30,
+  estimatedMinutes: 45,
   stages: [
     {
       id: 'intro-performance-scalability',
@@ -85,6 +85,156 @@ export const sdpPerformanceScalabilityLesson: SystemDesignLesson = {
             <Strong>Best Practice:</Strong> Optimize performance first (make it fast for one user), then scale
             (make it handle many users). Don't scale a slow system!
           </KeyPoint>
+
+          <Divider />
+
+          <H1>🎯 Critical Trade-Off: Vertical Scaling vs Horizontal Scaling</H1>
+
+          <ComparisonTable
+            headers={['Approach', 'Cost', 'Scalability Limit', 'Complexity', 'Downtime', 'Best For', 'Worst For']}
+            rows={[
+              [
+                'Vertical Scaling\n(bigger server)',
+                'High\n(exponential)',
+                'Hard Limit\n(largest server)',
+                'Very Low\n(no code changes)',
+                'Medium\n(requires restart)',
+                '• Databases\n• Monoliths\n• Startups\n• Short-term fix',
+                '• Highly variable load\n• Need high availability\n• Cost-sensitive'
+              ],
+              [
+                'Horizontal Scaling\n(more servers)',
+                'Low\n(linear)',
+                'Nearly Unlimited',
+                'High\n(distributed systems)',
+                'Zero\n(rolling updates)',
+                '• Stateless services\n• Read-heavy workloads\n• Long-term growth',
+                '• Stateful systems\n• Databases (complex)\n• Small scale'
+              ]
+            ]}
+          />
+
+          <Example title="Real Decision: API Service Scaling from 1k → 10k RPS">
+            <P><Strong>Context:</Strong> API service currently handles 1k RPS on 1 server, need to scale to 10k RPS</P>
+
+            <P><Strong>Option 1: Vertical Scaling</Strong></P>
+            <CodeBlock>
+{`Current: 1 server (4 vCPU, 16GB RAM) = $200/mo → handles 1k RPS
+
+Scale to 10x capacity:
+  - Upgrade to: 40 vCPU, 160GB RAM = $2,500/mo (largest AWS instance)
+  - Result: Handles 10k RPS
+
+Limitations:
+  - Hard limit: Can't scale beyond 10k RPS (largest server maxed out)
+  - Single point of failure
+  - Requires downtime for upgrade (5-10 min)
+  - Cost efficiency: 12.5x cost for 10x capacity ($200 → $2,500)
+
+Result: ⚠️ Works short-term but hits hard limit at 10k RPS`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Horizontal Scaling (correct choice)</Strong></P>
+            <CodeBlock>
+{`Current: 1 server (4 vCPU, 16GB RAM) = $200/mo → handles 1k RPS
+
+Scale to 10x capacity:
+  - Add 9 more servers (same size) = 10 × $200/mo = $2,000/mo
+  - Add load balancer = $100/mo
+  - Total: $2,100/mo → handles 10k RPS
+
+Benefits:
+  - Can scale further: Need 100k RPS? Add 90 more servers (linear cost)
+  - High availability: If 1 server dies, still have 9 (90% capacity)
+  - Zero downtime: Rolling updates (update servers one at a time)
+  - Cost efficiency: 10.5x cost for 10x capacity ($200 → $2,100)
+
+Trade-off vs vertical:
+  - Slightly cheaper: $2,100 vs $2,500 (-16%)
+  - Unlimited scalability vs hard limit at 10k RPS
+  - High availability vs single point of failure
+  - Added complexity: Need load balancer + distributed system logic
+
+Result: ✅ Better long-term choice despite added complexity`}
+            </CodeBlock>
+          </Example>
+
+          <Divider />
+
+          <H1>🎯 Critical Trade-Off: Optimize Performance First vs Scale First</H1>
+
+          <Example title="Real Decision: Slow Database Query Under Load">
+            <P><Strong>Scenario:</Strong> Dashboard query takes 2s with 10 concurrent users, times out with 100 concurrent users</P>
+
+            <P><Strong>Wrong Approach: Scale First (10x more expensive)</Strong></P>
+            <CodeBlock>
+{`Problem:
+  - Query scans 10M rows (slow N+1 query)
+  - Current: 1 database server ($500/mo)
+  - With 100 users: Query queue backs up, timeouts
+
+Solution attempt:
+  - Add 9 read replicas to distribute load
+  - Total cost: 10 × $500/mo = $5,000/mo
+  - Result: Still slow (2s per query × 100 concurrent = 200s total wait)
+  - Throughput: 100 queries / 2s = 50 queries/sec (poor)
+
+Outcome: ❌ Spent $4,500/mo extra, queries still slow (2s each)
+Scaled a slow system = expensive failure`}
+            </CodeBlock>
+
+            <P><Strong>Correct Approach: Optimize Performance First</Strong></P>
+            <CodeBlock>
+{`Solution:
+  1. Add database index on query filter column
+  2. Fix N+1 query → batch queries
+  3. Add 1-minute cache for dashboard data
+
+Performance improvement:
+  - Query time: 2s → 50ms (40x faster!)
+  - With 100 concurrent users: 100 × 50ms = 5s total
+  - Throughput: 100 queries / 5s = 20 queries/sec from cache
+
+Cost:
+  - Database: $500/mo (same)
+  - Redis cache: $50/mo
+  - Total: $550/mo
+
+Comparison:
+  - Scale-first approach: $5,000/mo, 2s latency, 50 queries/sec
+  - Optimize-first approach: $550/mo, 50ms latency, 20 queries/sec from cache
+  - Savings: $4,450/mo + 40x faster
+
+Result: ✅ Optimize first, then scale if needed (saved $4,450/mo)`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Lesson:</Strong> Don't scale a slow system. Optimize performance first (40x speedup for $50/mo),
+              then scale horizontally if needed. Scaling a slow system is 10x more expensive.
+            </KeyPoint>
+          </Example>
+
+          <H2>Common Mistakes</H2>
+
+          <P>❌ <Strong>Mistake 1: Scaling Without Optimizing Performance</Strong></P>
+          <CodeBlock>
+{`Problem:
+  - Slow query (2s)
+  - Add 10 servers to handle load: $5k/mo
+  - Still slow (2s per query)
+
+Fix: Optimize query first (add index, fix N+1), then scale if needed`}
+          </CodeBlock>
+
+          <P>❌ <Strong>Mistake 2: Vertical Scaling for Long-Term Growth</Strong></P>
+          <CodeBlock>
+{`Problem:
+  - Keep vertically scaling: $200 → $500 → $1k → $2.5k/mo
+  - Hit hard limit (largest server)
+  - Can't scale further, forced to refactor for horizontal scaling
+
+Fix: Start with horizontal scaling from day 1 (if expecting growth)`}
+          </CodeBlock>
         </Section>
       ),
     },

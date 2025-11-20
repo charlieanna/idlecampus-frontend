@@ -8,10 +8,10 @@ export const gatewayFundamentalsLesson: SystemDesignLesson = {
   id: 'gateway-fundamentals',
   slug: 'gateway-fundamentals',
   title: 'API Gateway Fundamentals',
-  description: 'Learn the core concepts of API gateways and request routing',
+  description: 'Master API Gateway trade-offs: WHEN to use API Gateway vs direct service calls vs Service Mesh, based on number of services and security requirements. Learn routing, authentication, rate limiting, and service discovery patterns.',
   category: 'patterns',
   difficulty: 'intermediate',
-  estimatedMinutes: 20,
+  estimatedMinutes: 35,
   stages: [
     {
       id: 'what-is-gateway',
@@ -548,8 +548,216 @@ Response:
           />
 
           <KeyPoint>
-            Service discovery enables dynamic, scalable microservices by automatically 
+            Service discovery enables dynamic, scalable microservices by automatically
             finding healthy service instances!
+          </KeyPoint>
+        </Section>
+      ),
+    },
+    {
+      id: 'gateway-tradeoffs',
+      type: 'concept',
+      title: 'API Gateway Trade-Offs',
+      content: (
+        <Section>
+          <H1>🎯 Critical Trade-Off: API Gateway vs Direct Calls vs Service Mesh</H1>
+
+          <ComparisonTable
+            headers={['Approach', 'Latency', 'Complexity', 'Features', 'Cost/mo', 'Best For', 'Worst For']}
+            rows={[
+              [
+                'Direct Service Calls\n(no gateway)',
+                'Low\n10-20ms',
+                'Very Low',
+                'None\n(DIY everything)',
+                '$0',
+                '• Monolith\n• 2-3 services\n• Internal only\n• MVP',
+                '• >5 services\n• Public API\n• Need auth/rate limiting\n• Mobile clients'
+              ],
+              [
+                'API Gateway\n(Kong, AWS)',
+                'Medium\n20-50ms\n(+1 hop)',
+                'Medium',
+                'Rich\n(auth, rate limit, transform)',
+                '$200-1000',
+                '• Microservices\n• Public API\n• Mobile/web clients\n• Need centralized control',
+                '• Service-to-service\n• Ultra low latency\n• Simple routing only'
+              ],
+              [
+                'Service Mesh\n(Istio, Linkerd)',
+                'Medium\n20-50ms\n(sidecar)',
+                'Very High',
+                'Advanced\n(mTLS, observability, retry)',
+                '$500-2000',
+                '• Many services (>20)\n• Service-to-service security\n• Advanced traffic mgmt\n• Large teams',
+                '• <10 services\n• Small teams\n• Simple use cases\n• Cost-sensitive'
+              ],
+            ]}
+          />
+
+          <Example title="Real Decision: E-commerce with 5 Microservices">
+            <P><Strong>Option 1: Direct Service Calls (wrong for external API)</Strong></P>
+            <CodeBlock>
+{`Mobile App directly calls:
+- https://users.myapp.com/api/profile
+- https://orders.myapp.com/api/orders
+- https://products.myapp.com/api/search
+- https://payments.myapp.com/api/charge
+
+Problems:
+1. Auth: Each service validates JWT (duplicated logic, inconsistent)
+2. Rate limiting: No protection → DDoS vulnerability
+3. CORS: 5 different origins → CORS configuration nightmare
+4. Monitoring: Scattered across 5 services
+5. Mobile app hardcodes 5 URLs → Can't change service URLs without app update
+
+Result: ❌ Unmanageable for public-facing API`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: API Gateway (correct choice)</Strong></P>
+            <CodeBlock>
+{`Mobile App calls single endpoint:
+- https://api.myapp.com/users/profile
+- https://api.myapp.com/orders
+- https://api.myapp.com/products/search
+- https://api.myapp.com/payments/charge
+
+API Gateway handles:
+1. Auth: Validate JWT once, forward user_id to services
+2. Rate limiting: 1000 req/hour per user (centralized)
+3. CORS: Single origin configuration
+4. Monitoring: All requests logged in one place
+5. Routing: Change backend URLs without app updates
+
+Setup: Kong or AWS API Gateway
+Cost: $300/mo (Kong on EC2) or $200/mo (AWS API Gateway pay-per-use)
+Latency: +10ms overhead (acceptable)
+
+Result: ✅ Clean, manageable, secure
+
+Trade-off: +10ms latency + $300/mo vs centralized control + security`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> API Gateway adds 10ms latency + $300/mo but provides essential features
+              (auth, rate limiting, monitoring) for public APIs. Worth it for >3 services.
+            </KeyPoint>
+          </Example>
+
+          <Example title="Real Decision: Large Microservices Platform (50+ Services)">
+            <P><Strong>Option 1: API Gateway only (insufficient)</Strong></P>
+            <CodeBlock>
+{`Problem: Service-to-service communication
+- Order Service → Payment Service (internal call)
+- Order Service → Inventory Service (internal call)
+- Payment Service → Notification Service (internal call)
+
+Routing through API Gateway:
+Order Service → API Gateway → Payment Service
+
+Issues:
+1. Extra hop: +10ms latency for internal calls
+2. Gateway becomes bottleneck (all traffic)
+3. No mutual TLS between services (security gap)
+4. No fine-grained retry policies per service
+
+Result: ❌ API Gateway alone doesn't solve service-to-service challenges`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: API Gateway + Service Mesh (correct for large scale)</Strong></P>
+            <CodeBlock>
+{`Architecture:
+- External traffic (mobile/web) → API Gateway → Services
+- Internal traffic (service-to-service) → Service Mesh (Istio)
+
+API Gateway (Kong):
+- Handles: External authentication, rate limiting, public API
+- Traffic: 10k req/sec from mobile/web
+
+Service Mesh (Istio):
+- Handles: mTLS between services, retries, circuit breaking, observability
+- Traffic: 100k req/sec internal service-to-service
+
+Benefits:
+1. mTLS: Automatic encryption between all services
+2. Retries: Automatic retry with exponential backoff
+3. Circuit breaking: Fail fast when service is down
+4. Observability: Distributed tracing for all calls
+
+Cost:
+- API Gateway: $500/mo
+- Service Mesh: $1,500/mo (Istio control plane + sidecars)
+- Total: $2,000/mo
+
+Complexity:
+- High: Two systems to manage
+- Team requirement: 10+ engineers with expertise
+
+Result: ✅ Worth it for 50+ services
+
+Trade-off: $2k/mo + high complexity vs production-grade reliability + security`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Trade-off:</Strong> Service Mesh costs $2k/mo + adds complexity but essential for >20 services
+              needing mTLS, retries, circuit breaking. API Gateway handles external, mesh handles internal.
+            </KeyPoint>
+          </Example>
+
+          <H3>Decision Framework: Choosing Gateway Strategy</H3>
+          <CodeBlock>
+{`How many services do you have?
+
+├─ <3 services → No Gateway (direct calls)
+│   └─ Examples: Monolith + 1-2 services, MVP, internal tools
+│   └─ Accept: Manual auth, no centralized rate limiting
+│   └─ Benefit: $0 cost, simple, low latency
+│
+├─ 3-20 services → API Gateway (Kong, AWS API Gateway)
+│   └─ Examples: Standard microservices, public API, mobile app backend
+│   └─ Accept: +10ms latency, $200-500/mo
+│   └─ Benefit: Centralized auth, rate limiting, monitoring
+│
+└─ >20 services → API Gateway + Service Mesh
+    │
+    ├─ Need service-to-service security? (mTLS, zero-trust)
+    │   └─ YES → Service Mesh (Istio, Linkerd)
+    │       └─ Accept: $2k/mo, high complexity, team expertise needed
+    │       └─ Benefit: mTLS, retries, circuit breaking, observability
+    │
+    └─ Simple service-to-service only?
+        └─ Stick with API Gateway + manual retries
+            └─ Cheaper but less robust`}
+          </CodeBlock>
+
+          <H3>Common Mistakes</H3>
+          <UL>
+            <LI>
+              <Strong>❌ No API Gateway for public-facing microservices</Strong>
+              <UL>
+                <LI>Problem: Auth scattered across services, no rate limiting, CORS nightmare</LI>
+                <LI>Fix: Add API Gateway for external traffic (Kong, AWS API Gateway)</LI>
+              </UL>
+            </LI>
+            <LI>
+              <Strong>❌ Using Service Mesh for small projects (&lt;10 services)</Strong>
+              <UL>
+                <LI>Problem: $2k/mo + massive complexity for small team</LI>
+                <LI>Fix: API Gateway is sufficient for &lt;20 services</LI>
+              </UL>
+            </LI>
+            <LI>
+              <Strong>❌ Routing internal service-to-service through API Gateway</Strong>
+              <UL>
+                <LI>Problem: Extra hop, gateway bottleneck, no mTLS</LI>
+                <LI>Fix: Direct service-to-service OR service mesh for internal traffic</LI>
+              </UL>
+            </LI>
+          </UL>
+
+          <KeyPoint>
+            <Strong>Golden Rule:</Strong> For &lt;3 services, no gateway needed. For 3-20 services, use API Gateway.
+            For >20 services with security needs, add Service Mesh for internal traffic.
           </KeyPoint>
         </Section>
       ),

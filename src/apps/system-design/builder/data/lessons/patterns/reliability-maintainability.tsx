@@ -8,10 +8,10 @@ export const reliabilityMaintainabilityLesson: SystemDesignLesson = {
   id: 'reliability-maintainability',
   slug: 'reliability-maintainability',
   title: 'Reliability & Maintainability Principles',
-  description: 'Learn core principles for building reliable and maintainable systems',
+  description: 'Master WHEN to use circuit breakers vs retries, WHICH deployment strategy (blue-green vs canary vs rolling), and HOW to choose observability stack (metrics vs logging vs tracing) with real cost-benefit analysis',
   category: 'patterns',
   difficulty: 'intermediate',
-  estimatedMinutes: 45,
+  estimatedMinutes: 60,
   stages: [
     {
       id: 'software-errors',
@@ -99,6 +99,570 @@ Circuit open:
               <LI>Inventory: Required (fail if unavailable)</LI>
             </UL>
           </Example>
+        </Section>
+      ),
+    },
+    {
+      id: 'reliability-tradeoffs',
+      type: 'concept',
+      title: 'Reliability Trade-Offs',
+      content: (
+        <Section>
+          <H1>🎯 Critical Trade-Off: Circuit Breaker vs Retry vs Fail Fast</H1>
+
+          <ComparisonTable
+            headers={['Strategy', 'Latency Impact', 'Complexity', 'Cost/mo', 'Prevents Cascading Failures', 'Best For', 'Worst For']}
+            rows={[
+              [
+                'Fail Fast\n(no retry)',
+                'Low\n50-100ms',
+                'Very Low',
+                '$0\n(built-in)',
+                'No',
+                '• Non-critical features\n• Known to be down\n• User-facing errors OK',
+                '• Critical operations\n• Transient failures\n• Payment processing'
+              ],
+              [
+                'Retry with Backoff',
+                'High\n200ms-5s\n(3 retries)',
+                'Low',
+                '$0\n(built-in)',
+                'Partially\n(with limits)',
+                '• Transient network errors\n• Database deadlocks\n• Idempotent operations',
+                '• Non-idempotent ops\n• Downstream already overloaded\n• Tight latency SLA'
+              ],
+              [
+                'Circuit Breaker\n(Hystrix, Resilience4j)',
+                'Low\n50-100ms\n(fails fast when open)',
+                'Medium',
+                '$100-300/mo\n(monitoring)',
+                'Yes',
+                '• Microservices\n• External APIs\n• Non-critical dependencies',
+                '• Single monolith\n• Critical path\n• Need all data'
+              ],
+              [
+                'Circuit Breaker + Fallback\n(with cache)',
+                'Low\n50-100ms\n(serves cached)',
+                'High',
+                '$300-800/mo\n(circuit + cache)',
+                'Yes',
+                '• Recommendations\n• User preferences\n• Analytics data',
+                '• Real-time inventory\n• Payment processing\n• Stale data unacceptable'
+              ]
+            ]}
+          />
+
+          <Example title="Real Decision: E-commerce Product Recommendations">
+            <P><Strong>Scenario:</Strong> Recommendation service sometimes slow (500ms-2s), sometimes down</P>
+
+            <P><Strong>Option 1: Fail Fast (wrong for user experience)</Strong></P>
+            <CodeBlock>
+{`Implementation:
+try {
+  recommendations = await recommendationService.get(userId, {timeout: 100ms});
+} catch (error) {
+  recommendations = []; // Empty array
+}
+
+Result:
+- Latency: 100ms (good)
+- User sees empty recommendations section (bad UX)
+- No cache, no fallback
+
+Impact:
+- Conversion rate drops 2% when recommendations fail
+- Lost revenue: $10k/month for $500k/mo GMV site
+Result: ❌ Fast but poor user experience`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Retry with Backoff (wrong for already slow service)</Strong></P>
+            <CodeBlock>
+{`Implementation:
+try {
+  recommendations = await retry(
+    () => recommendationService.get(userId),
+    {maxAttempts: 3, backoff: [100ms, 500ms, 1s]}
+  );
+} catch (error) {
+  recommendations = [];
+}
+
+Result when service is slow (500ms):
+- First attempt: 500ms
+- Second attempt: 500ms + 100ms wait = 600ms
+- Third attempt: 500ms + 500ms wait = 1000ms
+- Total latency: 2.6 seconds (terrible!)
+
+Result when service is down:
+- 3 failed attempts → 3x load on already failing service
+- Makes outage worse (thundering herd)
+
+Result: ❌ Retries make slow/failing service worse`}
+            </CodeBlock>
+
+            <P><Strong>Option 3: Circuit Breaker + Cached Fallback (correct choice)</Strong></P>
+            <CodeBlock>
+{`Implementation:
+circuitBreaker = new CircuitBreaker({
+  failureThreshold: 5,  // Open after 5 failures
+  timeout: 200ms,
+  resetTimeout: 30s
+});
+
+try {
+  recommendations = await circuitBreaker.execute(
+    () => recommendationService.get(userId)
+  );
+} catch (error) {
+  // Serve cached popular items for user's category
+  recommendations = await cache.get(\`rec_fallback_\${userCategory}\`);
+}
+
+Cost:
+- Circuit breaker library: Free (Resilience4j)
+- Redis cache for fallbacks: $50/mo (1GB)
+- Monitoring (Prometheus + Grafana): $100/mo
+
+Total: $150/mo
+
+Results when service is slow/down:
+1. First 5 requests timeout at 200ms → Circuit opens
+2. Next requests fail fast (2ms) → Serve cached recommendations
+3. After 30s, try one request to test recovery
+4. User sees relevant cached recommendations (90% as good as real-time)
+
+Impact:
+- Page load time: 200ms → 50ms when circuit open
+- Conversion rate: Stays steady (cached recs still relevant)
+- Revenue protected: $10k/month saved
+
+Trade-off: $150/mo + complexity vs $10k/mo lost revenue + poor UX
+
+Result: ✅ Spend $150/mo to protect $10k/mo revenue (67x ROI)`}
+            </CodeBlock>
+          </Example>
+
+          <Divider />
+
+          <H1>🎯 Critical Trade-Off: Blue-Green vs Canary vs Rolling Deployment</H1>
+
+          <ComparisonTable
+            headers={['Strategy', 'Downtime', 'Rollback Speed', 'Cost', 'Risk Exposure', 'Infrastructure Needed', 'Best For']}
+            rows={[
+              [
+                'Blue-Green\nDeployment',
+                'Zero\n(instant switch)',
+                'Instant\n(switch back)',
+                '2x infra\n+100% cost',
+                'High\n(all users at once)',
+                '2x full production',
+                '• Instant rollback critical\n• Can afford 2x infra\n• Need zero downtime'
+              ],
+              [
+                'Canary\nDeployment',
+                'Zero\n(gradual rollout)',
+                'Fast\n(stop rollout)',
+                '+10% infra\n(for canary)',
+                'Low\n(5-25% users)',
+                'Small canary cluster',
+                '• Risk mitigation priority\n• OK with gradual rollout\n• Need metrics validation'
+              ],
+              [
+                'Rolling\nDeployment',
+                'Zero\n(rolling update)',
+                'Slow\n(reverse roll)',
+                'Same infra\n$0 extra',
+                'Medium\n(gradual exposure)',
+                'Same as production',
+                '• Cost-sensitive\n• Can tolerate slow rollback\n• Stateless services'
+              ],
+              [
+                'Recreate\n(stop then start)',
+                'High\n(5-30 min)',
+                'Medium\n(redeploy old)',
+                'Same infra\n$0 extra',
+                'High\n(all users)',
+                'Same as production',
+                '• Dev/staging only\n• Scheduled maintenance OK\n• Cost priority > uptime'
+              ]
+            ]}
+          />
+
+          <Example title="Real Decision: SaaS Platform with 50k Active Users">
+            <P><Strong>Infrastructure Cost Context:</Strong></P>
+            <CodeBlock>
+{`Current production environment:
+- 10 EC2 instances (r6g.2xlarge): $3,000/mo
+- Load balancer: $100/mo
+- Total: $3,100/mo`}
+            </CodeBlock>
+
+            <P><Strong>Option 1: Blue-Green Deployment (too expensive for this case)</Strong></P>
+            <CodeBlock>
+{`Infrastructure:
+- Blue environment: 10 instances = $3,000/mo
+- Green environment: 10 instances = $3,000/mo
+- Load balancer: $100/mo
+- Total: $6,100/mo (+97% cost increase)
+
+Deployment process:
+1. Deploy to green (new version)
+2. Test green environment
+3. Switch load balancer: blue → green (instant)
+4. Keep blue running for 24h for rollback
+5. Terminate blue
+
+Benefits:
+- Instant rollback (switch load balancer back)
+- Zero downtime
+- Full testing before switch
+
+Cost analysis:
+- Extra cost: $3,000/mo permanent (keep both running)
+- OR: $100 per deployment (run green for 1 day, then terminate)
+- Deploys: 3x/week = 12x/month
+- Deployment cost: $1,200/mo (39% increase)
+
+Trade-off: For 50k users, instant rollback not worth 39-97% cost increase
+
+Result: ❌ Too expensive for this scale`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Canary Deployment (correct choice for this case)</Strong></P>
+            <CodeBlock>
+{`Infrastructure:
+- Production: 10 instances = $3,000/mo
+- Canary: 1 instance = $300/mo
+- Load balancer (weighted routing): $100/mo
+- Total: $3,400/mo (+10% cost increase)
+
+Deployment process:
+Day 1: Deploy to canary (1 instance)
+  - Route 5% traffic (2,500 users)
+  - Monitor: error rate, latency, success rate
+  - If OK after 4 hours → proceed
+
+Day 1 (evening): Expand to 3 instances
+  - Route 25% traffic (12,500 users)
+  - Monitor overnight
+  - If OK → proceed
+
+Day 2: Full rollout
+  - Deploy to remaining 7 instances
+  - Route 100% traffic
+
+Rollback capability:
+- If canary fails: Stop rollout, route 100% to old version (5 min)
+- If discovered after full rollout: Redeploy old version (15 min)
+
+Metrics validation:
+- Error rate: <0.1% (baseline: 0.05%)
+- p95 latency: <200ms (baseline: 150ms)
+- Conversion rate: within 2% of baseline
+
+Cost analysis:
+- Extra cost: $300/mo (10% increase)
+- Risk mitigation: Only 2,500 users exposed initially (5%)
+- If bad deploy caught early: Save $50k/month in lost revenue
+
+Real incident example:
+- Deploy introduced bug affecting checkout
+- Caught at 5% rollout (2,500 users affected)
+- Rollback in 5 minutes
+- Lost revenue: ~$2k (vs $50k if full rollout)
+
+Trade-off: $300/mo + 2-day rollout vs $50k incident mitigation
+
+Result: ✅ Spend $300/mo to catch bugs before full rollout (167x ROI)`}
+            </CodeBlock>
+
+            <P><Strong>Option 3: Rolling Deployment (wrong for this risk profile)</Strong></P>
+            <CodeBlock>
+{`Infrastructure:
+- Same 10 instances: $3,000/mo
+- Total: $3,000/mo ($0 increase)
+
+Deployment process:
+1. Deploy to 2 instances (20% traffic)
+2. Wait 5 minutes, check metrics
+3. Deploy to next 2 instances (40% traffic)
+4. Continue until all 10 instances updated
+5. Total time: ~30 minutes
+
+Problem with rolling:
+- No explicit validation gates
+- By the time you notice issues, 6-8 instances already updated (60-80% users)
+- Rollback requires reverse rolling update (another 30 min)
+
+Real incident:
+- Deploy introduced memory leak
+- By time leak noticed (20 min), 8 instances updated
+- 80% of users affected = 40k users
+- Rollback took 30 min (reverse roll)
+- Total impact: 50 minutes affecting 40k users
+- Lost revenue: $25k
+
+Trade-off: $0 extra cost vs $25k lost revenue from insufficient validation
+
+Result: ❌ Saved $300/mo, lost $25k in one incident`}
+            </CodeBlock>
+
+            <KeyPoint>
+              <Strong>Decision Framework:</Strong> For 50k users with high revenue per user, canary wins.
+              The $300/mo cost provides explicit validation gates that catch bugs before widespread impact.
+            </KeyPoint>
+          </Example>
+
+          <H3>Decision Framework: Choosing Deployment Strategy</H3>
+          <CodeBlock>
+{`What's your rollback priority and budget?
+
+Instant rollback required? (payment systems, critical infra)
+├─ YES → Blue-Green Deployment
+│   └─ Can afford 2x infrastructure?
+│       ├─ YES → Full blue-green (keep both running)
+│       │   └─ Cost: +100% infrastructure
+│       │   └─ Benefit: Instant switch back
+│       └─ NO → Ephemeral blue-green (terminate old after 24h)
+│           └─ Cost: +~30-40% (old runs 1 day per deploy)
+│           └─ Benefit: 24h instant rollback window
+│
+└─ NO → Need gradual risk mitigation?
+    ├─ YES → Canary Deployment
+    │   └─ Revenue per user high? (SaaS, e-commerce)
+    │       ├─ YES → Canary with metrics validation
+    │       │   └─ Cost: +10% infrastructure
+    │       │   └─ Benefit: Catch bugs at 5-25% exposure
+    │       └─ NO → Rolling with health checks
+    │           └─ Cost: $0 extra
+    │           └─ Benefit: Gradual rollout, automatic pause on failure
+    │
+    └─ NO → Cost is priority #1?
+        └─ Rolling Deployment (Kubernetes default)
+            └─ Cost: $0 extra
+            └─ Risk: 50-80% users may see bug before detection`}
+          </CodeBlock>
+
+          <Divider />
+
+          <H1>🎯 Critical Trade-Off: Monitoring vs Logging vs Distributed Tracing</H1>
+
+          <ComparisonTable
+            headers={['Approach', 'Use Case', 'Data Volume', 'Cost/mo (1M req/day)', 'Retention', 'Query Speed', 'Best For']}
+            rows={[
+              [
+                'Metrics\n(Prometheus)',
+                'Aggregate stats\n(error rate, latency)',
+                'Very Low\n~1GB',
+                '$50-100\n(storage)',
+                '15-90 days',
+                'Very Fast\n<1s',
+                '• Alerting\n• Dashboards\n• Trends over time\n• SLA monitoring'
+              ],
+              [
+                'Logging\n(Elasticsearch)',
+                'Event details\n(errors, user actions)',
+                'High\n~100GB',
+                '$500-1,500\n(storage + compute)',
+                '7-30 days',
+                'Medium\n1-10s',
+                '• Debugging errors\n• Audit trails\n• User behavior\n• Security'
+              ],
+              [
+                'Distributed Tracing\n(Jaeger, Zipkin)',
+                'Request flow\nacross services',
+                'Very High\n~500GB',
+                '$1,000-3,000\n(storage + compute)',
+                '1-7 days',
+                'Fast\n1-3s',
+                '• Microservices\n• Latency debugging\n• Dependency analysis\n• Performance'
+              ],
+              [
+                'Full Observability\n(Datadog, New Relic)',
+                'All of above\nintegrated',
+                'Very High\n~600GB',
+                '$2,000-5,000\n(all-in-one)',
+                '30-90 days',
+                'Fast\n<3s',
+                '• Large teams\n• Complex systems\n• Budget available\n• Need correlation'
+              ]
+            ]}
+          />
+
+          <Example title="Real Decision: 10 Microservices, 1M Requests/Day">
+            <P><Strong>Option 1: Metrics Only (insufficient for microservices)</Strong></P>
+            <CodeBlock>
+{`Stack:
+- Prometheus: Free (self-hosted)
+- Grafana: Free
+- Infrastructure: $50/mo (1 small EC2 for Prometheus)
+
+What you can see:
+- Error rate per service: 0.5%
+- p95 latency: 250ms
+- Request volume: 1M/day
+
+What you CAN'T see:
+- Which specific requests failed?
+- Why did they fail?
+- Which service in the chain caused the error?
+- What was the user's request payload?
+
+Real incident:
+- Error rate spiked to 2% (4x baseline)
+- Which service? Unknown (need to check logs)
+- Why? Unknown (need to trace request flow)
+- User impact? Unknown (need user IDs from logs)
+- Time to diagnose: 2 hours (manual log grep across 10 services)
+
+Result: ❌ Too limited for microservices debugging`}
+            </CodeBlock>
+
+            <P><Strong>Option 2: Metrics + Logging (correct for most teams)</Strong></P>
+            <CodeBlock>
+{`Stack:
+- Prometheus + Grafana: $50/mo
+- Elasticsearch (3 nodes): $400/mo (100GB/month logs)
+- Kibana: Free
+- Total: $450/mo
+
+What you can see:
+- Metrics: Error rate, latency, volume (for alerting)
+- Logs: Specific error messages, stack traces, user IDs
+
+Workflow:
+1. Alert fires: "Error rate >1% on checkout-service"
+2. Check Grafana: Spike started at 10:05 AM
+3. Query Kibana: "checkout-service AND timestamp:[10:05 TO 10:10]"
+4. Find errors: "Payment gateway timeout after 5s"
+5. Root cause: Payment gateway deployed new version at 10:05
+6. Time to diagnose: 10 minutes
+
+Cost breakdown:
+- Elasticsearch: $400/mo
+- Prometheus: $50/mo
+- Total: $450/mo
+
+Incident cost saved:
+- Without logs: 2 hours to diagnose = $400 engineering time + revenue loss
+- With logs: 10 min to diagnose = $30 engineering time
+- Saves: ~$370 per incident
+- At 2 incidents/month: $740/mo saved vs $450/mo spent
+
+Trade-off: $450/mo for faster debugging vs 2 hours manual log grep per incident
+
+Result: ✅ ROI: 1.6x even at just 2 incidents/month`}
+            </CodeBlock>
+
+            <P><Strong>Option 3: Full Observability with Tracing (only for complex cases)</Strong></P>
+            <CodeBlock>
+{`Stack:
+- Datadog (all-in-one): $2,500/mo (10 hosts, 1M req/day)
+  OR
+- Self-hosted: Prometheus + Elasticsearch + Jaeger: $1,200/mo
+
+What tracing adds:
+- See exact request flow: API Gateway → Auth → Product → Inventory → Payment
+- Latency breakdown: Which service added how much latency
+- Dependency map: Automatically visualize service dependencies
+
+When you need tracing:
+- >5 microservices (complex request flows)
+- Latency SLA <200ms (need to optimize each hop)
+- Frequent cross-service debugging
+
+Example value:
+- p95 latency is 800ms (target: 200ms)
+- Tracing shows: Inventory service takes 600ms (75% of total)
+- Root cause: N+1 query problem (50 DB calls per request)
+- Fix: Batch queries → reduce to 2 DB calls
+- Result: p95 latency now 180ms
+
+Cost analysis:
+- Tracing cost: +$750/mo vs metrics + logging ($1,200 vs $450)
+- Performance improvement: 800ms → 180ms (4.4x faster)
+- Conversion rate increase: 1% (every 100ms latency = 0.5% conversion)
+- Revenue increase: $15k/mo (for $1.5M/mo GMV site)
+
+Trade-off: $750/mo extra vs $15k/mo revenue increase
+
+Result: ✅ ROI: 20x for high-value optimization use cases
+
+But for typical debugging: ❌ Tracing is overkill, logs are sufficient`}
+            </CodeBlock>
+          </Example>
+
+          <H3>Decision Framework: Choosing Observability Stack</H3>
+          <CodeBlock>
+{`How many services do you have?
+
+├─ 1-2 services (monolith or simple)
+│   └─ Metrics only (Prometheus + Grafana)
+│       └─ Cost: $50/mo
+│       └─ Sufficient for: Alerting, dashboards, trends
+│
+├─ 3-10 services (standard microservices)
+│   └─ Metrics + Logging (Prometheus + Elasticsearch)
+│       └─ Cost: $400-600/mo
+│       └─ Adds: Error debugging, user context, audit trails
+│       └─ Sufficient for: 80% of debugging needs
+│
+└─ >10 services OR latency SLA <200ms
+    └─ Need to optimize cross-service latency?
+        ├─ YES → Full observability (add Distributed Tracing)
+        │   └─ Cost: $1,200-2,500/mo
+        │   └─ Adds: Request flow visualization, latency breakdown
+        │   └─ ROI: Only if latency optimization drives revenue
+        │
+        └─ NO → Stick with Metrics + Logging
+            └─ Add tracing only when debugging complex latency issues`}
+          </CodeBlock>
+
+          <H2>Common Mistakes</H2>
+
+          <P>❌ <Strong>Mistake 1: No Circuit Breakers for External APIs</Strong></P>
+          <CodeBlock>
+{`Problem:
+- External recommendation API goes down
+- Every request retries 3 times with 5s timeout = 15s
+- Connection pool exhausted
+- Entire site slows to crawl
+
+Fix: Add circuit breaker with 200ms timeout and cached fallback`}
+          </CodeBlock>
+
+          <P>❌ <Strong>Mistake 2: Blue-Green Deployment for Cost-Sensitive Startup</Strong></P>
+          <CodeBlock>
+{`Problem:
+- Startup with $5k/mo infrastructure budget
+- Implements blue-green → $10k/mo (2x cost)
+- Only deploys 1x/week → instant rollback rarely needed
+- Cash burn doubles for minimal benefit
+
+Fix: Use canary deployment ($5.5k/mo, only 10% increase)`}
+          </CodeBlock>
+
+          <P>❌ <Strong>Mistake 3: Only Metrics, No Logs</Strong></P>
+          <CodeBlock>
+{`Problem:
+- See error rate spike in Grafana
+- No logs → can't see which users affected
+- Can't see error messages or stack traces
+- 2 hours spent SSH-ing into servers to grep logs
+
+Fix: Add centralized logging (Elasticsearch or CloudWatch Logs)`}
+          </CodeBlock>
+
+          <P>❌ <Strong>Mistake 4: Full Tracing for 3 Microservices</Strong></P>
+          <CodeBlock>
+{`Problem:
+- Only 3 services, simple request flow
+- Implemented Jaeger + Zipkin: $800/mo infrastructure
+- Tracing used once every 2 months for latency debugging
+- Logs would have been sufficient
+
+Fix: Start with logs, add tracing only when needed (>5 services)`}
+          </CodeBlock>
         </Section>
       ),
     },
