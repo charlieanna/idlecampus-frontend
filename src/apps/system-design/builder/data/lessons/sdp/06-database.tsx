@@ -8,10 +8,10 @@ export const sdpDatabaseLesson: SystemDesignLesson = {
   id: 'sdp-database',
   slug: 'sdp-database',
   title: 'Database Design Patterns',
-  description: 'Learn database optimization: denormalization, SQL optimization, and NoSQL data models.',
+  description: 'Master database fundamentals and critical trade-offs: WHEN to use SQL vs NoSQL (data model + scale thresholds), HOW to balance normalization vs denormalization, WHICH scaling strategy fits your read/write patterns.',
   category: 'fundamentals',
   difficulty: 'intermediate',
-  estimatedMinutes: 40,
+  estimatedMinutes: 70,
   stages: [
     {
       id: 'intro-database',
