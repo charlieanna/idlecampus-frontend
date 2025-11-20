@@ -329,7 +329,7 @@ export const performanceMetricsLesson: SystemDesignLesson = {
           <Example title="Real Decision: SaaS Platform Choosing SLA Metric">
             <P><Strong>Context:</Strong> B2B SaaS platform, 50k daily active users, $2M ARR, p50=30ms, p95=100ms, p99=500ms, p999=3s</P>
 
-            <P><Strong>Option 1: Optimize for p50 < 20ms (wrong priority)</Strong></P>
+            <P><Strong>Option 1: Optimize for p50 {'<'} 20ms (wrong priority)</Strong></P>
             <CodeBlock>
 {`Target: p50 < 20ms (from current 30ms)
 
@@ -357,7 +357,7 @@ ROI analysis:
 Result: ❌ Spent $28k to improve metric users can't perceive`}
             </CodeBlock>
 
-            <P><Strong>Option 2: Optimize for p99 < 200ms (correct choice)</Strong></P>
+            <P><Strong>Option 2: Optimize for p99 {'<'} 200ms (correct choice)</Strong></P>
             <CodeBlock>
 {`Target: p99 < 200ms (from current 500ms)
 
@@ -396,7 +396,7 @@ ROI analysis:
 Result: ✅ Spent $10k to unlock $7.3M revenue by fixing p99`}
             </CodeBlock>
 
-            <P><Strong>Option 3: Optimize for p999 < 1s (wrong for this scale)</Strong></P>
+            <P><Strong>Option 3: Optimize for p999 {'<'} 1s (wrong for this scale)</Strong></P>
             <CodeBlock>
 {`Target: p999 < 1s (from current 3s)
 
@@ -491,7 +491,7 @@ but don't spend $764k optimizing for 50 users/day`}
 
             <P><Strong>Scenario: Choosing SLA Target</Strong></P>
 
-            <P><Strong>Option A: Loose SLA - p95 < 1s</Strong></P>
+            <P><Strong>Option A: Loose SLA - p95 {'<'} 1s</Strong></P>
             <CodeBlock>
 {`Infrastructure needed:
 - Basic web servers (3 instances): $500/mo
@@ -515,7 +515,7 @@ Trade-off: Save $800/mo infrastructure, lose $150k/year revenue
 Result: ❌ Saved $9.6k/year infrastructure, lost $150k/year revenue (15.6x worse)`}
             </CodeBlock>
 
-            <P><Strong>Option B: Moderate SLA - p99 < 500ms (correct choice)</Strong></P>
+            <P><Strong>Option B: Moderate SLA - p99 {'<'} 500ms (correct choice)</Strong></P>
             <CodeBlock>
 {`Infrastructure needed:
 - Web servers with autoscaling (5-10 instances): $1,500/mo
@@ -540,7 +540,7 @@ Trade-off: Spend extra $2k/mo infrastructure, save $144k/year revenue vs loose S
 Result: ✅ Spend $24k/year to save $144k/year = 6x ROI`}
             </CodeBlock>
 
-            <P><Strong>Option C: Strict SLA - p99 < 200ms (diminishing returns)</Strong></P>
+            <P><Strong>Option C: Strict SLA - p99 {'<'} 200ms (diminishing returns)</Strong></P>
             <CodeBlock>
 {`Infrastructure needed:
 - Web servers with aggressive autoscaling (10-20 instances): $4,000/mo

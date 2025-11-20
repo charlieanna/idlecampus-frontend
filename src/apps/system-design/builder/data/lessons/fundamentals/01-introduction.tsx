@@ -102,7 +102,7 @@ export const introductionLesson: SystemDesignLesson = {
           <UL>
             <LI>💾 How do you store 1 billion URLs efficiently?</LI>
             <LI>🔒 How do you ensure the short code is unique?</LI>
-            <LI>⚡ How fast should redirects be? (Users expect &lt;100ms!)</LI>
+            <LI>⚡ How fast should redirects be? (Users expect {'<'}100ms!)</LI>
             <LI>🛡️ What if a server goes down?</LI>
             <LI>💰 How much will this cost to run?</LI>
           </UL>
@@ -879,7 +879,7 @@ Else:
 
           <KeyPoint>
             <Strong>4. Business requirements drive technical decisions</Strong>
-            <P>Banking app needs strong consistency (money!). Social media accepts eventual consistency (likes can be stale). Requirements >> technology preferences.</P>
+            <P>Banking app needs strong consistency (money!). Social media accepts eventual consistency (likes can be stale). Requirements {'>'} technology preferences.</P>
           </KeyPoint>
 
           <P>

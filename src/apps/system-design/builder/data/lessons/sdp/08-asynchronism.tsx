@@ -425,7 +425,7 @@ if (traffic_spike_causes_outage):
             </P>
             <P>
               <Strong>Fix:</Strong> Start simple: Redis queue for non-critical, RabbitMQ/SQS for critical. Migrate to Kafka only
-              when: (1) Need multiple consumers per event, (2) Event replay required, (3) > 10k events/sec, (4) Event sourcing
+              when: (1) Need multiple consumers per event, (2) Event replay required, (3) {'>'} 10k events/sec, (4) Event sourcing
               architecture. Use managed services (AWS SQS $1/mo, CloudAMQP $100/mo) before self-hosting Kafka. Optimize for
               simplicity first, scale later.
             </P>
@@ -816,9 +816,9 @@ if (using_kafka && num_consumers == 1 && message_volume < 10k):
               (10k msg/sec) at $500/mo with zero ops overhead.
             </P>
             <P>
-              <Strong>Fix:</Strong> Only use Kafka if: (1) Need > 100k msg/sec, (2) Need multiple consumers per event, (3) Need
+              <Strong>Fix:</Strong> Only use Kafka if: (1) Need {'>'} 100k msg/sec, (2) Need multiple consumers per event, (3) Need
               event replay, (4) Have dedicated DevOps/SRE. Otherwise use managed queue (SQS, CloudAMQP). If must use Kafka,
-              use managed service (Confluent Cloud, AWS MSK) not self-hosted. Self-host only at proven scale (> 1M msg/sec).
+              use managed service (Confluent Cloud, AWS MSK) not self-hosted. Self-host only at proven scale ({'>'} 1M msg/sec).
             </P>
           </InfoBox>
 
@@ -831,7 +831,7 @@ if (using_kafka && num_consumers == 1 && message_volume < 10k):
             <P>
               <Strong>Fix:</Strong> Always implement DLQ (dead letter queue) for failed messages after N retries (typically 3).
               RabbitMQ: <Code>x-max-retries: 3, x-dead-letter-exchange: dlq</Code>. SQS: maxReceiveCount: 3, deadLetterQueue.
-              Monitor DLQ size → alert if > 10 messages. Investigate failures manually, fix data/code issues. Prevents poison
+              Monitor DLQ size → alert if {'>'} 10 messages. Investigate failures manually, fix data/code issues. Prevents poison
               messages from blocking queue indefinitely.
             </P>
           </InfoBox>
@@ -1156,7 +1156,7 @@ if (no_partition_key && per_key_fifo_needed):
               <Strong>Fix:</Strong> Implement gap detection with timeout: If sequence gap detected (1, 2, 4), wait 5 seconds
               for missing message. If timeout, request message 3 from server. If server doesn't have it (truly lost), display
               gap indicator ("1 message couldn't be loaded"). Better: Use idempotent message IDs and track missing sequences
-              server-side. Request retransmission for gaps > 5 seconds old.
+              server-side. Request retransmission for gaps {'>'} 5 seconds old.
             </P>
           </InfoBox>
 

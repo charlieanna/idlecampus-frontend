@@ -1088,7 +1088,7 @@ async function batchWriter(queue: Queue) {
    - Autoscaling triggered by queue depth > 1,000
 
 4. **Timeline:**
-   ```
+   \`\`\`
    Time 0s: Burst starts (50k RPS)
             API gateway queues all requests ✓
             Queue depth: 500,000 messages
@@ -1106,7 +1106,7 @@ async function batchWriter(queue: Queue) {
    Time 600s: Queue empty!
               All 9.2M requests processed ✓
               Zero dropped requests!
-   ```
+   \`\`\`
 
 5. **Cost optimization:**
    - Normal: 3 workers ($30/hr)

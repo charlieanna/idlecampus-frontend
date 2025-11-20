@@ -703,7 +703,7 @@ if (data_size < 5_TB):
               3 replicas) instead. Wasting $2,100/mo = $25k/year on oversized single instance.
             </P>
             <P>
-              <Strong>Fix:</Strong> If read ratio > 85%, add read replicas before vertical scaling past r5.2xlarge. Setup:
+              <Strong>Fix:</Strong> If read ratio {'>'}‎ 85%, add read replicas before vertical scaling past r5.2xlarge. Setup:
               1) Create replicas, 2) Route reads to replicas (use connection pooler like PgBouncer), 3) Accept 50-100ms
               replica lag (fine for analytics, dashboards). For strong consistency needs, read from leader only.
             </P>
@@ -973,7 +973,7 @@ if (timestamp_queries_common):
             </P>
             <P>
               <Strong>Fix:</Strong> Index only proven slow queries. Use EXPLAIN ANALYZE to find sequential scans on
-              large tables (> 10k rows). Remove unused indexes: <Code>SELECT indexrelname, idx_scan FROM pg_stat_user_indexes
+              large tables ({'>'}‎ 10k rows). Remove unused indexes: <Code>SELECT indexrelname, idx_scan FROM pg_stat_user_indexes
               WHERE idx_scan = 0 AND indexrelname NOT LIKE 'pg_%'</Code>. Aim for 2-5 indexes per table maximum.
             </P>
           </InfoBox>

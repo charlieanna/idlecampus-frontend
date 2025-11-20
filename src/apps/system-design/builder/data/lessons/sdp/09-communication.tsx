@@ -730,7 +730,7 @@ if (concurrent_users > 100k):
               3TB/month ($270/mo). Total: $6,270/mo. WebSocket would cost $500/mo (12× cheaper) with better UX (instant updates not 1s delay).
             </P>
             <P>
-              <Strong>Fix:</Strong> For updates > 1/minute, use WebSocket or SSE. Short polling only for rare updates (< 1/5min).
+              <Strong>Fix:</Strong> For updates {'>'} 1/minute, use WebSocket or SSE. Short polling only for rare updates ({'<'} 1/5min).
               Migration: Add WebSocket server (Node.js + Socket.io 2 days), gradually migrate users. Savings: $5,770/mo = $69k/year.
             </P>
           </InfoBox>

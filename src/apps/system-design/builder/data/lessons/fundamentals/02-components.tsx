@@ -1042,7 +1042,7 @@ Can you fit on one big server (<10,000 RPS, <100GB RAM)?
               ],
               [
                 'Add Read Replicas\n(DB copies)',
-                '• Need strong consistency\n• Complex SQL queries\n• Large dataset (>100GB)\n• Can't accept staleness',
+                '• Need strong consistency\n• Complex SQL queries\n• Large dataset ({\'>\'}100GB)\n• Can\'t accept staleness',
                 '• Write-heavy workload\n• Simple key-value lookups\n• Budget constrained',
                 '$300-1000/mo per replica',
                 '3-5x more read capacity\nStrong consistency'
@@ -1243,14 +1243,14 @@ Savings: $650/mo`}
    - Primary handles writes
 
 **Traffic Flow:**
-```
+\`\`\`
 8,000 RPS → Load Balancer → 6 App Servers
                                ↓
                     80% Cache Hit (6,400)  20% Cache Miss (1,600)
                          ↓                        ↓
                     Redis Cache              Database
                     (2ms latency)            (20ms latency)
-```
+\`\`\`
 
 **Result:** Fast, scalable, highly available system! ✓
 
@@ -1340,5 +1340,4 @@ Savings: $650/mo`}
       ],
     },
   ],
-  nextLessons: ['capacity-planning', 'caching-fundamentals'],
 };

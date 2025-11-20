@@ -1018,9 +1018,9 @@ if (materialized_view && staleness_ok < 1_minute):
               scale for power users.
             </P>
             <P>
-              <Strong>Fix:</Strong> Hybrid fanout strategy: Regular users (< 10k followers): Fanout on write (instant
-              delivery). Celebrities (> 10k followers): Pull on read (fetch from posts table). Example: Twitter uses
-              fanout for normal users, pull for celebrities (followers > 100k). Result: Instant delivery for 99% of
+              <Strong>Fix:</Strong> Hybrid fanout strategy: Regular users ({'<'} 10k followers): Fanout on write (instant
+              delivery). Celebrities ({'>'} 10k followers): Pull on read (fetch from posts table). Example: Twitter uses
+              fanout for normal users, pull for celebrities (followers {'>'} 100k). Result: Instant delivery for 99% of
               users, slightly slower for celebrity followers but scalable.
             </P>
           </InfoBox>

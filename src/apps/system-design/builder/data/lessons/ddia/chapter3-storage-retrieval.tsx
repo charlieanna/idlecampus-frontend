@@ -477,12 +477,12 @@ if (write_iops_limit && lsm_write_amplification × write_qps > ssd_capacity):
           <InfoBox variant="warning">
             <Strong>❌ Mistake 1: Using LSM-tree for latency-sensitive applications</Strong>
             <P>
-              Example: User-facing API with p99 latency SLA < 10ms uses Cassandra → compaction runs → p99 latency spikes
+              Example: User-facing API with p99 latency SLA {'<'} 10ms uses Cassandra → compaction runs → p99 latency spikes
               to 100ms → SLA violation → user complaints. LSM-tree compaction causes unpredictable tail latency due to
               background I/O interference.
             </P>
             <P>
-              <Strong>Fix:</Strong> For strict latency SLAs (p99 < 10ms), use B-tree (PostgreSQL, MySQL) instead. Or:
+              <Strong>Fix:</Strong> For strict latency SLAs (p99 {'<'} 10ms), use B-tree (PostgreSQL, MySQL) instead. Or:
               Separate read/write paths - LSM for writes, B-tree replicas for reads. Or: Tune compaction aggressiveness
               (reduce background I/O). Monitor p99 latency during compaction cycles. Use separate SSD for compaction if possible.
             </P>
@@ -511,7 +511,7 @@ if (write_iops_limit && lsm_write_amplification × write_qps > ssd_capacity):
               B-tree can't handle extreme write throughput.
             </P>
             <P>
-              <Strong>Fix:</Strong> For write-heavy workloads (> 50k writes/sec), use LSM-tree (Cassandra, RocksDB, ScyllaDB).
+              <Strong>Fix:</Strong> For write-heavy workloads ({'>'} 50k writes/sec), use LSM-tree (Cassandra, RocksDB, ScyllaDB).
               Or: Partition PostgreSQL (10 shards = 100k writes/sec total). Or: Use write-optimized storage (TimescaleDB with
               compression). Don't force-fit B-tree for write-heavy workloads - LSM-trees specifically designed for this.
             </P>
@@ -889,7 +889,7 @@ if (analytical_queries_rare && data_large):
               <Strong>Fix:</Strong> Never run heavy analytics on production OLTP DB. Use read replica for analytics (lag
               acceptable). Or: ETL to separate OLAP DB (Redshift, BigQuery). Or: Use real-time OLAP (ClickHouse) as separate
               service. Set <Code>statement_timeout = 1000ms</Code> on production to prevent long-running queries. Monitor slow
-              query log, kill queries > 1 second.
+              query log, kill queries {'>'} 1 second.
             </P>
           </InfoBox>
 
@@ -915,8 +915,8 @@ if (analytical_queries_rare && data_large):
               Wasted: $6k/year for 45× faster queries that run 10×/day.
             </P>
             <P>
-              <Strong>Fix:</Strong> Start with read replica for analytics. Upgrade to OLAP when: (1) Analytical queries > 100/day,
-              (2) Query time > 10 seconds unacceptable, (3) Analytics impact production (CPU, locks). Cost analysis: Redshift
+              <Strong>Fix:</Strong> Start with read replica for analytics. Upgrade to OLAP when: (1) Analytical queries {'>'} 100/day,
+              (2) Query time {'>'} 10 seconds unacceptable, (3) Analytics impact production (CPU, locks). Cost analysis: Redshift
               saves query time but costs $500/mo. If analytics rare, replica ($100/mo) is sufficient. OLAP justified when
               analytics frequent or impact production.
             </P>

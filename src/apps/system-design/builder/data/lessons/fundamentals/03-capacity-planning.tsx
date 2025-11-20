@@ -905,7 +905,7 @@ Result: ✅ Best of both worlds`}
           <KeyPoint>
             <Strong>2. Over-provisioning costs less than downtime for revenue-generating apps</Strong>
             <UL>
-              <LI>$5k over-provision >$200k lost revenue (Black Friday example)</LI>
+              <LI>$5k over-provision {'>'}$200k lost revenue (Black Friday example)</LI>
               <LI>Better to waste 10% capacity than crash and lose customers</LI>
             </UL>
           </KeyPoint>

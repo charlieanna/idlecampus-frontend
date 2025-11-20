@@ -419,8 +419,8 @@ else:
               Refreshing 9.99M products unnecessarily → 1000× more DB queries → DB at 90% CPU → $2k/mo database upgrade.
             </P>
             <P>
-              <Strong>Fix:</Strong> Use refresh-ahead only for hot data (accessed > 10× per hour). Identify hot keys with
-              access tracking: <Code>redis.incr(f"access_count:{key}")</Code>. Refresh only if access count > threshold.
+              <Strong>Fix:</Strong> Use refresh-ahead only for hot data (accessed {'>'} 10× per hour). Identify hot keys with
+              access tracking: <Code>{'redis.incr(f"access_count:{key}")'}</Code>. Refresh only if access count {'>'} threshold.
               For long-tail data, use cache-aside with 1-hour TTL (rare misses acceptable). Hybrid approach: refresh-ahead
               for top 1%, cache-aside for rest.
             </P>
@@ -736,11 +736,11 @@ if (query_optimized && latency_p95 < 100ms):
             <Strong>❌ Mistake 3: Caching everything (memory explosion)</Strong>
             <P>
               Example: "Let's cache all queries" → cache all 10M products → Redis needs 50GB ($800/mo) → 80% of cached data
-              accessed < 1× per day (wasted memory). Cache eviction starts → hit rate drops to 40% → DB load increases.
+              accessed {'<'} 1× per day (wasted memory). Cache eviction starts → hit rate drops to 40% → DB load increases.
             </P>
             <P>
               <Strong>Fix:</Strong> Cache only hot data (Pareto principle: 20% of data gets 80% of requests). Track access
-              patterns: <Code>redis.incr(f"access:{key}")</Code>. Cache items with access count > 10/day. For product catalog:
+              patterns: <Code>{'redis.incr(f"access:{key}")'}</Code>. Cache items with access count {'>'} 10/day. For product catalog:
               cache top 10k products (0.1% of data), lazy-load rest from indexed queries (50ms acceptable). Saves $650/mo Redis
               cost while serving 95% of requests from cache.
             </P>
@@ -1042,8 +1042,8 @@ if (hit_rate < 0.80):
             </P>
             <P>
               <Strong>Fix:</Strong> Follow 80/20 rule: cache top 20% of data (by access frequency) to achieve 80% hit rate.
-              Use analytics to find working set: <Code>SELECT COUNT(*) FROM products WHERE view_count > 10</Code>. Monitor
-              eviction rate: if > 100 evictions/sec, cache is under-provisioned. Grow cache until eviction rate < 10/sec
+              Use analytics to find working set: <Code>SELECT COUNT(*) FROM products WHERE view_count {'>'} 10</Code>. Monitor
+              eviction rate: if {'>'} 100 evictions/sec, cache is under-provisioned. Grow cache until eviction rate {'<'} 10/sec
               (stable state).
             </P>
           </InfoBox>

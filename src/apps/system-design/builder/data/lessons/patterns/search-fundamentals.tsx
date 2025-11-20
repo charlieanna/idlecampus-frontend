@@ -696,7 +696,7 @@ Business decision:
           <H3>Common Mistakes</H3>
           <UL>
             <LI>
-              <Strong>❌ Using database LIKE for >10k records</Strong>
+              <Strong>❌ Using database LIKE for {'>'}10k records</Strong>
               <UL>
                 <LI>Problem: 15s query time = users abandon search</LI>
                 <LI>Fix: Use search engine (Elasticsearch or managed)</LI>
@@ -719,8 +719,8 @@ Business decision:
           </UL>
 
           <KeyPoint>
-            <Strong>Golden Rule:</Strong> For <1k records, database is fine. For 1k-100k records, use managed search
-            (Algolia) unless you have DevOps capacity. For >100k+ records with custom needs, self-host Elasticsearch.
+            <Strong>Golden Rule:</Strong> For {'<'}1k records, database is fine. For 1k-100k records, use managed search
+            (Algolia) unless you have DevOps capacity. For {'>'}100k+ records with custom needs, self-host Elasticsearch.
           </KeyPoint>
         </Section>
       ),

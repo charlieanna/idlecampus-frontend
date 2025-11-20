@@ -640,7 +640,7 @@ Trade-off: +10ms latency + $300/mo vs centralized control + security`}
 
             <KeyPoint>
               <Strong>Trade-off:</Strong> API Gateway adds 10ms latency + $300/mo but provides essential features
-              (auth, rate limiting, monitoring) for public APIs. Worth it for >3 services.
+              (auth, rate limiting, monitoring) for public APIs. Worth it for {'>'}3 services.
             </KeyPoint>
           </Example>
 
@@ -699,7 +699,7 @@ Trade-off: $2k/mo + high complexity vs production-grade reliability + security`}
             </CodeBlock>
 
             <KeyPoint>
-              <Strong>Trade-off:</Strong> Service Mesh costs $2k/mo + adds complexity but essential for >20 services
+              <Strong>Trade-off:</Strong> Service Mesh costs $2k/mo + adds complexity but essential for {'>'}20 services
               needing mTLS, retries, circuit breaking. API Gateway handles external, mesh handles internal.
             </KeyPoint>
           </Example>
@@ -757,7 +757,7 @@ Trade-off: $2k/mo + high complexity vs production-grade reliability + security`}
 
           <KeyPoint>
             <Strong>Golden Rule:</Strong> For &lt;3 services, no gateway needed. For 3-20 services, use API Gateway.
-            For >20 services with security needs, add Service Mesh for internal traffic.
+            For {'>'}20 services with security needs, add Service Mesh for internal traffic.
           </KeyPoint>
         </Section>
       ),

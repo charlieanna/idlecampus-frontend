@@ -153,7 +153,7 @@ total_views = batch_views + recent_views
               <LI><Strong>Development:</Strong> Single codebase (Kafka Streams) = $80k (2 months)</LI>
               <LI><Strong>Operational Cost:</Strong> 1 engineer maintains = $150k/year</LI>
               <LI><Strong>Reprocessing:</Strong> Replay 30-day stream (4 hours) when needed</LI>
-              <LI><Strong>Limitation:</Strong> Historical data >30 days requires external backup</LI>
+              <LI><Strong>Limitation:</Strong> Historical data {'>'} 30 days requires external backup</LI>
               <LI><Strong>Annual Cost:</Strong> ($2k + $150)×12 + $150k = $176k/year</LI>
             </UL>
 
@@ -290,7 +290,7 @@ async function getRevenuByCategory(category) {
             <LI>✓ Simple aggregations (counts, sums, moving averages)</LI>
             <LI>✓ Can replay stream for reprocessing (30-day retention)</LI>
             <LI>✓ Want minimal complexity (1 codebase to maintain)</LI>
-            <LI>✓ Team &lt;10 engineers (limited bandwidth)</LI>
+            <LI>✓ Team {'<'}10 engineers (limited bandwidth)</LI>
           </UL>
 
           <P><Strong>Choose Lambda (Batch + Stream) when:</Strong></P>
@@ -298,13 +298,13 @@ async function getRevenuByCategory(category) {
             <LI>✓ Complex batch aggregations (joins across years of data)</LI>
             <LI>✓ Frequent reprocessing (weekly algorithm changes)</LI>
             <LI>✓ Accuracy critical (financial reconciliation)</LI>
-            <LI>✓ Historical data &gt;retention window (years of history)</LI>
-            <LI>✓ Team &gt;20 engineers (can maintain two systems)</LI>
+            <LI>✓ Historical data {'>'}retention window (years of history)</LI>
+            <LI>✓ Team {'>'}20 engineers (can maintain two systems)</LI>
           </UL>
 
           <KeyPoint>
             <Strong>Golden Rule:</Strong> Start with Kappa (stream-only). Complexity is usually not worth it.
-            Only add batch layer if reprocessing &gt;30 days regularly or complex batch-only aggregations.
+            Only add batch layer if reprocessing {'>'}30 days regularly or complex batch-only aggregations.
             Most companies think they need Lambda but actually benefit from Kappa simplicity.
           </KeyPoint>
         </Section>
@@ -733,7 +733,7 @@ const history = await db.query(
             <LI>✓ Simple state model (no complex event replay)</LI>
             <LI>✓ Limited budget ($50k vs $150k for event sourcing)</LI>
             <LI>✓ Team unfamiliar with event sourcing</LI>
-            <LI>✓ Query performance critical (&lt;5ms)</LI>
+            <LI>✓ Query performance critical ({'<'}5ms)</LI>
           </UL>
 
           <P><Strong>Choose Traditional CRUD Only when:</Strong></P>
