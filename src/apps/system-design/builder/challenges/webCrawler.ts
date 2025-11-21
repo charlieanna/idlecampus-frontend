@@ -304,7 +304,11 @@ def manage_frontier(current_batch: List[str], seen_urls: Set[str]) -> List[str]:
       { type: 'app_server', config: { instances: 5 } },
       { type: 'message_queue', config: { maxThroughput: 10000 } },
       { type: 'redis', config: { memorySizeGB: 32 } },
-      { type: 'postgresql', config: { readCapacity: 2000, writeCapacity: 1000 } },
+      { type: 'postgresql', config: { 
+        readCapacity: 2000, 
+        writeCapacity: 1000,
+        replication: { enabled: true, replicas: 2, mode: 'async' }
+      } },
       { type: 's3', config: { storageSizeGB: 10000 } },
     ],
     connections: [
