@@ -75,7 +75,7 @@ export class L6TestGenerator {
       },
       testCases: [...challenge.testCases, ...l6Tests],
       learningObjectives: [
-        ...challenge.learningObjectives,
+        ...(Array.isArray(challenge.learningObjectives) ? challenge.learningObjectives : []),
         'Understand percentile-based latency (P50, P90, P95, P99, P999)',
         'Model time-based traffic variance and viral events',
         'Apply power law distribution (80/20 rule)',

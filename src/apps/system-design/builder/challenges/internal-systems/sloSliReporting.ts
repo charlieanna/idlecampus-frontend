@@ -75,7 +75,7 @@ const testCases = [
       burn_rate: {
         '1h': 5.0, // (1 - 0.995) / (1 - 0.999) = 0.005 / 0.001 = 5x
         // At this rate, error budget will be consumed in 6 hours (30 days / 5 = 6 hours)
-        explanation: 'Burning error budget 5x faster than allowed rate',
+        explanation: `Burning error budget 5x faster than allowed rate',
       },
       alert: {
         severity: 'critical',

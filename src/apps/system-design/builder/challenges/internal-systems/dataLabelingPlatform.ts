@@ -251,7 +251,7 @@ const testCases = [
       },
       final_label: 'dog', // Weighted vote: dog wins (1.79 > 0.90)
       resolution_strategy: 'weighted_voting',
-      explanation: 'Expert + novice vote "dog" (weighted 1.79) > intermediate votes "cat" (0.90)',
+      explanation: `Expert + novice vote "dog" (weighted 1.79) > intermediate votes "cat" (0.90)',
       status: 'resolved',
     },
     explanation:

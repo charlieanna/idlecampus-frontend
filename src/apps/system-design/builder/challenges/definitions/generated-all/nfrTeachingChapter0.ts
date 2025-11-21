@@ -273,7 +273,7 @@ Client → Load Balancer → [AppServer 1]
         questionType: 'calculation',
         calculation: {
           formula: 'Effective Capacity = Theoretical Capacity × 0.7',
-          explanation: 'Why 30% overhead? Operating system (15%), health checks (5%), network I/O (5%), GC pauses (5%).',
+          explanation: `Why 30% overhead? Operating system (15%), health checks (5%), network I/O (5%), GC pauses (5%).',
           exampleInputs: {
             'Theoretical Capacity': 2000,
             'OS Overhead': 0.3,
