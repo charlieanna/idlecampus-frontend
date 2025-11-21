@@ -121,7 +121,11 @@ Example:
           { type: 'load_balancer', config: {} },
           { type: 'app_server', config: { instances: 2 } },
           { type: 'worker', config: { instances: 4 } },
-          { type: 'postgresql', config: { readCapacity: 500, writeCapacity: 400, replication: true } },
+          { type: 'postgresql', config: { 
+            readCapacity: 2000, 
+            writeCapacity: 1000,
+            replication: { enabled: true, replicas: 2, mode: 'async' } 
+          } },
           { type: 'redis', config: { maxMemoryMB: 512 } },
           { type: 'message_queue', config: { partitions: 3 } },
         ],
