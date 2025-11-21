@@ -80,8 +80,9 @@ Example:
       },
       duration: 10,
       failureInjection: {
-        type: 'server_restart',
+        type: 'db_crash',
         atSecond: 5,
+        recoverySecond: 15,
       },
       passCriteria: {
         maxErrorRate: 0, // After restart, should work but data is gone
@@ -350,8 +351,9 @@ PostgreSQL: replication=true enables automatic failover`,
       },
       duration: 60,
       failureInjection: {
-        type: 'server_crash',
+        type: 'network_partition',
         atSecond: 20,
+        recoverySecond: 30,
       },
       passCriteria: {
         maxP99Latency: 300,
@@ -626,7 +628,7 @@ def handle_request(request: dict, context: dict) -> dict:
       { type: 'app_server', config: { instances: 3 } },
       { type: 'redis', config: { maxMemoryMB: 1024 } },
       { type: 'postgresql', config: {
-        readCapacity: 1000,
+        readCapacity: 2000,
         writeCapacity: 500,
         replication: true,
         instanceType: 'commodity-db',

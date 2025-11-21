@@ -117,7 +117,7 @@ Example:
       },
       duration: 10,
       failureInjection: {
-        type: 'server_restart',
+        type: 'db_crash',
         atSecond: 5,
       },
       passCriteria: {
@@ -644,28 +644,27 @@ def handle_request(request: dict, context: dict) -> dict:
       { type: 'client', config: {} },
       { type: 'cdn', config: { enabled: true } },
       { type: 'load_balancer', config: { algorithm: 'least_connections' } },
-      { type: 'app_server', config: { instances: 11 } },
+      { type: 'app_server', config: { instances: 3 } },
       { type: 's3', config: { storageSizeGB: 1000 } },
       {
         type: 'postgresql',
         config: {
           instanceType: 'commodity-db',
           replicationMode: 'single-leader',
-          replication: { enabled: true, replicas: 10, mode: 'async' },
+          replication: { enabled: true, replicas: 1, mode: 'async' },
           sharding: { enabled: false, shards: 1, shardKey: 'post_id' }
         }
       },
     ],
     connections: [
-      // HTML traffic path (priority - put first so BFS explores it first)
-      { from: 'client', to: 'load_balancer', type: 'read_write' },
-      { from: 'load_balancer', to: 'app_server', type: 'read_write' },
-      { from: 'client', to: 'app_server', type: 'read_write' }, // Direct path as fallback
-      { from: 'app_server', to: 'postgresql', type: 'read_write' },
-      { from: 'app_server', to: 's3', type: 'read' },
-      // Image traffic path (separate, doesn't interfere with app server path)
-      { from: 'client', to: 'cdn', type: 'read' },
-      { from: 'cdn', to: 's3', type: 'read' },
+      // Image traffic path (90% of traffic) - MUST BE FIRST so CDN handles reads
+      { from: 'client', to: 'cdn' },
+      { from: 'cdn', to: 's3' },
+      // HTML traffic path (10% of traffic) - explored after CDN path
+      { from: 'client', to: 'load_balancer' },
+      { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 'postgresql' },
+      { from: 'app_server', to: 's3' },
     ],
     explanation: `# Complete Solution for Food Blog with Images
 

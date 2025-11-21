@@ -69,6 +69,9 @@ export const ticketMasterChallenge: Challenge = {
   testCases: [
     {
       name: 'Normal Browsing Load',
+      type: 'performance',
+      requirement: 'NFR-P1',
+      description: 'System handles normal browsing load (95% reads, 5% writes) with low latency and within budget.',
       traffic: {
         type: 'mixed',
         rps: 1000,
@@ -83,6 +86,9 @@ export const ticketMasterChallenge: Challenge = {
     },
     {
       name: 'Ticket Drop (High Concurrency)',
+      type: 'scalability',
+      requirement: 'NFR-S1',
+      description: 'During ticket drops, thousands of users compete for limited inventory (10k RPS, 3000 concurrent bookings).',
       traffic: {
         type: 'mixed',
         rps: 10000,
@@ -96,6 +102,9 @@ export const ticketMasterChallenge: Challenge = {
     },
     {
       name: 'Race Condition Test',
+      type: 'functional',
+      requirement: 'FR-5',
+      description: '5000 users trying to book same 100 tickets. System must prevent double-booking with strong consistency.',
       traffic: {
         type: 'write',
         rps: 5000, // 5000 users trying to book same 100 tickets
@@ -109,6 +118,9 @@ export const ticketMasterChallenge: Challenge = {
     },
     {
       name: 'Payment Failure Recovery',
+      type: 'reliability',
+      requirement: 'NFR-R1',
+      description: 'Payment gateway times out. System must handle gracefully with compensation logic.',
       traffic: {
         type: 'mixed',
         rps: 2000,
@@ -258,12 +270,12 @@ Your p99 latency exceeded 500ms during peak load.
       { type: 'client', config: {} },
       { type: 'cdn', config: { enabled: true } },
       { type: 'load_balancer', config: { algorithm: 'least_connections' } },
-      { type: 'app_server', config: { instances: 8 } },
+      { type: 'app_server', config: { instances: 12 } },
       { type: 'message_queue', config: { maxThroughput: 10000, partitions: 8 } },
       { type: 'redis', config: { maxMemoryMB: 8192 } },
       { type: 'postgresql', config: {
-        readCapacity: 2000,
-        writeCapacity: 1000,
+        readCapacity: 10000,
+        writeCapacity: 8000,
         replication: true,
         instanceType: 'commodity-db',
         replicationMode: 'single-leader',
