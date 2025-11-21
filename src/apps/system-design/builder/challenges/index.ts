@@ -25,12 +25,12 @@ const baseChallenges: Challenge[] = [
 const l6EnhancedChallenges = baseChallenges.map(challenge => {
   const enhanced = L6TestGenerator.enhanceChallenge(challenge);
   
-  // CRITICAL FIX: Regenerate solution after L6 tests are added
+  // CRITICAL FIX: Always regenerate solution after L6 tests are added
   // L6 tests add high-load scenarios (10x spikes) that weren't in original solution calculation
-  // This ensures solutions account for L6-level traffic (e.g., Medium's 310 write RPS from L6 Viral Event)
-  if (enhanced.solution) {
-    enhanced.solution = regenerateSolutionForChallenge(enhanced);
-  }
+  // This ensures ALL challenges have solutions that account for L6-level traffic
+  // (e.g., Medium's 310 write RPS from L6 Viral Event)
+  // This also generates solutions for challenges that didn't have them originally
+  enhanced.solution = regenerateSolutionForChallenge(enhanced);
   
   return enhanced;
 });

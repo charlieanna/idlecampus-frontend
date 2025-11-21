@@ -1,0 +1,1417 @@
+[Solution Generator] Instagram - Photo Sharing Platform: MaxRPS Calculation: Total=6000, Read=5400, Write=2800
+[Solution Generator] Instagram - Photo Sharing Platform: Requirements: Object Storage, Cache
+[Solution Generator] Instagram - Photo Sharing Platform: Entities: user, post, like, comment, follower
+[Solution Generator] Instagram - Photo Sharing Platform: CQRS split - Read API: 11 instances, Write API: 6 instances (Read ratio: 90.0%, Total RPS: 6000)
+[Solution Generator] Twitter - Microblogging Platform: MaxRPS Calculation: Total=15000, Read=14250, Write=7000
+[Solution Generator] Twitter - Microblogging Platform: Requirements: Cache
+[Solution Generator] Twitter - Microblogging Platform: Entities: user, tweet, follow, like
+[Solution Generator] Twitter - Microblogging Platform: CQRS split - Read API: 29 instances, Write API: 14 instances (Read ratio: 95.0%, Total RPS: 15000)
+[Solution Generator] Reddit - Discussion Forum: MaxRPS Calculation: Total=4500, Read=4050, Write=2100
+[Solution Generator] Reddit - Discussion Forum: Requirements: Cache
+[Solution Generator] Reddit - Discussion Forum: Entities: user, subreddit, post, comment, vote
+[Solution Generator] Reddit - Discussion Forum: CQRS split - Read API: 9 instances, Write API: 5 instances (Read ratio: 90.0%, Total RPS: 4500)
+[Solution Generator] LinkedIn - Professional Network: MaxRPS Calculation: Total=3000, Read=2550, Write=1400
+[Solution Generator] LinkedIn - Professional Network: Requirements: Basic compute+storage
+[Solution Generator] LinkedIn - Professional Network: Entities: user, profile, connection, post, job
+[Solution Generator] LinkedIn - Professional Network: CQRS split - Read API: 6 instances, Write API: 3 instances (Read ratio: 85.0%, Total RPS: 3000)
+[Solution Generator] Facebook - Social Network: MaxRPS Calculation: Total=30000, Read=27000, Write=14000
+[Solution Generator] Facebook - Social Network: Requirements: Object Storage, Cache
+[Solution Generator] Facebook - Social Network: Entities: user, post, friendship, like, comment
+[Solution Generator] Facebook - Social Network: CQRS split - Read API: 54 instances, Write API: 28 instances (Read ratio: 90.0%, Total RPS: 30000)
+[Solution Generator] TikTok - Short Video Platform: MaxRPS Calculation: Total=9000, Read=8550, Write=4200
+[Solution Generator] TikTok - Short Video Platform: Requirements: Object Storage, Cache
+[Solution Generator] TikTok - Short Video Platform: Entities: user, video, like, comment
+[Solution Generator] TikTok - Short Video Platform: CQRS split - Read API: 18 instances, Write API: 9 instances (Read ratio: 95.0%, Total RPS: 9000)
+[Solution Generator] Pinterest - Visual Bookmarking: MaxRPS Calculation: Total=4500, Read=4140, Write=2100
+[Solution Generator] Pinterest - Visual Bookmarking: Requirements: Object Storage, Cache
+[Solution Generator] Pinterest - Visual Bookmarking: Entities: user, board, pin, follow
+[Solution Generator] Pinterest - Visual Bookmarking: CQRS split - Read API: 9 instances, Write API: 5 instances (Read ratio: 92.0%, Total RPS: 4500)
+[Solution Generator] Snapchat - Ephemeral Messaging: MaxRPS Calculation: Total=6000, Read=4200, Write=2800
+[Solution Generator] Snapchat - Ephemeral Messaging: Requirements: Object Storage
+[Solution Generator] Snapchat - Ephemeral Messaging: Entities: user, snap, story, friendship
+[Solution Generator] Snapchat - Ephemeral Messaging: Monolithic app server - 12 instances (Read ratio: 70.0%, Total RPS: 6000)
+[Solution Generator] Discord - Gaming Chat: MaxRPS Calculation: Total=3600, Read=2880, Write=1680
+[Solution Generator] Discord - Gaming Chat: Requirements: Cache, Real-time
+[Solution Generator] Discord - Gaming Chat: Entities: user, server, channel, message, member
+[Solution Generator] Discord - Gaming Chat: CQRS split - Read API: 6 instances, Write API: 4 instances (Read ratio: 80.0%, Total RPS: 3600)
+  [Debug] medium test "NFR-S2: Viral Growth": RPS=2400, ReadRatio=0.95, WriteRPS=120.0, maxWriteRps=120.0
+[Solution Generator] Medium - Blogging Platform: MaxRPS Calculation: Total=2400, Read=2280, Write=120.00000000000011
+[Solution Generator] Medium - Blogging Platform: Requirements: Basic compute+storage
+[Solution Generator] Medium - Blogging Platform: Entities: user, article, clap, comment, follow
+[Solution Generator] Medium - Blogging Platform: CQRS split - Read API: 5 instances, Write API: 1 instances (Read ratio: 95.0%, Total RPS: 2400)
+[Solution Generator] Amazon - E-commerce Marketplace: MaxRPS Calculation: Total=15000, Read=12750, Write=7000
+[Solution Generator] Amazon - E-commerce Marketplace: Requirements: Cache
+[Solution Generator] Amazon - E-commerce Marketplace: Entities: user, product, order, order_item, cart, inventory
+[Solution Generator] Amazon - E-commerce Marketplace: CQRS split - Read API: 26 instances, Write API: 14 instances (Read ratio: 85.0%, Total RPS: 15000)
+[Solution Generator] Shopify - E-commerce Platform: MaxRPS Calculation: Total=4500, Read=3600, Write=2100
+[Solution Generator] Shopify - E-commerce Platform: Requirements: Basic compute+storage
+[Solution Generator] Shopify - E-commerce Platform: Entities: store, product, order, customer, payment
+[Solution Generator] Shopify - E-commerce Platform: CQRS split - Read API: 8 instances, Write API: 5 instances (Read ratio: 80.0%, Total RPS: 4500)
+  [Debug] stripe test "NFR-P1: Normal Daily Load": RPS=1000, ReadRatio=0.6, WriteRPS=400.0, maxWriteRps=400.0
+  [Debug] stripe test "NFR-P2: Peak Hour Load": RPS=2000, ReadRatio=0.6, WriteRPS=800.0, maxWriteRps=800.0
+  [Debug] stripe test "NFR-S1: Traffic Spike": RPS=1500, ReadRatio=0.6, WriteRPS=600.0, maxWriteRps=800.0
+  [Debug] stripe test "NFR-S2: Viral Growth": RPS=3000, ReadRatio=0.6, WriteRPS=1200.0, maxWriteRps=1200.0
+  [Debug] stripe test "NFR-S4: Write Burst": RPS=2000, ReadRatio=0.3, WriteRPS=1400.0, maxWriteRps=1400.0
+  [Debug] stripe test "NFR-R1: Database Failure": RPS=1000, ReadRatio=0.6, WriteRPS=400.0, maxWriteRps=1400.0
+  [Debug] stripe test "NFR-R2: Cache Failure": RPS=1000, ReadRatio=0.6, WriteRPS=400.0, maxWriteRps=1400.0
+[Solution Generator] Stripe - Payment Processing: MaxRPS Calculation: Total=3000, Read=1800, Write=1400
+[Solution Generator] Stripe - Payment Processing: Requirements: Basic compute+storage
+[Solution Generator] Stripe - Payment Processing: Entities: merchant, customer, payment, subscription, transaction
+[Solution Generator] Stripe - Payment Processing: Monolithic app server - 6 instances (Read ratio: 60.0%, Total RPS: 3000)
+[Solution Generator] Uber - Ride Sharing: MaxRPS Calculation: Total=6000, Read=4200, Write=2800
+[Solution Generator] Uber - Ride Sharing: Requirements: Geospatial
+[Solution Generator] Uber - Ride Sharing: Entities: rider, driver, ride, location, payment
+[Solution Generator] Uber - Ride Sharing: Monolithic app server - 12 instances (Read ratio: 70.0%, Total RPS: 6000)
+[Solution Generator] Airbnb - Vacation Rentals: MaxRPS Calculation: Total=3600, Read=3240, Write=1680
+[Solution Generator] Airbnb - Vacation Rentals: Requirements: Geospatial, Object Storage
+[Solution Generator] Airbnb - Vacation Rentals: Entities: user, listing, booking, review, payment
+[Solution Generator] Airbnb - Vacation Rentals: CQRS split - Read API: 7 instances, Write API: 4 instances (Read ratio: 90.0%, Total RPS: 3600)
+[Solution Generator] Netflix - Video Streaming: MaxRPS Calculation: Total=9000, Read=8820, Write=180.00000000000017
+[Solution Generator] Netflix - Video Streaming: Requirements: Object Storage, Cache
+[Solution Generator] Netflix - Video Streaming: Entities: user, video, watch_history, subscription
+[Solution Generator] Netflix - Video Streaming: CQRS split - Read API: 18 instances, Write API: 1 instances (Read ratio: 98.0%, Total RPS: 9000)
+[Solution Generator] Spotify - Music Streaming: MaxRPS Calculation: Total=6000, Read=5700, Write=2800
+[Solution Generator] Spotify - Music Streaming: Requirements: Object Storage
+[Solution Generator] Spotify - Music Streaming: Entities: user, song, playlist, artist, play_history
+[Solution Generator] Spotify - Music Streaming: CQRS split - Read API: 12 instances, Write API: 6 instances (Read ratio: 95.0%, Total RPS: 6000)
+[Solution Generator] YouTube - Video Sharing: MaxRPS Calculation: Total=15000, Read=14550, Write=7000
+[Solution Generator] YouTube - Video Sharing: Requirements: Object Storage
+[Solution Generator] YouTube - Video Sharing: Entities: user, video, comment, subscription, like
+[Solution Generator] YouTube - Video Sharing: CQRS split - Read API: 30 instances, Write API: 14 instances (Read ratio: 97.0%, Total RPS: 15000)
+[Solution Generator] Twitch - Live Streaming: MaxRPS Calculation: Total=4500, Read=4275, Write=225.0000000000002
+[Solution Generator] Twitch - Live Streaming: Requirements: Object Storage, Real-time
+[Solution Generator] Twitch - Live Streaming: Entities: user, stream, chat_message, follow, subscription
+[Solution Generator] Twitch - Live Streaming: CQRS split - Read API: 9 instances, Write API: 1 instances (Read ratio: 95.0%, Total RPS: 4500)
+[Solution Generator] Hulu - TV & Movie Streaming: MaxRPS Calculation: Total=3000, Read=2940, Write=60.00000000000006
+[Solution Generator] Hulu - TV & Movie Streaming: Requirements: Object Storage
+[Solution Generator] Hulu - TV & Movie Streaming: Entities: user, show, episode, watch_history, dvr_recording
+[Solution Generator] Hulu - TV & Movie Streaming: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 98.0%, Total RPS: 3000)
+[Solution Generator] WhatsApp - Messaging App: MaxRPS Calculation: Total=30000, Read=22500, Write=14000
+[Solution Generator] WhatsApp - Messaging App: Requirements: Object Storage, Real-time
+[Solution Generator] WhatsApp - Messaging App: Entities: user, message, chat, group, media
+[Solution Generator] WhatsApp - Messaging App: CQRS split - Read API: 45 instances, Write API: 28 instances (Read ratio: 75.0%, Total RPS: 30000)
+[Solution Generator] Slack - Team Collaboration: MaxRPS Calculation: Total=4500, Read=3600, Write=2100
+[Solution Generator] Slack - Team Collaboration: Requirements: Object Storage, Cache, Real-time
+[Solution Generator] Slack - Team Collaboration: Entities: workspace, channel, user, message, thread, reaction
+[Solution Generator] Slack - Team Collaboration: CQRS split - Read API: 8 instances, Write API: 5 instances (Read ratio: 80.0%, Total RPS: 4500)
+[Solution Generator] Telegram - Cloud Messaging: MaxRPS Calculation: Total=9000, Read=6750, Write=4200
+[Solution Generator] Telegram - Cloud Messaging: Requirements: Object Storage, Real-time
+[Solution Generator] Telegram - Cloud Messaging: Entities: user, chat, message, channel, bot
+[Solution Generator] Telegram - Cloud Messaging: Monolithic app server - 18 instances (Read ratio: 75.0%, Total RPS: 9000)
+[Solution Generator] Facebook Messenger - Chat App: MaxRPS Calculation: Total=15000, Read=11250, Write=7000
+[Solution Generator] Facebook Messenger - Chat App: Requirements: Object Storage, Cache, Real-time
+[Solution Generator] Facebook Messenger - Chat App: Entities: user, conversation, message, participant, media
+[Solution Generator] Facebook Messenger - Chat App: CQRS split - Read API: 23 instances, Write API: 14 instances (Read ratio: 75.0%, Total RPS: 15000)
+[Solution Generator] Pastebin - Text Sharing: MaxRPS Calculation: Total=1500, Read=1350, Write=149.99999999999997
+[Solution Generator] Pastebin - Text Sharing: Requirements: Basic compute+storage
+[Solution Generator] Pastebin - Text Sharing: Entities: paste, user
+[Solution Generator] Pastebin - Text Sharing: CQRS split - Read API: 3 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 1500)
+[Solution Generator] Dropbox - File Storage & Sync: MaxRPS Calculation: Total=3000, Read=2100, Write=1400
+[Solution Generator] Dropbox - File Storage & Sync: Requirements: Object Storage
+[Solution Generator] Dropbox - File Storage & Sync: Entities: user, file, folder, share, version
+[Solution Generator] Dropbox - File Storage & Sync: Monolithic app server - 6 instances (Read ratio: 70.0%, Total RPS: 3000)
+[Solution Generator] Google Drive - Cloud Storage: MaxRPS Calculation: Total=4500, Read=3375, Write=2100
+[Solution Generator] Google Drive - Cloud Storage: Requirements: Object Storage
+[Solution Generator] Google Drive - Cloud Storage: Entities: user, file, folder, permission, activity
+[Solution Generator] Google Drive - Cloud Storage: Monolithic app server - 9 instances (Read ratio: 75.0%, Total RPS: 4500)
+[Solution Generator] GitHub - Code Hosting: MaxRPS Calculation: Total=6000, Read=5400, Write=2800
+[Solution Generator] GitHub - Code Hosting: Requirements: Object Storage
+[Solution Generator] GitHub - Code Hosting: Entities: user, repository, commit, pull_request, issue
+[Solution Generator] GitHub - Code Hosting: CQRS split - Read API: 11 instances, Write API: 6 instances (Read ratio: 90.0%, Total RPS: 6000)
+[Solution Generator] Stack Overflow - Q&A Platform: MaxRPS Calculation: Total=4500, Read=4275, Write=225.0000000000002
+[Solution Generator] Stack Overflow - Q&A Platform: Requirements: Cache
+[Solution Generator] Stack Overflow - Q&A Platform: Entities: user, question, answer, vote, tag
+[Solution Generator] Stack Overflow - Q&A Platform: CQRS split - Read API: 9 instances, Write API: 1 instances (Read ratio: 95.0%, Total RPS: 4500)
+[Solution Generator] DoorDash - Food Delivery: MaxRPS Calculation: Total=3000, Read=2100, Write=1400
+[Solution Generator] DoorDash - Food Delivery: Requirements: Geospatial
+[Solution Generator] DoorDash - Food Delivery: Entities: customer, restaurant, driver, order, menu_item
+[Solution Generator] DoorDash - Food Delivery: Monolithic app server - 6 instances (Read ratio: 70.0%, Total RPS: 3000)
+[Solution Generator] Instacart - Grocery Delivery: MaxRPS Calculation: Total=2400, Read=1800, Write=1120
+[Solution Generator] Instacart - Grocery Delivery: Requirements: Geospatial, Cache
+[Solution Generator] Instacart - Grocery Delivery: Entities: customer, store, shopper, order, product
+[Solution Generator] Instacart - Grocery Delivery: Monolithic app server - 5 instances (Read ratio: 75.0%, Total RPS: 2400)
+[Solution Generator] Yelp - Business Reviews: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Yelp - Business Reviews: Requirements: Geospatial, Object Storage
+[Solution Generator] Yelp - Business Reviews: Entities: user, business, review, photo, category
+[Solution Generator] Yelp - Business Reviews: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Notion - Collaborative Workspace: MaxRPS Calculation: Total=2400, Read=1800, Write=1120
+[Solution Generator] Notion - Collaborative Workspace: Requirements: Real-time
+[Solution Generator] Notion - Collaborative Workspace: Entities: user, workspace, page, block, permission
+[Solution Generator] Notion - Collaborative Workspace: Monolithic app server - 5 instances (Read ratio: 75.0%, Total RPS: 2400)
+[Solution Generator] Trello - Project Management: MaxRPS Calculation: Total=1800, Read=1350, Write=840
+[Solution Generator] Trello - Project Management: Requirements: Basic compute+storage
+[Solution Generator] Trello - Project Management: Entities: user, board, list, card, comment
+[Solution Generator] Trello - Project Management: Monolithic app server - 4 instances (Read ratio: 75.0%, Total RPS: 1800)
+[Solution Generator] Google Calendar - Event Management: MaxRPS Calculation: Total=3000, Read=2400, Write=1400
+[Solution Generator] Google Calendar - Event Management: Requirements: Cache
+[Solution Generator] Google Calendar - Event Management: Entities: user, calendar, event, attendee, reminder
+[Solution Generator] Google Calendar - Event Management: CQRS split - Read API: 5 instances, Write API: 3 instances (Read ratio: 80.0%, Total RPS: 3000)
+[Solution Generator] Zoom - Video Conferencing: MaxRPS Calculation: Total=4500, Read=2250, Write=2250
+[Solution Generator] Zoom - Video Conferencing: Requirements: Object Storage, Real-time
+[Solution Generator] Zoom - Video Conferencing: Entities: user, meeting, participant, recording, chat_message
+[Solution Generator] Zoom - Video Conferencing: Monolithic app server - 9 instances (Read ratio: 50.0%, Total RPS: 4500)
+[Solution Generator] Steam - Gaming Platform: MaxRPS Calculation: Total=6000, Read=5100, Write=2800
+[Solution Generator] Steam - Gaming Platform: Requirements: Object Storage, Cache
+[Solution Generator] Steam - Gaming Platform: Entities: user, game, purchase, review, achievement
+[Solution Generator] Steam - Gaming Platform: CQRS split - Read API: 11 instances, Write API: 6 instances (Read ratio: 85.0%, Total RPS: 6000)
+[Solution Generator] Ticketmaster - Event Ticketing: MaxRPS Calculation: Total=3000, Read=2100, Write=1400
+[Solution Generator] Ticketmaster - Event Ticketing: Requirements: Cache
+[Solution Generator] Ticketmaster - Event Ticketing: Entities: user, event, venue, ticket, seat
+[Solution Generator] Ticketmaster - Event Ticketing: Monolithic app server - 6 instances (Read ratio: 70.0%, Total RPS: 3000)
+[Solution Generator] Booking.com - Hotel Reservations: MaxRPS Calculation: Total=4500, Read=3825, Write=2100
+[Solution Generator] Booking.com - Hotel Reservations: Requirements: Geospatial, Cache
+[Solution Generator] Booking.com - Hotel Reservations: Entities: user, hotel, room, booking, review
+[Solution Generator] Booking.com - Hotel Reservations: CQRS split - Read API: 8 instances, Write API: 5 instances (Read ratio: 85.0%, Total RPS: 4500)
+[Solution Generator] Weather API - Weather Data Service: MaxRPS Calculation: Total=15000, Read=14850, Write=150.00000000000014
+[Solution Generator] Weather API - Weather Data Service: Requirements: Geospatial
+[Solution Generator] Weather API - Weather Data Service: Entities: location, current_weather, forecast, station
+[Solution Generator] Weather API - Weather Data Service: CQRS split - Read API: 30 instances, Write API: 1 instances (Read ratio: 99.0%, Total RPS: 15000)
+[Solution Generator] TinyURL – URL Shortener (L6 Standards): MaxRPS Calculation: Total=110000, Read=107800, Write=2750.0000000000023
+[Solution Generator] TinyURL – URL Shortener (L6 Standards): Requirements: Cache
+[Solution Generator] TinyURL – URL Shortener (L6 Standards): Entities: url_mapping
+[Solution Generator] TinyURL – URL Shortener (L6 Standards): CQRS split - Read API: 216 instances, Write API: 6 instances (Read ratio: 98.0%, Total RPS: 110000)
+[Solution Generator] TinyURL – URL Shortener: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] TinyURL – URL Shortener: Requirements: Cache
+[Solution Generator] TinyURL – URL Shortener: Entities: data
+[Solution Generator] TinyURL – URL Shortener: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Kafka Streaming Pipeline: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Kafka Streaming Pipeline: Requirements: Message Queue, Cache
+[Solution Generator] Kafka Streaming Pipeline: Entities: data
+[Solution Generator] Kafka Streaming Pipeline: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Collaborative Document Editor: MaxRPS Calculation: Total=15000, Read=10500, Write=7000
+[Solution Generator] Collaborative Document Editor: Requirements: Message Queue
+[Solution Generator] Collaborative Document Editor: Entities: data
+[Solution Generator] Collaborative Document Editor: CQRS split - Read API: 21 instances, Write API: 14 instances (Read ratio: 70.0%, Total RPS: 15000)
+[Solution Generator] E-commerce Platform with Disaster Recovery: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] E-commerce Platform with Disaster Recovery: Requirements: Basic compute+storage
+[Solution Generator] E-commerce Platform with Disaster Recovery: Entities: data
+[Solution Generator] E-commerce Platform with Disaster Recovery: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Edge API Gateway Platform (Cloudflare Workers): MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Edge API Gateway Platform (Cloudflare Workers): Requirements: Cache
+[Solution Generator] Edge API Gateway Platform (Cloudflare Workers): Entities: data
+[Solution Generator] Edge API Gateway Platform (Cloudflare Workers): CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Facebook Global API Gateway: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Facebook Global API Gateway: Requirements: Basic compute+storage
+[Solution Generator] Facebook Global API Gateway: Entities: data
+[Solution Generator] Facebook Global API Gateway: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Netflix GraphQL Federation Platform: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Netflix GraphQL Federation Platform: Requirements: Basic compute+storage
+[Solution Generator] Netflix GraphQL Federation Platform: Entities: data
+[Solution Generator] Netflix GraphQL Federation Platform: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Salesforce Multi-Tenant CRM Platform: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Salesforce Multi-Tenant CRM Platform: Requirements: Basic compute+storage
+[Solution Generator] Salesforce Multi-Tenant CRM Platform: Entities: data
+[Solution Generator] Salesforce Multi-Tenant CRM Platform: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Uber Real-Time Data Platform: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Uber Real-Time Data Platform: Requirements: Basic compute+storage
+[Solution Generator] Uber Real-Time Data Platform: Entities: data
+[Solution Generator] Uber Real-Time Data Platform: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Google Monorepo CI/CD System: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Google Monorepo CI/CD System: Requirements: Basic compute+storage
+[Solution Generator] Google Monorepo CI/CD System: Entities: data
+[Solution Generator] Google Monorepo CI/CD System: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Apple End-to-End Encryption Platform: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Apple End-to-End Encryption Platform: Requirements: Basic compute+storage
+[Solution Generator] Apple End-to-End Encryption Platform: Entities: data
+[Solution Generator] Apple End-to-End Encryption Platform: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] DataDog-Scale Observability Platform: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] DataDog-Scale Observability Platform: Requirements: Basic compute+storage
+[Solution Generator] DataDog-Scale Observability Platform: Entities: data
+[Solution Generator] DataDog-Scale Observability Platform: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Google Kubernetes Engine Architecture: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Google Kubernetes Engine Architecture: Requirements: Basic compute+storage
+[Solution Generator] Google Kubernetes Engine Architecture: Entities: data
+[Solution Generator] Google Kubernetes Engine Architecture: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Meta ML Training Platform: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Meta ML Training Platform: Requirements: Basic compute+storage
+[Solution Generator] Meta ML Training Platform: Entities: data
+[Solution Generator] Meta ML Training Platform: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] 6G Network Architecture: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] 6G Network Architecture: Requirements: Basic compute+storage
+[Solution Generator] 6G Network Architecture: Entities: data
+[Solution Generator] 6G Network Architecture: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Post-TCP Protocol for Exascale: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Post-TCP Protocol for Exascale: Requirements: Basic compute+storage
+[Solution Generator] Post-TCP Protocol for Exascale: Entities: data
+[Solution Generator] Post-TCP Protocol for Exascale: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Beyond CAP Theorem Database: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Beyond CAP Theorem Database: Requirements: Basic compute+storage
+[Solution Generator] Beyond CAP Theorem Database: Entities: data
+[Solution Generator] Beyond CAP Theorem Database: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Quantum Consensus Infrastructure: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Quantum Consensus Infrastructure: Requirements: Basic compute+storage
+[Solution Generator] Quantum Consensus Infrastructure: Entities: data
+[Solution Generator] Quantum Consensus Infrastructure: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Relativistic Consensus Infrastructure: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Relativistic Consensus Infrastructure: Requirements: Basic compute+storage
+[Solution Generator] Relativistic Consensus Infrastructure: Entities: data
+[Solution Generator] Relativistic Consensus Infrastructure: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Zero-Knowledge Internet: MaxRPS Calculation: Total=3000, Read=2700, Write=299.99999999999994
+[Solution Generator] Zero-Knowledge Internet: Requirements: Basic compute+storage
+[Solution Generator] Zero-Knowledge Internet: Entities: data
+[Solution Generator] Zero-Knowledge Internet: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 11 instances, Write API: 6 instances (Read ratio: 90.0%, Total RPS: 6000)
+[Solution Generator] Challenge: CQRS split - Read API: 29 instances, Write API: 14 instances (Read ratio: 95.0%, Total RPS: 15000)
+[Solution Generator] Challenge: CQRS split - Read API: 9 instances, Write API: 5 instances (Read ratio: 90.0%, Total RPS: 4500)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 3 instances (Read ratio: 85.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 54 instances, Write API: 28 instances (Read ratio: 90.0%, Total RPS: 30000)
+[Solution Generator] Challenge: CQRS split - Read API: 18 instances, Write API: 9 instances (Read ratio: 95.0%, Total RPS: 9000)
+[Solution Generator] Challenge: CQRS split - Read API: 9 instances, Write API: 5 instances (Read ratio: 92.0%, Total RPS: 4500)
+[Solution Generator] Challenge: Monolithic app server - 12 instances (Read ratio: 70.0%, Total RPS: 6000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 4 instances (Read ratio: 80.0%, Total RPS: 3600)
+  [Debug] medium test "NFR-S2: Viral Growth": RPS=2400, ReadRatio=0.95, WriteRPS=120.0, maxWriteRps=120.0
+  [Debug] medium test "L6 Peak Load (3x traffic)": RPS=150, ReadRatio=0.3, WriteRPS=105.0, maxWriteRps=120.0
+  [Debug] medium test "L6 Viral Event (10x spike)": RPS=500, ReadRatio=0.38, WriteRPS=310.0, maxWriteRps=310.0
+  [Debug] medium test "L6 Seasonal Peak": RPS=250, ReadRatio=0.3, WriteRPS=175.0, maxWriteRps=310.0
+[Solution Generator] Challenge: CQRS split - Read API: 5 instances, Write API: 1 instances (Read ratio: 95.0%, Total RPS: 2400)
+[Solution Generator] Challenge: CQRS split - Read API: 26 instances, Write API: 14 instances (Read ratio: 85.0%, Total RPS: 15000)
+[Solution Generator] Challenge: CQRS split - Read API: 8 instances, Write API: 5 instances (Read ratio: 80.0%, Total RPS: 4500)
+  [Debug] stripe test "NFR-P1: Normal Daily Load": RPS=1000, ReadRatio=0.6, WriteRPS=400.0, maxWriteRps=400.0
+  [Debug] stripe test "NFR-P2: Peak Hour Load": RPS=2000, ReadRatio=0.6, WriteRPS=800.0, maxWriteRps=800.0
+  [Debug] stripe test "NFR-S1: Traffic Spike": RPS=1500, ReadRatio=0.6, WriteRPS=600.0, maxWriteRps=800.0
+  [Debug] stripe test "NFR-S2: Viral Growth": RPS=3000, ReadRatio=0.6, WriteRPS=1200.0, maxWriteRps=1200.0
+  [Debug] stripe test "NFR-S4: Write Burst": RPS=2000, ReadRatio=0.3, WriteRPS=1400.0, maxWriteRps=1400.0
+  [Debug] stripe test "NFR-R1: Database Failure": RPS=1000, ReadRatio=0.6, WriteRPS=400.0, maxWriteRps=1400.0
+  [Debug] stripe test "NFR-R2: Cache Failure": RPS=1000, ReadRatio=0.6, WriteRPS=400.0, maxWriteRps=1400.0
+[Solution Generator] Challenge: Monolithic app server - 6 instances (Read ratio: 60.0%, Total RPS: 3000)
+[Solution Generator] Challenge: Monolithic app server - 12 instances (Read ratio: 70.0%, Total RPS: 6000)
+[Solution Generator] Challenge: CQRS split - Read API: 7 instances, Write API: 4 instances (Read ratio: 90.0%, Total RPS: 3600)
+[Solution Generator] Challenge: CQRS split - Read API: 18 instances, Write API: 1 instances (Read ratio: 98.0%, Total RPS: 9000)
+[Solution Generator] Challenge: CQRS split - Read API: 12 instances, Write API: 6 instances (Read ratio: 95.0%, Total RPS: 6000)
+[Solution Generator] Challenge: CQRS split - Read API: 30 instances, Write API: 14 instances (Read ratio: 97.0%, Total RPS: 15000)
+[Solution Generator] Challenge: CQRS split - Read API: 9 instances, Write API: 1 instances (Read ratio: 95.0%, Total RPS: 4500)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 98.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 45 instances, Write API: 28 instances (Read ratio: 75.0%, Total RPS: 30000)
+[Solution Generator] Challenge: CQRS split - Read API: 8 instances, Write API: 5 instances (Read ratio: 80.0%, Total RPS: 4500)
+[Solution Generator] Challenge: Monolithic app server - 18 instances (Read ratio: 75.0%, Total RPS: 9000)
+[Solution Generator] Challenge: CQRS split - Read API: 23 instances, Write API: 14 instances (Read ratio: 75.0%, Total RPS: 15000)
+[Solution Generator] Challenge: CQRS split - Read API: 3 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 1500)
+[Solution Generator] Challenge: Monolithic app server - 6 instances (Read ratio: 70.0%, Total RPS: 3000)
+[Solution Generator] Challenge: Monolithic app server - 9 instances (Read ratio: 75.0%, Total RPS: 4500)
+[Solution Generator] Challenge: CQRS split - Read API: 11 instances, Write API: 6 instances (Read ratio: 90.0%, Total RPS: 6000)
+[Solution Generator] Challenge: CQRS split - Read API: 9 instances, Write API: 1 instances (Read ratio: 95.0%, Total RPS: 4500)
+[Solution Generator] Challenge: Monolithic app server - 6 instances (Read ratio: 70.0%, Total RPS: 3000)
+[Solution Generator] Challenge: Monolithic app server - 5 instances (Read ratio: 75.0%, Total RPS: 2400)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: Monolithic app server - 5 instances (Read ratio: 75.0%, Total RPS: 2400)
+[Solution Generator] Challenge: Monolithic app server - 4 instances (Read ratio: 75.0%, Total RPS: 1800)
+[Solution Generator] Challenge: CQRS split - Read API: 5 instances, Write API: 3 instances (Read ratio: 80.0%, Total RPS: 3000)
+[Solution Generator] Challenge: Monolithic app server - 9 instances (Read ratio: 50.0%, Total RPS: 4500)
+[Solution Generator] Challenge: CQRS split - Read API: 11 instances, Write API: 6 instances (Read ratio: 85.0%, Total RPS: 6000)
+[Solution Generator] Challenge: Monolithic app server - 6 instances (Read ratio: 70.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 8 instances, Write API: 5 instances (Read ratio: 85.0%, Total RPS: 4500)
+[Solution Generator] Challenge: CQRS split - Read API: 30 instances, Write API: 1 instances (Read ratio: 99.0%, Total RPS: 15000)
+[Solution Generator] Challenge: CQRS split - Read API: 216 instances, Write API: 20 instances (Read ratio: 98.0%, Total RPS: 110000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 21 instances, Write API: 14 instances (Read ratio: 70.0%, Total RPS: 15000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+[Solution Generator] Challenge: CQRS split - Read API: 6 instances, Write API: 1 instances (Read ratio: 90.0%, Total RPS: 3000)
+=== Analyzing 16 Failing Challenges ===
+
+❌ tiny_url: No solution found
+
+❌ food_blog: No solution found
+
+❌ todo_app: No solution found
+
+❌ web_crawler: No solution found
+
+
+================================================================================
+Discord - Gaming Chat (discord)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+
+❌ Test 5: NFR-P1: Normal Daily Load
+   Type: functional | Requirement: FR-1
+   Traffic: 1200 RPS (read ratio: 0.8)
+   ❌ P99 Latency: 151.5ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+
+❌ Test 6: NFR-P2: Peak Hour Load
+   Type: functional | Requirement: FR-1
+   Traffic: 2400 RPS (read ratio: 0.8)
+   ❌ P99 Latency: 151.5ms > 150ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+
+❌ Test 9: NFR-P5: Read Latency Under Write Pressure
+   Type: functional | Requirement: FR-1
+   Traffic: 1200 RPS (read ratio: 0.8)
+   ❌ P99 Latency: 151.5ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+
+❌ Test 10: NFR-S3: Heavy Read Load
+   Type: functional | Requirement: FR-1
+   Traffic: 1800 RPS (read ratio: 0.8)
+   ❌ P99 Latency: 151.5ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+
+❌ Test 11: NFR-S4: Write Burst
+   Type: functional | Requirement: FR-1
+   Traffic: 2400 RPS (read ratio: 0.3)
+   ❌ P99 Latency: 204.7ms > 200ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+  Traffic: 100 RPS (30 reads, 70 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+  Traffic: 400 RPS (152 reads, 248 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+  Traffic: 500 RPS (150 reads, 350 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 63, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+
+Summary: 17/22 tests passing
+
+================================================================================
+Stripe - Payment Processing (stripe)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+
+❌ Test 5: NFR-P1: Normal Daily Load
+   Type: functional | Requirement: FR-1
+   Traffic: 1000 RPS (read ratio: 0.6)
+   ❌ P99 Latency: 171.3ms > 150ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+  Traffic: 30 RPS (15 reads, 15 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+  Traffic: 50 RPS (28 reads, 22 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+  Traffic: 200 RPS (100 reads, 100 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 53, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+
+Summary: 19/20 tests passing
+
+================================================================================
+Netflix - Video Streaming (netflix)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Capacity calculation: {
+  baseRead: 1000,
+  baseWrite: 100,
+  replicationMode: 'multi-leader',
+  replicas: 3,
+  shards: 7,
+  hasExplicitCapacity: false,
+  finalReadCapacity: 28000,
+  finalWriteCapacity: 2800,
+  readRps: 25872,
+  writeRps: 960.0000000000009,
+  readUtil: '92.4%',
+  writeUtil: '34.3%',
+  calculation: 'CALCULATED: multi-leader mode with 3 replicas = 28000 read, 2800 write'
+}
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Capacity calculation: {
+  baseRead: 1000,
+  baseWrite: 100,
+  replicationMode: 'multi-leader',
+  replicas: 3,
+  shards: 7,
+  hasExplicitCapacity: false,
+  finalReadCapacity: 28000,
+  finalWriteCapacity: 2800,
+  readRps: 38808,
+  writeRps: 1440.0000000000014,
+  readUtil: '138.6%',
+  writeUtil: '51.4%',
+  calculation: 'CALCULATED: multi-leader mode with 3 replicas = 28000 read, 2800 write'
+}
+
+❌ Test 6: NFR-S2: Viral Growth
+   Type: functional | Requirement: FR-1
+   Traffic: 9000 RPS (read ratio: 0.98)
+   ❌ Error Rate: 100.00% > 5.00%
+   Bottlenecks:
+     - postgresql_5: 139% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+  Traffic: 20 RPS (10 reads, 10 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+  Traffic: 80 RPS (46 reads, 34 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+  Traffic: 100 RPS (50 reads, 50 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 7, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+
+Summary: 18/19 tests passing
+
+================================================================================
+Hulu - TV & Movie Streaming (hulu)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Capacity calculation: {
+  baseRead: 1000,
+  baseWrite: 100,
+  replicationMode: 'multi-leader',
+  replicas: 3,
+  shards: 3,
+  hasExplicitCapacity: false,
+  finalReadCapacity: 12000,
+  finalWriteCapacity: 1200,
+  readRps: 12936,
+  writeRps: 480.00000000000045,
+  readUtil: '107.8%',
+  writeUtil: '40.0%',
+  calculation: 'CALCULATED: multi-leader mode with 3 replicas = 12000 read, 1200 write'
+}
+
+❌ Test 6: NFR-S2: Viral Growth
+   Type: functional | Requirement: FR-1
+   Traffic: 3000 RPS (read ratio: 0.98)
+   ❌ Error Rate: 100.00% > 5.00%
+   Bottlenecks:
+     - postgresql_5: 108% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+  Traffic: 20 RPS (10 reads, 10 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+  Traffic: 80 RPS (46 reads, 34 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+  Traffic: 100 RPS (50 reads, 50 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 3, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+
+Summary: 18/19 tests passing
+
+================================================================================
+WhatsApp - Messaging App (whatsapp)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+
+❌ Test 4: NFR-P1: Normal Daily Load
+   Type: functional | Requirement: FR-1
+   Traffic: 10000 RPS (read ratio: 0.75)
+   ❌ P99 Latency: 156.9ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+
+❌ Test 5: NFR-P2: Peak Hour Load
+   Type: functional | Requirement: FR-1
+   Traffic: 20000 RPS (read ratio: 0.75)
+   ❌ P99 Latency: 156.9ms > 150ms
+   Bottlenecks:
+     - redis_4: 160% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+
+❌ Test 8: NFR-S3: Heavy Read Load
+   Type: functional | Requirement: FR-1
+   Traffic: 15000 RPS (read ratio: 0.75)
+   ❌ P99 Latency: 156.9ms > 100ms
+   Bottlenecks:
+     - redis_4: 120% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+
+❌ Test 9: NFR-S4: Write Burst
+   Type: functional | Requirement: FR-1
+   Traffic: 20000 RPS (read ratio: 0.3)
+   ❌ P99 Latency: 204.7ms > 200ms
+   Bottlenecks:
+     - redis_4: 160% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+  Traffic: 20 RPS (10 reads, 10 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+  Traffic: 80 RPS (46 reads, 34 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+  Traffic: 100 RPS (50 reads, 50 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 234, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+
+Summary: 16/20 tests passing
+
+================================================================================
+Slack - Team Collaboration (slack)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+
+❌ Test 5: NFR-P1: Normal Daily Load
+   Type: functional | Requirement: FR-1
+   Traffic: 1500 RPS (read ratio: 0.8)
+   ❌ P99 Latency: 151.5ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+
+❌ Test 6: NFR-P2: Peak Hour Load
+   Type: functional | Requirement: FR-1
+   Traffic: 3000 RPS (read ratio: 0.8)
+   ❌ P99 Latency: 151.5ms > 150ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+
+❌ Test 9: NFR-P5: Read Latency Under Write Pressure
+   Type: functional | Requirement: FR-1
+   Traffic: 1500 RPS (read ratio: 0.8)
+   ❌ P99 Latency: 151.5ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+
+❌ Test 10: NFR-S3: Heavy Read Load
+   Type: functional | Requirement: FR-1
+   Traffic: 2250 RPS (read ratio: 0.8)
+   ❌ P99 Latency: 151.5ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+
+❌ Test 11: NFR-S4: Write Burst
+   Type: functional | Requirement: FR-1
+   Traffic: 3000 RPS (read ratio: 0.3)
+   ❌ P99 Latency: 204.7ms > 200ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+  Traffic: 30 RPS (15 reads, 15 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+  Traffic: 100 RPS (57 reads, 43 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+  Traffic: 50 RPS (25 reads, 25 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 79, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+
+Summary: 17/22 tests passing
+
+================================================================================
+Telegram - Cloud Messaging (telegram)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+
+❌ Test 3: NFR-P1: Normal Daily Load
+   Type: functional | Requirement: FR-1
+   Traffic: 3000 RPS (read ratio: 0.75)
+   ❌ P99 Latency: 157.1ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+
+❌ Test 4: NFR-P2: Peak Hour Load
+   Type: functional | Requirement: FR-1
+   Traffic: 6000 RPS (read ratio: 0.75)
+   ❌ P99 Latency: 157.1ms > 150ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+
+❌ Test 7: NFR-S3: Heavy Read Load
+   Type: functional | Requirement: FR-1
+   Traffic: 4500 RPS (read ratio: 0.75)
+   ❌ P99 Latency: 157.1ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+  Traffic: 20 RPS (10 reads, 10 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+  Traffic: 80 RPS (46 reads, 34 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+  Traffic: 100 RPS (50 reads, 50 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 158, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+
+Summary: 16/19 tests passing
+
+================================================================================
+Facebook Messenger - Chat App (messenger)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+
+❌ Test 3: NFR-P1: Normal Daily Load
+   Type: functional | Requirement: FR-1
+   Traffic: 5000 RPS (read ratio: 0.75)
+   ❌ P99 Latency: 156.9ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+
+❌ Test 4: NFR-P2: Peak Hour Load
+   Type: functional | Requirement: FR-1
+   Traffic: 10000 RPS (read ratio: 0.75)
+   ❌ P99 Latency: 156.9ms > 150ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+
+❌ Test 7: NFR-S3: Heavy Read Load
+   Type: functional | Requirement: FR-1
+   Traffic: 7500 RPS (read ratio: 0.75)
+   ❌ P99 Latency: 156.9ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+
+❌ Test 8: NFR-S4: Write Burst
+   Type: functional | Requirement: FR-1
+   Traffic: 10000 RPS (read ratio: 0.3)
+   ❌ P99 Latency: 204.7ms > 200ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 20 RPS (10 reads, 10 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 80 RPS (46 reads, 34 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 100 RPS (50 reads, 50 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+
+Summary: 15/19 tests passing
+
+================================================================================
+Zoom - Video Conferencing (zoom)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+
+❌ Test 3: NFR-P1: Normal Daily Load
+   Type: functional | Requirement: FR-1
+   Traffic: 1500 RPS (read ratio: 0.5)
+   ❌ P99 Latency: 180.7ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+
+❌ Test 4: NFR-P2: Peak Hour Load
+   Type: functional | Requirement: FR-1
+   Traffic: 3000 RPS (read ratio: 0.5)
+   ❌ P99 Latency: 180.7ms > 150ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+  Traffic: 100 RPS (30 reads, 70 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+  Traffic: 400 RPS (152 reads, 248 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+  Traffic: 500 RPS (150 reads, 350 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 85, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+
+Summary: 15/17 tests passing
+
+================================================================================
+Weather API - Weather Data Service (weatherapi)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Capacity calculation: {
+  baseRead: 1000,
+  baseWrite: 100,
+  replicationMode: 'multi-leader',
+  replicas: 5,
+  shards: 4,
+  hasExplicitCapacity: false,
+  finalReadCapacity: 24000,
+  finalWriteCapacity: 2400,
+  readRps: 21780,
+  writeRps: 400.00000000000034,
+  readUtil: '90.8%',
+  writeUtil: '16.7%',
+  calculation: 'CALCULATED: multi-leader mode with 5 replicas = 24000 read, 2400 write'
+}
+
+❌ Test 3: NFR-P1: Normal Daily Load
+   Type: functional | Requirement: FR-1
+   Traffic: 5000 RPS (read ratio: 0.99)
+   ❌ P99 Latency: 157.8ms > 100ms
+   Bottlenecks:
+     - postgresql_5: 91% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Capacity calculation: {
+  baseRead: 1000,
+  baseWrite: 100,
+  replicationMode: 'multi-leader',
+  replicas: 5,
+  shards: 4,
+  hasExplicitCapacity: false,
+  finalReadCapacity: 24000,
+  finalWriteCapacity: 2400,
+  readRps: 43560,
+  writeRps: 800.0000000000007,
+  readUtil: '181.5%',
+  writeUtil: '33.3%',
+  calculation: 'CALCULATED: multi-leader mode with 5 replicas = 24000 read, 2400 write'
+}
+
+❌ Test 4: NFR-P2: Peak Hour Load
+   Type: functional | Requirement: FR-1
+   Traffic: 10000 RPS (read ratio: 0.99)
+   ❌ P99 Latency: 188.5ms > 150ms
+   ❌ Error Rate: 100.00% > 2.00%
+   Bottlenecks:
+     - postgresql_5: 182% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Capacity calculation: {
+  baseRead: 1000,
+  baseWrite: 100,
+  replicationMode: 'multi-leader',
+  replicas: 5,
+  shards: 4,
+  hasExplicitCapacity: false,
+  finalReadCapacity: 24000,
+  finalWriteCapacity: 2400,
+  readRps: 32670,
+  writeRps: 600.0000000000006,
+  readUtil: '136.1%',
+  writeUtil: '25.0%',
+  calculation: 'CALCULATED: multi-leader mode with 5 replicas = 24000 read, 2400 write'
+}
+
+❌ Test 5: NFR-S1: Traffic Spike
+   Type: functional | Requirement: FR-1
+   Traffic: 7500 RPS (read ratio: 0.99)
+   ❌ Error Rate: 100.00% > 3.00%
+   Bottlenecks:
+     - postgresql_5: 136% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Capacity calculation: {
+  baseRead: 1000,
+  baseWrite: 100,
+  replicationMode: 'multi-leader',
+  replicas: 5,
+  shards: 4,
+  hasExplicitCapacity: false,
+  finalReadCapacity: 24000,
+  finalWriteCapacity: 2400,
+  readRps: 65340,
+  writeRps: 1200.0000000000011,
+  readUtil: '272.3%',
+  writeUtil: '50.0%',
+  calculation: 'CALCULATED: multi-leader mode with 5 replicas = 24000 read, 2400 write'
+}
+
+❌ Test 6: NFR-S2: Viral Growth
+   Type: functional | Requirement: FR-1
+   Traffic: 15000 RPS (read ratio: 0.99)
+   ❌ Error Rate: 100.00% > 5.00%
+   Bottlenecks:
+     - redis_4: 120% utilization
+     - postgresql_5: 272% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Capacity calculation: {
+  baseRead: 1000,
+  baseWrite: 100,
+  replicationMode: 'multi-leader',
+  replicas: 5,
+  shards: 4,
+  hasExplicitCapacity: false,
+  finalReadCapacity: 24000,
+  finalWriteCapacity: 2400,
+  readRps: 21780,
+  writeRps: 400.00000000000034,
+  readUtil: '90.8%',
+  writeUtil: '16.7%',
+  calculation: 'CALCULATED: multi-leader mode with 5 replicas = 24000 read, 2400 write'
+}
+
+❌ Test 7: NFR-P5: Read Latency Under Write Pressure
+   Type: functional | Requirement: FR-1
+   Traffic: 5000 RPS (read ratio: 0.99)
+   ❌ P99 Latency: 157.8ms > 100ms
+   Bottlenecks:
+     - postgresql_5: 91% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Capacity calculation: {
+  baseRead: 1000,
+  baseWrite: 100,
+  replicationMode: 'multi-leader',
+  replicas: 5,
+  shards: 4,
+  hasExplicitCapacity: false,
+  finalReadCapacity: 24000,
+  finalWriteCapacity: 2400,
+  readRps: 32670,
+  writeRps: 600.0000000000006,
+  readUtil: '136.1%',
+  writeUtil: '25.0%',
+  calculation: 'CALCULATED: multi-leader mode with 5 replicas = 24000 read, 2400 write'
+}
+
+❌ Test 8: NFR-S3: Heavy Read Load
+   Type: functional | Requirement: FR-1
+   Traffic: 7500 RPS (read ratio: 0.99)
+   ❌ P99 Latency: 188.5ms > 100ms
+   ❌ Error Rate: 100.00% > 2.00%
+   Bottlenecks:
+     - postgresql_5: 136% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Capacity calculation: {
+  baseRead: 1000,
+  baseWrite: 100,
+  replicationMode: 'multi-leader',
+  replicas: 5,
+  shards: 4,
+  hasExplicitCapacity: false,
+  finalReadCapacity: 24000,
+  finalWriteCapacity: 2400,
+  readRps: 21780,
+  writeRps: 400.00000000000034,
+  readUtil: '90.8%',
+  writeUtil: '16.7%',
+  calculation: 'CALCULATED: multi-leader mode with 5 replicas = 24000 read, 2400 write'
+}
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Capacity calculation: {
+  baseRead: 1000,
+  baseWrite: 100,
+  replicationMode: 'multi-leader',
+  replicas: 5,
+  shards: 4,
+  hasExplicitCapacity: false,
+  finalReadCapacity: 24000,
+  finalWriteCapacity: 2400,
+  readRps: 21780,
+  writeRps: 400.00000000000034,
+  readUtil: '90.8%',
+  writeUtil: '16.7%',
+  calculation: 'CALCULATED: multi-leader mode with 5 replicas = 24000 read, 2400 write'
+}
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+  Traffic: 30 RPS (15 reads, 15 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+  Traffic: 100 RPS (57 reads, 43 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+  Traffic: 50 RPS (25 reads, 25 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 4, shardKey: 'id' }
+  Traffic: 10 RPS (5 reads, 5 writes)
+
+Summary: 13/19 tests passing
+
+================================================================================
+TinyURL – URL Shortener (L6 Standards) (tiny-url-l6)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+
+❌ Test 1: L6-LAT-1: Baseline Latency Profile
+   Type: functional | Requirement: FR-1
+   Traffic: 11000 RPS (read ratio: 0.91)
+   ❌ P99 Latency: 139.2ms > 100ms
+   Bottlenecks:
+     - redis_4: 88% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+
+❌ Test 4: L6-SCALE-2: Super Bowl Ad (10x spike)
+   Type: functional | Requirement: FR-1
+   Traffic: 110000 RPS (read ratio: 0.98)
+   ❌ Error Rate: 100.00% > 5.00%
+   Bottlenecks:
+     - load_balancer_1: 110% utilization
+     - redis_4: 880% utilization
+     - message_queue_8: 123% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+
+❌ Test 5: L6-DIST-1: Hot Partition (Power Law)
+   Type: functional | Requirement: FR-1
+   Traffic: 11000 RPS (read ratio: 0.91)
+   ❌ P99 Latency: 139.2ms > 100ms
+   Bottlenecks:
+     - redis_4: 88% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+  Traffic: 11000 RPS (10010 reads, 990 writes)
+
+❌ Test 8: L6 Latency Profile - Full Percentiles
+   Type: performance | Requirement: NFR-L6
+   Traffic: 11000 RPS (read ratio: 0.91)
+   ❌ P99 Latency: 139.2ms > 100ms
+   Bottlenecks:
+     - redis_4: 88% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+  Traffic: 11000 RPS (10010 reads, 990 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+  Traffic: 22000 RPS (20020 reads, 1980 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+  Traffic: 88000 RPS (86240 reads, 1760 writes)
+
+❌ Test 11: L6 Viral Event (10x spike)
+   Type: performance | Requirement: NFR-L6
+   Traffic: 88000 RPS (read ratio: 0.98)
+   ❌ Error Rate: 71.20% > 5.00%
+   Bottlenecks:
+     - load_balancer_1: 88% utilization
+     - redis_4: 704% utilization
+     - message_queue_8: 99% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+  Traffic: 110000 RPS (100100 reads, 9900 writes)
+
+❌ Test 12: L6 Seasonal Peak
+   Type: performance | Requirement: NFR-L6
+   Traffic: 110000 RPS (read ratio: 0.91)
+   ❌ Error Rate: 100.00% > 2.00%
+   Bottlenecks:
+     - load_balancer_1: 110% utilization
+     - redis_4: 880% utilization
+     - message_queue_8: 123% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+  Traffic: 11000 RPS (10010 reads, 990 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+  Traffic: 11000 RPS (10010 reads, 990 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+  Traffic: 11000 RPS (10010 reads, 990 writes)
+
+❌ Test 15: L6 Power Law Distribution (80/20)
+   Type: performance | Requirement: NFR-L6
+   Traffic: 11000 RPS (read ratio: 0.91)
+   ❌ P99 Latency: 139.2ms > 100ms
+   Bottlenecks:
+     - redis_4: 88% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 40, shardKey: 'id' }
+  Traffic: 11000 RPS (10010 reads, 990 writes)
+
+Summary: 9/16 tests passing
+
+================================================================================
+Collaborative Document Editor (active-active-regions)
+================================================================================
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+
+❌ Test 6: NFR-P1: Normal Daily Load
+   Type: functional | Requirement: FR-1
+   Traffic: 5000 RPS (read ratio: 0.7)
+   ❌ P99 Latency: 162.4ms > 50ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+
+❌ Test 7: NFR-P2: Peak Hour Load
+   Type: functional | Requirement: FR-1
+   Traffic: 10000 RPS (read ratio: 0.7)
+   ❌ P99 Latency: 162.4ms > 75ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+
+❌ Test 8: NFR-S1: Traffic Spike
+   Type: functional | Requirement: FR-1
+   Traffic: 7500 RPS (read ratio: 0.7)
+   ❌ P99 Latency: 162.4ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+
+❌ Test 9: NFR-S2: Viral Growth
+   Type: functional | Requirement: FR-1
+   Traffic: 15000 RPS (read ratio: 0.7)
+   ❌ P99 Latency: 188.3ms > 125ms
+   Bottlenecks:
+     - redis_4: 120% utilization
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+
+❌ Test 10: NFR-S3: Heavy Read Load
+   Type: functional | Requirement: FR-1
+   Traffic: 7500 RPS (read ratio: 0.7)
+   ❌ P99 Latency: 162.4ms > 50ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+
+❌ Test 11: NFR-S4: Write Burst
+   Type: functional | Requirement: FR-1
+   Traffic: 10000 RPS (read ratio: 0.3)
+   ❌ P99 Latency: 204.7ms > 100ms
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 150 RPS (45 reads, 105 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 500 RPS (190 reads, 310 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 250 RPS (75 reads, 175 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+[PostgreSQL] Constructor received sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+[PostgreSQL] Constructor final sharding config: { enabled: true, shards: 210, shardKey: 'id' }
+  Traffic: 50 RPS (15 reads, 35 writes)
+
+Summary: 15/21 tests passing
