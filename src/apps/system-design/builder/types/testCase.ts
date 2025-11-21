@@ -15,6 +15,9 @@ export interface FailureInjection {
  * Pass criteria for a test case
  */
 export interface PassCriteria {
+  maxP50Latency?: number; // milliseconds
+  maxP90Latency?: number; // milliseconds
+  maxP95Latency?: number; // milliseconds
   maxP99Latency?: number; // milliseconds
   maxErrorRate?: number; // 0-1
   maxMonthlyCost?: number; // dollars

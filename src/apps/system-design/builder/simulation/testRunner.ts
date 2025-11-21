@@ -78,6 +78,36 @@ export class TestRunner {
     const failures: string[] = [];
 
     if (
+      criteria.maxP50Latency !== undefined &&
+      metrics.p50Latency !== undefined &&
+      metrics.p50Latency > criteria.maxP50Latency
+    ) {
+      failures.push(
+        `p50 latency (${metrics.p50Latency.toFixed(1)}ms) exceeds target (${criteria.maxP50Latency}ms)`
+      );
+    }
+
+    if (
+      criteria.maxP90Latency !== undefined &&
+      metrics.p90Latency !== undefined &&
+      metrics.p90Latency > criteria.maxP90Latency
+    ) {
+      failures.push(
+        `p90 latency (${metrics.p90Latency.toFixed(1)}ms) exceeds target (${criteria.maxP90Latency}ms)`
+      );
+    }
+
+    if (
+      criteria.maxP95Latency !== undefined &&
+      metrics.p95Latency !== undefined &&
+      metrics.p95Latency > criteria.maxP95Latency
+    ) {
+      failures.push(
+        `p95 latency (${metrics.p95Latency.toFixed(1)}ms) exceeds target (${criteria.maxP95Latency}ms)`
+      );
+    }
+
+    if (
       criteria.maxP99Latency !== undefined &&
       metrics.p99Latency > criteria.maxP99Latency
     ) {
