@@ -876,6 +876,12 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
     } else {
       connections.push({ from: 'app_server', to: 'postgresql', type: 'read_write' });
     }
+
+    // Connect cache to database (required by validConnectionFlowValidator)
+    // Cache-aside pattern: Cache checks database on cache miss
+    if (needsCache) {
+      connections.push({ from: 'redis', to: 'postgresql', type: 'read', label: 'Cache miss → DB lookup' });
+    }
   }
 
   // Add CDN if needed
