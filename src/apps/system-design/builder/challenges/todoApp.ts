@@ -623,9 +623,16 @@ def handle_request(request: dict, context: dict) -> dict:
     components: [
       { type: 'client', config: {} },
       { type: 'load_balancer', config: {} },
-      { type: 'app_server', config: { instances: 5 } },
-      { type: 'redis', config: { memorySizeGB: 16 } },
-      { type: 'postgresql', config: { readCapacity: 5000, writeCapacity: 2000 } },
+      { type: 'app_server', config: { instances: 3 } },
+      { type: 'redis', config: { maxMemoryMB: 1024 } },
+      { type: 'postgresql', config: {
+        readCapacity: 1000,
+        writeCapacity: 500,
+        replication: true,
+        instanceType: 'commodity-db',
+        replicationMode: 'single-leader',
+        sharding: { enabled: false, shards: 1, shardKey: '' }
+      } },
     ],
     connections: [
       { from: 'client', to: 'load_balancer' },
@@ -638,9 +645,9 @@ def handle_request(request: dict, context: dict) -> dict:
 ## Architecture Components
 - **client**: Team members accessing the app
 - **load_balancer**: Distributes traffic and handles failover
-- **app_server** (5 instances): CRUD operations, session management
-- **redis** (16GB): Session cache and frequently accessed todos
-- **postgresql** (5k read, 2k write): Persistent storage with consistency
+- **app_server** (3 instances): CRUD operations, session management
+- **redis** (1GB): Session cache and frequently accessed todos
+- **postgresql** (1k read, 500 write, replicated): Persistent storage with consistency
 
 ## Data Flow
 1. Client → Load Balancer: User makes request
@@ -650,16 +657,18 @@ def handle_request(request: dict, context: dict) -> dict:
 
 ## Why This Works
 This architecture handles:
-- **500 RPS** (300 reads, 200 writes) with headroom
-- **99.9% availability** through redundant components
+- **500 RPS** (300 reads, 200 writes) efficiently
+- **1000 RPS** peak load with headroom
+- **99.9% availability** through database replication and redundant app servers
 - **Data consistency** via ACID transactions
 - **Server restarts** without data loss (DB persists)
+- **Database failures** with automatic failover to replica
 - **Concurrent users** with proper locking
 
 ## Key Design Decisions
-1. **PostgreSQL for writes** ensures data consistency (no lost updates)
-2. **Redis caching** reduces DB load for reads
-3. **Multiple app servers** handle server failures gracefully
+1. **PostgreSQL with replication** ensures high availability and data consistency
+2. **Redis caching** reduces DB load for frequently accessed todos
+3. **3 app server instances** handle traffic and server failures gracefully
 4. **Load balancer health checks** route around failures
 5. **Budget-friendly** - stays under $800/month`,
   },

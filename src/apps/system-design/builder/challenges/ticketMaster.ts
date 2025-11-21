@@ -251,6 +251,150 @@ Your p99 latency exceeded 500ms during peak load.
 
   // Code challenges for hands-on implementation practice
   codeChallenges: ticketMasterCodeChallenges,
+
+  // Complete solution that passes ALL test cases
+  solution: {
+    components: [
+      { type: 'client', config: {} },
+      { type: 'cdn', config: { enabled: true } },
+      { type: 'load_balancer', config: { algorithm: 'least_connections' } },
+      { type: 'app_server', config: { instances: 8 } },
+      { type: 'message_queue', config: { maxThroughput: 10000, partitions: 8 } },
+      { type: 'redis', config: { maxMemoryMB: 8192 } },
+      { type: 'postgresql', config: {
+        readCapacity: 2000,
+        writeCapacity: 1000,
+        replication: true,
+        instanceType: 'commodity-db',
+        replicationMode: 'single-leader',
+        sharding: { enabled: false, shards: 1, shardKey: 'event_id' }
+      } },
+    ],
+    connections: [
+      { from: 'client', to: 'cdn' },
+      { from: 'client', to: 'load_balancer' },
+      { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 'message_queue' },
+      { from: 'app_server', to: 'redis' },
+      { from: 'app_server', to: 'postgresql' },
+    ],
+    explanation: `# Complete Solution for TicketMaster Event Ticketing System
+
+## Architecture Components
+- **client**: Users browsing and booking tickets
+- **cdn**: Serves static assets (event images, CSS, JavaScript)
+- **load_balancer**: Distributes traffic across app servers with least-connections algorithm
+- **app_server** (8 instances): Handles browsing and booking requests
+- **message_queue** (10k throughput, 8 partitions): Virtual waiting room and async order processing
+- **redis** (8GB): Seat holds (TTL: 10 min), seat availability cache
+- **postgresql** (2k read, 1k write, replicated): Inventory, bookings, transactions with ACID guarantees
+
+## Data Flow
+
+### Normal Browsing (95% of traffic)
+1. Client → CDN: Static assets (images, CSS)
+2. Client → Load Balancer → App Server: Event listings
+3. App Server → Redis: Cache event data and seat availability count
+4. App Server → PostgreSQL: Fresh event data on cache miss
+
+### Ticket Booking (5% of traffic, high concurrency)
+1. Client → Load Balancer → App Server: Seat selection request
+2. App Server → Message Queue: Enqueue booking request (virtual waiting room)
+3. Worker consumes from queue → App Server: Process booking
+4. App Server → Redis: Check/create seat hold (TTL: 10 min)
+5. App Server → PostgreSQL: Reserve seat with pessimistic lock (SELECT FOR UPDATE)
+6. Payment processing → App Server: Confirm or rollback
+7. App Server → PostgreSQL: Commit booking or release seat
+
+## Why This Works
+
+### Normal Load (1000 RPS)
+- CDN serves all static content (images, event pages)
+- Redis caches event listings and seat availability counts
+- 8 app servers handle ~125 RPS each
+- PostgreSQL easily handles 50 RPS writes (5% of traffic)
+
+### Ticket Drop (10,000 RPS)
+- **Message queue acts as virtual waiting room**
+  - Enqueues 3,000 booking requests/sec
+  - Processes at controlled rate (500/sec) to prevent DB overload
+  - Fair FIFO ordering
+- **Redis for seat holds**
+  - Fast distributed lock for seat reservations
+  - TTL ensures abandoned carts don't block inventory
+- **PostgreSQL with pessimistic locking**
+  - SELECT FOR UPDATE prevents double-booking
+  - ACID transactions ensure consistency
+  - Replication provides failover
+
+### Race Condition Prevention (5000 concurrent users, 100 tickets)
+- **Pessimistic locking** guarantees only one user can book each seat
+- **Message queue** throttles booking rate to DB capacity
+- **Redis locks** provide fast rejection before hitting DB
+- Result: No double-booking, guaranteed consistency
+
+### Payment Failure Recovery
+- **Saga pattern** for distributed transaction:
+  1. Reserve seat (PostgreSQL)
+  2. Process payment (external API)
+  3. If payment fails → compensating transaction (release seat)
+- **Message queue** tracks order state machine
+- **Idempotency** prevents duplicate charges
+- **Dead letter queue** for manual review of edge cases
+
+## Key Design Decisions
+
+1. **Message Queue as Virtual Waiting Room**
+   - Controls booking rate to prevent DB saturation
+   - Fair queuing (FIFO) during high demand
+   - Decouples request rate from processing capacity
+
+2. **PostgreSQL with Pessimistic Locking**
+   - Strong consistency for inventory (no double-booking)
+   - SELECT FOR UPDATE ensures exclusive access
+   - ACID transactions for payment flow
+
+3. **Redis for Seat Holds**
+   - Fast distributed locking
+   - TTL auto-expires abandoned reservations
+   - Reduces DB load for transient state
+
+4. **CDN for Static Content**
+   - Offloads event images and pages
+   - Reduces app server load
+   - Low-latency global access
+
+5. **8 App Server Instances**
+   - Handles 10k RPS ticket drops (1250 RPS each)
+   - Stateless design enables horizontal scaling
+   - Load balancer with health checks
+
+## Trade-offs
+
+**Consistency over Availability**
+- Strong consistency for booking (ACID)
+- May reject requests during extreme load
+- Acceptable: Better to show sold out than double-book
+
+**Queue Latency**
+- Users wait in virtual queue during ticket drops
+- Adds 10-30 seconds latency
+- Acceptable: Prevents site crash, ensures fairness
+
+**Cost vs Performance**
+- 8 app servers ($880/month) for peak capacity
+- Over-provisioned for normal load (1000 RPS)
+- Worth it: Ticket drops are revenue events, downtime = lost sales
+
+## Budget: $1,950/month
+- App Servers (8x): $880
+- PostgreSQL (replicated): $300
+- Redis (8GB): $400
+- Message Queue: $250
+- Load Balancer: $50
+- CDN: $70
+**Total: $1,950** (within $2,000 budget)`,
+  },
 };
 
 /**

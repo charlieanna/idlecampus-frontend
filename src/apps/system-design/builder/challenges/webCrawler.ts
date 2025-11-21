@@ -301,11 +301,12 @@ def manage_frontier(current_batch: List[str], seen_urls: Set[str]) -> List[str]:
     components: [
       { type: 'client', config: {} },
       { type: 'load_balancer', config: {} },
-      { type: 'app_server', config: { instances: 3 } },
-      { type: 'message_queue', config: { maxThroughput: 5000 } },
-      { type: 'redis', config: { memorySizeGB: 16 } },
-      { type: 'postgresql', config: { 
-        readCapacity: 2000, 
+      { type: 'app_server', config: { instances: 2 } },
+      { type: 'worker', config: { instances: 5 } },
+      { type: 'message_queue', config: { maxThroughput: 5000, partitions: 4 } },
+      { type: 'redis', config: { instanceType: 'cache.t3.small' } },
+      { type: 'postgresql', config: {
+        readCapacity: 2000,
         writeCapacity: 1000,
         replication: { enabled: true, replicas: 2, mode: 'async' }
       } },
@@ -317,42 +318,51 @@ def manage_frontier(current_batch: List[str], seen_urls: Set[str]) -> List[str]:
       { from: 'app_server', to: 'message_queue' },
       { from: 'app_server', to: 'redis' },
       { from: 'app_server', to: 'postgresql' },
-      { from: 'app_server', to: 's3' },
+      { from: 'worker', to: 'message_queue' },
+      { from: 'worker', to: 'redis' },
+      { from: 'worker', to: 'postgresql' },
+      { from: 'worker', to: 's3' },
     ],
     explanation: `# Complete Solution for Web Crawler
 
 ## Architecture Components
 - **client**: Crawler coordinator/scheduler
-- **load_balancer**: Routes requests to available workers
-- **app_server** (5 instances): Crawler workers (fetch, parse, extract)
-- **message_queue** (10k throughput): URL frontier (queue of URLs to crawl)
-- **redis** (32GB): Deduplication cache (seen URLs bloom filter)
-- **postgresql** (2k read, 1k write): URL metadata, crawl status
+- **load_balancer**: Routes requests to available app servers
+- **app_server** (2 instances): API layer for accepting crawl jobs
+- **worker** (5 instances): Crawler workers (fetch, parse, extract links)
+- **message_queue** (5k throughput, 4 partitions): URL frontier (queue of URLs to crawl)
+- **redis** (cache.t3.small): Deduplication cache (seen URLs tracking)
+- **postgresql** (2k read, 1k write, replicated): URL metadata, crawl status
 - **s3** (10TB): Raw page content storage
 
 ## Data Flow
-1. Client → App Server: Trigger crawl job
+1. Client → Load Balancer → App Server: Trigger crawl job
 2. App Server → Message Queue: Enqueue seed URLs
-3. Worker pops URL from queue
-4. Worker → Redis: Check if URL seen (dedup)
-5. Worker fetches page from web
-6. Worker → S3: Store raw content
-7. Worker → PostgreSQL: Save metadata
-8. Worker → Message Queue: Enqueue discovered links
+3. App Server → Redis/PostgreSQL: Store job metadata
+4. Worker pops URL from queue
+5. Worker → Redis: Check if URL seen (dedup)
+6. Worker fetches page from web
+7. Worker → S3: Store raw HTML content
+8. Worker → PostgreSQL: Save crawl metadata
+9. Worker → Message Queue: Enqueue discovered links
 
 ## Why This Works
 This architecture handles:
-- **200 RPS** of frontier operations efficiently
-- **URL deduplication** via Redis bloom filter
+- **200 RPS** of crawl operations with 5 workers (40 RPS each)
+- **URL deduplication** via Redis (prevents infinite loops)
 - **Scalable storage** with S3 for billions of pages
-- **Async processing** via message queue (decoupled)
+- **Async processing** via message queue (decoupled architecture)
 - **Politeness** enforced by worker rate limiting
+- **Reliability** via DB replication and queue persistence
+- **Cost optimized** to stay under $1,000/month budget
 
 ## Key Design Decisions
-1. **Message queue as frontier** - handles backpressure, ordering
-2. **Redis for dedup** - O(1) lookup for seen URLs
-3. **S3 for content** - cheap, unlimited storage
-4. **PostgreSQL for metadata** - queryable, indexed
-5. **Multiple workers** - parallel crawling with scaling`,
+1. **Message queue as frontier** - handles backpressure, ordering, persistence
+2. **Redis for dedup** - O(1) lookup for seen URLs (prevents re-crawl)
+3. **S3 for content** - cheap, unlimited storage for raw HTML
+4. **PostgreSQL for metadata** - queryable, indexed, supports analytics
+5. **Separate workers** - parallel crawling, independent scaling from API layer
+6. **DB replication** - survives database failures without losing progress
+7. **Right-sized instances** - 2 app servers and 5 workers balance performance with cost`,
   },
 };

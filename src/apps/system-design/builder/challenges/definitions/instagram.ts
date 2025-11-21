@@ -13,6 +13,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { generateSolution } from '../solutionGenerator';
 
 /**
  * Instagram - Photo Sharing Platform
@@ -607,6 +608,18 @@ def search_content(query: str) -> List[Dict]:
                 results.append(post)
     return results
 `,
+
+  // Auto-generated solution that passes all test scenarios
+  solution: generateSolution(
+    'instagram',
+    problemConfigs.instagram,
+    [
+      'Users can upload photos and videos',
+      'Users can view a feed of photos from people they follow',
+      'Users can like and comment on photos',
+      'Users can search for other users and content'
+    ]
+  ),
 };
 
 // Auto-generate code challenges from functional requirements

@@ -128,6 +128,19 @@ export interface ProblemDefinition {
   // Naive Python implementation template
   pythonTemplate?: string;
 
+  // Auto-generated solution (for problem definitions)
+  solution?: {
+    components: Array<{
+      type: string;
+      config: any;
+    }>;
+    connections: Array<{
+      from: string;
+      to: string;
+    }>;
+    explanation: string;
+  };
+
   // NFR Wizard - Interactive teaching flow (optional)
   wizardFlow?: NFRWizardFlow;
 }
