@@ -54,652 +54,148 @@ Example:
         maxErrorRate: 0, // Must work perfectly
       },
       solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'app_server', config: { instances: 1 } },
-          { type: 's3', config: { storageSizeGB: 100 } },
-          {
-            type: 'postgresql',
-            config: {
-              instanceType: 'commodity-db',
-              replicationMode: 'single-leader',
-              replication: { enabled: false, replicas: 0, mode: 'async' },
-              sharding: { enabled: false, shards: 1, shardKey: 'post_id' }
-            }
-          },
+  components: [
+    {
+      type: 'client',
+      config: {}
+    },
+    {
+      type: 'load_balancer',
+      config: {
+        algorithm: 'least_connections'
+      }
+    },
+    {
+      type: 'app_server',
+      config: {
+        instances: 1,
+        serviceName: 'read-api',
+        handledAPIs: [
+          'GET /api/*'
         ],
-        connections: [
-          { from: 'client', to: 'app_server' },
-          { from: 'app_server', to: 'postgresql' },
-          { from: 'app_server', to: 's3' },
+        displayName: 'Read API',
+        subtitle: '1 instance(s)'
+      }
+    },
+    {
+      type: 'app_server',
+      config: {
+        instances: 1,
+        serviceName: 'write-api',
+        handledAPIs: [
+          'POST /api/*',
+          "PUT /api/*",
+          "DELETE /api/*",
+          "PATCH /api/*"
         ],
-        explanation: `Minimal viable system - app server serves HTML from DB, images from S3.`,
-      },
+        displayName: 'Write API',
+        subtitle: '1 instance(s)'
+      }
     },
     {
-      name: 'Serve Static Content',
-      type: 'functional',
-      requirement: 'FR-2',
-      description: 'System serves high-resolution food images (2MB average) with correct URLs and metadata.',
-      traffic: {
-        type: 'read',
-        rps: 20,
-        avgResponseSizeMB: 2, // Large images
-      },
-      duration: 10,
-      passCriteria: {
-        maxErrorRate: 0,
-      },
+      type: 'redis',
+      config: {
+        sizeGB: 5,
+        strategy: 'cache_aside'
+      }
     },
     {
-      name: 'Handle Mixed Traffic',
-      type: 'functional',
-      requirement: 'FR-3',
-      description: 'System handles both HTML page requests (10%) and image requests (90%) simultaneously.',
-      traffic: {
-        type: 'read',
-        rps: 50,
-        avgResponseSizeMB: 1.8, // Weighted average (90% images × 2MB + 10% HTML × 0.05MB)
-      },
-      duration: 10,
-      passCriteria: {
-        maxErrorRate: 0,
-      },
+      type: 'postgresql',
+      config: {
+        instanceType: 'commodity-db',
+        replicationMode: 'single-leader',
+        replication: {
+          enabled: true,
+          replicas: 1,
+          mode: 'async'
+        },
+        sharding: {
+          enabled: false,
+          shards: 1,
+          shardKey: 'id'
+        },
+        displayName: 'PostgreSQL Master',
+        subtitle: 'Writes + 1 replica (reads)'
+      }
     },
     {
-      name: 'App Server Crash - Blog Posts Lost',
-      type: 'functional',
-      requirement: 'FR-4',
-      description: 'App server crashes and restarts. With only in-memory storage, all blog posts are lost!',
-      traffic: {
-        type: 'read',
-        rps: 10,
-      },
-      duration: 10,
-      failureInjection: {
-        type: 'db_crash',
-        atSecond: 5,
-      },
-      passCriteria: {
-        maxErrorRate: 0,
-      },
-      solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'app_server', config: { instances: 1 } },
-          {
-            type: 'postgresql',
-            config: {
-              instanceType: 'commodity-db',
-              replicationMode: 'single-leader',
-              replication: { enabled: false, replicas: 0, mode: 'async' },
-              sharding: { enabled: false, shards: 1, shardKey: 'post_id' }
-            }
-          },
-          { type: 's3', config: { storageSizeGB: 10 } },
-        ],
-        connections: [
-          { from: 'client', to: 'app_server' },
-          { from: 'app_server', to: 'postgresql' },
-          { from: 'app_server', to: 's3' },
-        ],
-        explanation: `This test shows why persistence is essential for content sites:
-
-**With only in-memory storage:**
-- App crash = ALL blog posts LOST ❌
-- Years of content vanishes instantly
-- Website becomes empty shell!
-
-**With database + S3:**
-- App crash = content persists ✅
-- Blog posts in database, images in S3
-- Website recovers immediately
-
-**Content is your business:**
-Blog content takes years to build. Losing it is catastrophic!`,
-      },
-    },
-
-    // ========== PERFORMANCE REQUIREMENTS (NFR-P) ==========
-    {
-      name: 'Normal Load',
-      type: 'performance',
-      requirement: 'NFR-P1',
-      description: 'System handles typical daily traffic (2000 reads/sec) with low latency and stays within budget.',
-      traffic: {
-        type: 'read',
-        rps: 2000,
-        avgResponseSizeMB: 1.8, // 90% images, 10% HTML
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 500,
-        maxErrorRate: 0.01,
-      },
-      solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'cdn', config: { enabled: true } },
-          { type: 's3', config: { storageSizeGB: 500 } },
-          { type: 'app_server', config: { instances: 1 } },
-          {
-            type: 'postgresql',
-            config: {
-              instanceType: 'commodity-db',
-              replicationMode: 'single-leader',
-              replication: { enabled: false, replicas: 0, mode: 'async' },
-              sharding: { enabled: false, shards: 1, shardKey: 'post_id' }
-            }
-          },
-        ],
-        connections: [
-          { from: 'client', to: 'cdn' },
-          { from: 'cdn', to: 's3' },
-          { from: 'client', to: 'app_server' },
-          { from: 'app_server', to: 'postgresql' },
-        ],
-        explanation: `This solution handles 2000 RPS efficiently with CDN:
-
-**Architecture:**
-- CDN serves 90% of traffic (images) with 95% hit ratio
-- S3 stores all images (500GB)
-- App Server serves HTML pages (10% of traffic)
-- PostgreSQL stores blog post metadata
-
-**Why it works:**
-- CDN absorbs 95% of image requests (~1,710 RPS)
-- Only 90 RPS hit S3 (cache misses)
-- App servers handle 200 RPS HTML requests
-- Low latency (~20-50ms p99) due to edge caching
-- Cost ~$280/month (within $300 budget)
-
-**Key settings:**
-- CDN: 95% hit ratio, edge locations worldwide
-- S3: 500GB storage for high-res images
-- App Server: 1 instance sufficient for HTML traffic`,
-      },
+      type: 'cdn',
+      config: {
+        enabled: true
+      }
     },
     {
-      name: 'Peak Hour Load',
-      type: 'performance',
-      requirement: 'NFR-P2',
-      description: 'During peak hours (lunch time), traffic increases to 4000 reads/sec. System must maintain low latency.',
-      traffic: {
-        type: 'read',
-        rps: 4000,
-        avgResponseSizeMB: 1.8,
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 600,
-        maxErrorRate: 0.01,
-      },
-    },
-
-    // ========== SCALABILITY REQUIREMENTS (NFR-S) ==========
-    {
-      name: 'Viral Post Spike (5x traffic)',
-      type: 'scalability',
-      requirement: 'NFR-S1',
-      description: 'A blog post goes viral on social media, causing 5x normal traffic (10,000 reads/sec). System must handle the spike without significant degradation.',
-      traffic: {
-        type: 'read',
-        rps: 10000,
-        avgResponseSizeMB: 1.8,
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 1000,
-        maxErrorRate: 0.05,
-      },
-      solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'cdn', config: { enabled: true } },
-          { type: 's3', config: { storageSizeGB: 500 } },
-          { type: 'load_balancer', config: {} },
-          { type: 'app_server', config: { instances: 3, lbStrategy: 'round-robin' } },
-          {
-            type: 'postgresql',
-            config: {
-              instanceType: 'commodity-db',
-              replicationMode: 'single-leader',
-              replication: { enabled: true, replicas: 1, mode: 'async' },
-              sharding: { enabled: false, shards: 1, shardKey: 'post_id' }
-            }
-          },
-        ],
-        connections: [
-          { from: 'client', to: 'cdn' },
-          { from: 'cdn', to: 's3' },
-          { from: 'client', to: 'load_balancer' },
-          { from: 'load_balancer', to: 'app_server' },
-          { from: 'app_server', to: 'postgresql' },
-        ],
-        explanation: `This solution handles viral traffic (10,000 RPS):
-
-**Scaled Architecture:**
-- CDN with 98% hit ratio handles most image traffic
-- 3 App Server instances behind load balancer
-- Database with read replication
-
-**Traffic Flow:**
-- 9,000 RPS images: 98% CDN hits (8,820 RPS), 2% S3 (180 RPS)
-- 1,000 RPS HTML: Load balanced across 3 app servers (~333 RPS each)
-- Database replication handles increased HTML traffic
-
-**Why CDN is critical:**
-- Without CDN: All 9,000 image RPS would hit S3 or app servers
-- With CDN: Only 180 RPS hit S3 (50x reduction!)
-- CDN auto-scales to handle any traffic spike`,
-      },
+      type: 's3',
+      config: {}
     },
     {
-      name: 'Image-Heavy Load',
-      type: 'scalability',
-      requirement: 'NFR-S2',
-      description: 'Users share image-heavy posts (5-10 images each). System must handle 3000 reads/sec with large payloads.',
-      traffic: {
-        type: 'read',
-        rps: 3000,
-        avgResponseSizeMB: 2, // Higher due to multiple images per request
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 600,
-        maxErrorRate: 0.02,
-      },
-    },
-    {
-      name: 'Sustained High Load',
-      type: 'scalability',
-      requirement: 'NFR-S3',
-      description: 'Blog featured on popular news site causes sustained high traffic of 5000 reads/sec for 30 minutes.',
-      traffic: {
-        type: 'read',
-        rps: 5000,
-        avgResponseSizeMB: 1.8,
-      },
-      duration: 300, // 5 minutes
-      passCriteria: {
-        maxP99Latency: 800,
-        maxErrorRate: 0.03,
-        minAvailability: 0.99,
-      },
-    },
-
-    // ========== COST OPTIMIZATION (NFR-C) ==========
-    {
-      name: 'CDN Cost Validation',
-      type: 'cost',
-      requirement: 'NFR-C1',
-      description: 'Optimize costs for high bandwidth workload. Without CDN, S3 data transfer costs would exceed $1,000/month. CDN must reduce costs significantly.',
-      traffic: {
-        type: 'read',
-        rps: 5000,
-        avgResponseSizeMB: 2, // 2MB per image
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 100, // CDN needed to hit this
-      },
-      solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'cdn', config: { enabled: true } },
-          { type: 's3', config: { storageSizeGB: 500 } },
-        ],
-        connections: [
-          { from: 'client', to: 'cdn' },
-          { from: 'cdn', to: 's3' },
-        ],
-        explanation: `This test demonstrates **why CDN is essential** for image-heavy content:
-
-**Without CDN (S3 Direct):**
-- Latency: 100ms (S3 base latency)
-- Cost: ~$1,200/month
-  - S3 storage: $11.50 (500GB × $0.023)
-  - S3 data transfer: $1,170 (13,000 GB × $0.09/GB)
-  - Total bandwidth: 5000 RPS × 2MB × 2.6M sec/month = 26TB/month
-- FAILS cost and latency requirements!
-
-**With CDN + S3:**
-- Latency: ~10ms average
-  - 95% hit CDN edge (5ms)
-  - 5% hit S3 (100ms)
-  - Average: 0.95 × 5ms + 0.05 × 100ms = 9.75ms ✅
-- Cost: ~$280/month
-  - S3 storage: $11.50
-  - S3 data transfer: $58.50 (only 5% of traffic = 1.3TB)
-  - CDN transfer: $260 (26TB × $0.01/GB)
-  - CDN is 9x cheaper than S3 transfer!
-- PASSES both requirements! ✅
-
-**Key Insight:**
-- CDN reduces latency by 10x (100ms → 10ms)
-- CDN reduces cost by 4x ($1,200 → $280)
-- The more traffic, the more valuable CDN becomes
-
-**When is CDN overkill?**
-- Low traffic (<100 RPS) - CDN costs more than it saves
-- Dynamic content - can't cache, so no benefit
-- Already using app servers to serve files - need CDN + S3 migration`,
-      },
-    },
-    {
-      name: 'Budget Optimization',
-      type: 'cost',
-      requirement: 'NFR-C2',
-      description: 'Reduce infrastructure costs to under $200/month while maintaining 1000 RPS and acceptable latency.',
-      traffic: {
-        type: 'read',
-        rps: 1000,
-        avgResponseSizeMB: 1.8,
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 400,
-        maxErrorRate: 0.01,
-        minAvailability: 0.99,
-      },
-    },
-
-    // ========== RELIABILITY REQUIREMENTS (NFR-R) ==========
-    {
-      name: 'S3 Region Outage',
-      type: 'reliability',
-      requirement: 'NFR-R1',
-      description: 'S3 bucket in primary region becomes unavailable at second 20. System must failover to CDN cache and maintain availability.',
-      traffic: {
-        type: 'read',
-        rps: 2000,
-        avgResponseSizeMB: 1.8,
-      },
-      duration: 60,
-      failureInjection: {
-        type: 'db_crash', // Reusing for S3 outage
-        atSecond: 20,
-      },
-      passCriteria: {
-        maxP99Latency: 600,
-        maxErrorRate: 0.1, // Some errors acceptable during outage
-        minAvailability: 0.95, // 95% availability even during outage
-      },
-    },
-    {
-      name: 'CDN Cache Purge',
-      type: 'reliability',
-      requirement: 'NFR-R2',
-      description: 'CDN cache is purged at second 15 (e.g., content update). System must handle increased origin traffic as cache rebuilds.',
-      traffic: {
-        type: 'read',
-        rps: 3000,
-        avgResponseSizeMB: 1.8,
-      },
-      duration: 60,
-      failureInjection: {
-        type: 'cache_flush',
-        atSecond: 15,
-      },
-      passCriteria: {
-        maxP99Latency: 800,
-        maxErrorRate: 0.05,
-        minAvailability: 0.98,
-      },
-    },
+      type: 'message_queue',
+      config: {}
+    }
   ],
-
-  learningObjectives: [
-    'Learn when to use CDN for static content',
-    'Understand S3 vs app servers for file storage',
-    'Design for cost-efficiency with high bandwidth',
-    'Handle traffic spikes from viral content',
-    'Optimize for image-heavy workloads',
+  connections: [
+    {
+      from: 'client',
+      to: 'load_balancer',
+      type: 'read_write'
+    },
+    {
+      from: 'load_balancer',
+      to: 'app_server',
+      type: 'read',
+      label: 'Read traffic (GET)'
+    },
+    {
+      from: 'load_balancer',
+      to: 'app_server',
+      type: 'write',
+      label: 'Write traffic (POST/PUT/DELETE)'
+    },
+    {
+      from: 'app_server',
+      to: 'redis',
+      type: 'read',
+      label: 'Read API checks cache'
+    },
+    {
+      from: 'app_server',
+      to: 'postgresql',
+      type: 'read',
+      label: 'Read API → Replicas'
+    },
+    {
+      from: 'app_server',
+      to: 'postgresql',
+      type: 'write',
+      label: 'Write API → Master'
+    },
+    {
+      from: 'redis',
+      to: 'postgresql',
+      type: 'read',
+      label: 'Cache miss → DB lookup'
+    },
+    {
+      from: 'client',
+      to: 'cdn',
+      type: 'read'
+    },
+    {
+      from: 'cdn',
+      to: 's3',
+      type: 'read'
+    },
+    {
+      from: 'app_server',
+      to: 's3',
+      type: 'read_write'
+    },
+    {
+      from: 'app_server',
+      to: 'message_queue',
+      type: 'write'
+    }
   ],
-
-  hints: [
-    {
-      trigger: 'test_failed:App Server Crash - Blog Posts Lost',
-      message: `💡 Your entire blog disappeared after app server restart!
-
-**The disaster:**
-- All blog posts stored in memory = GONE
-- Years of content creation = LOST
-- Your food blog = NOW EMPTY
-
-**This is catastrophic for content sites:**
-- Content is your primary asset
-- Takes years to build quality posts
-- Losing it means starting from scratch
-
-**Solution:**
-1. Add Database component for blog post metadata
-2. Add S3/Object Storage for images
-3. Connect both to app_server
-
-**Remember:** Content sites MUST persist data. In-memory storage is only for demos!`,
-    },
-    {
-      trigger: 'test_failed:Normal Load',
-      message: `💡 Your design is too expensive or slow for serving images.
-
-This is a common problem when serving images from app servers!
-
-Consider:
-1. Store images in S3 (cheap storage, $0.023/GB vs app servers)
-2. Add a CDN to cache images at edge locations (5ms vs 100ms)
-3. Let app servers only serve HTML pages
-
-For a food blog, images are 90% of traffic but static content - perfect for CDN!`,
-    },
-    {
-      trigger: 'cost_exceeded',
-      message: `💡 Your design exceeds the $300/month budget.
-
-Common cost mistakes:
-1. Using too many app servers to serve static images ($100/server)
-2. Not using CDN (S3 alone has 100ms latency, requires more app instances)
-3. Over-provisioning database for a read-only blog
-
-Hint: CDN ($20) + S3 ($10) + 1 App Server ($100) = $130/month`,
-    },
-    {
-      trigger: 'test_failed:Viral Post Spike',
-      message: `💡 Your system can't handle 5x traffic spike.
-
-Without CDN:
-- All traffic hits your app servers or S3
-- App servers saturate quickly
-- S3 charges per request (expensive at high volume)
-
-With CDN:
-- 95% of requests served from edge (cached)
-- Only 5% hit origin (S3)
-- Auto-scales to handle any traffic spike
-
-CDN is essential for viral content!`,
-    },
-  ],
-
-  // Code challenges for deeper learning
-  codeChallenges: foodBlogCodeChallenges,
-
-  // Python template for app server implementation
-  pythonTemplate: `# Food Blog App Server
-# Implement image optimization and cache control
-
-def get_optimized_image_url(image_path: str, user_agent: str, connection: str) -> str:
-    """
-    Generate optimized image URL based on device and connection.
-
-    Args:
-        image_path: Original image path (e.g., '/images/pasta.jpg')
-        user_agent: User agent string
-        connection: Connection type ('slow' | 'fast')
-
-    Returns:
-        Optimized CDN URL with query parameters
-
-    Example:
-        get_optimized_image_url('/images/pasta.jpg', 'Mozilla/5.0 (iPhone)', 'slow')
-        -> '/images/pasta.jpg?w=800&q=60'
-    """
-    is_mobile = 'mobile' in user_agent.lower()
-
-    # Your code here
-
-    return ''
-
-
-def get_cache_header(content_type: str) -> str:
-    """
-    Return appropriate Cache-Control header for content type.
-
-    Args:
-        content_type: MIME type (e.g., 'text/html', 'image/jpeg', 'application/json')
-
-    Returns:
-        Cache-Control header value
-
-    Examples:
-        get_cache_header('text/html') -> 'public, max-age=300'
-        get_cache_header('image/jpeg') -> 'public, max-age=31536000, immutable'
-        get_cache_header('application/json') -> 'no-store'
-    """
-    # Your code here
-
-    return ''
-
-
-# App Server Handler
-def handle_request(request: dict, context: dict) -> dict:
-    """
-    Handle incoming HTTP requests for the food blog.
-
-    Args:
-        request: {
-            'method': 'GET' | 'POST',
-            'path': '/posts/pasta' | '/images/pasta.jpg',
-            'headers': {'User-Agent': '...', 'Accept': '...'}
-        }
-        context: Shared context (db, cache, etc.)
-
-    Returns:
-        {
-            'status': 200 | 404 | 500,
-            'body': '...',
-            'headers': {'Cache-Control': '...', 'Content-Type': '...'}
-        }
-    """
-    path = request.get('path', '')
-    user_agent = request.get('headers', {}).get('User-Agent', '')
-
-    # Image requests
-    if path.startswith('/images/'):
-        connection = 'fast'  # Detect from request headers in real implementation
-        optimized_url = get_optimized_image_url(path, user_agent, connection)
-        cache_header = get_cache_header('image/jpeg')
-
-        return {
-            'status': 200,
-            'body': f'Serving image: {optimized_url}',
-            'headers': {
-                'Cache-Control': cache_header,
-                'Content-Type': 'image/jpeg'
-            }
-        }
-
-    # HTML page requests
-    elif path.startswith('/posts/'):
-        cache_header = get_cache_header('text/html')
-
-        return {
-            'status': 200,
-            'body': '<html>Blog post HTML...</html>',
-            'headers': {
-                'Cache-Control': cache_header,
-                'Content-Type': 'text/html'
-            }
-        }
-
-    # API requests
-    elif path.startswith('/api/'):
-        cache_header = get_cache_header('application/json')
-
-        return {
-            'status': 200,
-            'body': '{"data": "..."}',
-            'headers': {
-                'Cache-Control': cache_header,
-                'Content-Type': 'application/json'
-            }
-        }
-
-    return {'status': 404, 'body': 'Not found'}
-`,
-
-  // Complete solution that passes ALL test cases
-  solution: {
-    components: [
-      { type: 'client', config: {} },
-      { type: 'cdn', config: { enabled: true } },
-      { type: 'load_balancer', config: { algorithm: 'least_connections' } },
-      { type: 'app_server', config: { instances: 3 } },
-      { type: 's3', config: { storageSizeGB: 1000 } },
-      {
-        type: 'postgresql',
-        config: {
-          instanceType: 'commodity-db',
-          replicationMode: 'single-leader',
-          replication: { enabled: true, replicas: 1, mode: 'async' },
-          sharding: { enabled: false, shards: 1, shardKey: 'post_id' }
-        }
-      },
-    ],
-    connections: [
-      // Image traffic path (90% of traffic) - MUST BE FIRST so CDN handles reads
-      { from: 'client', to: 'cdn' },
-      { from: 'cdn', to: 's3' },
-      // HTML traffic path (10% of traffic) - explored after CDN path
-      { from: 'client', to: 'load_balancer' },
-      { from: 'load_balancer', to: 'app_server' },
-      { from: 'app_server', to: 'postgresql' },
-      { from: 'app_server', to: 's3' },
-    ],
-    explanation: `# Complete Solution for Food Blog with Images
-
-## Architecture Components
-- **client**: Blog readers worldwide
-- **cdn** (95% cache hit rate): Serves images and static content globally
-- **load_balancer**: Routes HTML requests to app servers
-- **app_server** (4 instances): Serves HTML pages, handles logic
-- **s3** (1TB): Stores original high-res images
-- **postgresql** (2,000 read RPS with 1 replica): Blog post metadata, comments
-
-## Data Flow
-1. **Image requests (90% of traffic)**:
-   - Client → CDN: First stop for images (95% served from edge cache)
-   - CDN → S3: On cache miss only (~5% of image requests)
-   
-2. **HTML requests (10% of traffic)**:
-   - Client → Load Balancer: Routes HTML page requests
-   - Load Balancer → App Server: Distributes across 4 instances
-   - App Server → PostgreSQL: Fetches blog post metadata
-   - App Server → S3: Retrieves images if needed (rare)
-
-## Why This Works
-This architecture handles:
-- **2,000 RPS normal load**: CDN serves 95% of images, app servers handle 200 RPS HTML
-- **10,000 RPS viral spike**: CDN absorbs 95% of image traffic (8,550 RPS), only 1,000 RPS HTML hits app servers
-- **Low latency** (<500ms): CDN edge caching provides ~5ms for cached images
-- **High availability**: 4 app server instances + database replication for failover
-- **Cost effective**: CDN + S3 + minimal app servers = ~$300/month
-
-## Key Design Decisions
-1. **CDN-first for images** - 95% of image traffic never hits origin (8,550/9,000 RPS)
-2. **Separate path for HTML** - Client → Load Balancer → App Server (not through CDN)
-3. **S3 for image storage** - Cheap, durable, unlimited storage ($0.023/GB)
-4. **4 app server instances** - Handles 1,000 RPS HTML with headroom (25% utilization)
-5. **Database replication** - 1 replica provides 2,000 read RPS capacity for HTML queries`,
-  },
+  explanation: 'Reference Solution for Food Blog with Images (CQRS):\n\n📊 Infrastructure Components:\n- **Read API**: 1 instance handling 98 read RPS (GET requests)\n- **Write API**: 1 instance handling 5 write RPS (POST/PUT/DELETE).\n- **Load Balancer**: Distributes traffic using least-connections algorithm. Routes requests to least-busy app server, ideal for long-lived connections (DDIA Ch. 1 - Scalability).\n- **5GB Redis Cache**: In-memory key-value store for hot data. Cache-aside pattern: ~88 RPS served from cache (~90% hit ratio assumed). Reduces database load and improves p99 latency (SDP - Caching).\n- **PostgreSQL Database**: single leader configuration with 1 read replica.\n  • Read Capacity: 98 RPS across 2 database instance(s)\n  • Write Capacity: 5 RPS to primary leader\n  • Replication: Asynchronous (eventual consistency, < 1s lag typical)\n- **CDN**: Content delivery network with 150+ global edge locations. Serves static content (images, videos, CSS, JS) from nearest location. Typical latency: < 50ms globally (SDP - CDN).\n- **S3 Object Storage**: Unlimited scalable storage for large files. 99.999999999% durability (eleven nines). Pay-per-use pricing: $0.023/GB/month + transfer costs.\n- **Message Queue**: Asynchronous processing queue for background jobs and event fan-out. Decouples services and provides buffering during traffic spikes (DDIA Ch. 11).\n\n🔄 CQRS (Command Query Responsibility Segregation):\n- **Justification**: Traffic pattern justifies read/write split (Read: 1.0%, Write: 99.0%, Total: 10000 RPS)\n- **Read API (1 instance)**: Handles GET requests. Optimized for low latency with:\n  • Direct connection to cache (check cache first, DB on miss)\n  • Routes to read replicas (not master) to avoid write contention\n  • Can use eventual consistency (stale data acceptable for reads)\n  • Horizontally scalable: Add instances to handle more read traffic\n- **Write API (1 instance)**: Handles POST/PUT/DELETE requests. Optimized for consistency with:\n  • Routes writes to database master (ensures strong consistency)\n  • Invalidates cache entries on writes (maintains cache freshness)\n  • Fewer instances needed (writes are 99.0% of traffic)\n  • Can use database transactions for atomicity\n- **Benefits** (validated by NFR tests):\n  • Reads don't get blocked by writes (see NFR-P5 test)\n  • Independent scaling: Add read instances without affecting writes\n  • Different optimization strategies (read: cache + replicas, write: transactions + master)\n  • Failure isolation: Read API failure doesn't affect writes (and vice versa)\n- **Trade-offs**: Increased complexity (2 services instead of 1), eventual consistency between read/write paths (DDIA Ch. 7 - Transactions)\n\n💡 Key Design Decisions:\n- **Capacity Planning**: Components sized with 20% headroom for traffic spikes without performance degradation.\n- **Caching Strategy**: Cache reduces database load by ~90%. Hot data (frequently accessed) stays in cache, cold data fetched from database on cache miss.\n- **Replication Mode**: Single-leader chosen for strong consistency. All writes go to primary, reads can use replicas with eventual consistency (DDIA Ch. 5).\n- **Vertical Scaling**: Single database shard sufficient for current load. Can add sharding later if write throughput exceeds single-node capacity.\n\n⚠️ Important Note:\nThis is ONE valid solution that meets the requirements. The traffic simulator validates ANY architecture that:\n✅ Has all required components (from functionalRequirements.mustHave)\n✅ Has all required connections (from functionalRequirements.mustConnect)\n✅ Meets performance targets (latency, cost, error rate)\n\nYour solution may use different components (e.g., MongoDB instead of PostgreSQL, Memcached instead of Redis) and still pass all tests!'
+},
 };

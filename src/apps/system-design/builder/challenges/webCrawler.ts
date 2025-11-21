@@ -53,316 +53,96 @@ Example:
         maxErrorRate: 0,
       },
       solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'app_server', config: { instances: 1 } },
-          { type: 'worker', config: { instances: 1 } },
-          { type: 'postgresql', config: { readCapacity: 100, writeCapacity: 100 } },
-        ],
-        connections: [
-          { from: 'client', to: 'app_server' },
-          { from: 'app_server', to: 'worker' },
-          { from: 'worker', to: 'postgresql' },
-        ],
-        explanation: `Minimal viable crawler: app accepts crawl requests, worker fetches pages, database stores crawled content.`,
-      },
+  components: [
+    {
+      type: 'client',
+      config: {}
     },
     {
-      name: 'URL Frontier Management',
-      type: 'functional',
-      requirement: 'FR-2',
-      description: 'Crawler maintains a URL frontier so that pages are enqueued and dequeued correctly without losing work.',
-      traffic: {
-        type: 'mixed',
-        rps: 50,
-        readRatio: 0.5,
-      },
-      duration: 10,
-      passCriteria: {
-        maxErrorRate: 0,
-      },
+      type: 'load_balancer',
+      config: {
+        algorithm: 'least_connections'
+      }
     },
     {
-      name: 'Duplicate and Re-Crawl Control',
-      type: 'functional',
-      requirement: 'FR-3',
-      description: 'Crawler avoids re-crawling the same URL too frequently. Architecture should support deduplication (via DB or cache).',
-      traffic: {
-        type: 'mixed',
-        rps: 50,
-        readRatio: 0.6,
-      },
-      duration: 10,
-      passCriteria: {
-        maxErrorRate: 0.01,
-      },
-    },
-
-    // ========== PERFORMANCE REQUIREMENTS (NFR-P) ==========
-    {
-      name: 'Steady Crawl Throughput',
-      type: 'performance',
-      requirement: 'NFR-P1',
-      description: 'Crawler sustains a steady throughput of 200 page fetches/sec with acceptable latency on frontier operations.',
-      traffic: {
-        type: 'mixed',
-        rps: 200,
-        readRatio: 0.4,
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 500,
-        maxErrorRate: 0.02,
-        maxMonthlyCost: 1000,
-      },
-      solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'load_balancer', config: {} },
-          { type: 'app_server', config: { instances: 2 } },
-          { type: 'worker', config: { instances: 4 } },
-          { type: 'postgresql', config: { 
-            readCapacity: 2000, 
-            writeCapacity: 1000,
-            replication: { enabled: true, replicas: 2, mode: 'async' } 
-          } },
-          { type: 'redis', config: { maxMemoryMB: 512 } },
-          { type: 'message_queue', config: { partitions: 3 } },
-        ],
-        connections: [
-          { from: 'client', to: 'load_balancer' },
-          { from: 'load_balancer', to: 'app_server' },
-          { from: 'app_server', to: 'message_queue' },
-          { from: 'worker', to: 'message_queue' },
-          { from: 'worker', to: 'redis' },
-          { from: 'worker', to: 'postgresql' },
-        ],
-        explanation: `App servers enqueue crawl jobs into message queue. Workers pull from queue, deduplicate via Redis, and persist to PostgreSQL.`,
-      },
+      type: 'app_server',
+      config: {
+        instances: 2
+      }
     },
     {
-      name: 'Peak Crawl Burst',
-      type: 'performance',
-      requirement: 'NFR-P2',
-      description: 'When a new domain is added, the crawler briefly spikes to 500 page fetches/sec. System should degrade gracefully and stay within cost limits.',
-      traffic: {
-        type: 'mixed',
-        rps: 500,
-        readRatio: 0.4,
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 800,
-        maxErrorRate: 0.05,
-        maxMonthlyCost: 1500,
-      },
+      type: 'redis',
+      config: {
+        sizeGB: 5,
+        strategy: 'cache_aside'
+      }
     },
-
-    // ========== SCALABILITY REQUIREMENTS (NFR-S) ==========
     {
-      name: 'Many Domains Crawl',
-      type: 'scalability',
-      requirement: 'NFR-S1',
-      description: 'Crawler handles many domains concurrently; architecture should scale horizontally using workers and queue partitions.',
-      traffic: {
-        type: 'mixed',
-        rps: 800,
-        readRatio: 0.4,
-      },
-      duration: 120,
-      passCriteria: {
-        maxP99Latency: 900,
-        maxErrorRate: 0.05,
-      },
+      type: 'postgresql',
+      config: {
+        instanceType: 'commodity-db',
+        replicationMode: 'multi-leader',
+        replication: {
+          enabled: true,
+          replicas: 3,
+          mode: 'async'
+        },
+        sharding: {
+          enabled: true,
+          shards: 18,
+          shardKey: 'id'
+        },
+        displayName: 'PostgreSQL Master',
+        subtitle: 'Writes + 3 replicas (reads)'
+      }
     },
-
-    // ========== RELIABILITY REQUIREMENTS (NFR-R) ==========
     {
-      name: 'Database Failure During Crawl',
-      type: 'reliability',
-      requirement: 'NFR-R1',
-      description: 'Primary database crashes during a long crawl. System should failover to replica and avoid losing crawl progress.',
-      traffic: {
-        type: 'mixed',
-        rps: 200,
-        readRatio: 0.4,
-      },
-      duration: 120,
-      failureInjection: {
-        type: 'db_crash',
-        atSecond: 30,
-      },
-      passCriteria: {
-        minAvailability: 0.95,
-        maxErrorRate: 0.1,
-      },
+      type: 's3',
+      config: {}
     },
+    {
+      type: 'message_queue',
+      config: {}
+    }
   ],
-
-  learningObjectives: [
-    'Understand crawling pipelines (frontier → fetch → parse → store)',
-    'Design scalable worker-based architectures',
-    'Balance queue, workers, and storage for throughput',
-    'Handle failures without losing crawl progress',
-  ],
-
-  hints: [
+  connections: [
     {
-      trigger: 'test_failed:Steady Crawl Throughput',
-      message: `💡 Your crawler is saturating the database or workers.
-
-Consider:
-1. Adding more worker instances to increase parallelism
-2. Using a message queue to buffer crawl jobs
-3. Adding Redis to avoid re-crawling the same URLs`,
+      from: 'client',
+      to: 'load_balancer',
+      type: 'read_write'
     },
     {
-      trigger: 'test_failed:Database Failure',
-      message: `💡 Database is a single point of failure.
-
-To improve reliability:
-1. Enable replication for the database
-2. Ensure workers can tolerate transient DB failures (retries, backoff)
-3. Use message queue to avoid losing crawl jobs during failover`,
+      from: 'load_balancer',
+      to: 'app_server',
+      type: 'read_write'
     },
+    {
+      from: 'app_server',
+      to: 'redis',
+      type: 'read_write'
+    },
+    {
+      from: 'app_server',
+      to: 'postgresql',
+      type: 'read_write'
+    },
+    {
+      from: 'redis',
+      to: 'postgresql',
+      type: 'read',
+      label: 'Cache miss → DB lookup'
+    },
+    {
+      from: 'app_server',
+      to: 's3',
+      type: 'read_write'
+    },
+    {
+      from: 'app_server',
+      to: 'message_queue',
+      type: 'write'
+    }
   ],
-
-  // Python template for crawler functionality (pure functions for learning)
-  pythonTemplate: `"""
-Web Crawler Implementation (Core Functions)
-
-For this exercise, you will implement two pure functions:
-- crawl_page:   parse HTML and extract links
-- manage_frontier: compute next URLs to crawl
-
-In a real system, these would be used inside workers that
-read/write to the URL frontier, database, and cache.
-"""
-
-from typing import List, Dict, Set
-from urllib.parse import urljoin
-import re
-
-
-def crawl_page(url: str, html: str) -> Dict:
-    """
-    Parse a page and extract links to crawl next.
-
-    Args:
-        url:  The URL of the current page (used to resolve relative links)
-        html: The HTML content of the page as a string
-
-    Returns:
-        A dictionary with:
-        - 'url': the original URL
-        - 'status': HTTP-like status code (200 for success)
-        - 'links': list of absolute URLs discovered on the page
-
-    Requirements:
-    - Extract href values from <a> tags
-    - Normalize relative links using the page URL
-    - Ignore non-http(s) links (e.g., mailto:, javascript:)
-    - Do not include duplicate links
-    """
-    # TODO: Implement link extraction
-    # Hints:
-    # - Use regex or simple HTML parsing to find href="..."
-    # - Use urllib.parse.urljoin(base, href) to resolve relative URLs
-    # - Use a set to deduplicate links
-    raise NotImplementedError
-
-
-def manage_frontier(current_batch: List[str], seen_urls: Set[str]) -> List[str]:
-    """
-    Decide which URLs should be crawled next.
-
-    Args:
-        current_batch: List of candidate URLs discovered in this iteration
-        seen_urls:     Set of URLs that have already been crawled
-
-    Returns:
-        A list of URLs to enqueue for crawling next.
-
-    Requirements:
-    - Only return URLs that are not in seen_urls
-    - Do not return duplicates within the next batch
-    - Keep the order stable (first valid URLs should appear first)
-    """
-    # TODO: Implement frontier management
-    # Hints:
-    # - Iterate over current_batch
-    # - Skip URLs that are already in seen_urls
-    # - Use a set to avoid duplicates within the returned list
-    raise NotImplementedError
-`,
-
-  // Complete solution that passes ALL test cases
-  solution: {
-    components: [
-      { type: 'client', config: {} },
-      { type: 'load_balancer', config: {} },
-      { type: 'app_server', config: { instances: 2 } },
-      { type: 'worker', config: { instances: 5 } },
-      { type: 'message_queue', config: { maxThroughput: 5000, partitions: 4 } },
-      { type: 'redis', config: { instanceType: 'cache.t3.small' } },
-      { type: 'postgresql', config: {
-        readCapacity: 2000,
-        writeCapacity: 1000,
-        replication: { enabled: true, replicas: 2, mode: 'async' }
-      } },
-      { type: 's3', config: { storageSizeGB: 10000 } },
-    ],
-    connections: [
-      { from: 'client', to: 'load_balancer' },
-      { from: 'load_balancer', to: 'app_server' },
-      { from: 'app_server', to: 'message_queue' },
-      { from: 'app_server', to: 'redis' },
-      { from: 'app_server', to: 'postgresql' },
-      { from: 'worker', to: 'message_queue' },
-      { from: 'worker', to: 'redis' },
-      { from: 'worker', to: 'postgresql' },
-      { from: 'worker', to: 's3' },
-    ],
-    explanation: `# Complete Solution for Web Crawler
-
-## Architecture Components
-- **client**: Crawler coordinator/scheduler
-- **load_balancer**: Routes requests to available app servers
-- **app_server** (2 instances): API layer for accepting crawl jobs
-- **worker** (5 instances): Crawler workers (fetch, parse, extract links)
-- **message_queue** (5k throughput, 4 partitions): URL frontier (queue of URLs to crawl)
-- **redis** (cache.t3.small): Deduplication cache (seen URLs tracking)
-- **postgresql** (2k read, 1k write, replicated): URL metadata, crawl status
-- **s3** (10TB): Raw page content storage
-
-## Data Flow
-1. Client → Load Balancer → App Server: Trigger crawl job
-2. App Server → Message Queue: Enqueue seed URLs
-3. App Server → Redis/PostgreSQL: Store job metadata
-4. Worker pops URL from queue
-5. Worker → Redis: Check if URL seen (dedup)
-6. Worker fetches page from web
-7. Worker → S3: Store raw HTML content
-8. Worker → PostgreSQL: Save crawl metadata
-9. Worker → Message Queue: Enqueue discovered links
-
-## Why This Works
-This architecture handles:
-- **200 RPS** of crawl operations with 5 workers (40 RPS each)
-- **URL deduplication** via Redis (prevents infinite loops)
-- **Scalable storage** with S3 for billions of pages
-- **Async processing** via message queue (decoupled architecture)
-- **Politeness** enforced by worker rate limiting
-- **Reliability** via DB replication and queue persistence
-- **Cost optimized** to stay under $1,000/month budget
-
-## Key Design Decisions
-1. **Message queue as frontier** - handles backpressure, ordering, persistence
-2. **Redis for dedup** - O(1) lookup for seen URLs (prevents re-crawl)
-3. **S3 for content** - cheap, unlimited storage for raw HTML
-4. **PostgreSQL for metadata** - queryable, indexed, supports analytics
-5. **Separate workers** - parallel crawling, independent scaling from API layer
-6. **DB replication** - survives database failures without losing progress
-7. **Right-sized instances** - 2 app servers and 5 workers balance performance with cost`,
-  },
+  explanation: 'Reference Solution for Web Crawler:\n\n📊 Infrastructure Components:\n- **2 App Server Instance(s)**: Each instance handles ~1000 RPS. Total capacity: 2000 RPS (peak: 800 RPS with 20% headroom for traffic spikes).\n- **Load Balancer**: Distributes traffic using least-connections algorithm. Routes requests to least-busy app server, ideal for long-lived connections (DDIA Ch. 1 - Scalability).\n- **5GB Redis Cache**: In-memory key-value store for hot data. Cache-aside pattern: ~288 RPS served from cache (~90% hit ratio assumed). Reduces database load and improves p99 latency (SDP - Caching).\n- **PostgreSQL Database**: multi leader configuration with 3 read replicas and 18 shards (sharded by id).\n  • Read Capacity: 320 RPS across 4 database instance(s)\n  • Write Capacity: 480 RPS distributed across leaders\n  • Replication: Asynchronous (eventual consistency, < 1s lag typical)\n\n- **S3 Object Storage**: Unlimited scalable storage for large files. 99.999999999% durability (eleven nines). Pay-per-use pricing: $0.023/GB/month + transfer costs.\n- **Message Queue**: Asynchronous processing queue for background jobs and event fan-out. Decouples services and provides buffering during traffic spikes (DDIA Ch. 11).\n\n💡 Key Design Decisions:\n- **Capacity Planning**: Components sized with 20% headroom for traffic spikes without performance degradation.\n- **Caching Strategy**: Cache reduces database load by ~90%. Hot data (frequently accessed) stays in cache, cold data fetched from database on cache miss.\n- **Replication Mode**: Multi-leader chosen for write scalability (> 100 writes/s). Trade-off: Conflict resolution needed for concurrent writes to same record (DDIA Ch. 5).\n- **Horizontal Scaling**: 18 database shards enable linear scaling. Each shard is independent, can be scaled separately. Query routing based on id hash (DDIA Ch. 6 - Partitioning).\n\n⚠️ Important Note:\nThis is ONE valid solution that meets the requirements. The traffic simulator validates ANY architecture that:\n✅ Has all required components (from functionalRequirements.mustHave)\n✅ Has all required connections (from functionalRequirements.mustConnect)\n✅ Meets performance targets (latency, cost, error rate)\n\nYour solution may use different components (e.g., MongoDB instead of PostgreSQL, Memcached instead of Redis) and still pass all tests!'
+},
 };

@@ -56,622 +56,112 @@ Example:
         maxErrorRate: 0,
       },
       solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'app_server', config: { instances: 1 } },
-          { type: 'postgresql', config: { readCapacity: 100, writeCapacity: 100 } },
-        ],
-        connections: [
-          { from: 'client', to: 'app_server' },
-          { from: 'app_server', to: 'postgresql' },
-        ],
-        explanation: `Minimal viable system - app server handles CRUD operations, PostgreSQL stores todos.`,
-      },
+  components: [
+    {
+      type: 'client',
+      config: {}
     },
     {
-      name: 'App Server Restart - Data Loss',
-      type: 'functional',
-      requirement: 'FR-1b',
-      description: 'App server restarts at second 5. With only in-memory storage, all todos are lost!',
-      traffic: {
-        type: 'mixed',
-        rps: 10,
-        readRatio: 0.5,
-      },
-      duration: 10,
-      failureInjection: {
-        type: 'db_crash',
-        atSecond: 5,
-        recoverySecond: 15,
-      },
-      passCriteria: {
-        maxErrorRate: 0, // After restart, should work but data is gone
-      },
-      solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'app_server', config: { instances: 1 } },
-          { type: 'postgresql', config: { readCapacity: 100, writeCapacity: 100 } },
-        ],
-        connections: [
-          { from: 'client', to: 'app_server' },
-          { from: 'app_server', to: 'postgresql' },
-        ],
-        explanation: `This test demonstrates why persistence is critical:
-
-**With only in-memory storage (no database):**
-- App server restart = ALL DATA LOST ❌
-- Todos created before restart disappear
-- Users lose all their work!
-
-**With database connected:**
-- App server restart = data persists ✅
-- Todos remain after restart
-- Users' work is safe
-
-**Key insight:**
-In-memory storage (context['todos']) is VOLATILE - gone when process dies.
-Database provides PERSISTENCE - data survives restarts, crashes, deployments.`,
-      },
+      type: 'load_balancer',
+      config: {
+        algorithm: 'least_connections'
+      }
     },
     {
-      name: 'Concurrent Users',
-      type: 'functional',
-      requirement: 'FR-2',
-      description: 'Multiple users can work on their todos simultaneously without conflicts.',
-      traffic: {
-        type: 'mixed',
-        rps: 50,
-        readRatio: 0.6,
-      },
-      duration: 10,
-      passCriteria: {
-        maxErrorRate: 0,
-      },
+      type: 'app_server',
+      config: {
+        instances: 2
+      }
     },
     {
-      name: 'Data Consistency',
-      type: 'functional',
-      requirement: 'FR-3',
-      description: 'System maintains data consistency across concurrent writes (no lost updates).',
-      traffic: {
-        type: 'mixed',
-        rps: 100,
-        readRatio: 0.4, // Heavy writes to test consistency
-      },
-      duration: 10,
-      passCriteria: {
-        maxErrorRate: 0,
-      },
-    },
-
-    // ========== PERFORMANCE REQUIREMENTS (NFR-P) ==========
-    {
-      name: 'Normal Load',
-      type: 'performance',
-      requirement: 'NFR-P1',
-      description: 'System handles typical daily traffic (500 RPS with 60% reads) with low latency and stays within budget.',
-      traffic: {
-        type: 'mixed',
-        rps: 500,
-        readRatio: 0.6, // 300 reads, 200 writes
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 200,
-        maxErrorRate: 0.01,
-        maxMonthlyCost: 800,
-      },
-      solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'load_balancer', config: {} },
-          { type: 'app_server', config: { instances: 2 } },
-          { type: 'postgresql', config: { readCapacity: 500, writeCapacity: 400, replication: true } },
-          { type: 'redis', config: { maxMemoryMB: 512 } },
-        ],
-        connections: [
-          { from: 'client', to: 'load_balancer' },
-          { from: 'load_balancer', to: 'app_server' },
-          { from: 'app_server', to: 'redis' },
-          { from: 'app_server', to: 'postgresql' },
-        ],
-        explanation: `This solution handles 500 RPS efficiently with mixed read/write workload:
-
-**Architecture:**
-- Load balancer distributes traffic across 2 app servers
-- Redis caches frequently accessed todos (60% reads benefit)
-- PostgreSQL with replication for high availability
-- Write capacity: 400 ops/sec for 200 WPS
-
-**Why it works:**
-- Redis cache reduces DB read load (~80% hit ratio)
-- 2 app servers handle ~250 RPS each
-- DB write capacity handles 200 WPS with headroom
-- Replication provides failover capability
-- Cost ~$750/month (within $800 budget)
-
-**Key settings:**
-- App Servers: 2 instances for redundancy
-- PostgreSQL: writeCapacity=400, readCapacity=500, replication=true
-- Redis: 512MB cache for active todos`,
-      },
+      type: 'redis',
+      config: {
+        sizeGB: 6,
+        strategy: 'cache_aside'
+      }
     },
     {
-      name: 'Peak Hour Load',
-      type: 'performance',
-      requirement: 'NFR-P2',
-      description: 'During peak work hours (morning standup), traffic increases to 800 RPS. System must maintain acceptable latency.',
-      traffic: {
-        type: 'mixed',
-        rps: 800,
-        readRatio: 0.6,
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 250,
-        maxErrorRate: 0.02,
-        maxMonthlyCost: 1000,
-      },
-    },
-
-    // ========== SCALABILITY REQUIREMENTS (NFR-S) ==========
-    {
-      name: 'Hot User (power user creating lots of todos)',
-      type: 'scalability',
-      requirement: 'NFR-S1',
-      description: 'A power user creates many todos (project planning), increasing write load by 20%. System must handle the spike.',
-      traffic: {
-        type: 'mixed',
-        rps: 600, // 500 normal + 100 from power user
-        readRatio: 0.6,
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 250, // Slight degradation OK
-        maxErrorRate: 0.02,
-      },
-      solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'load_balancer', config: {} },
-          { type: 'app_server', config: { instances: 2 } },
-          { type: 'postgresql', config: { readCapacity: 600, writeCapacity: 500, replication: true } },
-          { type: 'redis', config: { maxMemoryMB: 512 } },
-        ],
-        connections: [
-          { from: 'client', to: 'load_balancer' },
-          { from: 'load_balancer', to: 'app_server' },
-          { from: 'app_server', to: 'redis' },
-          { from: 'app_server', to: 'postgresql' },
-        ],
-        explanation: `This solution handles power user spikes:
-
-**Challenge:**
-- 20% increase in write load (200 → 240 WPS)
-- Database write capacity is the bottleneck
-- Can't cache writes effectively
-
-**Solution:**
-- Provision writeCapacity=500 (25% buffer above normal 200 WPS)
-- This handles 240 WPS spike + headroom for more spikes
-- Redis still helps with reads (reduces DB pressure)
-
-**Why it works:**
-- 500 write capacity handles 240 WPS comfortably
-- 2 app servers distribute load
-- Cache reduces read pressure, freeing DB for writes
-
-**Key Insight:**
-Write-heavy workloads need database capacity planning with buffer!`,
-      },
-    },
-    {
-      name: 'Team Collaboration Spike',
-      type: 'scalability',
-      requirement: 'NFR-S2',
-      description: 'Multiple teams start using the app simultaneously (new company adoption). Traffic increases to 1000 RPS.',
-      traffic: {
-        type: 'mixed',
-        rps: 1000,
-        readRatio: 0.6,
-      },
-      duration: 60,
-      passCriteria: {
-        maxP99Latency: 300,
-        maxErrorRate: 0.03,
-      },
-    },
-
-    // ========== RELIABILITY REQUIREMENTS (NFR-R) ==========
-    {
-      name: 'Database Failure',
-      type: 'reliability',
-      requirement: 'NFR-R1',
-      description: 'Primary database crashes at second 30. System must failover to replica and maintain high availability.',
-      traffic: {
-        type: 'mixed',
-        rps: 500,
-        readRatio: 0.6,
-      },
-      duration: 120, // 2 minutes
-      failureInjection: {
-        type: 'db_crash',
-        atSecond: 30,
-        recoverySecond: 90, // 60 seconds of downtime without replication
-      },
-      passCriteria: {
-        minAvailability: 0.95, // 95% availability = max 6s downtime in 120s
-        maxErrorRate: 0.1, // Some errors during failover OK
-      },
-      solution: {
-        components: [
-          { type: 'client', config: {} },
-          { type: 'load_balancer', config: {} },
-          { type: 'app_server', config: { instances: 2 } },
-          { type: 'postgresql', config: { readCapacity: 500, writeCapacity: 400, replication: true } },
-          { type: 'redis', config: { maxMemoryMB: 512 } },
-        ],
-        connections: [
-          { from: 'client', to: 'load_balancer' },
-          { from: 'load_balancer', to: 'app_server' },
-          { from: 'app_server', to: 'redis' },
-          { from: 'app_server', to: 'postgresql' },
-        ],
-        explanation: `This solution achieves 99.9% availability during database failure:
-
-**Without replication:**
-- Database crash = complete outage
-- 60 seconds downtime = 50% availability ❌
-- All user requests fail
-
-**With replication:**
-- Automatic failover to standby replica
-- <10 seconds downtime = 95%+ availability ✅
-- System stays up during primary failure
-
-**For a collaborative app used by teams:**
-- 99.9% availability is CRITICAL!
-- Database is single point of failure
-- Replication is non-negotiable
-
-**Key setting:**
-PostgreSQL: replication=true enables automatic failover`,
-      },
-    },
-    {
-      name: 'App Server Failure',
-      type: 'reliability',
-      requirement: 'NFR-R2',
-      description: 'One app server crashes at second 20. Load balancer must route traffic to healthy servers.',
-      traffic: {
-        type: 'mixed',
-        rps: 500,
-        readRatio: 0.6,
-      },
-      duration: 60,
-      failureInjection: {
-        type: 'network_partition',
-        atSecond: 20,
-        recoverySecond: 30,
-      },
-      passCriteria: {
-        maxP99Latency: 300,
-        maxErrorRate: 0.05,
-        minAvailability: 0.98,
-      },
-    },
-    {
-      name: 'Cache Failure',
-      type: 'reliability',
-      requirement: 'NFR-R3',
-      description: 'Redis cache fails at second 15. System must continue operating with degraded performance.',
-      traffic: {
-        type: 'mixed',
-        rps: 500,
-        readRatio: 0.6,
-      },
-      duration: 60,
-      failureInjection: {
-        type: 'cache_flush',
-        atSecond: 15,
-      },
-      passCriteria: {
-        maxP99Latency: 400, // Higher latency acceptable
-        maxErrorRate: 0.05,
-        minAvailability: 0.95,
-      },
-    },
-  ],
-
-  learningObjectives: [
-    'Design for high availability (99.9%+)',
-    'Understand database replication and failover',
-    'Handle mixed read/write workloads',
-    'Plan for failure scenarios (chaos engineering)',
-    'Balance consistency vs availability (CAP theorem)',
-  ],
-
-  hints: [
-    {
-      trigger: 'test_failed:App Server Restart - Data Loss',
-      message: `💡 Your todos disappeared after app server restart!
-
-**What happened:**
-- You're using in-memory storage (context['todos'] or context.db)
-- When app server restarts, memory is cleared
-- ALL data is lost - todos, users, everything!
-
-**Solutions:**
-1. **Quick fix:** Add a Database component and connect it to app_server
-2. **Better:** Use both Database (for persistence) and Cache (for performance)
-3. **Best:** Database + Cache + Replication for high availability
-
-**Remember:** In-memory storage is great for learning, terrible for production!
-
-Try again with a Database component connected.`,
-    },
-    {
-      trigger: 'test_failed:Database Failure',
-      message: `💡 Your system failed during database failure!
-
-Without replication:
-- Database crash = complete outage
-- 60 seconds downtime = 50% availability ❌
-- All user requests fail
-
-With replication:
-- Automatic failover to standby replica
-- <10 seconds downtime = 95%+ availability ✅
-- System stays up during primary failure
-
-For a collaborative app used by teams, 99.9% availability is CRITICAL!
-
-Hint: Enable "replication" in PostgreSQL config`,
-    },
-    {
-      trigger: 'test_failed:Normal Load',
-      message: `💡 Your database is saturated under normal load.
-
-This is a mixed workload (60% reads, 40% writes):
-- Writes are ~10x more expensive than reads (50ms vs 5ms)
-- Write capacity is the bottleneck
-
-Solutions:
-1. Increase writeCapacity (at least 400 ops/sec for 200 WPS)
-2. Add read replicas (helps with reads, not writes)
-3. Add session cache (Redis) to reduce read pressure
-
-Remember: Writes don't benefit from caching as much as reads!`,
-    },
-    {
-      trigger: 'test_failed:Hot User',
-      message: `💡 Power user is overwhelming your database.
-
-When one user creates tons of todos:
-- Write load increases 20% (200 → 240 WPS)
-- Database write capacity gets saturated
-
-This is common with collaborative tools (Slack, Notion, etc.)
-
-Solutions:
-1. Provision write capacity with headroom (20-30% buffer)
-2. Use caching for reads to free up DB resources
-3. Consider rate limiting for power users
-
-Hint: writeCapacity should be at least 400-500 to handle spikes`,
-    },
-  ],
-
-  // Code challenges for hands-on implementation practice
-  codeChallenges: todoAppCodeChallenges,
-
-  // Python template for app server implementation
-  pythonTemplate: `# Collaborative Todo App Server
-# Implement CRUD operations with caching
-
-def create_todo(user_id: str, title: str, context: dict) -> dict:
-    """
-    Create a new todo item for a user.
-
-    Args:
-        user_id: User identifier
-        title: Todo title/description
-        context: Shared context with db and cache access
-
-    Returns:
-        {
-            'id': 'todo_123',
-            'user_id': 'user_1',
-            'title': 'Buy groceries',
-            'completed': False,
-            'created_at': 1234567890
-        }
-
-    Requirements:
-    - Generate unique todo ID
-    - Store in database (context['db'])
-    - Invalidate user's todo cache
-    - Return the created todo
-    """
-    # Your code here
-
-    return {}
-
-
-def get_todos(user_id: str, context: dict) -> list:
-    """
-    Get all todos for a user with caching.
-
-    Args:
-        user_id: User identifier
-        context: Shared context with db and cache access
-
-    Returns:
-        List of todo dictionaries
-
-    Requirements:
-    - Check cache first (context['cache'])
-    - If cache miss, fetch from database
-    - Cache the result for future requests
-    - Return list of todos
-    """
-    # Your code here
-
-    return []
-
-
-def update_todo(todo_id: str, completed: bool, context: dict) -> dict:
-    """
-    Update a todo's completion status.
-
-    Args:
-        todo_id: Todo identifier
-        completed: New completion status
-        context: Shared context with db and cache access
-
-    Returns:
-        Updated todo dictionary or None if not found
-
-    Requirements:
-    - Update in database
-    - Invalidate cache for the todo's user
-    - Return updated todo
-    """
-    # Your code here
-
-    return {}
-
-
-def delete_todo(todo_id: str, context: dict) -> bool:
-    """
-    Delete a todo item.
-
-    Args:
-        todo_id: Todo identifier
-        context: Shared context with db and cache access
-
-    Returns:
-        True if deleted, False if not found
-
-    Requirements:
-    - Delete from database
-    - Invalidate cache for the todo's user
-    - Return success status
-    """
-    # Your code here
-
-    return False
-
-
-# App Server Handler
-def handle_request(request: dict, context: dict) -> dict:
-    """
-    Handle incoming HTTP requests for the todo app.
-
-    Args:
-        request: {
-            'method': 'GET' | 'POST' | 'PUT' | 'DELETE',
-            'path': '/todos' | '/todos/:id',
-            'body': {...},
-            'user_id': 'user_1'
-        }
-        context: Shared context (db, cache)
-
-    Returns:
-        {
-            'status': 200 | 404 | 500,
-            'body': {...}
-        }
-    """
-    method = request.get('method', 'GET')
-    path = request.get('path', '')
-    user_id = request.get('user_id', '')
-    body = request.get('body', {})
-
-    # GET /todos - List all todos for user
-    if method == 'GET' and path == '/todos':
-        todos = get_todos(user_id, context)
-        return {'status': 200, 'body': {'todos': todos}}
-
-    # POST /todos - Create new todo
-    elif method == 'POST' and path == '/todos':
-        title = body.get('title', '')
-        todo = create_todo(user_id, title, context)
-        return {'status': 201, 'body': todo}
-
-    # PUT /todos/:id - Update todo
-    elif method == 'PUT' and path.startswith('/todos/'):
-        todo_id = path.split('/')[-1]
-        completed = body.get('completed', False)
-        todo = update_todo(todo_id, completed, context)
-        if todo:
-            return {'status': 200, 'body': todo}
-        return {'status': 404, 'body': {'error': 'Todo not found'}}
-
-    # DELETE /todos/:id - Delete todo
-    elif method == 'DELETE' and path.startswith('/todos/'):
-        todo_id = path.split('/')[-1]
-        success = delete_todo(todo_id, context)
-        if success:
-            return {'status': 204, 'body': {}}
-        return {'status': 404, 'body': {'error': 'Todo not found'}}
-
-    return {'status': 404, 'body': {'error': 'Not found'}}
-`,
-
-  // Complete solution that passes ALL test cases
-  solution: {
-    components: [
-      { type: 'client', config: {} },
-      { type: 'load_balancer', config: {} },
-      { type: 'app_server', config: { instances: 3 } },
-      { type: 'redis', config: { maxMemoryMB: 1024 } },
-      { type: 'postgresql', config: {
-        readCapacity: 2000,
-        writeCapacity: 500,
-        replication: true,
+      type: 'postgresql',
+      config: {
         instanceType: 'commodity-db',
-        replicationMode: 'single-leader',
-        sharding: { enabled: false, shards: 1, shardKey: '' }
-      } },
-    ],
-    connections: [
-      { from: 'client', to: 'load_balancer' },
-      { from: 'load_balancer', to: 'app_server' },
-      { from: 'app_server', to: 'redis' },
-      { from: 'app_server', to: 'postgresql' },
-    ],
-    explanation: `# Complete Solution for Collaborative Todo App
-
-## Architecture Components
-- **client**: Team members accessing the app
-- **load_balancer**: Distributes traffic and handles failover
-- **app_server** (3 instances): CRUD operations, session management
-- **redis** (1GB): Session cache and frequently accessed todos
-- **postgresql** (1k read, 500 write, replicated): Persistent storage with consistency
-
-## Data Flow
-1. Client → Load Balancer: User makes request
-2. Load Balancer → App Server: Routes based on health/load
-3. App Server → Redis: Session and hot data cache
-4. App Server → PostgreSQL: Persistent writes, cache misses
-
-## Why This Works
-This architecture handles:
-- **500 RPS** (300 reads, 200 writes) efficiently
-- **1000 RPS** peak load with headroom
-- **99.9% availability** through database replication and redundant app servers
-- **Data consistency** via ACID transactions
-- **Server restarts** without data loss (DB persists)
-- **Database failures** with automatic failover to replica
-- **Concurrent users** with proper locking
-
-## Key Design Decisions
-1. **PostgreSQL with replication** ensures high availability and data consistency
-2. **Redis caching** reduces DB load for frequently accessed todos
-3. **3 app server instances** handle traffic and server failures gracefully
-4. **Load balancer health checks** route around failures
-5. **Budget-friendly** - stays under $800/month`,
-  },
+        replicationMode: 'multi-leader',
+        replication: {
+          enabled: true,
+          replicas: 3,
+          mode: 'async'
+        },
+        sharding: {
+          enabled: true,
+          shards: 15,
+          shardKey: 'id'
+        },
+        displayName: 'PostgreSQL Master',
+        subtitle: 'Writes + 3 replicas (reads)'
+      }
+    },
+    {
+      type: 'cdn',
+      config: {
+        enabled: true
+      }
+    },
+    {
+      type: 's3',
+      config: {}
+    },
+    {
+      type: 'message_queue',
+      config: {}
+    }
+  ],
+  connections: [
+    {
+      from: 'client',
+      to: 'load_balancer',
+      type: 'read_write'
+    },
+    {
+      from: 'load_balancer',
+      to: 'app_server',
+      type: 'read_write'
+    },
+    {
+      from: 'app_server',
+      to: 'redis',
+      type: 'read_write'
+    },
+    {
+      from: 'app_server',
+      to: 'postgresql',
+      type: 'read_write'
+    },
+    {
+      from: 'redis',
+      to: 'postgresql',
+      type: 'read',
+      label: 'Cache miss → DB lookup'
+    },
+    {
+      from: 'client',
+      to: 'cdn',
+      type: 'read'
+    },
+    {
+      from: 'cdn',
+      to: 's3',
+      type: 'read'
+    },
+    {
+      from: 'app_server',
+      to: 's3',
+      type: 'read_write'
+    },
+    {
+      from: 'app_server',
+      to: 'message_queue',
+      type: 'write'
+    }
+  ],
+  explanation: 'Reference Solution for Collaborative Todo App:\n\n📊 Infrastructure Components:\n- **2 App Server Instance(s)**: Each instance handles ~1000 RPS. Total capacity: 2000 RPS (peak: 1000 RPS with 20% headroom for traffic spikes).\n- **Load Balancer**: Distributes traffic using least-connections algorithm. Routes requests to least-busy app server, ideal for long-lived connections (DDIA Ch. 1 - Scalability).\n- **6GB Redis Cache**: In-memory key-value store for hot data. Cache-aside pattern: ~540 RPS served from cache (~90% hit ratio assumed). Reduces database load and improves p99 latency (SDP - Caching).\n- **PostgreSQL Database**: multi leader configuration with 3 read replicas and 15 shards (sharded by id).\n  • Read Capacity: 600 RPS across 4 database instance(s)\n  • Write Capacity: 400 RPS distributed across leaders\n  • Replication: Asynchronous (eventual consistency, < 1s lag typical)\n- **CDN**: Content delivery network with 150+ global edge locations. Serves static content (images, videos, CSS, JS) from nearest location. Typical latency: < 50ms globally (SDP - CDN).\n- **S3 Object Storage**: Unlimited scalable storage for large files. 99.999999999% durability (eleven nines). Pay-per-use pricing: $0.023/GB/month + transfer costs.\n- **Message Queue**: Asynchronous processing queue for background jobs and event fan-out. Decouples services and provides buffering during traffic spikes (DDIA Ch. 11).\n\n💡 Key Design Decisions:\n- **Capacity Planning**: Components sized with 20% headroom for traffic spikes without performance degradation.\n- **Caching Strategy**: Cache reduces database load by ~90%. Hot data (frequently accessed) stays in cache, cold data fetched from database on cache miss.\n- **Replication Mode**: Multi-leader chosen for write scalability (> 100 writes/s). Trade-off: Conflict resolution needed for concurrent writes to same record (DDIA Ch. 5).\n- **Horizontal Scaling**: 15 database shards enable linear scaling. Each shard is independent, can be scaled separately. Query routing based on id hash (DDIA Ch. 6 - Partitioning).\n\n⚠️ Important Note:\nThis is ONE valid solution that meets the requirements. The traffic simulator validates ANY architecture that:\n✅ Has all required components (from functionalRequirements.mustHave)\n✅ Has all required connections (from functionalRequirements.mustConnect)\n✅ Meets performance targets (latency, cost, error rate)\n\nYour solution may use different components (e.g., MongoDB instead of PostgreSQL, Memcached instead of Redis) and still pass all tests!'
+},
 };

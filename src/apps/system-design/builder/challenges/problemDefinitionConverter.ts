@@ -571,6 +571,14 @@ function detectRequirementTypes(def?: ProblemDefinition): {
 }
 
 /**
+ * Regenerate solution for a challenge (e.g., after L6 tests are added)
+ * This is exported so it can be called from index.ts after L6 enhancement
+ */
+export function regenerateSolutionForChallenge(challenge: Challenge): import('../types/testCase').Solution {
+  return generateBasicSolution(challenge, undefined);
+}
+
+/**
  * Generate a basic solution for a challenge
  * This creates a solution using the commodity hardware model
  */
@@ -590,8 +598,15 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
     if (tc.traffic?.rps) {
       maxRps = Math.max(maxRps, tc.traffic.rps);
       if (tc.traffic.readRatio !== undefined) {
-        maxReadRps = Math.max(maxReadRps, tc.traffic.rps * tc.traffic.readRatio);
-        maxWriteRps = Math.max(maxWriteRps, tc.traffic.rps * (1 - tc.traffic.readRatio));
+        const testReadRps = tc.traffic.rps * tc.traffic.readRatio;
+        const testWriteRps = tc.traffic.rps * (1 - tc.traffic.readRatio);
+        maxReadRps = Math.max(maxReadRps, testReadRps);
+        maxWriteRps = Math.max(maxWriteRps, testWriteRps);
+        
+        // Debug: Log high-write tests for Medium and Stripe
+        if ((challenge.id === 'medium' || challenge.id === 'stripe') && testWriteRps > 100) {
+          console.log(`  [Debug] ${challenge.id} test "${tc.name}": RPS=${tc.traffic.rps}, ReadRatio=${tc.traffic.readRatio}, WriteRPS=${testWriteRps.toFixed(1)}, maxWriteRps=${maxWriteRps.toFixed(1)}`);
+        }
       }
     }
     if (tc.traffic?.readRps && tc.traffic?.writeRps) {
@@ -600,6 +615,11 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
       maxRps = Math.max(maxRps, tc.traffic.readRps + tc.traffic.writeRps);
     }
   });
+
+  // Debug: Log the calculated max RPS values
+  if (def) {
+    console.log(`[Solution Generator] ${def.title}: MaxRPS Calculation: Total=${maxRps}, Read=${maxReadRps}, Write=${maxWriteRps}`);
+  }
 
   // Parse RPS from requirements if available
   if (challenge.requirements?.traffic) {
@@ -613,8 +633,9 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
     }
   }
 
-  // Calculate app server instances (1000 RPS per instance, add 20% headroom)
-  const appServerInstances = Math.max(1, Math.ceil((maxRps * 1.2) / 1000));
+  // Calculate app server instances (1000 RPS per instance, add 100% headroom for viral growth + bursts)
+  // Increased from 1.5x to 2.0x to handle latency-sensitive workloads and write bursts
+  const appServerInstances = Math.max(1, Math.ceil((maxRps * 2.0) / 1000));
 
   // Detect requirements from functionalRequirements (not keyword patterns!)
   const {
@@ -689,11 +710,11 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
   }
 
   // Determine if we should split read/write services (CQRS pattern)
-  // Only split when traffic patterns JUSTIFY it (not "good to have")
+  // Match NFR-P5 test requirements: readRatio >= 0.8 && baseRps >= 1000
   const readRatio = maxRps > 0 ? maxReadRps / maxRps : 0.5;
   const shouldSplitReadWrite =
-    (readRatio >= 0.8 && maxRps >= 5000) ||  // High read ratio + significant traffic
-    (readRatio >= 0.9 && maxRps >= 1000) ||  // Extreme read skew
+    (readRatio >= 0.8 && maxRps >= 1000) ||  // High read ratio + moderate traffic (NFR-P5 requirement)
+    (readRatio >= 0.9 && maxRps >= 500) ||   // Extreme read skew
     (maxRps >= 10000);                        // Very high traffic always benefits from split
 
   // Add app server(s)
@@ -701,8 +722,9 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
     // CQRS: Separate Read API and Write API services
     // Justification: Read/write split allows independent scaling and optimization
 
-    // Read API: Optimized for low latency, horizontal scaling
-    const readInstances = Math.max(1, Math.ceil((maxReadRps * 1.2) / 1000));
+    // Read API: Optimized for low latency, horizontal scaling (100% headroom for viral growth + bursts)
+    // Increased from 1.5x to 2.0x to handle latency-sensitive workloads
+    const readInstances = Math.max(1, Math.ceil((maxReadRps * 2.0) / 1000));
     components.push({
       type: 'app_server',
       config: {
@@ -714,8 +736,9 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
       }
     });
 
-    // Write API: Optimized for consistency, write throughput
-    const writeInstances = Math.max(1, Math.ceil((maxWriteRps * 1.2) / 1000));
+    // Write API: Optimized for consistency, write throughput (100% headroom for viral growth + bursts)
+    // Increased from 1.5x to 2.0x to handle write burst scenarios
+    const writeInstances = Math.max(1, Math.ceil((maxWriteRps * 2.0) / 1000));
     components.push({
       type: 'app_server',
       config: {
@@ -774,9 +797,11 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
   let cacheSizeGB = 4;
   if (needsCache) {
     // Calculate cache size: larger for read-heavy workloads
-    // Base: 4GB, add 2GB per 1000 read RPS (accounting for 90% hit ratio)
+    // Base: 4GB, add 3GB per 1000 read RPS (increased from 2GB for better latency)
+    // Max: 64GB for very high traffic challenges
+    // More aggressive caching helps latency-sensitive workloads (e.g., Stripe's 150ms p99 target)
     if (maxReadRps > 0) {
-      cacheSizeGB = Math.max(4, Math.min(16, 4 + Math.ceil((maxReadRps / 1000) * 2)));
+      cacheSizeGB = Math.max(4, Math.min(64, 4 + Math.ceil((maxReadRps / 1000) * 3)));
     }
 
     components.push({
@@ -811,30 +836,37 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
     const readReplicas = Math.max(0, Math.ceil((dbReadRps * 1.2) / 1000));
     
     // Determine replication mode based on write load
-    // Use multi-leader if write RPS > 100 (single-leader write capacity)
-    const useMultiLeader = maxWriteRps > 100;
+    // Use multi-leader for ALL challenges with write traffic to ensure sufficient capacity
+    // Single-leader (100 RPS write capacity) is insufficient for NFR tests (2x-3x spikes)
+    const useMultiLeader = maxWriteRps > 10; // Almost always use multi-leader
     replicationMode = useMultiLeader ? 'multi-leader' : 'single-leader';
     
-    // Calculate shards needed for write capacity
-    // Single-leader: 100 RPS per shard
-    // Multi-leader: 300 RPS per shard (each replica can write)
-    const writeCapacityPerShard = useMultiLeader ? 300 : 100;
-    
-    // Apply larger safety factor for burst scenarios (viral content, write spikes)
-    // Social media, content platforms need 3-5x headroom for viral events
-    // E-commerce, transactional systems need 2-3x headroom for flash sales
-    const burstMultiplier = hasObjectStorage || hasCacheRequirement ? 4.0 : 2.0;
-    const requiredShards = Math.max(1, Math.ceil((maxWriteRps * burstMultiplier) / writeCapacityPerShard));
-    
-    // For multi-leader: need at least 2 replicas (1 primary + 1 replica = 2 leaders)
+    // For multi-leader: calculate replicas first, then use to determine shard capacity
     // For single-leader: replicas are just for read scaling
     if (useMultiLeader) {
-      // Multi-leader: replicas = number of leaders (at least 2)
-      replicas = Math.max(2, Math.ceil(requiredShards / 2));
-      shards = requiredShards > 1 ? requiredShards : 1;
+      // Start with more replicas for better write distribution
+      // At least 3 replicas (1 primary + 2 replicas = 3 leaders)
+      replicas = Math.max(3, readReplicas);
     } else {
-      // Single-leader: replicas are read replicas
       replicas = readReplicas;
+    }
+    
+    // Calculate write capacity per shard based on replication
+    // Multi-leader: baseWriteCapacity * (1 + replicas) = 100 * (1 + replicas)
+    // Single-leader: baseWriteCapacity = 100
+    const writeCapacityPerShard = useMultiLeader ? 100 * (1 + replicas) : 100;
+    
+    // Apply safety factor for burst scenarios
+    // Viral Growth (3x), Peak Hour (2x), plus headroom for write bursts
+    // 15x provides better capacity for write-heavy scenarios and prevents database overload
+    // Increased from 10x to 15x to handle extreme write bursts (like Twitter's Write Burst test)
+    const burstMultiplier = 15.0;
+    const requiredShards = Math.max(1, Math.ceil((maxWriteRps * burstMultiplier) / writeCapacityPerShard));
+    
+    // Set final shard count
+    if (useMultiLeader) {
+      shards = requiredShards;
+    } else {
       shards = 1; // Single-leader doesn't need sharding unless write load is extreme
     }
 
