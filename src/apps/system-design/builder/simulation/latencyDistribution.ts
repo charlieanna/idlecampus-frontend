@@ -290,12 +290,16 @@ export function calculateRequestPercentiles(
 ): PercentileResults {
   const totalRps = readRps + writeRps;
 
-  if (totalRps === 0) {
+  // Calculate weighted average p50
+  // If no traffic, use readLatency as baseline (fallback for L6 tests without entry points)
+  const p50 = totalRps === 0 
+    ? readLatency 
+    : (readRps * readLatency + writeRps * writeLatency) / totalRps;
+
+  // If both latency and RPS are zero, return all zeros
+  if (p50 === 0) {
     return { p50: 0, p90: 0, p95: 0, p99: 0, p999: 0 };
   }
-
-  // Calculate weighted average p50
-  const p50 = (readRps * readLatency + writeRps * writeLatency) / totalRps;
 
   // Check feature flag
   if (!isEnabled('USE_ACCURATE_PERCENTILES')) {
