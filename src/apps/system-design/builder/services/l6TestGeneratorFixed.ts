@@ -88,76 +88,50 @@ export class L6TestGenerator {
    * Extract baseline metrics from existing challenge
    */
   private static extractBaselineMetrics(challenge: Challenge): any {
-    // Strategy: Use requirements.traffic if it's a STRING with RPS values (manual challenges)
-    // Otherwise fall back to first test case (generated challenges)
-    const trafficStr = typeof challenge.requirements.traffic === 'string' ? challenge.requirements.traffic : '';
-    let baseRps = 0;
-    let baseRpsSource = 'default';
-    
-    if (trafficStr) {
-      const rpsMatch = trafficStr.match(/(\d+)(?:,(\d+))?(?:K|k)?\s*RPS/i);
-      if (rpsMatch) {
-        // Handle formats like "5,000 RPS" or "5000 RPS"
-        const thousands = rpsMatch[2] ? parseInt(rpsMatch[1] + rpsMatch[2]) : parseInt(rpsMatch[1]);
-        baseRps = thousands;
-        if (trafficStr.toLowerCase().includes('k')) {
-          baseRps *= 1000;
-        }
-        baseRpsSource = 'requirements.traffic';
+    // Get from first test case if available
+    const firstTest = challenge.testCases[0];
+    if (firstTest && firstTest.traffic) {
+      // Extract RPS from traffic object
+      let baseRps = 0;
+      if (firstTest.traffic.rps !== undefined) {
+        baseRps = firstTest.traffic.rps;
+      } else if (firstTest.traffic.readRps !== undefined && firstTest.traffic.writeRps !== undefined) {
+        baseRps = firstTest.traffic.readRps + firstTest.traffic.writeRps;
       }
-    }
-    
-    // Fallback: Get from first test case if requirements.traffic not available
-    if (baseRps === 0) {
-      const firstTest = challenge.testCases[0];
-      if (firstTest && firstTest.traffic) {
-        if (firstTest.traffic.rps !== undefined) {
-          baseRps = firstTest.traffic.rps;
-          baseRpsSource = 'firstTest.rps';
-        } else if (firstTest.traffic.readRps !== undefined && firstTest.traffic.writeRps !== undefined) {
-          baseRps = firstTest.traffic.readRps + firstTest.traffic.writeRps;
-          baseRpsSource = 'firstTest.readRps+writeRps';
-        }
-      }
-    }
-    
-    // Final fallback
-    if (baseRps === 0) {
-      baseRps = 1000;
-      baseRpsSource = 'fallback';
-    }
-    
-    // IMPORTANT: For manual challenges with low first-test RPS but high requirements.traffic,
-    // we want to use requirements.traffic. But for generated challenges, the first test
-    // already has realistic RPS values, so we should use that.
-    // The check above handles this correctly by prioritizing requirements.traffic when present.
-    
-    // Extract latency target
-    const latencyStr = challenge.requirements.latency || 'P99 < 100ms';
-    const p99Match = latencyStr.match(/[Pp]99\s*<?\s*(\d+)/);
-    const targetP99 = p99Match ? parseInt(p99Match[1]) : 100;
-    
-    // Determine read ratio
-    let readRatio = 0.9; // Default 90% reads
-    const trafficLower = trafficStr.toLowerCase();
-    if (trafficLower.includes('read-heavy') || trafficLower.includes('read heavy')) {
-      readRatio = 0.95;
-    } else if (trafficLower.includes('write-heavy') || trafficLower.includes('write heavy')) {
-      readRatio = 0.5;
-    } else {
-      // Try to extract from first test case
-      const firstTest = challenge.testCases[0];
-      if (firstTest && firstTest.traffic && firstTest.traffic.readRatio !== undefined) {
-        readRatio = firstTest.traffic.readRatio;
-      } else if (firstTest && firstTest.traffic && firstTest.traffic.readRps) {
-        const testRps = firstTest.traffic.readRps + (firstTest.traffic.writeRps || 0);
-        readRatio = testRps > 0 ? firstTest.traffic.readRps / testRps : 0.9;
+      
+      if (baseRps > 0) {
+        const readRatio = firstTest.traffic.readRatio !== undefined 
+          ? firstTest.traffic.readRatio 
+          : (firstTest.traffic.readRps ? firstTest.traffic.readRps / baseRps : 0.9);
+        
+        return {
+          baseRps,
+          readRatio,
+          targetP99: firstTest.passCriteria?.maxP99Latency || 100,
+          systemType: this.inferSystemType(challenge),
+          challengeId: challenge.id,
+        };
       }
     }
 
+    // Otherwise parse from requirements
+    const trafficStr = challenge.requirements.traffic || '1000 RPS';
+    const rpsMatch = trafficStr.match(/(\d+)(?:K|k)?\s*RPS/i);
+    let baseRps = 1000;
+    if (rpsMatch) {
+      baseRps = parseInt(rpsMatch[1]);
+      if (trafficStr.toLowerCase().includes('k')) {
+        baseRps *= 1000;
+      }
+    }
+
+    const latencyStr = challenge.requirements.latency || 'P99 < 100ms';
+    const p99Match = latencyStr.match(/[Pp]99\s*<?\s*(\d+)/);
+    const targetP99 = p99Match ? parseInt(p99Match[1]) : 100;
+
     return {
       baseRps,
-      readRatio,
+      readRatio: 0.9, // Default 90% reads
       targetP99,
       systemType: this.inferSystemType(challenge),
       challengeId: challenge.id,
