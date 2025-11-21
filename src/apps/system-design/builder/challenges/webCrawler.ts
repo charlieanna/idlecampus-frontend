@@ -301,9 +301,9 @@ def manage_frontier(current_batch: List[str], seen_urls: Set[str]) -> List[str]:
     components: [
       { type: 'client', config: {} },
       { type: 'load_balancer', config: {} },
-      { type: 'app_server', config: { instances: 5 } },
-      { type: 'message_queue', config: { maxThroughput: 10000 } },
-      { type: 'redis', config: { memorySizeGB: 32 } },
+      { type: 'app_server', config: { instances: 3 } },
+      { type: 'message_queue', config: { maxThroughput: 5000 } },
+      { type: 'redis', config: { memorySizeGB: 16 } },
       { type: 'postgresql', config: { 
         readCapacity: 2000, 
         writeCapacity: 1000,
