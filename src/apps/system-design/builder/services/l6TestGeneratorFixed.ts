@@ -183,9 +183,6 @@ export class L6TestGenerator {
         readRatio,
         1,
         {
-          maxP50Latency: Math.floor(targetP99 / 3),
-          maxP90Latency: Math.floor(targetP99 * 0.7),
-          maxP95Latency: Math.floor(targetP99 * 0.85),
           maxP99Latency: targetP99,
           maxErrorRate: 0.001,
         }

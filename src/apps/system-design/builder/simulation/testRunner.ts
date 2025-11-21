@@ -77,16 +77,6 @@ export class TestRunner {
   ): { passed: boolean; failures: string[] } {
     const failures: string[] = [];
 
-    // Debug logging for L6 tests
-    if (criteria.maxP50Latency !== undefined || criteria.maxP90Latency !== undefined) {
-      console.log('[checkPassCriteria] Percentile validation:', {
-        p50: { actual: metrics.p50Latency, target: criteria.maxP50Latency },
-        p90: { actual: metrics.p90Latency, target: criteria.maxP90Latency },
-        p95: { actual: metrics.p95Latency, target: criteria.maxP95Latency },
-        p99: { actual: metrics.p99Latency, target: criteria.maxP99Latency },
-      });
-    }
-
     if (
       criteria.maxP50Latency !== undefined &&
       metrics.p50Latency !== undefined &&
