@@ -633,10 +633,12 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
     }
   }
 
-  // Calculate app server instances (1000 RPS per instance, add 250% headroom for viral growth + bursts)
-  // Increased from 3.0x to 3.5x to minimize utilization and meet L6 strict latency requirements (p99 < 100ms)
-  // Keeping utilization very low (<30%) minimizes queue latency which is critical for p99
-  const appServerInstances = Math.max(1, Math.ceil((maxRps * 3.5) / 1000));
+  // Calculate app server instances (1000 RPS per instance, add 400% headroom for viral growth + bursts)
+  // Increased from 3.5x to 5.0x to handle L6 Peak Load (3x traffic) while keeping utilization < 70%
+  // Queue latency formula: latency = baseLatency / (1 - utilization)
+  // At 60% util: 10ms / 0.4 = 25ms. At 85% util: 10ms / 0.15 = 67ms.
+  // 5x multiplier ensures: Normal=20% util, Peak(3x)=60% util → minimal queue latency
+  const appServerInstances = Math.max(1, Math.ceil((maxRps * 5.0) / 1000));
 
   // Detect requirements from functionalRequirements (not keyword patterns!)
   const {
@@ -714,9 +716,9 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
     // CQRS: Separate Read API and Write API services
     // Justification: Read/write split allows independent scaling and optimization
 
-    // Read API: Optimized for low latency, horizontal scaling (250% headroom for viral growth + bursts)
-    // Increased from 3.0x to 3.5x to minimize utilization and meet L6 strict latency requirements (p99 < 100ms)
-    const readInstances = Math.max(1, Math.ceil((maxReadRps * 3.5) / 1000));
+    // Read API: Optimized for low latency, horizontal scaling (400% headroom for viral growth + bursts)
+    // Increased from 3.5x to 5.0x to handle L6 Peak Load while keeping utilization < 70%
+    const readInstances = Math.max(1, Math.ceil((maxReadRps * 5.0) / 1000));
     components.push({
       type: 'app_server',
       config: {
@@ -728,9 +730,9 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
       }
     });
 
-    // Write API: Optimized for consistency, write throughput (250% headroom for viral growth + bursts)
-    // Increased from 3.0x to 3.5x to minimize utilization and meet L6 write burst requirements
-    const writeInstances = Math.max(1, Math.ceil((maxWriteRps * 3.5) / 1000));
+    // Write API: Optimized for consistency, write throughput (400% headroom for viral growth + bursts)
+    // Increased from 3.5x to 5.0x to handle L6 write bursts while keeping utilization < 70%
+    const writeInstances = Math.max(1, Math.ceil((maxWriteRps * 5.0) / 1000));
     components.push({
       type: 'app_server',
       config: {
@@ -789,11 +791,11 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
   let cacheSizeGB = 4;
   if (needsCache) {
     // Calculate cache size: larger for read-heavy workloads
-    // Base: 4GB, add 5GB per 1000 read RPS (increased from 3GB for L6 latency requirements)
-    // Max: 128GB for very high traffic challenges
-    // More aggressive caching helps meet strict L6 latency targets (p99 < 100ms)
+    // Base: 8GB, add 8GB per 1000 read RPS (increased from 5GB for better cache hit ratio)
+    // Max: 256GB for very high traffic challenges
+    // Larger cache = higher hit ratio = less database load = lower latency
     if (maxReadRps > 0) {
-      cacheSizeGB = Math.max(4, Math.min(128, 4 + Math.ceil((maxReadRps / 1000) * 5)));
+      cacheSizeGB = Math.max(8, Math.min(256, 8 + Math.ceil((maxReadRps / 1000) * 8)));
     }
 
     components.push({
@@ -824,9 +826,9 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
     const cacheHitRatio = needsCache ? 0.9 : 0;
     const dbReadRps = maxReadRps * (1 - cacheHitRatio * 0.8); // Conservative: assume 80% of ideal hit ratio
     
-    // Calculate read replicas needed (1000 RPS per replica, with generous headroom for L6 tests)
-    // Increased from 1.5x to 2.0x to minimize database utilization and reduce latency
-    const readReplicas = Math.max(0, Math.ceil((dbReadRps * 2.0) / 1000));
+    // Calculate read replicas needed (1000 RPS per replica, with very generous headroom for L6 tests)
+    // Increased from 2.0x to 2.5x to keep database utilization < 70% during peak loads
+    const readReplicas = Math.max(0, Math.ceil((dbReadRps * 2.5) / 1000));
     
     // Determine replication mode based on write load
     // Use multi-leader for ALL challenges with write traffic to ensure sufficient capacity
@@ -850,10 +852,10 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
     const writeCapacityPerShard = useMultiLeader ? 100 * (1 + replicas) : 100;
     
     // Apply safety factor for burst scenarios
-    // Viral Growth (3x), Peak Hour (2x), plus very generous headroom for write bursts and L6 tests
-    // 30x provides sufficient capacity to keep write utilization very low (<30%) for minimal queue latency
-    // Increased from 25x to 30x to meet strict L6 latency requirements
-    const burstMultiplier = 30.0;
+    // Viral Growth (3x), Peak Hour (2x), plus extremely generous headroom for write bursts and L6 tests
+    // 40x provides sufficient capacity to keep write utilization very low (<40% even during 3x spikes)
+    // Increased from 30x to 40x to minimize queue latency and meet strict L6 latency requirements
+    const burstMultiplier = 40.0;
     const requiredShards = Math.max(1, Math.ceil((maxWriteRps * burstMultiplier) / writeCapacityPerShard));
     
     // Set final shard count
