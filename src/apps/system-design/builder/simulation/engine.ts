@@ -795,7 +795,7 @@ export class SimulationEngine {
     }
 
     const finalMetrics: TestMetrics = {
-      p50Latency,
+      p50Latency: percentiles.p50 || p50Latency,
       p90Latency: percentiles.p90,
       p95Latency: percentiles.p95,
       p99Latency: percentiles.p99,
