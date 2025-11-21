@@ -879,6 +879,7 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
 
     // Connect cache to database (required by validConnectionFlowValidator)
     // Cache-aside pattern: Cache checks database on cache miss
+    // Only add if cache exists (needsCache must be true)
     if (needsCache) {
       connections.push({ from: 'redis', to: 'postgresql', type: 'read', label: 'Cache miss → DB lookup' });
     }
