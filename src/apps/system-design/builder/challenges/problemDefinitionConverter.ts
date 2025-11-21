@@ -819,7 +819,12 @@ function generateBasicSolution(challenge: Challenge, def?: ProblemDefinition): i
     // Single-leader: 100 RPS per shard
     // Multi-leader: 300 RPS per shard (each replica can write)
     const writeCapacityPerShard = useMultiLeader ? 300 : 100;
-    const requiredShards = Math.max(1, Math.ceil((maxWriteRps * 1.2) / writeCapacityPerShard));
+    
+    // Apply larger safety factor for burst scenarios (viral content, write spikes)
+    // Social media, content platforms need 3-5x headroom for viral events
+    // E-commerce, transactional systems need 2-3x headroom for flash sales
+    const burstMultiplier = hasObjectStorage || hasCacheRequirement ? 4.0 : 2.0;
+    const requiredShards = Math.max(1, Math.ceil((maxWriteRps * burstMultiplier) / writeCapacityPerShard));
     
     // For multi-leader: need at least 2 replicas (1 primary + 1 replica = 2 leaders)
     // For single-leader: replicas are just for read scaling
