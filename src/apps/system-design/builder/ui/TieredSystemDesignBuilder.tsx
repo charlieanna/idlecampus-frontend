@@ -386,9 +386,13 @@ export function TieredSystemDesignBuilder({
 
     // Generate appropriate Python code based on architecture
     let generatedCode = selectedChallenge.pythonTemplate || '';
-    
-    // For TinyURL challenge, generate code that uses the solution's components
-    if (selectedChallenge.id === 'tiny_url' && (hasCache || hasDatabase)) {
+
+    // For TinyURL challenges (all variants), generate code that uses the solution's components
+    const isTinyUrlChallenge =
+      selectedChallenge.id.toLowerCase().includes('tiny') &&
+      selectedChallenge.id.toLowerCase().includes('url');
+
+    if (isTinyUrlChallenge && (hasCache || hasDatabase)) {
       generatedCode = generateTinyUrlCode(hasCache, hasDatabase, hasQueue);
     }
 
