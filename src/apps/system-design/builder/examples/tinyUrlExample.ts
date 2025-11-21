@@ -8,8 +8,9 @@ import { CacheStrategy } from '../types/advancedConfig';
  * Demonstrates how different caching strategies affect system behavior
  */
 
-// Good Design: Load Balancer → App Servers (2) → Redis Cache (90% hit ratio) → PostgreSQL
+// Good Design: Load Balancer → App Servers (6) → Redis Cache (90% hit ratio) → PostgreSQL
 // Default: Cache-Aside strategy (most flexible for read-heavy workloads)
+// 6 app servers to handle peak load of 5100 RPS (each handles ~850 RPS at 85% utilization)
 export const tinyUrlGoodDesign: SystemGraph = {
   components: [
     {
@@ -21,7 +22,7 @@ export const tinyUrlGoodDesign: SystemGraph = {
       id: 'app',
       type: 'app_server',
       config: {
-        instances: 2,
+        instances: 6,
       },
     },
     {

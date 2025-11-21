@@ -643,12 +643,63 @@ export class SimulationEngine {
               }
               return ownLatency + (missRatio * downstreamLat);
          } else {
-              // Broadcast/Fanout Logic (App Server -> SvcA, SvcB)
-              // Assume Sequential (Sum)
-              for (const edge of edges) {
-                   sumDownstreamLatency += getExpectedLatency(edge.to, new Set(visited));
+              // App Server or other components with potential read/write path separation
+              // Check if edges have different types (read vs write)
+              const readEdges = edges.filter(e => e.type === 'read' || e.type === 'read_write');
+              const writeEdges = edges.filter(e => e.type === 'write' || e.type === 'read_write');
+
+              // Get traffic distribution for this node
+              const traffic = nodeTraffic.get(nodeId);
+              const readRps = traffic?.read || 0;
+              const writeRps = traffic?.write || 0;
+              const totalRps = readRps + writeRps;
+
+              // If we have separate read and write paths AND traffic, calculate weighted average
+              if (readEdges.length > 0 && writeEdges.length > 0 && totalRps > 0) {
+                  // Calculate read path latency (average if multiple read edges)
+                  // Use separate visited sets for read and write paths since they are alternatives
+                  let readPathLatency = 0;
+                  for (const edge of readEdges) {
+                      readPathLatency += getExpectedLatency(edge.to, new Set(visited));
+                  }
+                  readPathLatency = readEdges.length > 0 ? readPathLatency / readEdges.length : 0;
+
+                  // Calculate write path latency (average if multiple write edges)
+                  let writePathLatency = 0;
+                  for (const edge of writeEdges) {
+                      writePathLatency += getExpectedLatency(edge.to, new Set(visited));
+                  }
+                  writePathLatency = writeEdges.length > 0 ? writePathLatency / writeEdges.length : 0;
+
+                  // Weighted average based on traffic distribution
+                  const readRatio = readRps / totalRps;
+                  const writeRatio = writeRps / totalRps;
+                  const weightedDownstreamLatency = (readPathLatency * readRatio) + (writePathLatency * writeRatio);
+
+                  const result = ownLatency + weightedDownstreamLatency;
+
+                  // Defensive check for NaN or Infinity
+                  if (!isFinite(result)) {
+                      console.error('Invalid latency calculation:', {
+                          nodeId,
+                          ownLatency,
+                          readPathLatency,
+                          writePathLatency,
+                          readRatio,
+                          writeRatio,
+                          weightedDownstreamLatency
+                      });
+                      return ownLatency; // Fallback to just own latency
+                  }
+                  return result;
+              } else {
+                  // Fallback: Broadcast/Fanout Logic (all edges are sequential)
+                  // Assume Sequential (Sum) - pessimistic assumption
+                  for (const edge of edges) {
+                       sumDownstreamLatency += getExpectedLatency(edge.to, new Set(visited));
+                  }
+                  return ownLatency + sumDownstreamLatency;
               }
-              return ownLatency + sumDownstreamLatency;
          }
     };
 
