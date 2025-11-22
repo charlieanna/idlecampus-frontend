@@ -8,6 +8,7 @@ import { ScenarioQuestion } from '../../types/spacedRepetition';
 import redisVsKafkaQuestions from './redisVsKafkaQuestions';
 import architecturePatternsQuestions from './architecturePatternsQuestions';
 import cassandraZookeeperQuestions from './cassandraZookeeperQuestions';
+import { transactionQuestions } from './transactionQuestions';
 
 // Base scenario questions (cache strategies, etc.)
 const baseScenarioQuestions: ScenarioQuestion[] = [
@@ -673,12 +674,14 @@ Many production systems use variants like:
  * - Advanced architecture patterns (CQRS, Event Sourcing, Saga, Circuit Breaker)
  * - Cassandra scenarios (time-series, consistency, data modeling)
  * - Zookeeper scenarios (leader election, distributed locks, config management)
+ * - 24 Transaction scenarios (DDIA Chapter 7: ACID, isolation levels, locking, MVCC, distributed transactions)
  */
 export const scenarioQuestions: ScenarioQuestion[] = [
   ...baseScenarioQuestions,
   ...redisVsKafkaQuestions,
   ...architecturePatternsQuestions,
   ...cassandraZookeeperQuestions,
+  ...transactionQuestions,
 ];
 
 /**
