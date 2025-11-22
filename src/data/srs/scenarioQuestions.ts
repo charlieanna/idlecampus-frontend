@@ -5,8 +5,11 @@
  */
 
 import { ScenarioQuestion } from '../../types/spacedRepetition';
+import redisVsKafkaQuestions from './redisVsKafkaQuestions';
+import architecturePatternsQuestions from './architecturePatternsQuestions';
 
-export const scenarioQuestions: ScenarioQuestion[] = [
+// Base scenario questions
+const baseScenarioQuestions: ScenarioQuestion[] = [
   // ============================================================================
   // Redis vs Kafka Questions
   // ============================================================================
@@ -658,6 +661,19 @@ Many production systems use variants like:
 ];
 
 /**
+ * Combined scenario questions from all sources
+ * Includes:
+ * - Base questions (cache strategies, Redis vs Memcached, etc.)
+ * - 10+ Redis vs Kafka variations
+ * - Advanced architecture patterns (CQRS, Event Sourcing, Saga, Circuit Breaker, etc.)
+ */
+export const scenarioQuestions: ScenarioQuestion[] = [
+  ...baseScenarioQuestions,
+  ...redisVsKafkaQuestions,
+  ...architecturePatternsQuestions,
+];
+
+/**
  * Get questions for a concept
  */
 export function getQuestionsForConcept(conceptId: string): ScenarioQuestion[] {
@@ -678,4 +694,33 @@ export function getQuestionsByDifficulty(
   difficulty: ScenarioQuestion['difficulty']
 ): ScenarioQuestion[] {
   return scenarioQuestions.filter(q => q.difficulty === difficulty);
+}
+
+/**
+ * Get total number of questions available
+ */
+export function getTotalQuestions(): number {
+  return scenarioQuestions.length;
+}
+
+/**
+ * Get question statistics
+ */
+export function getQuestionStats() {
+  const byDifficulty = {
+    easy: scenarioQuestions.filter(q => q.difficulty === 'easy').length,
+    medium: scenarioQuestions.filter(q => q.difficulty === 'medium').length,
+    hard: scenarioQuestions.filter(q => q.difficulty === 'hard').length,
+  };
+
+  const byConcept: Record<string, number> = {};
+  scenarioQuestions.forEach(q => {
+    byConcept[q.conceptId] = (byConcept[q.conceptId] || 0) + 1;
+  });
+
+  return {
+    total: scenarioQuestions.length,
+    byDifficulty,
+    byConcept,
+  };
 }

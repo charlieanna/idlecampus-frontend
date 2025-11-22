@@ -4,7 +4,7 @@
  * Concepts organized by category with prerequisites and relationships
  */
 
-import { Concept } from '../../types/spacedRepetition';
+import { Concept, Resource } from '../../types/spacedRepetition';
 
 export const systemDesignConcepts: Concept[] = [
   // ============================================================================
@@ -18,6 +18,14 @@ export const systemDesignConcepts: Concept[] = [
     difficultyLevel: 'beginner',
     estimatedTimeMinutes: 10,
     tags: ['caching', 'performance', 'basics'],
+    resources: [
+      {
+        type: 'article',
+        title: 'Top Caching Strategies',
+        url: 'https://blog.bytebytego.com/p/top-caching-strategies',
+        description: 'Comprehensive overview of caching patterns by ByteByteGo',
+      },
+    ],
   },
   {
     id: 'cache-strategies',
@@ -29,6 +37,32 @@ export const systemDesignConcepts: Concept[] = [
     difficultyLevel: 'intermediate',
     estimatedTimeMinutes: 15,
     tags: ['caching', 'write-patterns', 'consistency'],
+    resources: [
+      {
+        type: 'article',
+        title: 'Why We Built a Write Back Cache - Squarespace Engineering',
+        url: 'https://engineering.squarespace.com/blog/2024/why-we-built-a-write-back-cache-for-our-asset-library-with-google-cloud-spanner',
+        description: 'Real-world implementation of write-back caching at Squarespace',
+      },
+      {
+        type: 'article',
+        title: 'Write-Behind Caching Pattern',
+        url: 'https://www.enjoyalgorithms.com/blog/write-behind-caching-pattern/',
+        description: 'Detailed explanation of write-behind (write-back) pattern',
+      },
+      {
+        type: 'article',
+        title: 'Write-Around Caching Pattern',
+        url: 'https://www.enjoyalgorithms.com/blog/write-around-caching-pattern/',
+        description: 'When and how to use write-around caching',
+      },
+      {
+        type: 'article',
+        title: 'Understanding Cache Strategies with Python',
+        url: 'https://shahriar.svbtle.com/Understanding-writethrough-writearound-and-writeback-caching-with-python',
+        description: 'Practical implementations with code examples',
+      },
+    ],
   },
   {
     id: 'cache-eviction',
@@ -121,6 +155,227 @@ export const systemDesignConcepts: Concept[] = [
     difficultyLevel: 'intermediate',
     estimatedTimeMinutes: 15,
     tags: ['redis', 'kafka', 'queues', 'trade-offs', 'persistence'],
+    resources: [
+      {
+        type: 'article',
+        title: 'Redis vs Kafka: A Comprehensive Comparison',
+        url: 'https://double.cloud/blog/posts/2024/02/redis-vs-kafka/',
+        description: 'In-depth comparison from DoubleCloud (2024)',
+      },
+      {
+        type: 'article',
+        title: 'Redis vs Apache Kafka: How to Choose in 2025',
+        url: 'https://betterstack.com/community/comparisons/redis-vs-kafka/',
+        description: 'Detailed guide on when to use each - Better Stack',
+      },
+      {
+        type: 'article',
+        title: 'Apache Kafka vs Redis: Are They Truly Comparable?',
+        url: 'https://www.openlogic.com/blog/apache-kafka-vs-redis',
+        description: 'Analysis of use cases and architectural differences - OpenLogic',
+      },
+      {
+        type: 'article',
+        title: 'Kafka vs Redis: Log Aggregation Performance',
+        url: 'https://logz.io/blog/kafka-vs-redis/',
+        description: 'Performance comparison for different workloads - Logz.io',
+      },
+    ],
+  },
+
+  // ============================================================================
+  // Architecture Patterns
+  // ============================================================================
+  {
+    id: 'cqrs-pattern',
+    title: 'CQRS (Command Query Responsibility Segregation)',
+    category: 'architecture',
+    description: 'Separating read and write operations for independent scaling and optimization',
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 20,
+    tags: ['cqrs', 'read-write-separation', 'scaling', 'patterns'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'CQRS Pattern - Azure Architecture Center',
+        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs',
+        description: 'Official Microsoft documentation on CQRS pattern',
+      },
+      {
+        type: 'article',
+        title: 'When Should You Use CQRS?',
+        url: 'https://blog.risingstack.com/when-to-use-cqrs/',
+        description: 'Practical guide on CQRS use cases - RisingStack Engineering',
+      },
+      {
+        type: 'article',
+        title: 'CQRS Design Pattern: Independent Read & Write Scaling',
+        url: 'https://dip-mazumder.medium.com/optimize-microservices-with-high-read-load-cqrs-design-pattern-0c53793179e3',
+        description: 'CQRS for microservices with high read loads',
+      },
+      {
+        type: 'article',
+        title: 'CQRS in Event-Driven Systems',
+        url: 'https://dev.to/cadienvan/cqrs-separating-the-powers-of-read-and-write-operations-in-event-driven-systems-47eo',
+        description: 'Combining CQRS with event sourcing',
+      },
+    ],
+  },
+  {
+    id: 'event-sourcing',
+    title: 'Event Sourcing Pattern',
+    category: 'architecture',
+    description: 'Storing state changes as a sequence of events instead of current state',
+    prerequisites: ['cqrs-pattern'],
+    relatedConcepts: ['kafka-fundamentals'],
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 20,
+    tags: ['event-sourcing', 'events', 'audit', 'patterns'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Event Sourcing Pattern - Azure Architecture Center',
+        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing',
+        description: 'Microsoft documentation on event sourcing',
+      },
+    ],
+  },
+  {
+    id: 'saga-pattern',
+    title: 'Saga Pattern for Distributed Transactions',
+    category: 'architecture',
+    description: 'Managing distributed transactions across microservices using choreography or orchestration',
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 25,
+    tags: ['saga', 'distributed-transactions', 'microservices', 'patterns'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Saga Pattern - Microservices.io',
+        url: 'https://microservices.io/patterns/data/saga.html',
+        description: 'Comprehensive guide to Saga pattern',
+      },
+    ],
+  },
+  {
+    id: 'bulkhead-pattern',
+    title: 'Bulkhead Pattern',
+    category: 'architecture',
+    description: 'Isolating resources to prevent cascading failures',
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 15,
+    tags: ['bulkhead', 'resilience', 'isolation', 'patterns'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Bulkhead Pattern - Azure Architecture Center',
+        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/bulkhead',
+        description: 'Resource isolation for resilience',
+      },
+    ],
+  },
+  {
+    id: 'circuit-breaker-pattern',
+    title: 'Circuit Breaker Pattern',
+    category: 'architecture',
+    description: 'Preventing cascading failures by detecting and handling faults',
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 15,
+    tags: ['circuit-breaker', 'resilience', 'fault-tolerance', 'patterns'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Circuit Breaker Pattern - Azure Architecture Center',
+        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker',
+        description: 'Implementing fault tolerance with circuit breakers',
+      },
+    ],
+  },
+  {
+    id: 'retry-pattern',
+    title: 'Retry Pattern with Exponential Backoff',
+    category: 'architecture',
+    description: 'Handling transient failures with intelligent retry strategies',
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 12,
+    tags: ['retry', 'resilience', 'backoff', 'patterns'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Retry Pattern - Azure Architecture Center',
+        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/retry',
+        description: 'Best practices for retry logic',
+      },
+    ],
+  },
+  {
+    id: 'strangler-fig-pattern',
+    title: 'Strangler Fig Pattern',
+    category: 'architecture',
+    description: 'Incrementally migrating legacy systems to new architecture',
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 18,
+    tags: ['migration', 'legacy', 'modernization', 'patterns'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Strangler Fig Pattern - Azure Architecture Center',
+        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/strangler-fig',
+        description: 'Safely migrating monoliths to microservices',
+      },
+    ],
+  },
+  {
+    id: 'gateway-aggregation',
+    title: 'Gateway Aggregation Pattern',
+    category: 'architecture',
+    description: 'Using a gateway to aggregate multiple backend requests',
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 15,
+    tags: ['gateway', 'aggregation', 'api', 'patterns'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Gateway Aggregation - Azure Architecture Center',
+        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-aggregation',
+        description: 'Reducing chattiness between clients and services',
+      },
+    ],
+  },
+  {
+    id: 'sharding-pattern',
+    title: 'Sharding Pattern',
+    category: 'architecture',
+    description: 'Horizontal partitioning of data across multiple databases',
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 20,
+    tags: ['sharding', 'partitioning', 'scalability', 'database'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Sharding Pattern - Azure Architecture Center',
+        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding',
+        description: 'Database sharding strategies and trade-offs',
+      },
+    ],
+  },
+  {
+    id: 'materialized-view-pattern',
+    title: 'Materialized View Pattern',
+    category: 'architecture',
+    description: 'Pre-computing and caching query results for performance',
+    relatedConcepts: ['cqrs-pattern', 'cache-strategies'],
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 15,
+    tags: ['materialized-view', 'performance', 'caching', 'patterns'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Materialized View Pattern - Azure Architecture Center',
+        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/materialized-view',
+        description: 'Optimizing read performance with pre-computed views',
+      },
+    ],
   },
 
   // ============================================================================

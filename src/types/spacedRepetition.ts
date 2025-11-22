@@ -23,6 +23,7 @@ export interface Concept {
   difficultyLevel: 'beginner' | 'intermediate' | 'advanced';
   estimatedTimeMinutes: number;
   tags: string[]; // e.g., ["caching", "performance", "database"]
+  resources?: Resource[]; // Real engineering articles and documentation
 }
 
 export type ConceptCategory =
