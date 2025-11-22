@@ -12,6 +12,11 @@ export const loadParametersLesson: SystemDesignLesson = {
   category: 'patterns',
   difficulty: 'beginner',
   estimatedMinutes: 45,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 10,
+
   stages: [
     {
       id: 'what-are-load-parameters',

@@ -12,6 +12,11 @@ export const streamingFundamentalsLesson: SystemDesignLesson = {
   category: 'patterns',
   difficulty: 'intermediate',
   estimatedMinutes: 60,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 7,
+
   stages: [
     {
       id: 'what-is-streaming',

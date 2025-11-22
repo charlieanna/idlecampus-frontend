@@ -12,6 +12,11 @@ export const performanceMetricsLesson: SystemDesignLesson = {
   category: 'patterns',
   difficulty: 'beginner',
   estimatedMinutes: 40,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 11,
+
   stages: [
     {
       id: 'why-percentiles',

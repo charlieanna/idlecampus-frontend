@@ -12,6 +12,10 @@ export const ddiaChapter6PartitioningLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'intermediate',
   estimatedMinutes: 85,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-4-ddia',
+  sequenceOrder: 5,
   stages: [
     {
       id: 'intro-partitioning',

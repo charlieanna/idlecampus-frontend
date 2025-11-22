@@ -10,6 +10,11 @@ export const activeActiveMultiRegionLesson: SystemDesignLesson = {
   category: 'patterns',
   tags: ['multi-region', 'active-active', 'replication', 'conflict-resolution', 'availability'],
   prerequisites: ['database-replication', 'understanding-scale'],
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 1,
+
   learningObjectives: [
     'Understand when to use active-active multi-region architecture',
     'Identify problems with single-region designs for global applications',

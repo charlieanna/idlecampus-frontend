@@ -10,6 +10,11 @@ export const crossRegionDrLesson: SystemDesignLesson = {
   category: 'patterns',
   tags: ['disaster-recovery', 'failover', 'hot-standby', 'rto', 'rpo', 'backup'],
   prerequisites: ['basic-multiregion', 'database-replication'],
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 4,
+
   learningObjectives: [
     'Understand when to use disaster recovery architecture',
     'Learn RTO (Recovery Time Objective) and RPO (Recovery Point Objective)',

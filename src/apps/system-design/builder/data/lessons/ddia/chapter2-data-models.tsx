@@ -12,6 +12,10 @@ export const ddiaChapter2DataModelsLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'intermediate',
   estimatedMinutes: 90,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-4-ddia',
+  sequenceOrder: 1,
   stages: [
     {
       id: 'intro-data-models',

@@ -12,6 +12,10 @@ export const ddiaChapter11StreamProcessingLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'intermediate',
   estimatedMinutes: 95,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-4-ddia',
+  sequenceOrder: 10,
   stages: [
     {
       id: 'intro-streaming',

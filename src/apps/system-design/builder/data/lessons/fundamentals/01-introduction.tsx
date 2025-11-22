@@ -15,6 +15,10 @@ export const introductionLesson: SystemDesignLesson = {
   tags: ['introduction', 'basics', 'overview'],
   prerequisites: [],
 
+  // Progressive flow metadata
+  moduleId: 'sd-module-1-fundamentals',
+  sequenceOrder: 1,
+
   // NEW: Connect to next lessons
   nextLessons: ['basic-components', 'nfr-fundamentals'],
 

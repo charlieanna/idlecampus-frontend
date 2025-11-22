@@ -12,6 +12,10 @@ export const sdpPerformanceScalabilityLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'beginner',
   estimatedMinutes: 45,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-5-primer',
+  sequenceOrder: 1,
   stages: [
     {
       id: 'intro-performance-scalability',

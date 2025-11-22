@@ -12,6 +12,11 @@ export const searchFundamentalsLesson: SystemDesignLesson = {
   category: 'patterns',
   difficulty: 'intermediate',
   estimatedMinutes: 45,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 6,
+
   stages: [
     {
       id: 'what-is-search',

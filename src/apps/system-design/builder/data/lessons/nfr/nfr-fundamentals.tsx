@@ -13,6 +13,10 @@ export const nfrFundamentalsLesson: SystemDesignLesson = {
   difficulty: 'beginner',
   estimatedMinutes: 90, // Increased due to comprehensive trade-off content
 
+  // Progressive flow metadata
+  moduleId: 'sd-module-6-nfr',
+  sequenceOrder: 1,
+
   // NEW: Connect to challenges
   relatedChallenges: ['tiny_url', 'ticketmaster', 'airbnb'],
 
@@ -193,6 +197,10 @@ const blackFridayServers = calculateServersNeeded(
       title: 'Practice: Calculate Server Capacity',
       description: 'Design a system with the right number of servers for given traffic',
       estimatedMinutes: 10,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-6-nfr',
+  sequenceOrder: 1,
       scenario: {
         description: 'You\'re launching a ticket sales platform. Each server can handle 1,500 RPS in benchmarks. You expect 12,000 RPS during ticket sales.',
         requirements: [
@@ -431,6 +439,10 @@ Peak load: 15,000 RPS (5x average!)
       title: 'Practice: Design for Peak Load',
       description: 'Build a system that handles peak traffic with autoscaling',
       estimatedMinutes: 12,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-6-nfr',
+  sequenceOrder: 1,
       scenario: {
         description: 'Design an e-commerce platform that handles variable traffic throughout the day. Average traffic is 2,000 RPS but peaks at 18,000 RPS during flash sales.',
         requirements: [
@@ -958,6 +970,10 @@ async function batchWriter(queue: Queue) {
       title: 'Challenge: Handle Burst Traffic',
       description: 'Design a system that gracefully handles sudden traffic spikes',
       estimatedMinutes: 15,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-6-nfr',
+  sequenceOrder: 1,
       scenario: {
         description: 'Design a concert ticket sales system. Normal traffic is 500 RPS, but when tickets go on sale, traffic spikes to 50,000 RPS in 10 seconds. Autoscaling takes 3 minutes.',
         requirements: [

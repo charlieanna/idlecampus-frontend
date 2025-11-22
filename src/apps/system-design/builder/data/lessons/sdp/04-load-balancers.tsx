@@ -12,6 +12,10 @@ export const sdpLoadBalancersLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'intermediate',
   estimatedMinutes: 65,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-5-primer',
+  sequenceOrder: 4,
   stages: [
     {
       id: 'intro-load-balancers',

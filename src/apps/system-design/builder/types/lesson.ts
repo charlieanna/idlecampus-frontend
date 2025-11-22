@@ -125,19 +125,23 @@ export type SystemDesignStage =
 export interface SystemDesignLesson extends MultiStageLesson {
   // System Design specific metadata
   category: 'fundamentals' | 'components' | 'patterns' | 'scaling' | 'problem-solving';
-  
+
+  // Progressive flow metadata
+  moduleId?: string; // Module this lesson belongs to (e.g., 'sd-module-1-fundamentals')
+  sequenceOrder?: number; // Order within the module (1-indexed)
+
   // Related challenges this lesson helps with
   relatedChallenges?: string[]; // Challenge IDs
-  
+
   // Components to practice with
   practiceComponents?: ComponentConfig[];
-  
+
   // Learning path
   nextLessons?: string[]; // Suggested next lesson slugs
-  
+
   // Concepts covered in this lesson
   conceptsCovered?: SystemDesignConcept[];
-  
+
   // Override stages to use extended stage types
   stages: SystemDesignStage[];
 }

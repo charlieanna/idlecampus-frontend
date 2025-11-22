@@ -10,6 +10,11 @@ export const globalCdnLesson: SystemDesignLesson = {
   category: 'patterns',
   tags: ['cdn', 'edge-caching', 'content-delivery', 'global-distribution', 'static-assets'],
   prerequisites: ['basic-components', 'understanding-scale'],
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 3,
+
   learningObjectives: [
     'Understand when to use global CDN architecture',
     'Identify problems with serving content from single origin',

@@ -12,6 +12,10 @@ export const ddiaChapter4EncodingEvolutionLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'intermediate',
   estimatedMinutes: 75,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-4-ddia',
+  sequenceOrder: 3,
   stages: [
     {
       id: 'intro-encoding',

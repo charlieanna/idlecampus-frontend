@@ -12,6 +12,10 @@ export const sdpAsynchronismLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'intermediate',
   estimatedMinutes: 70,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-5-primer',
+  sequenceOrder: 8,
   stages: [
     {
       id: 'intro-asynchronism',

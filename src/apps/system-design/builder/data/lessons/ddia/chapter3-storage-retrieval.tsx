@@ -12,6 +12,10 @@ export const ddiaChapter3StorageRetrievalLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'intermediate',
   estimatedMinutes: 90,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-4-ddia',
+  sequenceOrder: 2,
   stages: [
     {
       id: 'intro-storage',

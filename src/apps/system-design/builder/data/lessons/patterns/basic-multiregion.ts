@@ -10,6 +10,11 @@ export const basicMultiRegionLesson: SystemDesignLesson = {
   category: 'patterns',
   tags: ['multi-region', 'single-leader', 'replication', 'failover', 'geographic-routing'],
   prerequisites: ['database-replication', 'understanding-scale'],
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 2,
+
   learningObjectives: [
     'Understand when to use basic multi-region architecture (single-leader)',
     'Identify problems with single-region designs for global applications',

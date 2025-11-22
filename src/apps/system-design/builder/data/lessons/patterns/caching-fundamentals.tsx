@@ -13,6 +13,10 @@ export const cachingFundamentalsLesson: SystemDesignLesson = {
   difficulty: 'intermediate',
   estimatedMinutes: 75, // Increased due to practice exercises + trade-off content
 
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 5,
+
   // NEW: Connect to challenges
   relatedChallenges: ['tiny_url', 'social-feed', 'e-commerce'],
 

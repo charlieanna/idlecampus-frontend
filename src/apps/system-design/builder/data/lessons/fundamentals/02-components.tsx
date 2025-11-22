@@ -16,6 +16,10 @@ export const componentsLesson: SystemDesignLesson = {
   tags: ['components', 'architecture', 'basics'],
   prerequisites: ['what-is-system-design'],
 
+  // Progressive flow metadata
+  moduleId: 'sd-module-1-fundamentals',
+  sequenceOrder: 2,
+
   // NEW: Connect to challenges
   relatedChallenges: ['tiny_url', 'food-blog', 'e-commerce'],
 
