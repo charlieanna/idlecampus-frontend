@@ -7,8 +7,9 @@
 import { ScenarioQuestion } from '../../types/spacedRepetition';
 import redisVsKafkaQuestions from './redisVsKafkaQuestions';
 import architecturePatternsQuestions from './architecturePatternsQuestions';
+import cassandraZookeeperQuestions from './cassandraZookeeperQuestions';
 
-// Base scenario questions
+// Base scenario questions (cache strategies, etc.)
 const baseScenarioQuestions: ScenarioQuestion[] = [
   // ============================================================================
   // Redis vs Kafka Questions
@@ -662,15 +663,22 @@ Many production systems use variants like:
 
 /**
  * Combined scenario questions from all sources
+ *
+ * TECHNOLOGY FOCUS: Redis, Kafka, Cassandra, Zookeeper only
+ * APPROACH: Technology-agnostic patterns with specific tech examples
+ *
  * Includes:
- * - Base questions (cache strategies, Redis vs Memcached, etc.)
- * - 10+ Redis vs Kafka variations
- * - Advanced architecture patterns (CQRS, Event Sourcing, Saga, Circuit Breaker, etc.)
+ * - Base questions (cache strategies, eviction policies)
+ * - 10+ Redis vs Kafka variations (in-memory vs durable messaging)
+ * - Advanced architecture patterns (CQRS, Event Sourcing, Saga, Circuit Breaker)
+ * - Cassandra scenarios (time-series, consistency, data modeling)
+ * - Zookeeper scenarios (leader election, distributed locks, config management)
  */
 export const scenarioQuestions: ScenarioQuestion[] = [
   ...baseScenarioQuestions,
   ...redisVsKafkaQuestions,
   ...architecturePatternsQuestions,
+  ...cassandraZookeeperQuestions,
 ];
 
 /**

@@ -1,23 +1,28 @@
 /**
- * System Design Concepts for Spaced Repetition
+ * Core System Design Concepts - Technology Agnostic
  *
- * Concepts organized by category with prerequisites and relationships
+ * Focus on patterns and fundamentals, not specific tools.
+ * When teaching specific technologies, we focus ONLY on:
+ * - Redis (in-memory data store)
+ * - Kafka (distributed event streaming)
+ * - Cassandra (distributed NoSQL database)
+ * - Zookeeper (distributed coordination)
  */
 
 import { Concept, Resource } from '../../types/spacedRepetition';
 
 export const systemDesignConcepts: Concept[] = [
   // ============================================================================
-  // Caching Concepts
+  // Caching Patterns (Technology Agnostic)
   // ============================================================================
   {
     id: 'cache-fundamentals',
-    title: 'Cache Fundamentals',
+    title: 'Caching Fundamentals',
     category: 'caching',
-    description: 'Understanding what caching is, why we use it, and basic cache behavior',
+    description: 'Understanding caching patterns, when to cache, and cache behavior',
     difficultyLevel: 'beginner',
     estimatedTimeMinutes: 10,
-    tags: ['caching', 'performance', 'basics'],
+    tags: ['caching', 'performance', 'patterns'],
     resources: [
       {
         type: 'article',
@@ -28,10 +33,10 @@ export const systemDesignConcepts: Concept[] = [
     ],
   },
   {
-    id: 'cache-strategies',
+    id: 'cache-writing-strategies',
     title: 'Cache Writing Strategies',
     category: 'caching',
-    description: 'Write-through, write-back, and write-around caching strategies',
+    description: 'Write-through, write-back, write-around, and cache-aside patterns',
     prerequisites: ['cache-fundamentals'],
     relatedConcepts: ['cache-eviction'],
     difficultyLevel: 'intermediate',
@@ -42,25 +47,13 @@ export const systemDesignConcepts: Concept[] = [
         type: 'article',
         title: 'Why We Built a Write Back Cache - Squarespace Engineering',
         url: 'https://engineering.squarespace.com/blog/2024/why-we-built-a-write-back-cache-for-our-asset-library-with-google-cloud-spanner',
-        description: 'Real-world implementation of write-back caching at Squarespace',
+        description: 'Real-world implementation of write-back caching',
       },
       {
         type: 'article',
         title: 'Write-Behind Caching Pattern',
         url: 'https://www.enjoyalgorithms.com/blog/write-behind-caching-pattern/',
-        description: 'Detailed explanation of write-behind (write-back) pattern',
-      },
-      {
-        type: 'article',
-        title: 'Write-Around Caching Pattern',
-        url: 'https://www.enjoyalgorithms.com/blog/write-around-caching-pattern/',
-        description: 'When and how to use write-around caching',
-      },
-      {
-        type: 'article',
-        title: 'Understanding Cache Strategies with Python',
-        url: 'https://shahriar.svbtle.com/Understanding-writethrough-writearound-and-writeback-caching-with-python',
-        description: 'Practical implementations with code examples',
+        description: 'Detailed explanation of write-behind pattern',
       },
     ],
   },
@@ -70,154 +63,295 @@ export const systemDesignConcepts: Concept[] = [
     category: 'caching',
     description: 'LRU, LFU, FIFO and other cache eviction algorithms',
     prerequisites: ['cache-fundamentals'],
-    relatedConcepts: ['cache-strategies'],
+    relatedConcepts: ['cache-writing-strategies'],
     difficultyLevel: 'intermediate',
     estimatedTimeMinutes: 12,
     tags: ['caching', 'algorithms', 'memory-management'],
   },
 
   // ============================================================================
-  // Storage Systems
+  // Redis - In-Memory Data Store
   // ============================================================================
   {
     id: 'redis-fundamentals',
-    title: 'Redis In-Memory Store',
+    title: 'Redis: In-Memory Data Store',
     category: 'storage',
-    description: 'Understanding Redis as an in-memory data structure store',
-    prerequisites: ['cache-fundamentals'],
-    relatedConcepts: ['memcached-fundamentals', 'kafka-fundamentals'],
+    description: 'Understanding Redis data structures, use cases, and when to use in-memory storage',
     difficultyLevel: 'beginner',
-    estimatedTimeMinutes: 10,
-    tags: ['redis', 'in-memory', 'cache', 'database'],
+    estimatedTimeMinutes: 15,
+    tags: ['redis', 'in-memory', 'cache', 'data-structures'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Redis Documentation',
+        url: 'https://redis.io/docs/',
+        description: 'Official Redis documentation',
+      },
+    ],
   },
   {
-    id: 'memcached-fundamentals',
-    title: 'Memcached Basics',
+    id: 'redis-data-structures',
+    title: 'Redis Data Structures',
     category: 'storage',
-    description: 'Understanding Memcached for distributed caching',
-    prerequisites: ['cache-fundamentals'],
-    relatedConcepts: ['redis-fundamentals'],
-    difficultyLevel: 'beginner',
-    estimatedTimeMinutes: 10,
-    tags: ['memcached', 'distributed-cache', 'in-memory'],
+    description: 'Strings, Lists, Sets, Sorted Sets, Hashes, and their use cases',
+    prerequisites: ['redis-fundamentals'],
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 20,
+    tags: ['redis', 'data-structures', 'strings', 'sets', 'hashes'],
   },
   {
-    id: 'redis-vs-memcached',
-    title: 'Redis vs Memcached',
+    id: 'redis-persistence',
+    title: 'Redis Persistence Patterns',
     category: 'storage',
-    description: 'When to choose Redis over Memcached and vice versa',
-    prerequisites: ['redis-fundamentals', 'memcached-fundamentals'],
+    description: 'RDB snapshots, AOF logs, and when to persist in-memory data',
+    prerequisites: ['redis-fundamentals'],
     difficultyLevel: 'intermediate',
     estimatedTimeMinutes: 15,
-    tags: ['redis', 'memcached', 'comparison', 'trade-offs'],
+    tags: ['redis', 'persistence', 'rdb', 'aof'],
   },
 
   // ============================================================================
-  // Messaging Systems
+  // Kafka - Distributed Event Streaming
   // ============================================================================
   {
-    id: 'message-queue-fundamentals',
-    title: 'Message Queue Fundamentals',
-    category: 'messaging',
-    description: 'Understanding message queues and why we need them',
-    difficultyLevel: 'beginner',
-    estimatedTimeMinutes: 10,
-    tags: ['queues', 'async', 'messaging'],
-  },
-  {
     id: 'kafka-fundamentals',
-    title: 'Apache Kafka Basics',
+    title: 'Kafka: Distributed Event Streaming',
     category: 'messaging',
-    description: 'Understanding Kafka as a distributed event streaming platform',
-    prerequisites: ['message-queue-fundamentals'],
-    relatedConcepts: ['rabbitmq-fundamentals', 'redis-fundamentals'],
+    description: 'Understanding Kafka topics, partitions, and event streaming patterns',
     difficultyLevel: 'intermediate',
-    estimatedTimeMinutes: 15,
-    tags: ['kafka', 'streaming', 'events', 'disk-based'],
+    estimatedTimeMinutes: 20,
+    tags: ['kafka', 'streaming', 'events', 'distributed'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Apache Kafka Documentation',
+        url: 'https://kafka.apache.org/documentation/',
+        description: 'Official Kafka documentation',
+      },
+    ],
   },
   {
-    id: 'rabbitmq-fundamentals',
-    title: 'RabbitMQ Basics',
+    id: 'kafka-consumers-producers',
+    title: 'Kafka Producers and Consumers',
     category: 'messaging',
-    description: 'Understanding RabbitMQ message broker',
-    prerequisites: ['message-queue-fundamentals'],
-    relatedConcepts: ['kafka-fundamentals'],
+    description: 'Producer semantics, consumer groups, and offset management',
+    prerequisites: ['kafka-fundamentals'],
     difficultyLevel: 'intermediate',
-    estimatedTimeMinutes: 12,
-    tags: ['rabbitmq', 'message-broker', 'amqp'],
+    estimatedTimeMinutes: 20,
+    tags: ['kafka', 'producers', 'consumers', 'offsets'],
   },
   {
-    id: 'redis-vs-kafka',
-    title: 'Redis vs Kafka for Queuing',
+    id: 'kafka-partitioning',
+    title: 'Kafka Partitioning Strategy',
     category: 'messaging',
-    description: 'When to use Redis (in-memory) vs Kafka (disk-based) for message queuing',
+    description: 'Partition keys, ordering guarantees, and scaling with partitions',
+    prerequisites: ['kafka-fundamentals'],
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 25,
+    tags: ['kafka', 'partitioning', 'scaling', 'ordering'],
+  },
+
+  // ============================================================================
+  // Cassandra - Distributed NoSQL Database
+  // ============================================================================
+  {
+    id: 'cassandra-fundamentals',
+    title: 'Cassandra: Distributed NoSQL Database',
+    category: 'storage',
+    description: 'Understanding Cassandra architecture, eventual consistency, and when to use wide-column stores',
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 20,
+    tags: ['cassandra', 'nosql', 'distributed', 'eventual-consistency'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Apache Cassandra Documentation',
+        url: 'https://cassandra.apache.org/doc/latest/',
+        description: 'Official Cassandra documentation',
+      },
+    ],
+  },
+  {
+    id: 'cassandra-data-modeling',
+    title: 'Cassandra Data Modeling',
+    category: 'storage',
+    description: 'Partition keys, clustering columns, and query-driven design',
+    prerequisites: ['cassandra-fundamentals'],
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 30,
+    tags: ['cassandra', 'data-modeling', 'partition-key', 'clustering'],
+  },
+  {
+    id: 'cassandra-consistency',
+    title: 'Cassandra Consistency Levels',
+    category: 'consistency',
+    description: 'Tunable consistency (ONE, QUORUM, ALL) and CAP theorem trade-offs',
+    prerequisites: ['cassandra-fundamentals', 'cap-theorem'],
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 25,
+    tags: ['cassandra', 'consistency', 'quorum', 'cap'],
+  },
+  {
+    id: 'cassandra-vs-relational',
+    title: 'When to Use Cassandra vs Relational Databases',
+    category: 'storage',
+    description: 'Write-heavy workloads, time-series data, and distributed scenarios',
+    prerequisites: ['cassandra-fundamentals'],
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 20,
+    tags: ['cassandra', 'trade-offs', 'use-cases'],
+  },
+
+  // ============================================================================
+  // Zookeeper - Distributed Coordination
+  // ============================================================================
+  {
+    id: 'zookeeper-fundamentals',
+    title: 'Zookeeper: Distributed Coordination',
+    category: 'architecture',
+    description: 'Understanding distributed coordination, leader election, and configuration management',
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 25,
+    tags: ['zookeeper', 'coordination', 'distributed', 'consensus'],
+    resources: [
+      {
+        type: 'documentation',
+        title: 'Apache Zookeeper Documentation',
+        url: 'https://zookeeper.apache.org/doc/current/',
+        description: 'Official Zookeeper documentation',
+      },
+    ],
+  },
+  {
+    id: 'leader-election-pattern',
+    title: 'Leader Election Pattern',
+    category: 'architecture',
+    description: 'Coordinating distributed systems with leader election using Zookeeper',
+    prerequisites: ['zookeeper-fundamentals'],
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 20,
+    tags: ['zookeeper', 'leader-election', 'coordination'],
+  },
+  {
+    id: 'distributed-locks',
+    title: 'Distributed Locks and Barriers',
+    category: 'architecture',
+    description: 'Implementing distributed synchronization primitives',
+    prerequisites: ['zookeeper-fundamentals'],
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 20,
+    tags: ['zookeeper', 'locks', 'synchronization', 'distributed'],
+  },
+
+  // ============================================================================
+  // Messaging Patterns (Technology Agnostic)
+  // ============================================================================
+  {
+    id: 'in-memory-vs-durable-queues',
+    title: 'In-Memory vs Durable Message Queues',
+    category: 'messaging',
+    description: 'When to use ephemeral vs persistent message queues (Redis vs Kafka use cases)',
     prerequisites: ['redis-fundamentals', 'kafka-fundamentals'],
     difficultyLevel: 'intermediate',
-    estimatedTimeMinutes: 15,
-    tags: ['redis', 'kafka', 'queues', 'trade-offs', 'persistence'],
+    estimatedTimeMinutes: 20,
+    tags: ['messaging', 'queues', 'trade-offs', 'durability'],
     resources: [
       {
         type: 'article',
         title: 'Redis vs Kafka: A Comprehensive Comparison',
         url: 'https://double.cloud/blog/posts/2024/02/redis-vs-kafka/',
-        description: 'In-depth comparison from DoubleCloud (2024)',
+        description: 'In-depth comparison of use cases',
       },
       {
         type: 'article',
         title: 'Redis vs Apache Kafka: How to Choose in 2025',
         url: 'https://betterstack.com/community/comparisons/redis-vs-kafka/',
-        description: 'Detailed guide on when to use each - Better Stack',
+        description: 'Decision guide for different workloads',
       },
+    ],
+  },
+  {
+    id: 'pub-sub-pattern',
+    title: 'Publish-Subscribe Pattern',
+    category: 'messaging',
+    description: 'Understanding pub/sub, fan-out, and message distribution patterns',
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 15,
+    tags: ['pub-sub', 'messaging', 'patterns'],
+  },
+  {
+    id: 'event-streaming-pattern',
+    title: 'Event Streaming Pattern',
+    category: 'messaging',
+    description: 'Event logs, replay capability, and stream processing',
+    prerequisites: ['kafka-fundamentals'],
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 20,
+    tags: ['event-streaming', 'kafka', 'patterns'],
+  },
+
+  // ============================================================================
+  // Storage Patterns (Technology Agnostic)
+  // ============================================================================
+  {
+    id: 'sql-vs-nosql',
+    title: 'SQL vs NoSQL Trade-offs',
+    category: 'storage',
+    description: 'When to use relational vs non-relational databases',
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 20,
+    tags: ['sql', 'nosql', 'trade-offs', 'databases'],
+  },
+  {
+    id: 'replication-patterns',
+    title: 'Replication Patterns',
+    category: 'storage',
+    description: 'Leader-follower, multi-leader, and leaderless replication',
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 25,
+    tags: ['replication', 'distributed', 'patterns'],
+  },
+  {
+    id: 'partitioning-sharding',
+    title: 'Partitioning and Sharding Strategies',
+    category: 'scalability',
+    description: 'Horizontal partitioning, hash-based vs range-based sharding',
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 25,
+    tags: ['sharding', 'partitioning', 'scalability'],
+    resources: [
       {
-        type: 'article',
-        title: 'Apache Kafka vs Redis: Are They Truly Comparable?',
-        url: 'https://www.openlogic.com/blog/apache-kafka-vs-redis',
-        description: 'Analysis of use cases and architectural differences - OpenLogic',
-      },
-      {
-        type: 'article',
-        title: 'Kafka vs Redis: Log Aggregation Performance',
-        url: 'https://logz.io/blog/kafka-vs-redis/',
-        description: 'Performance comparison for different workloads - Logz.io',
+        type: 'documentation',
+        title: 'Sharding Pattern - Azure Architecture Center',
+        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding',
+        description: 'Sharding strategies and trade-offs',
       },
     ],
   },
 
   // ============================================================================
-  // Architecture Patterns
+  // Architecture Patterns (Technology Agnostic)
   // ============================================================================
   {
     id: 'cqrs-pattern',
     title: 'CQRS (Command Query Responsibility Segregation)',
     category: 'architecture',
-    description: 'Separating read and write operations for independent scaling and optimization',
+    description: 'Separating read and write paths for independent scaling',
     difficultyLevel: 'advanced',
     estimatedTimeMinutes: 20,
-    tags: ['cqrs', 'read-write-separation', 'scaling', 'patterns'],
+    tags: ['cqrs', 'read-write-separation', 'patterns'],
     resources: [
       {
         type: 'documentation',
         title: 'CQRS Pattern - Azure Architecture Center',
         url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/cqrs',
-        description: 'Official Microsoft documentation on CQRS pattern',
+        description: 'Official Microsoft documentation on CQRS',
       },
       {
         type: 'article',
         title: 'When Should You Use CQRS?',
         url: 'https://blog.risingstack.com/when-to-use-cqrs/',
-        description: 'Practical guide on CQRS use cases - RisingStack Engineering',
-      },
-      {
-        type: 'article',
-        title: 'CQRS Design Pattern: Independent Read & Write Scaling',
-        url: 'https://dip-mazumder.medium.com/optimize-microservices-with-high-read-load-cqrs-design-pattern-0c53793179e3',
-        description: 'CQRS for microservices with high read loads',
-      },
-      {
-        type: 'article',
-        title: 'CQRS in Event-Driven Systems',
-        url: 'https://dev.to/cadienvan/cqrs-separating-the-powers-of-read-and-write-operations-in-event-driven-systems-47eo',
-        description: 'Combining CQRS with event sourcing',
+        description: 'Practical guide on CQRS use cases',
       },
     ],
   },
@@ -225,18 +359,17 @@ export const systemDesignConcepts: Concept[] = [
     id: 'event-sourcing',
     title: 'Event Sourcing Pattern',
     category: 'architecture',
-    description: 'Storing state changes as a sequence of events instead of current state',
-    prerequisites: ['cqrs-pattern'],
-    relatedConcepts: ['kafka-fundamentals'],
+    description: 'Storing state as a sequence of events (commonly implemented with Kafka)',
+    prerequisites: ['cqrs-pattern', 'kafka-fundamentals'],
     difficultyLevel: 'advanced',
-    estimatedTimeMinutes: 20,
-    tags: ['event-sourcing', 'events', 'audit', 'patterns'],
+    estimatedTimeMinutes: 25,
+    tags: ['event-sourcing', 'events', 'kafka', 'patterns'],
     resources: [
       {
         type: 'documentation',
         title: 'Event Sourcing Pattern - Azure Architecture Center',
         url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/event-sourcing',
-        description: 'Microsoft documentation on event sourcing',
+        description: 'Event sourcing fundamentals',
       },
     ],
   },
@@ -244,33 +377,16 @@ export const systemDesignConcepts: Concept[] = [
     id: 'saga-pattern',
     title: 'Saga Pattern for Distributed Transactions',
     category: 'architecture',
-    description: 'Managing distributed transactions across microservices using choreography or orchestration',
+    description: 'Managing long-running transactions across services',
     difficultyLevel: 'advanced',
     estimatedTimeMinutes: 25,
-    tags: ['saga', 'distributed-transactions', 'microservices', 'patterns'],
+    tags: ['saga', 'distributed-transactions', 'patterns'],
     resources: [
       {
         type: 'documentation',
         title: 'Saga Pattern - Microservices.io',
         url: 'https://microservices.io/patterns/data/saga.html',
-        description: 'Comprehensive guide to Saga pattern',
-      },
-    ],
-  },
-  {
-    id: 'bulkhead-pattern',
-    title: 'Bulkhead Pattern',
-    category: 'architecture',
-    description: 'Isolating resources to prevent cascading failures',
-    difficultyLevel: 'intermediate',
-    estimatedTimeMinutes: 15,
-    tags: ['bulkhead', 'resilience', 'isolation', 'patterns'],
-    resources: [
-      {
-        type: 'documentation',
-        title: 'Bulkhead Pattern - Azure Architecture Center',
-        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/bulkhead',
-        description: 'Resource isolation for resilience',
+        description: 'Choreography vs orchestration',
       },
     ],
   },
@@ -278,114 +394,46 @@ export const systemDesignConcepts: Concept[] = [
     id: 'circuit-breaker-pattern',
     title: 'Circuit Breaker Pattern',
     category: 'architecture',
-    description: 'Preventing cascading failures by detecting and handling faults',
+    description: 'Preventing cascading failures in distributed systems',
     difficultyLevel: 'intermediate',
     estimatedTimeMinutes: 15,
-    tags: ['circuit-breaker', 'resilience', 'fault-tolerance', 'patterns'],
+    tags: ['circuit-breaker', 'resilience', 'patterns'],
     resources: [
       {
         type: 'documentation',
         title: 'Circuit Breaker Pattern - Azure Architecture Center',
         url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/circuit-breaker',
-        description: 'Implementing fault tolerance with circuit breakers',
+        description: 'Fault tolerance patterns',
       },
     ],
+  },
+  {
+    id: 'bulkhead-pattern',
+    title: 'Bulkhead Pattern',
+    category: 'architecture',
+    description: 'Resource isolation to prevent cascading failures',
+    difficultyLevel: 'intermediate',
+    estimatedTimeMinutes: 15,
+    tags: ['bulkhead', 'resilience', 'isolation', 'patterns'],
   },
   {
     id: 'retry-pattern',
     title: 'Retry Pattern with Exponential Backoff',
     category: 'architecture',
-    description: 'Handling transient failures with intelligent retry strategies',
+    description: 'Handling transient failures gracefully',
     difficultyLevel: 'intermediate',
     estimatedTimeMinutes: 12,
     tags: ['retry', 'resilience', 'backoff', 'patterns'],
-    resources: [
-      {
-        type: 'documentation',
-        title: 'Retry Pattern - Azure Architecture Center',
-        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/retry',
-        description: 'Best practices for retry logic',
-      },
-    ],
-  },
-  {
-    id: 'strangler-fig-pattern',
-    title: 'Strangler Fig Pattern',
-    category: 'architecture',
-    description: 'Incrementally migrating legacy systems to new architecture',
-    difficultyLevel: 'advanced',
-    estimatedTimeMinutes: 18,
-    tags: ['migration', 'legacy', 'modernization', 'patterns'],
-    resources: [
-      {
-        type: 'documentation',
-        title: 'Strangler Fig Pattern - Azure Architecture Center',
-        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/strangler-fig',
-        description: 'Safely migrating monoliths to microservices',
-      },
-    ],
-  },
-  {
-    id: 'gateway-aggregation',
-    title: 'Gateway Aggregation Pattern',
-    category: 'architecture',
-    description: 'Using a gateway to aggregate multiple backend requests',
-    difficultyLevel: 'intermediate',
-    estimatedTimeMinutes: 15,
-    tags: ['gateway', 'aggregation', 'api', 'patterns'],
-    resources: [
-      {
-        type: 'documentation',
-        title: 'Gateway Aggregation - Azure Architecture Center',
-        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/gateway-aggregation',
-        description: 'Reducing chattiness between clients and services',
-      },
-    ],
-  },
-  {
-    id: 'sharding-pattern',
-    title: 'Sharding Pattern',
-    category: 'architecture',
-    description: 'Horizontal partitioning of data across multiple databases',
-    difficultyLevel: 'advanced',
-    estimatedTimeMinutes: 20,
-    tags: ['sharding', 'partitioning', 'scalability', 'database'],
-    resources: [
-      {
-        type: 'documentation',
-        title: 'Sharding Pattern - Azure Architecture Center',
-        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/sharding',
-        description: 'Database sharding strategies and trade-offs',
-      },
-    ],
-  },
-  {
-    id: 'materialized-view-pattern',
-    title: 'Materialized View Pattern',
-    category: 'architecture',
-    description: 'Pre-computing and caching query results for performance',
-    relatedConcepts: ['cqrs-pattern', 'cache-strategies'],
-    difficultyLevel: 'intermediate',
-    estimatedTimeMinutes: 15,
-    tags: ['materialized-view', 'performance', 'caching', 'patterns'],
-    resources: [
-      {
-        type: 'documentation',
-        title: 'Materialized View Pattern - Azure Architecture Center',
-        url: 'https://learn.microsoft.com/en-us/azure/architecture/patterns/materialized-view',
-        description: 'Optimizing read performance with pre-computed views',
-      },
-    ],
   },
 
   // ============================================================================
-  // Consistency & Availability
+  // Consistency & Availability (Technology Agnostic)
   // ============================================================================
   {
     id: 'cap-theorem',
     title: 'CAP Theorem',
     category: 'consistency',
-    description: 'Understanding Consistency, Availability, and Partition Tolerance trade-offs',
+    description: 'Consistency, Availability, and Partition Tolerance trade-offs',
     difficultyLevel: 'intermediate',
     estimatedTimeMinutes: 20,
     tags: ['cap', 'distributed-systems', 'trade-offs'],
@@ -394,33 +442,43 @@ export const systemDesignConcepts: Concept[] = [
     id: 'consistency-models',
     title: 'Consistency Models',
     category: 'consistency',
-    description: 'Strong consistency, eventual consistency, and everything in between',
+    description: 'Strong, eventual, causal, and session consistency',
     prerequisites: ['cap-theorem'],
     difficultyLevel: 'advanced',
-    estimatedTimeMinutes: 20,
-    tags: ['consistency', 'distributed-systems', 'guarantees'],
+    estimatedTimeMinutes: 25,
+    tags: ['consistency', 'distributed-systems'],
+  },
+  {
+    id: 'consensus-algorithms',
+    title: 'Consensus Algorithms (Paxos, Raft)',
+    category: 'consistency',
+    description: 'How distributed systems agree on values (used by Zookeeper)',
+    prerequisites: ['cap-theorem'],
+    difficultyLevel: 'advanced',
+    estimatedTimeMinutes: 30,
+    tags: ['consensus', 'paxos', 'raft', 'zookeeper'],
   },
 
   // ============================================================================
-  // Performance & Scalability
+  // Performance & Scalability (Technology Agnostic)
   // ============================================================================
   {
     id: 'latency-vs-throughput',
     title: 'Latency vs Throughput',
     category: 'performance',
-    description: 'Understanding the difference and trade-offs between latency and throughput',
+    description: 'Understanding and optimizing for latency vs throughput',
     difficultyLevel: 'beginner',
     estimatedTimeMinutes: 10,
-    tags: ['performance', 'metrics', 'optimization'],
+    tags: ['performance', 'latency', 'throughput'],
   },
   {
     id: 'horizontal-vs-vertical-scaling',
     title: 'Horizontal vs Vertical Scaling',
     category: 'scalability',
-    description: 'Scale up vs scale out strategies and when to use each',
+    description: 'Scale-out vs scale-up strategies',
     difficultyLevel: 'beginner',
     estimatedTimeMinutes: 12,
-    tags: ['scalability', 'architecture', 'capacity'],
+    tags: ['scalability', 'scaling'],
   },
 ];
 
@@ -443,4 +501,18 @@ export function getConceptsByCategory(category: string): Concept[] {
  */
 export function getConceptsByDifficulty(difficulty: Concept['difficultyLevel']): Concept[] {
   return systemDesignConcepts.filter(c => c.difficultyLevel === difficulty);
+}
+
+/**
+ * Get concepts by technology
+ */
+export function getConceptsByTechnology(tech: 'redis' | 'kafka' | 'cassandra' | 'zookeeper'): Concept[] {
+  return systemDesignConcepts.filter(c => c.tags.includes(tech));
+}
+
+/**
+ * Get pattern-focused concepts (technology-agnostic)
+ */
+export function getPatternConcepts(): Concept[] {
+  return systemDesignConcepts.filter(c => c.tags.includes('patterns'));
 }
