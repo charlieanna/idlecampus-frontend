@@ -24,7 +24,6 @@ import {
 // Import existing components still needed
 import { getDefaultConfig } from "./components/DesignCanvas";
 import { InspectorModal } from "./components/InspectorModal";
-import { SolutionModal } from "./components/SolutionModal";
 
 // Import types and services
 import { Challenge, Solution } from "../types/testCase";
@@ -41,9 +40,11 @@ import {
 } from "../services/schemaValidator";
 import { TieredChallenge } from "../types/challengeTiers";
 import type { DatabaseSchema } from "../types/challengeTiers";
+import { TestRunner } from "../simulation/testRunner";
 
-// Import example challenges
+// Import challenges
 import { tieredChallenges } from "../challenges/tieredChallenges";
+import { challenges as challengesFromIndex } from "../challenges/index";
 
 // Import solution generator
 import { generateSolutionForChallenge } from "../challenges/problemDefinitionConverter";
@@ -66,18 +67,30 @@ export function TieredSystemDesignBuilder({
 }: TieredSystemDesignBuilderProps = {}) {
   const navigate = useNavigate();
 
+  // Ensure challenges is populated (fallback chain: props -> tieredChallenges -> challengesFromIndex)
+  const effectiveChallenges = 
+    challenges && challenges.length > 0 
+      ? challenges 
+      : (tieredChallenges && tieredChallenges.length > 0 
+          ? tieredChallenges 
+          : challengesFromIndex || []);
+  
+  console.log('TieredSystemDesignBuilder initialized:', {
+    challengeId,
+    challengesLength: effectiveChallenges.length,
+    hasChallenges: !!effectiveChallenges && effectiveChallenges.length > 0,
+  });
+
   // Store hooks
   const {
     selectedChallenge,
     setSelectedChallenge,
     hasSubmitted,
     setHasSubmitted,
-    testRunner,
-    solution,
-    setSolution,
-    showSolutionModal,
-    setShowSolutionModal,
   } = useBuilderStore();
+
+  // Test runner - create locally (not in Zustand - class instances don't serialize well)
+  const [testRunner] = useState(() => new TestRunner());
 
   const {
     systemGraph,
@@ -133,14 +146,52 @@ export function TieredSystemDesignBuilder({
 
   // Initialize challenge
   useEffect(() => {
-    if (challengeId && challenges) {
-      const challenge = challenges.find((c) => c.id === challengeId);
-      if (challenge) {
-        setSelectedChallenge(challenge);
-        setActiveTab("canvas");
-      }
+    if (!challengeId) {
+      console.log("No challengeId provided");
+      return;
     }
-  }, [challengeId, challenges, setSelectedChallenge, setActiveTab]);
+    
+    if (!effectiveChallenges || effectiveChallenges.length === 0) {
+      console.warn("Challenges array is empty or undefined");
+      return;
+    }
+    
+    console.log(`Looking for challenge: ${challengeId}, total challenges available: ${effectiveChallenges.length}`);
+    
+    // Try exact match first
+    let challenge = effectiveChallenges.find((c) => c.id === challengeId);
+    
+    // If not found, try normalizing hyphens to underscores (for URL slugs like tiny-url -> tiny_url)
+    if (!challenge) {
+      const normalizedId = challengeId.replace(/-/g, '_');
+      console.log(`Trying normalized ID: ${normalizedId}`);
+      challenge = effectiveChallenges.find((c) => c.id === normalizedId);
+    }
+    
+    // If still not found, try the reverse (underscores to hyphens)
+    if (!challenge) {
+      const reverseId = challengeId.replace(/_/g, '-');
+      console.log(`Trying reverse ID: ${reverseId}`);
+      challenge = effectiveChallenges.find((c) => c.id === reverseId);
+    }
+    
+    // If still not found, try finding by slug pattern (e.g., tiny-url -> tiny-url-l6)
+    if (!challenge) {
+      console.log(`Trying prefix match for: ${challengeId}`);
+      challenge = effectiveChallenges.find((c) => c.id?.startsWith(challengeId));
+    }
+    
+    if (challenge) {
+      console.log(`✅ Found challenge: ${challenge.id} - ${challenge.title}`);
+      setSelectedChallenge(challenge);
+      setActiveTab("canvas");
+    } else {
+      console.error(`❌ Challenge not found: ${challengeId}`);
+      // Show first few available challenge IDs for debugging
+      const sampleIds = effectiveChallenges.slice(0, 10).map(c => c.id);
+      console.log(`Sample available challenge IDs:`, sampleIds);
+    }
+  }, [challengeId, effectiveChallenges, setSelectedChallenge, setActiveTab]);
 
   // Load solution to canvas
   const loadSolutionToCanvas = useCallback(
@@ -152,32 +203,117 @@ export function TieredSystemDesignBuilder({
           : undefined);
       if (!solution) return;
 
-      // Convert solution to SystemGraph format (components + connections)
+      console.log("📋 Loading solution:", solutionOverride ? "test-case-specific" : "generated-fresh");
+      console.log("📋 Solution components count:", solution.components?.length || 0);
+      console.log("📋 Solution connections:", solution.connections?.length || 0);
+
+      // Safety check for components and connections
+      if (!solution.components || !Array.isArray(solution.components)) {
+        console.error("Solution missing components array");
+        return;
+      }
+      if (!solution.connections || !Array.isArray(solution.connections)) {
+        console.error("Solution missing connections array");
+        return;
+      }
+
+      // Convert solution components to SystemGraph components with full config
       const components = solution.components.map((comp, index) => {
         const solutionConfig = comp.config || {};
         const defaultCfg = getDefaultConfig(comp.type);
-        const mergedConfig: Record<string, any> = { ...defaultCfg, ...solutionConfig };
+        const mergedConfig: Record<string, any> = { ...solutionConfig };
 
-        // Return ComponentNode format
+        // Only add defaults for fields that are truly missing
+        Object.keys(defaultCfg).forEach((key) => {
+          if (!(key in solutionConfig)) {
+            mergedConfig[key] = defaultCfg[key];
+          }
+        });
+
+        // Ensure app_server has instances if not specified
+        if (comp.type === "app_server" && solutionConfig.instances === undefined) {
+          mergedConfig.instances = mergedConfig.instances || 1;
+        }
+
+        // Use ID from config if available, otherwise generate one
+        const componentId = mergedConfig.id || `${comp.type}_${Date.now()}_${index}`;
+
         return {
-          id: mergedConfig.id || `${comp.type}_${index + 1}`,
-          type: comp.type,
+          id: componentId,
+          type: comp.type as any,
           config: mergedConfig,
         };
       });
 
-      // Use connections directly from solution (they're already in Connection format)
-      const connections = solution.connections || [];
+      // Convert solution connections to use actual component IDs (not types)
+      const connections = solution.connections
+        .map((conn) => {
+          // Find the component IDs by type
+          const fromCandidates = components.filter((c) => c.type === conn.from);
+          const toCandidates = components.filter((c) => c.type === conn.to);
+
+          let fromComp: any | undefined;
+          let toComp: any | undefined;
+
+          // Select from component
+          if (fromCandidates.length === 1) {
+            fromComp = fromCandidates[0];
+          } else if (fromCandidates.length > 1) {
+            fromComp = fromCandidates[0];
+          }
+
+          // Select to component with smart matching for multiple candidates
+          if (toCandidates.length === 1) {
+            toComp = toCandidates[0];
+          } else if (toCandidates.length > 1) {
+            // For message_queue → app_server, prefer the conflict resolver
+            if (conn.from === "message_queue" && conn.to === "app_server") {
+              toComp =
+                toCandidates.find(
+                  (c) =>
+                    c.config?.serviceName === "conflict-resolver" ||
+                    c.config?.displayName?.toLowerCase().includes("conflict"),
+                ) || toCandidates[0];
+            } else {
+              toComp = toCandidates[0];
+            }
+          }
+
+          if (!fromComp || !toComp) {
+            console.warn(
+              `Missing component for connection: ${conn.from} -> ${conn.to}`,
+              {
+                fromCandidates: fromCandidates.length,
+                toCandidates: toCandidates.length,
+              },
+            );
+            return null;
+          }
+
+          return {
+            from: fromComp.id,
+            to: toComp.id,
+            type: (conn.type || "read_write") as "read" | "write" | "read_write",
+          };
+        })
+        .filter((c) => c !== null) as any[];
+
+      // Update the system graph
+      console.log("📋 Setting system graph with components:", components.length);
+      console.log("📋 Setting system graph with connections:", connections.length);
 
       setSystemGraph({
         components,
         connections,
       });
 
-      setSolution(solution);
-      setShowSolutionModal(true);
+      // Reset submission state so user can see Component Palette and Submit button again
+      setHasSubmitted(false);
+      clearTestResults();
+
+      // Don't show modal - just load to canvas (matching old behavior)
     },
-    [selectedChallenge, setSystemGraph, setSolution, setShowSolutionModal]
+    [selectedChallenge, setSystemGraph, setHasSubmitted, clearTestResults]
   );
 
   // Handle adding component
@@ -253,14 +389,51 @@ export function TieredSystemDesignBuilder({
         }
       }
 
-      // Run tests
-      const results = await testRunner.runTests(
-        selectedChallenge,
-        systemGraph,
-        pythonCode,
+      // Split tests into FR and NFR
+      const frTests = selectedChallenge.testCases.filter(
+        (tc) => tc.type === "functional",
+      );
+      const nfrTests = selectedChallenge.testCases.filter(
+        (tc) => tc.type !== "functional",
       );
 
-      setTestResults(results);
+      console.log(`🚀 Running ${frTests.length} FR tests...`);
+
+      // Pass Python code to test runner for code-aware simulation
+      testRunner.setPythonCode(pythonCode);
+
+      // Run FR tests first
+      const frResults = testRunner.runAllTestCases(systemGraph, frTests);
+      const allFrPassed = frResults.every((r) => r.passed);
+
+      // If FR tests pass, automatically run NFR tests
+      let nfrResults: TestResult[] = [];
+      if (allFrPassed && nfrTests.length > 0) {
+        console.log(`🚀 Running ${nfrTests.length} NFR tests...`);
+        nfrResults = testRunner.runAllTestCases(systemGraph, nfrTests);
+      } else if (!allFrPassed) {
+        console.log(
+          `⚠️ Skipping NFR tests because ${frResults.filter((r) => !r.passed).length} FR test(s) failed`,
+        );
+      }
+
+      // Combine results (FR first, then NFR if they ran)
+      const resultsArray = [...frResults, ...nfrResults];
+      const resultsMap = new Map<number, TestResult>();
+
+      // Create combined test cases array (FR first, then NFR only if they were run)
+      const allTestCasesToRun = allFrPassed
+        ? [...frTests, ...nfrTests]
+        : frTests;
+
+      resultsArray.forEach((result, index) => {
+        // Preserve original index mapping so SubmissionResultsPanel lines up with testCases
+        const testCase = allTestCasesToRun[index];
+        const originalIndex = selectedChallenge.testCases.indexOf(testCase);
+        resultsMap.set(originalIndex, result);
+      });
+
+      setTestResults(resultsMap);
     } catch (error) {
       console.error("Test execution error:", error);
     } finally {
@@ -302,8 +475,8 @@ export function TieredSystemDesignBuilder({
   const tabs: Tab[] = [
     { id: "canvas", label: "Canvas", icon: "🎨" },
     { id: "python", label: "Python Application Server", icon: "🐍", disabled: !hasPythonTemplate },
-    { id: "app-server", label: "App Server", icon: "📦", disabled: !systemGraph.nodes?.some((n) => n.type === "app_server") },
-    { id: "load-balancer", label: "Load Balancer", icon: "⚖️", disabled: !systemGraph.nodes?.some((n) => n.type === "load_balancer") },
+    { id: "app-server", label: "App Server", icon: "📦", disabled: !systemGraph.components?.some((c) => c.type === "app_server") },
+    { id: "load-balancer", label: "Load Balancer", icon: "⚖️", disabled: !systemGraph.components?.some((c) => c.type === "load_balancer") },
     { id: "lessons", label: "Lessons", icon: "📖" },
     { id: "apis", label: "APIs Available", icon: "📚" },
   ];
@@ -387,13 +560,6 @@ export function TieredSystemDesignBuilder({
           systemGraph={systemGraph}
           onClose={() => setShowInspectorModal(false)}
           onUpdateConfig={handleUpdateConfig}
-        />
-      )}
-
-      {showSolutionModal && solution && (
-        <SolutionModal
-          solution={solution}
-          onClose={() => setShowSolutionModal(false)}
         />
       )}
     </MainLayout>

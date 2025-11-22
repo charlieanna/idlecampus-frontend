@@ -9,6 +9,7 @@ import bodyParser from 'body-parser';
 import { pythonExecutor } from './services/pythonExecutor.js';
 import codeLabsRouter from './routes/codeLabs.js';
 import systemDesignRouter from './routes/systemDesign.js';
+import progressiveFlowRouter from './routes/progressiveFlow.js';
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -76,6 +77,7 @@ app.get('/health', async (req: Request, res: Response) => {
 // API routes
 app.use('/api/v1/code_labs', codeLabsRouter);
 app.use('/api/v1/system-design', systemDesignRouter);
+app.use('/api/progressive', progressiveFlowRouter);
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -134,7 +136,12 @@ async function startServer() {
       console.log('   GET  /api/v1/code_labs/:id/solution');
       console.log('   GET  /api/v1/system-design/health');
       console.log('   POST /api/v1/system-design/:problemId/validate');
-      console.log('   POST /api/v1/system-design/:problemId/quick-validate\n');
+      console.log('   POST /api/v1/system-design/:problemId/quick-validate');
+      console.log('   GET  /api/progressive/health');
+      console.log('   GET  /api/progressive/user/:userId/progress');
+      console.log('   POST /api/progressive/user/:userId/complete-level');
+      console.log('   GET  /api/progressive/challenges');
+      console.log('   GET  /api/progressive/leaderboard\n');
     });
   } catch (error) {
     console.error('Failed to start server:', error);

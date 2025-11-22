@@ -1,15 +1,11 @@
 import { create } from 'zustand';
 import { Challenge, Solution } from '../../types/testCase';
-import { TestRunner } from '../../simulation/testRunner';
 
 interface BuilderState {
   // Challenge state
   selectedChallenge: Challenge | null;
   currentLevel: number;
   hasSubmitted: boolean;
-  
-  // Test runner
-  testRunner: TestRunner;
   
   // Solution
   solution: Solution | null;
@@ -29,7 +25,6 @@ export const useBuilderStore = create<BuilderState>((set) => ({
   selectedChallenge: null,
   currentLevel: 1,
   hasSubmitted: false,
-  testRunner: new TestRunner(),
   solution: null,
   showSolutionModal: false,
   

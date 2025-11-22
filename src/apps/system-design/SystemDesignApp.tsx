@@ -3,6 +3,15 @@ import { ProblemCatalog } from './builder/ui/components/ProblemCatalog';
 import { TieredSystemDesignBuilder } from './builder/ui/TieredSystemDesignBuilderRefactored';
 import { LessonsPage } from './builder/ui/pages/LessonsPage';
 import { LessonViewer } from './builder/ui/pages/LessonViewer';
+import { ProgressiveDashboard } from './progressive/pages/ProgressiveDashboard';
+import { AssessmentPage } from './progressive/pages/AssessmentPage';
+import { TrackDetailPage } from './progressive/pages/TrackDetailPage';
+import { SkillTreePage } from './progressive/pages/SkillTreePage';
+import { AchievementsPage } from './progressive/pages/AchievementsPage';
+import { LeaderboardPage } from './progressive/pages/LeaderboardPage';
+import { UserProfilePage } from './progressive/pages/UserProfilePage';
+import { ChallengeDetailPage } from './progressive/pages/ChallengeDetailPage';
+import { ProgressDashboardPage } from './progressive/pages/ProgressDashboardPage';
 
 // Component to handle dynamic challenge routes
 // All challenges now use the tiered system (658 challenges with tier support)
@@ -16,6 +25,18 @@ export default function SystemDesignApp() {
     <Routes>
       {/* Catalog view as the landing page */}
       <Route path="/" element={<ProblemCatalog />} />
+
+      {/* Progressive Flow routes */}
+      <Route path="/progressive" element={<ProgressiveDashboard />} />
+      <Route path="/progressive/assessment" element={<AssessmentPage />} />
+      <Route path="/progressive/track/:trackId" element={<TrackDetailPage />} />
+      <Route path="/progressive/tracks" element={<Navigate to="/progressive" replace />} />
+      <Route path="/progressive/skills" element={<SkillTreePage />} />
+      <Route path="/progressive/achievements" element={<AchievementsPage />} />
+      <Route path="/progressive/leaderboard" element={<LeaderboardPage />} />
+      <Route path="/progressive/profile" element={<UserProfilePage />} />
+      <Route path="/progressive/challenge/:id" element={<ChallengeDetailPage />} />
+      <Route path="/progressive/progress" element={<ProgressDashboardPage />} />
 
       {/* Lessons routes */}
       <Route path="/lessons" element={<LessonsPage />} />
