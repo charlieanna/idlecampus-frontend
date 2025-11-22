@@ -12,6 +12,8 @@ export interface ProblemConfig {
   hasCdn?: boolean; // If CDN is needed
   hasCache?: boolean; // If caching is recommended
   hasObjectStorage?: boolean; // If S3/blob storage needed
+  isMultiRegion?: boolean; // If multi-region architecture is needed
+  multiRegionType?: "active-active" | "active-passive" | "global-cdn"; // Type of multi-region setup
 }
 
 export const problemConfigs: { [key: string]: ProblemConfig } = {
@@ -441,7 +443,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   // ========== EXTRACTED PROBLEMS (from extracted-problems/) ==========
 
   // TUTORIALS (3)
-  'tutorial-simple-blog': {
+  "tutorial-simple-blog": {
     baseRps: 1000, // Scale 100 -> 1000
     readRatio: 0.9, // 90% reads
     maxLatency: 200,
@@ -451,7 +453,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'tutorial-intermediate-images': {
+  "tutorial-intermediate-images": {
     baseRps: 10000, // 10k requests/sec
     readRatio: 0.95, // 95% reads
     maxLatency: 100,
@@ -462,7 +464,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: true,
   },
 
-  'tutorial-advanced-chat': {
+  "tutorial-advanced-chat": {
     baseRps: 50000, // 50k messages/sec
     readRatio: 0.8, // 80% reads
     maxLatency: 500,
@@ -473,7 +475,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   },
 
   // CACHING (6)
-  'reddit-comment-system': {
+  "reddit-comment-system": {
     baseRps: 5000000, // 5M reads/sec normal
     readRatio: 0.99, // 99% reads (viewing comments)
     maxLatency: 100,
@@ -483,7 +485,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'static-content-cdn': {
+  "static-content-cdn": {
     baseRps: 20000, // 20k requests/sec
     readRatio: 1.0, // 100% reads (static assets)
     maxLatency: 50,
@@ -493,7 +495,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: true,
   },
 
-  'session-store-basic': {
+  "session-store-basic": {
     baseRps: 10000, // 9k reads + 1k writes
     readRatio: 0.9, // 90% reads
     maxLatency: 10,
@@ -503,7 +505,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'database-query-cache': {
+  "database-query-cache": {
     baseRps: 10000, // 10k queries/sec
     readRatio: 0.95, // 95% reads
     maxLatency: 100,
@@ -513,7 +515,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'api-rate-limit-cache': {
+  "api-rate-limit-cache": {
     baseRps: 50000, // 50k validations/sec
     readRatio: 0.5, // Read/write balanced
     maxLatency: 5,
@@ -523,7 +525,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'product-catalog-cache': {
+  "product-catalog-cache": {
     baseRps: 100000, // 100k req/sec (Black Friday)
     readRatio: 0.98, // 98% reads
     maxLatency: 100,
@@ -534,7 +536,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   },
 
   // STREAMING (5)
-  'basic-message-queue': {
+  "basic-message-queue": {
     baseRps: 5000, // 5k messages/sec
     readRatio: 0.5, // Balanced read/write (pub/sub)
     maxLatency: 100,
@@ -544,7 +546,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'realtime-notifications': {
+  "realtime-notifications": {
     baseRps: 100000, // 100k notifications/sec
     readRatio: 0.8, // 80% reads (connection tracking)
     maxLatency: 50,
@@ -554,7 +556,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'basic-event-log': {
+  "basic-event-log": {
     baseRps: 50000, // 50k events/sec
     readRatio: 0.3, // 30% reads (mostly writes)
     maxLatency: 200,
@@ -564,7 +566,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'simple-pubsub': {
+  "simple-pubsub": {
     baseRps: 10000, // 10k messages/sec
     readRatio: 0.5, // Balanced pub/sub
     maxLatency: 50,
@@ -574,7 +576,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'realtime-chat-messages': {
+  "realtime-chat-messages": {
     baseRps: 20000, // 20k messages/sec
     readRatio: 0.6, // 60% reads (viewing history)
     maxLatency: 100,
@@ -585,7 +587,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   },
 
   // STORAGE (5)
-  'basic-database-design': {
+  "basic-database-design": {
     baseRps: 11000, // 10k reads + 1k writes
     readRatio: 0.91, // 91% reads
     maxLatency: 50,
@@ -595,7 +597,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'nosql-basics': {
+  "nosql-basics": {
     baseRps: 20000, // 20k ops/sec
     readRatio: 0.8, // 80% reads
     maxLatency: 30,
@@ -605,7 +607,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'key-value-store': {
+  "key-value-store": {
     baseRps: 100000, // 100k ops/sec
     readRatio: 0.7, // 70% reads
     maxLatency: 1,
@@ -615,7 +617,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'product-catalog': {
+  "product-catalog": {
     baseRps: 5500, // 5k reads + 500 writes
     readRatio: 0.91, // 91% reads
     maxLatency: 100,
@@ -625,7 +627,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'object-storage-system': {
+  "object-storage-system": {
     baseRps: 10000, // 10k file ops/sec
     readRatio: 0.7, // 70% reads
     maxLatency: 200,
@@ -637,7 +639,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   },
 
   // GATEWAY (4)
-  'basic-api-gateway': {
+  "basic-api-gateway": {
     baseRps: 10000, // 10k requests/sec
     readRatio: 0.9, // 90% reads
     maxLatency: 50,
@@ -647,7 +649,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'simple-rate-limiter': {
+  "simple-rate-limiter": {
     baseRps: 20000, // 20k validations/sec
     readRatio: 0.5, // Balanced
     maxLatency: 10,
@@ -657,7 +659,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'authentication-gateway': {
+  "authentication-gateway": {
     baseRps: 30000, // 30k auth requests/sec
     readRatio: 1.0, // 100% reads (validation)
     maxLatency: 20,
@@ -667,7 +669,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'graphql-gateway': {
+  "graphql-gateway": {
     baseRps: 5000, // 5k complex queries/sec
     readRatio: 0.95, // 95% reads
     maxLatency: 200,
@@ -678,7 +680,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   },
 
   // SEARCH (4)
-  'basic-text-search': {
+  "basic-text-search": {
     baseRps: 1000, // 1k searches/sec
     readRatio: 0.99, // 99% reads
     maxLatency: 100,
@@ -688,7 +690,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'autocomplete-search': {
+  "autocomplete-search": {
     baseRps: 50000, // 50k keystrokes/sec
     readRatio: 1.0, // 100% reads
     maxLatency: 50,
@@ -698,7 +700,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'faceted-search': {
+  "faceted-search": {
     baseRps: 5000, // 5k filtered searches/sec
     readRatio: 0.99, // 99% reads
     maxLatency: 100,
@@ -708,7 +710,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'geo-search': {
+  "geo-search": {
     baseRps: 20000, // 20k location queries/sec
     readRatio: 0.95, // 95% reads
     maxLatency: 50,
@@ -719,7 +721,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   },
 
   // MULTIREGION (4)
-  'basic-multi-region': {
+  "basic-multi-region": {
     baseRps: 10000, // 10k per region
     readRatio: 0.9, // 90% reads
     maxLatency: 100,
@@ -729,17 +731,19 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'active-active-regions': {
+  "active-active-regions": {
     baseRps: 5000, // 5k writes/sec per region
     readRatio: 0.7, // 70% reads
     maxLatency: 50,
     availability: 0.999,
     hasCdn: false,
-    hasCache: false,
+    hasCache: true, // Cache for collaborative editing
     hasObjectStorage: false,
+    isMultiRegion: true,
+    multiRegionType: "active-active",
   },
 
-  'global-cdn': {
+  "global-cdn": {
     baseRps: 10000000, // 10M requests/sec
     readRatio: 1.0, // 100% reads (static)
     maxLatency: 50,
@@ -749,7 +753,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: true,
   },
 
-  'cross-region-dr': {
+  "cross-region-dr": {
     baseRps: 10000, // 10k requests/sec
     readRatio: 0.9, // 90% reads
     maxLatency: 100,
@@ -760,7 +764,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   },
 
   // Caching Problems (Extended - Automated)
-  'gaming-leaderboard-cache': {
+  "gaming-leaderboard-cache": {
     baseRps: 70000, // 20k updates + 50k queries
     readRatio: 0.7, // 70% reads (queries), 30% writes (updates)
     maxLatency: 50,
@@ -770,7 +774,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'geo-location-cache': {
+  "geo-location-cache": {
     baseRps: 100000, // 100k lookups/sec
     readRatio: 0.95, // 95% reads
     maxLatency: 10,
@@ -780,7 +784,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'config-cache-basic': {
+  "config-cache-basic": {
     baseRps: 50000, // 50k config reads/sec
     readRatio: 0.99, // 99% reads
     maxLatency: 5,
@@ -790,7 +794,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'social-feed-cache': {
+  "social-feed-cache": {
     baseRps: 100000, // 100k feed requests/sec
     readRatio: 0.9, // 90% reads
     maxLatency: 100,
@@ -800,7 +804,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'video-streaming-cache': {
+  "video-streaming-cache": {
     baseRps: 50000, // 50k chunk requests/sec
     readRatio: 0.99, // 99% reads
     maxLatency: 50,
@@ -810,7 +814,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: true,
   },
 
-  'search-suggestion-cache': {
+  "search-suggestion-cache": {
     baseRps: 100000, // 100k queries/sec
     readRatio: 0.95, // 95% reads
     maxLatency: 20,
@@ -820,7 +824,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'news-aggregator-cache': {
+  "news-aggregator-cache": {
     baseRps: 50000, // 50k requests/sec
     readRatio: 0.95, // 95% reads
     maxLatency: 100,
@@ -830,7 +834,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'graphql-cache': {
+  "graphql-cache": {
     baseRps: 20000, // 20k queries/sec
     readRatio: 0.9, // 90% reads
     maxLatency: 50,
@@ -840,7 +844,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'shopping-cart-cache': {
+  "shopping-cart-cache": {
     baseRps: 30000, // 30k cart operations/sec
     readRatio: 0.7, // 70% reads, 30% writes
     maxLatency: 20,
@@ -850,7 +854,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'analytics-dashboard-cache': {
+  "analytics-dashboard-cache": {
     baseRps: 10000, // 10k dashboard requests/sec
     readRatio: 0.95, // 95% reads
     maxLatency: 200,
@@ -863,7 +867,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   // ========== EXTRACTED PROBLEMS - SYSTEM DESIGN (3) ==========
 
   // Rate Limiter - from extracted-problems/system-design.md
-  'rate-limiter': {
+  "rate-limiter": {
     baseRps: 10000, // 10k requests/sec normal, 100k peak
     readRatio: 0.8, // 80% reads (checking limits)
     maxLatency: 15, // P99 < 15ms for rate limit checks
@@ -874,7 +878,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   },
 
   // Real-time Chat System - from extracted-problems/system-design.md
-  'chat': {
+  chat: {
     baseRps: 100000, // 100k messages/sec sustained
     readRatio: 0.7, // 70% reads (viewing history vs sending)
     maxLatency: 100, // P95 < 100ms message delivery
@@ -885,7 +889,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   },
 
   // Data Ingestion Pipeline - from extracted-problems/system-design.md
-  'ingestion': {
+  ingestion: {
     baseRps: 10000, // 10k events/sec steady, 20k peak
     readRatio: 0.3, // 30% reads (mostly writes to pipeline)
     maxLatency: 200, // P99 < 200ms for ingestion
@@ -896,7 +900,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   },
 
   // ========== DDIA GAP PROBLEMS (5) ==========
-  'batch-processing-mapreduce': {
+  "batch-processing-mapreduce": {
     baseRps: 0, // Batch processing, not request-based
     readRatio: 1.0, // Read-heavy (scan data)
     maxLatency: 21600000, // 6 hours for batch job
@@ -906,7 +910,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'explicit-sharding-design': {
+  "explicit-sharding-design": {
     baseRps: 110000, // 100k reads/sec + 10k writes/sec
     readRatio: 0.9, // 90% reads
     maxLatency: 50, // P99 < 50ms for single-shard
@@ -916,7 +920,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'transaction-isolation-levels': {
+  "transaction-isolation-levels": {
     baseRps: 10000, // 10k transactions/sec
     readRatio: 0.7, // 70% reads (balance queries)
     maxLatency: 100, // P99 < 100ms for transfers
@@ -926,7 +930,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'data-warehouse-olap': {
+  "data-warehouse-olap": {
     baseRps: 100, // 100 concurrent analytical queries
     readRatio: 0.99, // 99% reads (OLAP)
     maxLatency: 5000, // P95 < 5s for complex queries
@@ -936,7 +940,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: false,
   },
 
-  'graph-database-social': {
+  "graph-database-social": {
     baseRps: 50000, // 50k graph queries/sec
     readRatio: 0.95, // 95% reads
     maxLatency: 100, // P99 < 100ms for 2-hop queries
@@ -947,7 +951,7 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
   },
 
   // ========== NFR TEACHING CHAPTER 0 (Throughput) ==========
-  'nfr-ch0-throughput-calc': {
+  "nfr-ch0-throughput-calc": {
     baseRps: 10000, // Peak RPS for calculation exercise
     readRatio: 1.0, // All reads (stateless API)
     maxLatency: 100, // Fast stateless operations

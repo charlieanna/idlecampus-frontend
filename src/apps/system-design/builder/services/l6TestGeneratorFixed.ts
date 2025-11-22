@@ -5,13 +5,12 @@
  * Following Google L6 standards: percentiles, distributions, time variance, durability
  */
 
-import { TestCase, Challenge } from '../types/testCase';
+import { TestCase, Challenge } from "../types/testCase";
 
 /**
  * Generate L6-compliant test cases for any challenge
  */
 export class L6TestGenerator {
-
   /**
    * Helper to create a test case with RPS fields properly set
    */
@@ -21,7 +20,7 @@ export class L6TestGenerator {
     readRatio: number,
     rpsMultiplier: number = 1,
     passCriteria: any = {},
-    additionalFields: any = {}
+    additionalFields: any = {},
   ): TestCase {
     const totalRps = Math.floor(baseRps * rpsMultiplier);
     const readRps = Math.floor(totalRps * readRatio);
@@ -29,11 +28,11 @@ export class L6TestGenerator {
 
     return {
       name,
-      type: 'performance' as const,
-      requirement: 'NFR-L6',
+      type: "performance" as const,
+      requirement: "NFR-L6",
       description: `L6-level test: ${name}`,
       traffic: {
-        type: 'mixed' as const,
+        type: "mixed" as const,
         rps: totalRps,
         readRatio,
         readRps,
@@ -61,10 +60,10 @@ export class L6TestGenerator {
 
     // Add L6 NFRs to requirements
     const l6Nfrs = [
-      `Latency: P50 < ${Math.floor(baselineMetrics.targetP99/3)}ms, P99 < ${baselineMetrics.targetP99}ms (NEVER use averages!)`,
-      'Traffic Variance: Handle 3x daily peaks, 10x viral spikes',
-      'Data Durability: Zero data loss for critical operations',
-      'Distribution: Apply 80/20 rule (20% content gets 80% traffic)',
+      `Latency: P50 < ${Math.floor(baselineMetrics.targetP99 / 3)}ms, P99 < ${baselineMetrics.targetP99}ms (NEVER use averages!)`,
+      "Traffic Variance: Handle 3x daily peaks, 10x viral spikes",
+      "Data Durability: Zero data loss for critical operations",
+      "Distribution: Apply 80/20 rule (20% content gets 80% traffic)",
     ];
 
     return {
@@ -75,11 +74,11 @@ export class L6TestGenerator {
       },
       testCases: [...challenge.testCases, ...l6Tests],
       learningObjectives: [
-        ...challenge.learningObjectives,
-        'Understand percentile-based latency (P50, P90, P95, P99, P999)',
-        'Model time-based traffic variance and viral events',
-        'Apply power law distribution (80/20 rule)',
-        'Design for zero data loss (RPO=0) when critical',
+        ...(challenge.learningObjectives || []),
+        "Understand percentile-based latency (P50, P90, P95, P99, P999)",
+        "Model time-based traffic variance and viral events",
+        "Apply power law distribution (80/20 rule)",
+        "Design for zero data loss (RPO=0) when critical",
       ],
     };
   }
@@ -97,14 +96,20 @@ export class L6TestGenerator {
       let baseRps = 0;
       if (firstTest.traffic.rps !== undefined) {
         baseRps = firstTest.traffic.rps;
-      } else if (firstTest.traffic.readRps !== undefined && firstTest.traffic.writeRps !== undefined) {
+      } else if (
+        firstTest.traffic.readRps !== undefined &&
+        firstTest.traffic.writeRps !== undefined
+      ) {
         baseRps = firstTest.traffic.readRps + firstTest.traffic.writeRps;
       }
 
       if (baseRps > 0) {
-        const readRatio = firstTest.traffic.readRatio !== undefined
-          ? firstTest.traffic.readRatio
-          : (firstTest.traffic.readRps ? firstTest.traffic.readRps / baseRps : 0.9);
+        const readRatio =
+          firstTest.traffic.readRatio !== undefined
+            ? firstTest.traffic.readRatio
+            : firstTest.traffic.readRps
+              ? firstTest.traffic.readRps / baseRps
+              : 0.9;
 
         const baseTargetP99 = firstTest.passCriteria?.maxP99Latency || 100;
         const targetP99 = this.getLatencyTarget(systemType, baseTargetP99);
@@ -120,17 +125,17 @@ export class L6TestGenerator {
     }
 
     // Otherwise parse from requirements
-    const trafficStr = challenge.requirements.traffic || '1000 RPS';
+    const trafficStr = challenge.requirements.traffic || "1000 RPS";
     const rpsMatch = trafficStr.match(/(\d+)(?:K|k)?\s*RPS/i);
     let baseRps = 1000;
     if (rpsMatch) {
       baseRps = parseInt(rpsMatch[1]);
-      if (trafficStr.toLowerCase().includes('k')) {
+      if (trafficStr.toLowerCase().includes("k")) {
         baseRps *= 1000;
       }
     }
 
-    const latencyStr = challenge.requirements.latency || 'P99 < 100ms';
+    const latencyStr = challenge.requirements.latency || "P99 < 100ms";
     const p99Match = latencyStr.match(/[Pp]99\s*<?\s*(\d+)/);
     const baseTargetP99 = p99Match ? parseInt(p99Match[1]) : 100;
     const targetP99 = this.getLatencyTarget(systemType, baseTargetP99);
@@ -148,19 +153,31 @@ export class L6TestGenerator {
    * Infer system type from challenge
    */
   private static inferSystemType(challenge: Challenge): string {
-    const text = (challenge.title + ' ' + challenge.description).toLowerCase();
+    const text = (challenge.title + " " + challenge.description).toLowerCase();
 
     // REALTIME: Collaborative systems need different latency profiles
-    if (text.includes('collaborative') || text.includes('real-time') || text.includes('editor')) {
-      return 'realtime';
-    } else if (text.includes('social') || text.includes('feed') || text.includes('timeline')) {
-      return 'social';
-    } else if (text.includes('e-commerce') || text.includes('payment') || text.includes('checkout')) {
-      return 'ecommerce';
-    } else if (text.includes('stream') || text.includes('video')) {
-      return 'streaming';
+    if (
+      text.includes("collaborative") ||
+      text.includes("real-time") ||
+      text.includes("editor")
+    ) {
+      return "realtime";
+    } else if (
+      text.includes("social") ||
+      text.includes("feed") ||
+      text.includes("timeline")
+    ) {
+      return "social";
+    } else if (
+      text.includes("e-commerce") ||
+      text.includes("payment") ||
+      text.includes("checkout")
+    ) {
+      return "ecommerce";
+    } else if (text.includes("stream") || text.includes("video")) {
+      return "streaming";
     }
-    return 'general';
+    return "general";
   }
 
   /**
@@ -168,13 +185,13 @@ export class L6TestGenerator {
    */
   private static getTrafficMultipliers(systemType: string) {
     switch (systemType) {
-      case 'realtime':
+      case "realtime":
         return { peakHour: 2, viral: 5, seasonal: 3 }; // More stable traffic patterns
-      case 'social':
+      case "social":
         return { peakHour: 3, viral: 10, seasonal: 5 };
-      case 'ecommerce':
+      case "ecommerce":
         return { peakHour: 3, viral: 5, seasonal: 20 }; // Black Friday
-      case 'streaming':
+      case "streaming":
         return { peakHour: 2, viral: 8, seasonal: 10 }; // Live events
       default:
         return { peakHour: 3, viral: 10, seasonal: 5 };
@@ -185,13 +202,16 @@ export class L6TestGenerator {
    * Get realistic latency targets based on system type
    * Real-time collaborative systems have different latency profiles than simple CRUD
    */
-  private static getLatencyTarget(systemType: string, baseTargetP99: number): number {
+  private static getLatencyTarget(
+    systemType: string,
+    baseTargetP99: number,
+  ): number {
     switch (systemType) {
-      case 'realtime':
+      case "realtime":
         // Real-time collaborative systems: 300ms P99 is reasonable
         // They have stateful connections, CRDTs, conflict resolution
         return Math.max(baseTargetP99, 300);
-      case 'streaming':
+      case "streaming":
         // Streaming: 200ms P99 for control plane
         return Math.max(baseTargetP99, 200);
       default:
@@ -208,24 +228,24 @@ export class L6TestGenerator {
 
     return [
       this.createTestCase(
-        'L6 Latency Profile - Full Percentiles',
+        "L6 Latency Profile - Full Percentiles",
         baseRps,
         readRatio,
         1,
         {
           maxP99Latency: targetP99,
           maxErrorRate: 0.001,
-        }
+        },
       ),
       this.createTestCase(
-        'L6 Tail Latency Amplification Check',
+        "L6 Tail Latency Amplification Check",
         baseRps,
         readRatio,
         1,
         {
           maxP99Latency: targetP99 * 1.5,
           maxErrorRate: 0.001,
-        }
+        },
       ),
     ];
   }
@@ -245,34 +265,34 @@ export class L6TestGenerator {
 
     return [
       this.createTestCase(
-        'L6 Peak Load (3x traffic)',
+        "L6 Peak Load (3x traffic)",
         baseRps,
         readRatio,
         multipliers.peakHour,
         {
-          maxP99Latency: targetP99 * 2,  // 2x latency for 3x traffic (was 1.5x)
+          maxP99Latency: targetP99 * 2, // 2x latency for 3x traffic (was 1.5x)
           maxErrorRate: 0.01,
-        }
+        },
       ),
       this.createTestCase(
-        'L6 Viral Event (10x spike)',
+        "L6 Viral Event (10x spike)",
         baseRps,
         Math.min(0.98, readRatio + 0.08), // More reads during viral
         multipliers.viral,
         {
-          maxP99Latency: targetP99 * 5,  // 5x latency for viral spike (was 3x)
+          maxP99Latency: targetP99 * 5, // 5x latency for viral spike (was 3x)
           maxErrorRate: 0.05,
-        }
+        },
       ),
       this.createTestCase(
-        'L6 Seasonal Peak',
+        "L6 Seasonal Peak",
         baseRps,
         readRatio,
         multipliers.seasonal,
         {
-          maxP99Latency: targetP99 * 3,  // 3x latency for seasonal (was 2x)
+          maxP99Latency: targetP99 * 3, // 3x latency for seasonal (was 2x)
           maxErrorRate: 0.02,
-        }
+        },
       ),
     ];
   }
@@ -285,44 +305,38 @@ export class L6TestGenerator {
 
     return [
       this.createTestCase(
-        'L6 Cascading Failure Prevention',
+        "L6 Cascading Failure Prevention",
         baseRps,
         readRatio,
         1,
         {
           maxP99Latency: targetP99 * 3,
           maxErrorRate: 0.05,
-        }
+        },
       ),
+      this.createTestCase("L6 Gray Failure Detection", baseRps, readRatio, 1, {
+        maxP99Latency: targetP99 * 2,
+        maxErrorRate: 0.02,
+      }),
       this.createTestCase(
-        'L6 Gray Failure Detection',
-        baseRps,
-        readRatio,
-        1,
-        {
-          maxP99Latency: targetP99 * 2,
-          maxErrorRate: 0.02,
-        }
-      ),
-      this.createTestCase(
-        'L6 Power Law Distribution (80/20)',
+        "L6 Power Law Distribution (80/20)",
         baseRps,
         readRatio,
         1,
         {
           maxP99Latency: targetP99,
           maxErrorRate: 0.01,
-        }
+        },
       ),
       this.createTestCase(
-        'L6 Hot Partition Resilience',
+        "L6 Hot Partition Resilience",
         baseRps,
         readRatio,
         1,
         {
           maxP99Latency: targetP99 * 1.5,
           maxErrorRate: 0.01,
-        }
+        },
       ),
     ];
   }
