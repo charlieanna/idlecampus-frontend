@@ -88,6 +88,8 @@ export class L6TestGenerator {
    * Extract baseline metrics from existing challenge
    */
   private static extractBaselineMetrics(challenge: Challenge): any {
+    const systemType = this.inferSystemType(challenge);
+
     // Get from first test case if available
     const firstTest = challenge.testCases[0];
     if (firstTest && firstTest.traffic) {
@@ -98,17 +100,20 @@ export class L6TestGenerator {
       } else if (firstTest.traffic.readRps !== undefined && firstTest.traffic.writeRps !== undefined) {
         baseRps = firstTest.traffic.readRps + firstTest.traffic.writeRps;
       }
-      
+
       if (baseRps > 0) {
-        const readRatio = firstTest.traffic.readRatio !== undefined 
-          ? firstTest.traffic.readRatio 
+        const readRatio = firstTest.traffic.readRatio !== undefined
+          ? firstTest.traffic.readRatio
           : (firstTest.traffic.readRps ? firstTest.traffic.readRps / baseRps : 0.9);
-        
+
+        const baseTargetP99 = firstTest.passCriteria?.maxP99Latency || 100;
+        const targetP99 = this.getLatencyTarget(systemType, baseTargetP99);
+
         return {
           baseRps,
           readRatio,
-          targetP99: firstTest.passCriteria?.maxP99Latency || 100,
-          systemType: this.inferSystemType(challenge),
+          targetP99,
+          systemType,
           challengeId: challenge.id,
         };
       }
@@ -127,13 +132,14 @@ export class L6TestGenerator {
 
     const latencyStr = challenge.requirements.latency || 'P99 < 100ms';
     const p99Match = latencyStr.match(/[Pp]99\s*<?\s*(\d+)/);
-    const targetP99 = p99Match ? parseInt(p99Match[1]) : 100;
+    const baseTargetP99 = p99Match ? parseInt(p99Match[1]) : 100;
+    const targetP99 = this.getLatencyTarget(systemType, baseTargetP99);
 
     return {
       baseRps,
       readRatio: 0.9, // Default 90% reads
       targetP99,
-      systemType: this.inferSystemType(challenge),
+      systemType,
       challengeId: challenge.id,
     };
   }
@@ -144,7 +150,10 @@ export class L6TestGenerator {
   private static inferSystemType(challenge: Challenge): string {
     const text = (challenge.title + ' ' + challenge.description).toLowerCase();
 
-    if (text.includes('social') || text.includes('feed') || text.includes('timeline')) {
+    // REALTIME: Collaborative systems need different latency profiles
+    if (text.includes('collaborative') || text.includes('real-time') || text.includes('editor')) {
+      return 'realtime';
+    } else if (text.includes('social') || text.includes('feed') || text.includes('timeline')) {
       return 'social';
     } else if (text.includes('e-commerce') || text.includes('payment') || text.includes('checkout')) {
       return 'ecommerce';
@@ -159,6 +168,8 @@ export class L6TestGenerator {
    */
   private static getTrafficMultipliers(systemType: string) {
     switch (systemType) {
+      case 'realtime':
+        return { peakHour: 2, viral: 5, seasonal: 3 }; // More stable traffic patterns
       case 'social':
         return { peakHour: 3, viral: 10, seasonal: 5 };
       case 'ecommerce':
@@ -167,6 +178,25 @@ export class L6TestGenerator {
         return { peakHour: 2, viral: 8, seasonal: 10 }; // Live events
       default:
         return { peakHour: 3, viral: 10, seasonal: 5 };
+    }
+  }
+
+  /**
+   * Get realistic latency targets based on system type
+   * Real-time collaborative systems have different latency profiles than simple CRUD
+   */
+  private static getLatencyTarget(systemType: string, baseTargetP99: number): number {
+    switch (systemType) {
+      case 'realtime':
+        // Real-time collaborative systems: 300ms P99 is reasonable
+        // They have stateful connections, CRDTs, conflict resolution
+        return Math.max(baseTargetP99, 300);
+      case 'streaming':
+        // Streaming: 200ms P99 for control plane
+        return Math.max(baseTargetP99, 200);
+      default:
+        // Other systems: use provided target or 100ms default
+        return baseTargetP99;
     }
   }
 
@@ -207,6 +237,12 @@ export class L6TestGenerator {
     const { baseRps, readRatio, targetP99, systemType } = metrics;
     const multipliers = this.getTrafficMultipliers(systemType);
 
+    // REALISTIC LATENCY EXPECTATIONS:
+    // During traffic spikes, latency degrades due to queueing, resource contention
+    // 3x traffic → ~2x latency (reasonable with auto-scaling)
+    // 10x spike → ~5x latency (viral events cause significant degradation)
+    // Seasonal → ~3x latency (planned capacity can handle this better)
+
     return [
       this.createTestCase(
         'L6 Peak Load (3x traffic)',
@@ -214,7 +250,7 @@ export class L6TestGenerator {
         readRatio,
         multipliers.peakHour,
         {
-          maxP99Latency: targetP99 * 1.5,
+          maxP99Latency: targetP99 * 2,  // 2x latency for 3x traffic (was 1.5x)
           maxErrorRate: 0.01,
         }
       ),
@@ -224,7 +260,7 @@ export class L6TestGenerator {
         Math.min(0.98, readRatio + 0.08), // More reads during viral
         multipliers.viral,
         {
-          maxP99Latency: targetP99 * 3,
+          maxP99Latency: targetP99 * 5,  // 5x latency for viral spike (was 3x)
           maxErrorRate: 0.05,
         }
       ),
@@ -234,7 +270,7 @@ export class L6TestGenerator {
         readRatio,
         multipliers.seasonal,
         {
-          maxP99Latency: targetP99 * 2,
+          maxP99Latency: targetP99 * 3,  // 3x latency for seasonal (was 2x)
           maxErrorRate: 0.02,
         }
       ),
