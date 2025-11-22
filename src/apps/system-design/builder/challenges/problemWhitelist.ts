@@ -148,6 +148,11 @@ export const patternProblems = [
   'cross-region-failover',      // Disaster recovery (user-facing problem)
   // 'conflict-resolution' - Removed (covered in comprehensive problems)
   'edge-computing',             // Edge computing (Cloudflare Workers) - unique concept
+
+  // Additional Requested Problems
+  'financial-trading-cache',    // Stock Exchange / High Frequency Trading
+  'gaming-leaderboard-cache',   // Real-time Gaming Leaderboard
+  'email-queue-system',         // Distributed Email System
 ];
 
 /**
@@ -224,6 +229,18 @@ export const nextGenProblems = [
 ];
 
 /**
+ * Comprehensive Problems - KEEP ALL 5
+ * These are the flagship problems that integrate multiple concepts.
+ */
+export const comprehensiveProblems = [
+  'comprehensive-social-media-platform',
+  'comprehensive-ecommerce-platform',
+  'comprehensive-search-platform',
+  'comprehensive-api-gateway-platform',
+  'comprehensive-cloud-storage-platform',
+];
+
+/**
  * NFR Teaching Problems - Chapter 0: Systems Thinking & Architecture Evolution (16 total)
  * Converted to lessons (see src/apps/system-design/builder/data/lessons/nfr/)
  * Concepts are also integrated into comprehensive problems (see comprehensive/*.ts)
@@ -285,13 +302,14 @@ export const systemDesignPrimerProblems: string[] = [
  */
 export const problemWhitelist = new Set([
   ...originalProblems,                // 40
-  ...patternProblems,                 // 35 (30 original + 5 DDIA gaps)
-  ...platformProblems,                // 107
-  ...nextGenProblems,                 // 10
-  ...nfrTeachingProblems,             // 16 (Chapter 0: Modules 1-6)
-  ...ddiaTeachingProblems,            // 151 (ALL CHAPTERS!)
-  ...systemDesignPrimerProblems,      // 77
-  // Total: 436 problems
+  ...patternProblems,                 // 6 (Filtered)
+  ...platformProblems,                // 9 (Filtered)
+  ...nextGenProblems,                 // 6 (Filtered)
+  ...comprehensiveProblems,           // 5 (Flagship)
+  ...nfrTeachingProblems,             // 0 (Converted to lessons)
+  ...ddiaTeachingProblems,            // 0 (Converted to lessons)
+  ...systemDesignPrimerProblems,      // 0 (Converted to lessons)
+  // Total: 66 problems
 ]);
 
 /**
