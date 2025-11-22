@@ -1,0 +1,643 @@
+{
+  "summary": {
+    "totalChallenges": 61,
+    "passingChallenges": 55,
+    "failingChallenges": 6,
+    "totalTests": 1262,
+    "passedTests": 1252,
+    "failedTests": 10,
+    "passRate": "99.2"
+  },
+  "failingChallenges": [
+    {
+      "title": "Medium - Blogging Platform",
+      "passed": 19,
+      "failed": 1,
+      "total": 20,
+      "passRate": 95,
+      "failingTests": [
+        {
+          "testName": "L6 Viral Event (10x spike)",
+          "reason": "❌ Test FAILED: L6 Viral Event (10x spike)"
+        }
+      ]
+    },
+    {
+      "title": "Netflix - Video Streaming",
+      "passed": 18,
+      "failed": 1,
+      "total": 19,
+      "passRate": 94.73684210526315,
+      "failingTests": [
+        {
+          "testName": "NFR-S2: Viral Growth",
+          "reason": "❌ Test FAILED: NFR-S2: Viral Growth"
+        }
+      ]
+    },
+    {
+      "title": "Hulu - TV & Movie Streaming",
+      "passed": 18,
+      "failed": 1,
+      "total": 19,
+      "passRate": 94.73684210526315,
+      "failingTests": [
+        {
+          "testName": "NFR-S2: Viral Growth",
+          "reason": "❌ Test FAILED: NFR-S2: Viral Growth"
+        }
+      ]
+    },
+    {
+      "title": "Zoom - Video Conferencing",
+      "passed": 16,
+      "failed": 1,
+      "total": 17,
+      "passRate": 94.11764705882352,
+      "failingTests": [
+        {
+          "testName": "NFR-P1: Normal Daily Load",
+          "reason": "❌ Test FAILED: NFR-P1: Normal Daily Load"
+        }
+      ]
+    },
+    {
+      "title": "TinyURL – URL Shortener (L6 Standards)",
+      "passed": 14,
+      "failed": 2,
+      "total": 16,
+      "passRate": 87.5,
+      "failingTests": [
+        {
+          "testName": "L6-SCALE-2: Super Bowl Ad (10x spike)",
+          "reason": "❌ Test FAILED: L6-SCALE-2: Super Bowl Ad (10x spike)"
+        },
+        {
+          "testName": "L6 Seasonal Peak",
+          "reason": "❌ Test FAILED: L6 Seasonal Peak"
+        }
+      ]
+    },
+    {
+      "title": "Collaborative Document Editor",
+      "passed": 17,
+      "failed": 4,
+      "total": 21,
+      "passRate": 80.95238095238095,
+      "failingTests": [
+        {
+          "testName": "NFR-P1: Normal Daily Load",
+          "reason": "❌ Test FAILED: NFR-P1: Normal Daily Load"
+        },
+        {
+          "testName": "NFR-P2: Peak Hour Load",
+          "reason": "❌ Test FAILED: NFR-P2: Peak Hour Load"
+        },
+        {
+          "testName": "NFR-S3: Heavy Read Load",
+          "reason": "❌ Test FAILED: NFR-S3: Heavy Read Load"
+        },
+        {
+          "testName": "NFR-S4: Write Burst",
+          "reason": "❌ Test FAILED: NFR-S4: Write Burst"
+        }
+      ]
+    }
+  ],
+  "allResults": [
+    {
+      "title": "Instagram - Photo Sharing Platform",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Twitter - Microblogging Platform",
+      "passed": 24,
+      "failed": 0,
+      "total": 24,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Reddit - Discussion Forum",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "LinkedIn - Professional Network",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Facebook - Social Network",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "TikTok - Short Video Platform",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Pinterest - Visual Bookmarking",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Snapchat - Ephemeral Messaging",
+      "passed": 20,
+      "failed": 0,
+      "total": 20,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Discord - Gaming Chat",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Medium - Blogging Platform",
+      "passed": 19,
+      "failed": 1,
+      "total": 20,
+      "passRate": 95,
+      "failingTests": [
+        {
+          "testName": "L6 Viral Event (10x spike)",
+          "reason": "❌ Test FAILED: L6 Viral Event (10x spike)"
+        }
+      ]
+    },
+    {
+      "title": "Amazon - E-commerce Marketplace",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Shopify - E-commerce Platform",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Stripe - Payment Processing",
+      "passed": 20,
+      "failed": 0,
+      "total": 20,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Uber - Ride Sharing",
+      "passed": 20,
+      "failed": 0,
+      "total": 20,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Airbnb - Vacation Rentals",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Netflix - Video Streaming",
+      "passed": 18,
+      "failed": 1,
+      "total": 19,
+      "passRate": 94.73684210526315,
+      "failingTests": [
+        {
+          "testName": "NFR-S2: Viral Growth",
+          "reason": "❌ Test FAILED: NFR-S2: Viral Growth"
+        }
+      ]
+    },
+    {
+      "title": "Spotify - Music Streaming",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "YouTube - Video Sharing",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Twitch - Live Streaming",
+      "passed": 18,
+      "failed": 0,
+      "total": 18,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Hulu - TV & Movie Streaming",
+      "passed": 18,
+      "failed": 1,
+      "total": 19,
+      "passRate": 94.73684210526315,
+      "failingTests": [
+        {
+          "testName": "NFR-S2: Viral Growth",
+          "reason": "❌ Test FAILED: NFR-S2: Viral Growth"
+        }
+      ]
+    },
+    {
+      "title": "WhatsApp - Messaging App",
+      "passed": 20,
+      "failed": 0,
+      "total": 20,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Slack - Team Collaboration",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Telegram - Cloud Messaging",
+      "passed": 19,
+      "failed": 0,
+      "total": 19,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Facebook Messenger - Chat App",
+      "passed": 19,
+      "failed": 0,
+      "total": 19,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Pastebin - Text Sharing",
+      "passed": 18,
+      "failed": 0,
+      "total": 18,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Dropbox - File Storage & Sync",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Google Drive - Cloud Storage",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "GitHub - Code Hosting",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Stack Overflow - Q&A Platform",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "DoorDash - Food Delivery",
+      "passed": 20,
+      "failed": 0,
+      "total": 20,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Instacart - Grocery Delivery",
+      "passed": 20,
+      "failed": 0,
+      "total": 20,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Yelp - Business Reviews",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Notion - Collaborative Workspace",
+      "passed": 19,
+      "failed": 0,
+      "total": 19,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Trello - Project Management",
+      "passed": 19,
+      "failed": 0,
+      "total": 19,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Google Calendar - Event Management",
+      "passed": 20,
+      "failed": 0,
+      "total": 20,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Zoom - Video Conferencing",
+      "passed": 16,
+      "failed": 1,
+      "total": 17,
+      "passRate": 94.11764705882352,
+      "failingTests": [
+        {
+          "testName": "NFR-P1: Normal Daily Load",
+          "reason": "❌ Test FAILED: NFR-P1: Normal Daily Load"
+        }
+      ]
+    },
+    {
+      "title": "Steam - Gaming Platform",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Ticketmaster - Event Ticketing",
+      "passed": 19,
+      "failed": 0,
+      "total": 19,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Booking.com - Hotel Reservations",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Weather API - Weather Data Service",
+      "passed": 19,
+      "failed": 0,
+      "total": 19,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "TinyURL – URL Shortener (L6 Standards)",
+      "passed": 14,
+      "failed": 2,
+      "total": 16,
+      "passRate": 87.5,
+      "failingTests": [
+        {
+          "testName": "L6-SCALE-2: Super Bowl Ad (10x spike)",
+          "reason": "❌ Test FAILED: L6-SCALE-2: Super Bowl Ad (10x spike)"
+        },
+        {
+          "testName": "L6 Seasonal Peak",
+          "reason": "❌ Test FAILED: L6 Seasonal Peak"
+        }
+      ]
+    },
+    {
+      "title": "TinyURL – URL Shortener",
+      "passed": 24,
+      "failed": 0,
+      "total": 24,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Kafka Streaming Pipeline",
+      "passed": 22,
+      "failed": 0,
+      "total": 22,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Collaborative Document Editor",
+      "passed": 17,
+      "failed": 4,
+      "total": 21,
+      "passRate": 80.95238095238095,
+      "failingTests": [
+        {
+          "testName": "NFR-P1: Normal Daily Load",
+          "reason": "❌ Test FAILED: NFR-P1: Normal Daily Load"
+        },
+        {
+          "testName": "NFR-P2: Peak Hour Load",
+          "reason": "❌ Test FAILED: NFR-P2: Peak Hour Load"
+        },
+        {
+          "testName": "NFR-S3: Heavy Read Load",
+          "reason": "❌ Test FAILED: NFR-S3: Heavy Read Load"
+        },
+        {
+          "testName": "NFR-S4: Write Burst",
+          "reason": "❌ Test FAILED: NFR-S4: Write Burst"
+        }
+      ]
+    },
+    {
+      "title": "E-commerce Platform with Disaster Recovery",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Edge API Gateway Platform (Cloudflare Workers)",
+      "passed": 23,
+      "failed": 0,
+      "total": 23,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Facebook Global API Gateway",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Netflix GraphQL Federation Platform",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Salesforce Multi-Tenant CRM Platform",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Uber Real-Time Data Platform",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Google Monorepo CI/CD System",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Apple End-to-End Encryption Platform",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "DataDog-Scale Observability Platform",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Google Kubernetes Engine Architecture",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Meta ML Training Platform",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "6G Network Architecture",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Post-TCP Protocol for Exascale",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Beyond CAP Theorem Database",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Quantum Consensus Infrastructure",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Relativistic Consensus Infrastructure",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    },
+    {
+      "title": "Zero-Knowledge Internet",
+      "passed": 21,
+      "failed": 0,
+      "total": 21,
+      "passRate": 100,
+      "failingTests": []
+    }
+  ]
+}
