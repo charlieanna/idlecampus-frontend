@@ -1,6 +1,7 @@
 import { ProblemDefinition } from "../types/problemDefinition";
 import { Challenge, TestCase } from "../types/testCase";
 import { generateCodeChallengesFromFRs } from "../utils/codeChallengeGenerator";
+import { ComponentBehaviorConfig, DatabaseSchema } from "../types/challengeTiers";
 
 /**
  * Converts a ProblemDefinition to a Challenge
@@ -80,6 +81,9 @@ export function convertProblemDefinitionToChallenge(
   // Create learning objectives
   const learningObjectives = createLearningObjectives(def);
 
+  // Extract schema from ProblemDefinition dataModel if present
+  const componentBehaviors = extractComponentBehaviors(def);
+
   const challenge: Challenge = {
     id: def.id,
     title: def.title,
@@ -100,16 +104,146 @@ export function convertProblemDefinitionToChallenge(
     pythonTemplate: def.pythonTemplate, // Pass through Python template
   };
 
+  // Add componentBehaviors if schema was extracted
+  if (componentBehaviors) {
+    (challenge as any).componentBehaviors = componentBehaviors;
+  }
+
   // Generate code challenges from functional requirements (if pythonTemplate exists)
   if (def.pythonTemplate) {
     challenge.codeChallenges = generateCodeChallengesFromFRs(def);
   }
 
-  // Generate a basic solution if not already present
-  // Note: Solutions can be manually refined later
-  challenge.solution = generateBasicSolution(challenge, def);
+  // NOTE: Do NOT auto-generate solution here!
+  // Solutions should only be generated when user clicks "Solution" button.
+  // Auto-generating solutions causes tests to run against reference solution instead of user's canvas.
+  // The solution will be generated on-demand in the UI when needed.
+
+  // Store the problem definition so we can generate solution later if needed
+  (challenge as any).problemDefinition = def;
 
   return challenge;
+}
+
+/**
+ * Extract componentBehaviors from ProblemDefinition, including database schema
+ */
+function extractComponentBehaviors(
+  def: ProblemDefinition,
+): ComponentBehaviorConfig | undefined {
+  const dataModel = def.functionalRequirements?.dataModel;
+  if (!dataModel || !dataModel.entities || dataModel.entities.length === 0) {
+    return undefined;
+  }
+
+  // Convert ProblemDefinition dataModel to DatabaseSchema format
+  const schema: DatabaseSchema = {
+    tables: dataModel.entities.map((entity) => {
+      const fields = (dataModel.fields?.[entity] || []).map((field) => {
+        // Infer type from field name
+        const type = inferFieldType(field);
+        return {
+          name: field,
+          type,
+          indexed: inferIndexed(field, dataModel.accessPatterns || []),
+        };
+      });
+
+      // Use first field as primary key, or 'id' if present
+      const primaryKey =
+        fields.find((f) => f.name === "id")?.name || fields[0]?.name || "id";
+
+      return {
+        name: entity,
+        fields,
+        primaryKey,
+      };
+    }),
+  };
+
+  // Infer database type from access patterns or default to relational
+  const databaseType =
+    inferDatabaseType(dataModel, def.id) || "relational";
+
+  return {
+    database: {
+      dataModel: databaseType as "relational" | "document" | "key-value",
+      schema,
+    },
+  };
+}
+
+/**
+ * Infer field type from field name
+ */
+function inferFieldType(fieldName: string): string {
+  const name = fieldName.toLowerCase();
+  if (name.includes("id") && name !== "id") return "string";
+  if (name === "id") return "string";
+  if (name.includes("time") || name.includes("date") || name.includes("at")) {
+    return "timestamp";
+  }
+  if (name.includes("count") || name.includes("num")) return "integer";
+  if (name.includes("price") || name.includes("cost") || name.includes("amount"))
+    return "decimal";
+  if (name.includes("url") || name.includes("link") || name.includes("uri"))
+    return "text";
+  if (name.includes("email")) return "string";
+  if (name.includes("content") || name.includes("body") || name.includes("text"))
+    return "text";
+  return "string";
+}
+
+/**
+ * Infer if a field should be indexed based on access patterns
+ */
+function inferIndexed(
+  fieldName: string,
+  accessPatterns: Array<{ type: string; frequency: string }>,
+): boolean {
+  const name = fieldName.toLowerCase();
+  // Always index ID fields
+  if (name === "id" || name.endsWith("_id")) return true;
+  // Index fields used in common access patterns
+  if (name.includes("time") || name.includes("date") || name.includes("at"))
+    return true;
+  // Check access patterns for this field
+  const hasHighFrequencyPattern = accessPatterns.some(
+    (p) =>
+      p.frequency === "very_high" || p.frequency === "high",
+  );
+  return hasHighFrequencyPattern;
+}
+
+/**
+ * Infer database type from dataModel or challenge ID
+ */
+function inferDatabaseType(
+  dataModel: ProblemDefinition["functionalRequirements"]["dataModel"],
+  challengeId: string,
+): "relational" | "document" | "key-value" | undefined {
+  const id = challengeId.toLowerCase();
+  // Key-value stores for simple mappings
+  if (
+    id.includes("cache") ||
+    id.includes("session") ||
+    id.includes("counter") ||
+    id === "tiny_url" ||
+    id.includes("url") && id.includes("short")
+  ) {
+    return "key-value";
+  }
+  // Document stores for flexible schemas
+  if (
+    id.includes("graph") ||
+    id.includes("social") ||
+    id.includes("profile") ||
+    dataModel?.entities.some((e) => e.includes("profile") || e.includes("user"))
+  ) {
+    return "document";
+  }
+  // Default to relational
+  return "relational";
 }
 
 function determineDifficulty(
@@ -774,6 +908,19 @@ export function regenerateSolutionForChallenge(
   challenge: Challenge,
 ): import("../types/testCase").Solution {
   return generateBasicSolution(challenge, undefined);
+}
+
+/**
+ * Generate solution on-demand for a challenge
+ * This is called when user clicks "Solution" button
+ */
+export function generateSolutionForChallenge(
+  challenge: Challenge,
+): import("../types/testCase").Solution {
+  const def = (challenge as any).problemDefinition as
+    | ProblemDefinition
+    | undefined;
+  return generateBasicSolution(challenge, def);
 }
 
 /**
@@ -1760,21 +1907,111 @@ function generateActiveActiveMultiRegionSolution(
 
   // Per-region RPS (traffic split across 2 regions)
   const perRegionRps = Math.ceil(maxRps / 2);
-  const appServersPerRegion = Math.max(2, Math.ceil(perRegionRps / 500));
+  const appServerCapacityPerInstance = 1000; // Commodity app server capacity
+  // Add 50% headroom for load balancing inefficiency and latency-sensitive workloads
+  const appServerCapacityBuffer = 0.66; // Use 66% of capacity = 666 RPS per instance for headroom
+  const perRegionAppInstances = Math.max(
+    2,
+    Math.ceil(perRegionRps / (appServerCapacityPerInstance * appServerCapacityBuffer)),
+  );
+  const totalAppServerInstances = perRegionAppInstances * 2;
+
+  // Database scaling (multi-leader + sharding)
+  // Add generous headroom buffer for traffic spikes, conflict resolution overhead, and multi-region replication
+  // Active-active systems need extra capacity for:
+  // - Write bursts (NFR-S4: Write Burst test) - can spike 2x base RPS with 70% write ratio
+  // - Conflict resolution overhead
+  // - Multi-region replication lag
+  // - Cache misses causing sudden DB load spikes
+  // For NFR-S4: Write Burst test
+  // - Traffic: 2x baseRps (2 * 5000 = 10,000 RPS total)
+  // - Write ratio: 70% (7,000 write RPS)
+  // - Target latency: 50ms * 2 = 100ms (very strict for write bursts)
+  // We need aggressive capacity to avoid queueing and maintain low latency
+  // Use 4x buffer to ensure writes don't queue up even during extreme bursts
+  const capacityBuffer = 4.0; // 300% headroom (4x capacity) for write bursts and low-latency writes
+  const bufferedWriteRps = maxWriteRps * capacityBuffer;
+  
+  // PostgreSQL capacity model for multi-leader:
+  // - Base write capacity: 100 RPS per leader
+  // - Multi-leader capacity per shard: 100 * (1 + replicas)
+  // - Total capacity: 100 * (1 + replicas) * shards
+  
+  // Calculate replicas and shards to handle buffered write load
+  // Start with reasonable defaults and scale up
+  const baseWriteCapacity = 100; // Base capacity per leader
+  const targetCapacity = bufferedWriteRps;
+  
+  // Calculate minimum replicas needed (each replica adds one leader)
+  // For active-active, we need at least 2 leaders (1 primary + 1 replica per region)
+  const minReplicasForCapacity = Math.max(1, Math.ceil((targetCapacity / (baseWriteCapacity * 10)) - 1)); // Assume 10 shards initially
+  const replicaCount = Math.min(10, Math.max(1, minReplicasForCapacity)); // Max 10 replicas = 11 leaders total
+  
+  // Calculate shards needed: total capacity = baseCapacity * (1 + replicas) * shards
+  const capacityPerShard = baseWriteCapacity * (1 + replicaCount);
+  const databaseShards = Math.min(
+    64,
+    Math.max(1, Math.ceil(targetCapacity / capacityPerShard)),
+  );
+  
+  // Recalculate with actual shard count to ensure we have enough capacity
+  const totalWriteCapacity = capacityPerShard * databaseShards;
+  
+  console.log(`  Database scaling: ${1 + replicaCount} leaders (${replicaCount} replicas), ${databaseShards} shards`);
+  console.log(`  Write capacity per shard: ${capacityPerShard} RPS (100 * ${1 + replicaCount})`);
+  console.log(`  Total write capacity: ${totalWriteCapacity.toLocaleString()} RPS (with ${((capacityBuffer - 1) * 100).toFixed(0)}% headroom for ${maxWriteRps.toLocaleString()} RPS max writes)`);
+
+  // Cache sizing (global distributed cache)
+  const cacheNodes = Math.max(2, Math.ceil(maxRps / 5000));
+  const cacheMemoryPerNode = Math.max(16, Math.ceil(maxRps / 1000));
+  const totalCacheMemory = cacheNodes * cacheMemoryPerNode;
+
+  // Message queue sizing (Kafka partitions/brokers)
+  // In active-active, ALL writes go through the message queue for replication
+  // Scale aggressively to handle write bursts (NFR-S4: Write Burst test)
+  // Each partition handles 10,000 RPS, so we need enough partitions for peak write load
+  const queuePartitions = Math.max(24, Math.ceil((maxWriteRps * 2.0) / 5000)); // 2x buffer, use 50% of partition capacity (5K RPS) for headroom
+  const queueBrokers = Math.max(3, Math.ceil(queuePartitions / 12));
+
+  // Conflict resolver instances (workers consuming from queue)
+  // In active-active, ALL writes go through the replication stream (message queue)
+  // The conflict resolver processes ALL writes to check for conflicts and reconcile
+  // Conflict resolution is CPU-intensive, so we need sufficient capacity
+  // App server capacity: 1000 RPS per instance, use 40% for conflict resolution overhead = 400 RPS per instance (more conservative)
+  // Scale based on TOTAL RPS (not just writes) since traffic routing might send all traffic to resolver
+  // Use very aggressive buffer to handle any traffic routing issues
+  const conflictResolverCapacityPerInstance = 400; // 40% of app server capacity (conservative for conflict resolution)
+  const conflictResolverBuffer = 6.0; // 6x buffer to handle any traffic routing issues and peak spikes
+  const conflictResolverInstances = Math.max(
+    10,
+    Math.ceil((maxRps * conflictResolverBuffer) / conflictResolverCapacityPerInstance), // Use maxRps (total), not maxWriteRps
+  );
+  console.log(`[Multi-Region Solution] Conflict resolver scaling: ${maxRps} total RPS × ${conflictResolverBuffer}x buffer / ${conflictResolverCapacityPerInstance} RPS per instance = ${conflictResolverInstances} instances (very aggressive scaling to handle traffic routing)`);
 
   console.log(
     `[Multi-Region Solution] Generating active-active architecture for ${challenge.title || challenge.id}`,
   );
   console.log(`  Global RPS: ${maxRps}, Per-Region RPS: ${perRegionRps}`);
-  console.log(`  App Servers per Region: ${appServersPerRegion}`);
+  console.log(`  App Servers per Region: ${perRegionAppInstances}`);
+  
+  // Debug: Log all components being added (AFTER all components are pushed)
+  // This will log at the end of the function
 
   // ========== CLIENT ==========
-  components.push({ type: "client", config: {} });
+  components.push({
+    type: "client",
+    config: {
+      id: "client_1",
+      displayName: "Users (Global)",
+      subtitle: "GeoDNS routes to nearest region",
+    },
+  });
 
   // ========== LOAD BALANCERS (2 regions) ==========
   components.push({
     type: "load_balancer",
     config: {
+      id: "load_balancer_1",
       algorithm: "least_connections",
       displayName: "Load Balancers (US-East + EU-West)",
       subtitle: "GeoDNS routes to nearest region",
@@ -1782,154 +2019,273 @@ function generateActiveActiveMultiRegionSolution(
   });
 
   // ========== APP SERVERS ==========
-  // Total app servers across both regions
-  const totalAppServers = appServersPerRegion * 2;
+  // Scale instances based on total RPS (split evenly per region)
   components.push({
     type: "app_server",
     config: {
-      instances: totalAppServers,
-      displayName: "App Servers (Multi-Region)",
-      subtitle: `${totalAppServers} instances (${appServersPerRegion} per region)`,
+      id: "app_server_1",
+      instances: totalAppServerInstances,
+      displayName: "App Servers",
+      subtitle: `${perRegionAppInstances} per region (${totalAppServerInstances} total)`,
+      autoscaling: {
+        enabled: true,
+        min: totalAppServerInstances,
+        max: totalAppServerInstances * 2,
+        policy: "cpu_70_target",
+      },
+      regions: ["us-east", "eu-west"],
     },
   });
 
-  // ========== DATABASES (Multi-Leader Replication) ==========
+  // ========== DATABASES ==========
+  // Multi-leader PostgreSQL with sharding for active-active multi-region
   components.push({
-    type: "postgresql",
+    type: "database",
     config: {
-      instanceType: "commodity-db",
-      replicationMode: "multi-leader",
+      id: "database_1",
+      instanceType: "commodity-db", // Explicitly set commodity-db
+      dataModel: "relational",
+      displayName: "Multi-Leader PostgreSQL",
+      subtitle: `${databaseShards} shards × ${1 + replicaCount} leaders`,
+      replicationMode: "multi-leader", // Multi-leader for active-active
       replication: {
         enabled: true,
-        replicas: 2,
+        replicas: replicaCount,
         mode: "async",
       },
-      displayName: "PostgreSQL (Multi-Leader)",
-      subtitle: "US-East ↔ EU-West bidirectional replication",
+      sharding: {
+        enabled: databaseShards > 1,
+        shards: databaseShards,
+        shardKey: "document_id",
+      },
+      storageType: "gp3",
+      storageSizeGB: Math.max(500, Math.ceil(maxRps / 5)),
+      isolationLevel: "serializable",
+      // Schema for Collaborative Document Editor (active-active multi-region)
+      schema: [
+        {
+          name: "documents",
+          columns: [
+            { name: "document_id", type: "string", primaryKey: true, nullable: false },
+            { name: "title", type: "string", nullable: false },
+            { name: "content", type: "text", nullable: true },
+            { name: "owner_id", type: "string", nullable: false },
+            { name: "created_at", type: "timestamp", nullable: false },
+            { name: "updated_at", type: "timestamp", nullable: false },
+            { name: "version", type: "integer", nullable: false },
+          ],
+        },
+        {
+          name: "vector_clocks",
+          columns: [
+            { name: "document_id", type: "string", primaryKey: true, nullable: false },
+            { name: "region_a_version", type: "integer", nullable: false },
+            { name: "region_b_version", type: "integer", nullable: false },
+            { name: "last_updated", type: "timestamp", nullable: false },
+          ],
+        },
+        {
+          name: "operations",
+          columns: [
+            { name: "operation_id", type: "string", primaryKey: true, nullable: false },
+            { name: "document_id", type: "string", nullable: false },
+            { name: "operation_type", type: "string", nullable: false }, // insert, delete, update
+            { name: "position", type: "integer", nullable: false },
+            { name: "content", type: "text", nullable: true },
+            { name: "user_id", type: "string", nullable: false },
+            { name: "region", type: "string", nullable: false },
+            { name: "timestamp", type: "timestamp", nullable: false },
+            { name: "vector_clock", type: "json", nullable: false },
+          ],
+        },
+      ],
+      // DO NOT set readCapacity or writeCapacity - let PostgreSQL calculate from replication/sharding
     },
   });
+  
+  console.log(`[Multi-Region Solution] Database config:`, {
+    type: "database",
+    replicationMode: "multi-leader",
+    replicas: replicaCount,
+    shards: databaseShards,
+    enabled: databaseShards > 1,
+  });
 
-  // ========== CACHE (if needed) ==========
-  if (hasCacheRequirement || maxReadRps > perRegionRps * 0.5) {
-    const cacheSize = Math.max(1, Math.ceil((perRegionRps * 0.1) / 100)); // Conservative cache size
-    components.push({
-      type: "redis",
-      config: {
-        sizeGB: cacheSize,
-        strategy: "cache_aside",
-        displayName: "Redis Cache (Multi-Region)",
-        subtitle: `${cacheSize}GB per region`,
-      },
-    });
-  }
+  // ========== CACHE ==========
+  // Always add cache for low latency requirements
+  const cacheComponent = {
+    type: "cache",
+    config: {
+      id: "cache_1",
+      cacheType: "key-value",
+      sizeGB: totalCacheMemory,
+      memorySizeGB: totalCacheMemory,
+      evictionPolicy: "LRU",
+      ttl: 300,
+      hitRatio: 0.95,
+      strategy: "cache_aside",
+      instanceType: "cache.r5.large",
+      engine: "redis",
+      persistence: "rdb",
+      nodes: cacheNodes,
+      displayName: "Redis Cache Cluster",
+      subtitle: `${cacheNodes}-node cluster (~${totalCacheMemory}GB)`,
+    },
+  };
+  components.push(cacheComponent);
+  console.log(`[Multi-Region Solution] Added cache component:`, cacheComponent);
 
-  // ========== REPLICATION STREAM ==========
-  components.push({
+  // ========== MESSAGE QUEUE ==========
+  // For bidirectional replication stream
+  const messageQueueComponent = {
     type: "message_queue",
     config: {
-      displayName: "Replication Stream",
-      subtitle: "Bidirectional replication (US ↔ EU)",
+      id: "message_queue_1",
+      numBrokers: queueBrokers,
+      numPartitions: queuePartitions,
+      replicationFactor: 3,
+      retentionHours: 24,
+      semantics: "at_least_once",
+      orderingGuarantee: "partition",
+      consumerGroups: 2,
+      batchingEnabled: true,
+      compressionEnabled: true,
+      displayName: "Kafka Replication Stream",
+      subtitle: `${queueBrokers} brokers · ${queuePartitions} partitions`,
     },
-  });
+  };
+  components.push(messageQueueComponent);
+  console.log(`[Multi-Region Solution] Added message_queue component:`, messageQueueComponent);
 
-  // ========== CONFLICT RESOLVER ==========
-  const conflictResolverInstances = Math.max(
-    2,
-    Math.ceil((maxWriteRps * 0.05) / 50),
-  ); // 5% writes may conflict
-  components.push({
+  // ========== WORKER (Conflict Resolver) ==========
+  // Separate worker component for conflict resolution (second compute component)
+  const conflictResolverComponent = {
     type: "app_server",
     config: {
+      id: "conflict_resolver",
       instances: conflictResolverInstances,
       serviceName: "conflict-resolver",
       displayName: "Conflict Resolver",
-      subtitle: `${conflictResolverInstances} instances - CRDT/Vector Clocks`,
+      subtitle: `${conflictResolverInstances} workers (CRDT/Vector Clocks)`,
+      regions: ["us-east", "eu-west"],
+      autoscaling: {
+        enabled: true,
+        min: conflictResolverInstances,
+        max: conflictResolverInstances * 2,
+        policy: "queue_lag",
+      },
     },
-  });
+  };
+  components.push(conflictResolverComponent);
+  console.log(`[Multi-Region Solution] Added conflict resolver component:`, conflictResolverComponent);
 
   // ========== CONNECTIONS ==========
+  // Client → Load Balancers (GeoDNS routes to nearest region)
   connections.push({
     from: "client",
     to: "load_balancer",
     type: "read_write",
-    label: "GeoDNS routes to nearest region",
+    label: "Users → Regional LBs (GeoDNS)",
   });
+
+  // Note: The app_server → load_balancer connections are removed
+  // They don't make architectural sense (apps don't connect TO load balancers)
+
+  // Load Balancers → App Servers (both regions)
   connections.push({
     from: "load_balancer",
     to: "app_server",
     type: "read_write",
-    label: "LB → App (both regions)",
+    label: "LB → App (regional)",
   });
+
+  // App Servers → Cache (for reads)
   connections.push({
     from: "app_server",
-    to: "postgresql",
-    type: "read_write",
-    label: "App → DB (regional)",
+    to: "cache",
+    type: "read",
+    label: "Read from cache",
   });
 
-  if (hasCacheRequirement || maxReadRps > perRegionRps * 0.5) {
-    connections.push({
-      from: "app_server",
-      to: "redis",
-      type: "read",
-      label: "Read from cache",
-    });
-  }
-
+  // Cache → Database (cache-aside pattern: cache queries DB on miss)
   connections.push({
-    from: "postgresql",
+    from: "cache",
+    to: "database",
+    type: "read",
+    label: "Cache → DB (on miss)",
+  });
+
+  // App Servers → Database (for writes and cache misses)
+  connections.push({
+    from: "app_server",
+    to: "database",
+    type: "read_write",
+    label: "App → DB",
+  });
+
+  // Database → Message Queue (publishes changes to replication stream)
+  connections.push({
+    from: "database",
     to: "message_queue",
     type: "write",
-    label: "DB changes → Replication Stream",
+    label: "DB → Replication Stream",
   });
+
+  // Message Queue → Conflict Resolver (worker consumes from stream)
+  // IMPORTANT: Connect specifically to conflict_resolver, NOT app_server (would match all app servers!)
   connections.push({
     from: "message_queue",
-    to: "app_server",
+    to: "conflict_resolver",
     type: "read",
-    label: "Stream → Conflict Resolver",
+    label: "Conflict Resolver → Stream",
   });
 
   const explanation = `Reference Solution for ${challenge.title || challenge.id} (Active-Active Multi-Region):
 
 📊 Infrastructure Components:
-- **Client**: Users worldwide routed via GeoDNS to nearest region
-- **Load Balancers**: One per region (US-East, EU-West) with least-connections routing
-- **App Servers**: ${totalAppServers} instances (${appServersPerRegion} per region) - handles ${perRegionRps.toLocaleString()} RPS per region
-- **PostgreSQL (Multi-Leader)**: Writable databases in both regions with bidirectional async replication
-  • Each region accepts writes locally (low latency: < 50ms)
-  • Changes replicate bidirectionally: US-East ↔ EU-West
-  • Replication lag: typically < 1 second
-${hasCacheRequirement || maxReadRps > perRegionRps * 0.5 ? `- **Redis Cache**: Regional caches for hot data, reduces DB load` : ""}
-- **Replication Stream**: Message queue for capturing and distributing DB changes across regions
-- **Conflict Resolver**: ${conflictResolverInstances} instances using CRDTs or Vector Clocks for conflict-free merges
+- **Client**: Users accessing the system (GeoDNS routes to nearest region)
+- **Load Balancers**: Distribute traffic across app servers (US-East + EU-West)
+- **App Servers**: ${totalAppServerInstances} instances total (${perRegionAppInstances} per region) - sized for ${maxRps.toLocaleString()} RPS globally
+- **Cache**: ${cacheNodes}-node Redis cluster (~${totalCacheMemory}GB) for low-latency reads
+- **Database**: Multi-leader PostgreSQL (${databaseShards} shards × ${1 + replicaCount} leaders) with async replication between regions
+- **Message Queue**: Kafka replication stream (${queueBrokers} brokers, ${queuePartitions} partitions) for cross-region sync
 
-🌍 Active-Active Multi-Region Architecture:
-This design allows both regions to accept writes (not just reads), providing:
-✅ **Low Write Latency**: Users write to nearest region (< 50ms)
-✅ **High Availability**: Either region can fail without data loss
-✅ **Eventual Consistency**: Changes propagate across regions within ~1-5 seconds
-✅ **Conflict Resolution**: Automatic merge of concurrent writes using CRDTs
+🔄 Active-Active Architecture:
+✅ **Dual Write**: Both regions accept writes with local latency (< 50ms)
+✅ **Replication**: Database publishes changes → Message Queue → Conflict Resolver
+✅ **Conflict Resolution**: Worker consumes from stream, resolves conflicts using vector clocks/CRDTs
+✅ **Eventual Consistency**: Changes propagate between regions within 5 seconds
+✅ **Regional Independence**: Each region operates independently if cross-region link fails
 
 🔄 How It Works:
-1. **User Request**: GeoDNS routes user to nearest region (US or EU)
-2. **Local Write**: App server writes to local database (fast!)
-3. **Replication**: DB publishes change to replication stream
-4. **Cross-Region Sync**: Stream delivers change to other region
-5. **Conflict Resolution**: If same data modified in both regions, Conflict Resolver merges using Vector Clocks
+1. **Local Write Path**: Client → LB (nearest region) → App → Multi-Leader DB (< 50ms p99)
+2. **Local Read Path**: Client → LB → App → Redis cache (hit) → Response (< 10ms p99)
+3. **Replication Path**: Database → Kafka → Conflict Resolver workers → Remote shards
+4. **Cache Miss**: App → Shard (local) → Cache update → Response
 
 💡 Key Design Decisions:
-- **Multi-Leader Replication**: Both regions are writable (not active-passive)
-- **Async Replication**: Performance over consistency (eventual consistency acceptable)
-- **Conflict Resolution**: CRDT-based merging ensures no data loss during concurrent edits
-- **Regional Caching**: Each region has local cache for performance
+- **Active-Active**: Both regions handle writes with multi-leader replication
+- **Sharded Storage**: ${databaseShards} logical shards keep per-leader write throughput low
+- **Replication Stream**: Database publishes all changes to Kafka for bidirectional sync
+- **Conflict Resolution**: Dedicated workers consume replication stream and reconcile updates
+- **Low Latency**: Regional cache tier keeps read latency <10ms, writes stay local
+- **High Availability**: Each region independent, operates during cross-region failures
 
 ⚠️ Trade-offs:
-- **Complexity**: More complex than single-region (requires conflict resolution)
-- **Consistency**: Eventual consistency (not strong consistency)
-- **Cost**: 2x infrastructure (duplicate in both regions)
-- **Benefit**: Global low-latency writes for users worldwide
+- **Conflict Resolution**: Need vector clocks/CRDTs for simultaneous writes
+- **Eventual Consistency**: Replication lag (up to 5s) between regions
+- **Complexity**: More complex than active-passive setup
+- **Network Costs**: Bidirectional replication increases cross-region bandwidth
 
-This solution passes all tests by meeting the multi-region requirements with proper conflict handling!`;
+This solution provides an active-active multi-region architecture for handling writes in both regions!`;
+
+  // Debug: Log all components in the final solution
+  console.log(`[Multi-Region Solution] Final solution has ${components.length} components:`, 
+    components.map(c => ({ type: c.type, id: c.config?.id || 'no-id', displayName: c.config?.displayName || 'no-name' }))
+  );
+  console.log(`[Multi-Region Solution] Final solution has ${connections.length} connections:`, 
+    connections.map(c => ({ from: c.from, to: c.to, label: c.label || 'no-label' }))
+  );
 
   return {
     components,

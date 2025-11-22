@@ -9,6 +9,7 @@ import { RDS_INSTANCES } from '../../types/instanceTypes';
 export class PostgreSQL extends Component {
   private readonly readBaseLatency = 5; // ms
   private readonly writeBaseLatency = 50; // ms (10x slower due to disk + WAL)
+  private hasLoggedCapacity = false; // Track if we've logged initial capacity calculation
 
   constructor(
     id: string,
@@ -25,10 +26,23 @@ export class PostgreSQL extends Component {
       storageSizeGB?: number;
     } = {}
   ) {
-    // Debug: log incoming config for sharding
-    if (config.sharding) {
-      console.log(`[PostgreSQL] Constructor received sharding config:`, config.sharding);
+    // Debug: log incoming config for active-active multi-region challenges
+    if (config.replicationMode === 'multi-leader' || (config.replication && typeof config.replication === 'object' && config.replication.enabled)) {
+      console.log(`[PostgreSQL] Constructor received config for ${id}:`, {
+        replicationMode: config.replicationMode,
+        replication: config.replication,
+        sharding: config.sharding,
+        hasExplicitCapacity: config.readCapacity !== undefined || config.writeCapacity !== undefined,
+      });
     }
+    
+    // Merge nested objects correctly (replication and sharding)
+    const mergedReplication = config.replication !== undefined 
+      ? config.replication 
+      : false;
+    const mergedSharding = config.sharding !== undefined
+      ? config.sharding
+      : { enabled: false, shards: 1, shardKey: '' };
     
     super(id, 'postgresql', {
       replication: false,
@@ -39,13 +53,21 @@ export class PostgreSQL extends Component {
       storageType: 'gp3',
       storageSizeGB: 100,
       ...config,
+      // Override with properly merged nested objects
+      replication: mergedReplication,
+      sharding: mergedSharding,
       // Override instanceType to always be commodity-db
       instanceType: 'commodity-db',
     });
     
-    // Debug: log final config after merge
-    if ((this.config as any).sharding) {
-      console.log(`[PostgreSQL] Constructor final sharding config:`, (this.config as any).sharding);
+    // Debug: log final config after merge for active-active multi-region
+    if ((this.config as any).replicationMode === 'multi-leader') {
+      console.log(`[PostgreSQL] Constructor final config for ${id}:`, {
+        replicationMode: (this.config as any).replicationMode,
+        replication: (this.config as any).replication,
+        sharding: (this.config as any).sharding,
+        hasExplicitCapacity: (this.config as any).readCapacity !== undefined || (this.config as any).writeCapacity !== undefined,
+      });
     }
   }
 
@@ -182,31 +204,62 @@ export class PostgreSQL extends Component {
       }
     }
 
-    // Debug logging for capacity calculation (only log if there's an issue or first time)
-    // Removed excessive logging - only log if there's a problem or explicit capacity is used
-    if (hasExplicitCapacity || (readRps > readCapacity * 0.9) || (writeRps > writeCapacity * 0.9)) {
-      console.log(`[PostgreSQL] Capacity calculation:`, {
-        baseRead: baseReadCapacity,
-        baseWrite: baseWriteCapacity,
-        replicationMode: replicationModeConfig,
-        replicas,
-        shards: shardingConfig.shards,
-        hasExplicitCapacity,
-        finalReadCapacity: readCapacity,
-        finalWriteCapacity: writeCapacity,
-        readRps,
-        writeRps,
-        readUtil: (readRps / readCapacity * 100).toFixed(1) + '%',
-        writeUtil: (writeRps / writeCapacity * 100).toFixed(1) + '%',
-        calculation: hasExplicitCapacity 
-          ? 'USING EXPLICIT CAPACITY (LEGACY)' 
-          : `CALCULATED: ${replicationModeConfig} mode with ${replicas} replicas = ${readCapacity} read, ${writeCapacity} write`,
-      });
-    }
-
+    // Calculate utilization (used for logging and latency calculation)
     const readUtil = readRps / readCapacity;
     const writeUtil = writeRps / writeCapacity;
     const utilization = Math.max(readUtil, writeUtil);
+    
+    // Calculate actual error rate that will be returned
+    const actualErrorRate = this.calculateErrorRate(utilization);
+    
+    // Always log capacity details for debugging (reduced to once per instance for low utilization)
+    // But always log when utilization is high (>90%) or when there are errors
+    const shouldLogDetailed = !this.hasLoggedCapacity || utilization > 0.9 || readUtil > 0.9 || writeUtil > 0.9 || actualErrorRate > 0;
+    
+    if (shouldLogDetailed) {
+      // Use console.table for better visibility of the key metrics
+      const logData = {
+        'Replication Mode': replicationModeConfig,
+        'Replicas': replicas,
+        'Shards': shardingConfig.shards,
+        'Read Capacity': readCapacity.toFixed(0) + ' RPS',
+        'Write Capacity': writeCapacity.toFixed(0) + ' RPS',
+        'Read RPS': readRps.toFixed(1) + ' RPS',
+        'Write RPS': writeRps.toFixed(1) + ' RPS',
+        'Read Util': (readUtil * 100).toFixed(1) + '%',
+        'Write Util': (writeUtil * 100).toFixed(1) + '%',
+        'Max Util': (utilization * 100).toFixed(1) + '%',
+        'Error Rate': (actualErrorRate * 100).toFixed(1) + '%',
+        'Headroom': utilization > 1.0 
+          ? `⚠️ OVERLOADED by ${((utilization - 1.0) * 100).toFixed(1)}%`
+          : `${((1.0 - utilization) * 100).toFixed(1)}% available`,
+      };
+      
+      const logPrefix = utilization > 1.0 
+        ? '❌ OVERLOADED' 
+        : utilization > 0.9 || actualErrorRate > 0
+          ? '⚠️ HIGH UTILIZATION'
+          : '📊 Capacity calculation';
+      
+      console.log(`[PostgreSQL] ${logPrefix} (${this.id}):`);
+      console.table(logData);
+      
+      // Also log a simple one-line summary for easier debugging
+      if (actualErrorRate > 0 || utilization > 1.0) {
+        console.log(
+          `[PostgreSQL] ❌ ERROR: ${this.id} is ${utilization > 1.0 ? 'OVERLOADED' : 'at high utilization'}. ` +
+          `Read: ${readRps.toFixed(0)}/${readCapacity.toFixed(0)} RPS (${(readUtil * 100).toFixed(1)}%), ` +
+          `Write: ${writeRps.toFixed(0)}/${writeCapacity.toFixed(0)} RPS (${(writeUtil * 100).toFixed(1)}%), ` +
+          `Error Rate: ${(actualErrorRate * 100).toFixed(1)}%`
+        );
+      }
+      
+      // Only mark as logged if utilization is low (to avoid spam)
+      // But always show logs when utilization is high or there are errors
+      if (utilization <= 0.9 && actualErrorRate === 0) {
+        this.hasLoggedCapacity = true;
+      }
+    }
 
     // Calculate latency for reads and writes separately
     // Apply replication mode latency multiplier

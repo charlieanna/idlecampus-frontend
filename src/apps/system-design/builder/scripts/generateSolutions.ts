@@ -169,8 +169,11 @@ function patternToGraph(pattern: typeof ARCHITECTURE_PATTERNS.basic): SystemGrap
 
   // Create nodes
   pattern.components.forEach((comp, index) => {
+    // Use config.id if available, otherwise comp.id, otherwise generate one
+    const id = comp.config?.id || comp.id || `${comp.type}_${index}`;
+    
     nodes.push({
-      id: `${comp.type}_${index}`,
+      id,
       type: comp.type,
       position: { x: index * 200, y: 100 },
       config: comp.config,
@@ -190,7 +193,14 @@ function patternToGraph(pattern: typeof ARCHITECTURE_PATTERNS.basic): SystemGrap
     }
   });
 
-  return { nodes, edges };
+  return {
+    components: nodes,
+    connections: edges.map(e => ({
+      from: e.source,
+      to: e.target,
+      id: e.id
+    }))
+  };
 }
 
 /**

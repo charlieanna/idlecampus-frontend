@@ -3,7 +3,7 @@ import { tinyUrlChallenge } from './tinyUrl';
 import { foodBlogChallenge } from './foodBlog';
 import { todoAppChallenge } from './todoApp';
 import { webCrawlerChallenge } from './webCrawler';
-import { generatedChallenges } from './generatedChallenges';
+import { allTieredChallenges } from './tieredIndex';
 import { Challenge } from '../types/testCase';
 import { L6TestGenerator } from '../services/l6TestGeneratorFixed';
 import { regenerateSolutionForChallenge } from './problemDefinitionConverter';
@@ -16,8 +16,8 @@ const baseChallenges: Challenge[] = [
   todoAppChallenge,
   webCrawlerChallenge,
 
-  // Generated challenges from problem definitions (40 challenges)
-  ...generatedChallenges,
+  // Generated challenges from problem definitions (now loaded from individual files)
+  ...allTieredChallenges,
 ];
 
 // Apply L6 enhancement to all challenges automatically
@@ -48,4 +48,4 @@ export { tinyUrlChallenge, foodBlogChallenge, todoAppChallenge, webCrawlerChalle
 // Note: tinyUrlL6Challenge removed - converted to ProblemDefinition (tiny-url-l6)
 
 // Re-export all generated challenges
-export * from './generatedChallenges';
+export * from './tieredIndex';

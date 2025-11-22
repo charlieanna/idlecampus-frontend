@@ -1,0 +1,307 @@
+[
+  {
+    "challenge": "active_active_regions",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "airbnb",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "amazon",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "bookingcom",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "cross_region_failover",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "discord",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "doordash",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "dropbox",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "edge_computing",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "facebook",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "github",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "googlecalendar",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "googledrive",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "hulu",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "instacart",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "instagram",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "kafka_streaming_pipeline",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l5_api_gateway_facebook",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l5_api_graphql_federation",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l5_data_platform_uber",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l5_devprod_google_ci",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l5_infra_kubernetes_platform",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l5_ml_platform_meta",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l5_multitenant_salesforce",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l5_observability_datadog",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l5_security_apple_encryption",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l6_db_cap_theorem_breaker",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l6_distributed_consensus_1",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l6_distributed_consensus_2",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l6_privacy_zkp_internet",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l6_protocol_6g_architecture",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "l6_protocol_tcp_replacement",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "linkedin",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "medium",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "messenger",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "netflix",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "notion",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "pastebin",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "pinterest",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "reddit",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "shopify",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "slack",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "snapchat",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "spotify",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "stackoverflow",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "steam",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "stripe",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "telegram",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "ticketmaster",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "tiktok",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "tiny_url_l6",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "tinyurl",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "trello",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "twitch",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "twitter",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "uber",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "weatherapi",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "whatsapp",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "yelp",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "youtube",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  },
+  {
+    "challenge": "zoom",
+    "status": "ERROR",
+    "error": "No challenge export found"
+  }
+]

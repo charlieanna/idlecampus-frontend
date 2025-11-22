@@ -429,6 +429,7 @@ function generateActiveActiveMultiRegionSolution(
   components.push({
     type: "load_balancer",
     config: {
+      id: "lb_us_east",
       region: "us-east",
       algorithm: "least_connections",
     },
@@ -438,6 +439,7 @@ function generateActiveActiveMultiRegionSolution(
   components.push({
     type: "app_server",
     config: {
+      id: "app_us_east",
       instances: appServersPerRegion,
       region: "us-east",
       displayName: "US-East App Servers",
@@ -449,6 +451,7 @@ function generateActiveActiveMultiRegionSolution(
   components.push({
     type: "postgresql",
     config: {
+      id: "db_us_east",
       region: "us-east",
       instanceType: "commodity-db",
       replicationMode: "multi-leader", // Both regions can write
@@ -471,6 +474,7 @@ function generateActiveActiveMultiRegionSolution(
     components.push({
       type: "redis",
       config: {
+        id: "cache_us_east",
         sizeGB: Math.ceil(cacheSize / 1024),
         region: "us-east",
         strategy: "cache_aside",
@@ -484,6 +488,7 @@ function generateActiveActiveMultiRegionSolution(
   components.push({
     type: "load_balancer",
     config: {
+      id: "lb_eu_west",
       region: "eu-west",
       algorithm: "least_connections",
     },
@@ -493,6 +498,7 @@ function generateActiveActiveMultiRegionSolution(
   components.push({
     type: "app_server",
     config: {
+      id: "app_eu_west",
       instances: appServersPerRegion,
       region: "eu-west",
       displayName: "EU-West App Servers",
@@ -504,6 +510,7 @@ function generateActiveActiveMultiRegionSolution(
   components.push({
     type: "postgresql",
     config: {
+      id: "db_eu_west",
       region: "eu-west",
       instanceType: "commodity-db",
       replicationMode: "multi-leader", // Both regions can write
@@ -526,6 +533,7 @@ function generateActiveActiveMultiRegionSolution(
     components.push({
       type: "redis",
       config: {
+        id: "cache_eu_west",
         sizeGB: Math.ceil(cacheSize / 1024),
         region: "eu-west",
         strategy: "cache_aside",
@@ -539,6 +547,7 @@ function generateActiveActiveMultiRegionSolution(
   components.push({
     type: "message_queue",
     config: {
+      id: "replication_stream",
       displayName: "Replication Stream",
       subtitle: "Bidirectional replication",
       throughput: config.baseRps * 2, // Handle both directions
@@ -554,6 +563,7 @@ function generateActiveActiveMultiRegionSolution(
   components.push({
     type: "app_server", // Use app_server as worker
     config: {
+      id: "conflict_resolver",
       instances: conflictResolverInstances,
       serviceName: "conflict-resolver",
       displayName: "Conflict Resolver",
@@ -563,27 +573,29 @@ function generateActiveActiveMultiRegionSolution(
 
   // ========== CONNECTIONS ==========
   // Client → Load Balancers (GeoDNS routes to nearest)
-  connections.push({ from: "client", to: "load_balancer" });
+  connections.push({ from: "client", to: "lb_us_east" });
+  connections.push({ from: "client", to: "lb_eu_west" });
 
   // Region 1 connections
-  connections.push({ from: "load_balancer", to: "app_server" }); // LB → App (US)
-  connections.push({ from: "app_server", to: "postgresql" }); // App → DB (US)
+  connections.push({ from: "lb_us_east", to: "app_us_east" }); // LB → App (US)
+  connections.push({ from: "app_us_east", to: "db_us_east" }); // App → DB (US)
   if (config.hasCache || config.readRatio >= 0.7) {
-    connections.push({ from: "app_server", to: "redis" }); // App → Cache (US)
+    connections.push({ from: "app_us_east", to: "cache_us_east" }); // App → Cache (US)
   }
-  connections.push({ from: "postgresql", to: "message_queue" }); // DB → Stream (US)
+  connections.push({ from: "db_us_east", to: "replication_stream" }); // DB → Stream (US)
 
   // Region 2 connections
-  connections.push({ from: "load_balancer", to: "app_server" }); // LB → App (EU)
-  connections.push({ from: "app_server", to: "postgresql" }); // App → DB (EU)
+  connections.push({ from: "lb_eu_west", to: "app_eu_west" }); // LB → App (EU)
+  connections.push({ from: "app_eu_west", to: "db_eu_west" }); // App → DB (EU)
   if (config.hasCache || config.readRatio >= 0.7) {
-    connections.push({ from: "app_server", to: "redis" }); // App → Cache (EU)
+    connections.push({ from: "app_eu_west", to: "cache_eu_west" }); // App → Cache (EU)
   }
-  connections.push({ from: "postgresql", to: "message_queue" }); // DB → Stream (EU)
+  connections.push({ from: "db_eu_west", to: "replication_stream" }); // DB → Stream (EU)
 
   // Conflict resolver connections
-  connections.push({ from: "message_queue", to: "app_server" }); // Stream → Resolver
-  connections.push({ from: "app_server", to: "postgresql" }); // Resolver → DBs
+  connections.push({ from: "replication_stream", to: "conflict_resolver" }); // Stream → Resolver
+  connections.push({ from: "conflict_resolver", to: "db_us_east" }); // Resolver → DBs
+  connections.push({ from: "conflict_resolver", to: "db_eu_west" }); // Resolver → DBs
 
   // Generate explanation
   const explanation = generateMultiRegionExplanation(

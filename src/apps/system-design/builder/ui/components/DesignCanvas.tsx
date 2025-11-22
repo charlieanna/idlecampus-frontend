@@ -156,6 +156,15 @@ export function DesignCanvas({
         const isClient = comp.type === 'client';
         const position = calculateNodePosition(comp, systemGraph.components);
 
+        // Debug log for cache and message_queue
+        if (comp.type === 'cache' || comp.type === 'message_queue') {
+          console.log(`[Canvas] Creating node for ${comp.type}:`, {
+            id: comp.id,
+            position,
+            displayName: comp.config?.displayName || componentInfo.displayName,
+          });
+        }
+
         return {
           id: comp.id,
           type: 'custom',
@@ -198,8 +207,16 @@ export function DesignCanvas({
       }).filter(node => node !== null) as Node[];
 
       // Return updated nodes if there are changes
+      const allNodes = [...updatedNodes, ...newNodes];
+      
+      // Debug: Log all node types
+      if (newNodes.length > 0) {
+        console.log(`[Canvas] Created ${newNodes.length} new nodes:`, newNodes.map(n => ({ id: n.id, type: n.data.componentType, position: n.position })));
+        console.log(`[Canvas] Total nodes: ${allNodes.length}`, allNodes.map(n => n.data.componentType));
+      }
+      
       if (newNodes.length > 0 || updatedNodes.length !== currentNodes.length) {
-        return [...updatedNodes, ...newNodes];
+        return allNodes;
       }
 
       return updatedNodes;

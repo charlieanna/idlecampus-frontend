@@ -414,7 +414,8 @@ function DatabaseConfig({
   defaultDbCategory,
 }: DatabaseConfigProps) {
   const dataModel = config.dataModel || 'relational';
-  const [activeSection, setActiveSection] = React.useState<'schema' | 'model' | 'replication'>('schema');
+  // Default to 'model' tab to show data model first (more visible)
+  const [activeSection, setActiveSection] = React.useState<'schema' | 'model' | 'replication'>('model');
 
   // Schema state
   const [tables, setTables] = React.useState<any[]>(config.schema || []);

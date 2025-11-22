@@ -323,7 +323,7 @@ export const validConnectionFlowValidator: ValidatorFunction = (graph, scenario)
   }
 
   // Check: Cache should be between app and database
-  const cache = graph.components.find(c => c.type === 'redis');
+  const cache = graph.components.find(c => c.type === 'cache' || c.type === 'redis');
   if (cache) {
     const hasAppToCache = graph.connections.some(conn => {
       const fromComp = graph.components.find(c => c.id === conn.from);

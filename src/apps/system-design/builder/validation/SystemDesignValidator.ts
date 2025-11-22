@@ -137,7 +137,7 @@ export class SystemDesignValidator {
     const typeMapping: Record<string, string[]> = {
       'client': ['client'],
       'compute': ['app_server', 'lambda', 'ecs'],
-      'cache': ['redis', 'memcached', 'elasticache'],
+      'cache': ['cache', 'redis', 'memcached', 'elasticache'],
       'load_balancer': ['load_balancer'],
       'message_queue': ['message_queue', 'kafka', 'rabbitmq', 'sqs'],
       'object_storage': ['s3', 'blob_storage', 'gcs'],
@@ -157,7 +157,7 @@ export class SystemDesignValidator {
     const abstractToConcrete: Record<string, string[]> = {
       'client': ['client'],
       'compute': ['app_server', 'lambda', 'ecs'],
-      'cache': ['redis', 'memcached', 'elasticache'],
+      'cache': ['cache', 'redis', 'memcached', 'elasticache'],
       'storage': ['database', 'postgresql', 'mysql', 'mongodb', 'cassandra', 'dynamodb'],
       'load_balancer': ['load_balancer'],
       'message_queue': ['message_queue', 'kafka', 'rabbitmq', 'sqs'],

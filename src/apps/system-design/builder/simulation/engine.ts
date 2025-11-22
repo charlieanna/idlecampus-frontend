@@ -1,10 +1,10 @@
-import { SystemGraph, Bottleneck, Connection } from '../types/graph';
-import { ComponentMetrics, SimulationContext } from '../types/component';
-import { TestCase, TestMetrics } from '../types/testCase';
-import { FlowVisualization } from '../types/request';
-import { TrafficFlowEngine } from './trafficFlowEngine';
-import { isDatabaseComponentType } from '../utils/database';
-import { findHandlingServers, getServerDisplayName } from '../utils/apiRouting';
+import { SystemGraph, Bottleneck, Connection } from "../types/graph";
+import { ComponentMetrics, SimulationContext } from "../types/component";
+import { TestCase, TestMetrics } from "../types/testCase";
+import { FlowVisualization } from "../types/request";
+import { TrafficFlowEngine } from "./trafficFlowEngine";
+import { isDatabaseComponentType } from "../utils/database";
+import { findHandlingServers, getServerDisplayName } from "../utils/apiRouting";
 import {
   Component,
   Client,
@@ -15,36 +15,33 @@ import {
   RedisCache,
   CDN,
   S3,
-} from './components';
-import { MongoDB } from './components/MongoDB';
-import { Cassandra } from './components/Cassandra';
-import { MessageQueue } from './components/MessageQueue';
-import { calculateRequestPercentiles } from './latencyDistribution';
-import { isEnabled, verboseLog } from './featureFlags';
+} from "./components";
+import { MongoDB } from "./components/MongoDB";
+import { Cassandra } from "./components/Cassandra";
+import { MessageQueue } from "./components/MessageQueue";
+import { calculateRequestPercentiles } from "./latencyDistribution";
+import { isEnabled, verboseLog } from "./featureFlags";
 import {
   findAllDatabaseNodes,
   distributeTrafficAcrossShards,
   aggregateShardMetrics,
   getDefaultShardingConfig,
-} from './sharding';
+} from "./sharding";
 import {
   calculateEffectiveCapacity,
   CONNECTION_POOL_DEFAULTS,
   QueryComplexity,
   IOPattern,
-} from './databaseCapacity';
-import {
-  calculateDynamicHitRatio,
-  CacheAccessPattern,
-} from './cacheModeling';
+} from "./databaseCapacity";
+import { calculateDynamicHitRatio, CacheAccessPattern } from "./cacheModeling";
 import {
   calculateTrafficAtTime,
   TrafficPatternConfig,
-} from './trafficPatterns';
+} from "./trafficPatterns";
 import {
   calculateFailureEffect,
   FailureInjectionConfig,
-} from './failureInjection';
+} from "./failureInjection";
 import {
   calculateRetryEffect,
   calculateCircuitBreakerEffect,
@@ -59,7 +56,7 @@ import {
   DEFAULT_CIRCUIT_BREAKER_CONFIG,
   DEFAULT_TIMEOUT_CONFIG,
   DEFAULT_QUEUE_CONFIG,
-} from './reliabilityPatterns';
+} from "./reliabilityPatterns";
 
 /**
  * Simulation Engine
@@ -67,24 +64,26 @@ import {
  */
 export class SimulationEngine {
   private components: Map<string, Component> = new Map();
-  private adjacency: Map<string, { to: string; type: Connection['type'] }[]> = new Map();
+  private adjacency: Map<string, { to: string; type: Connection["type"] }[]> =
+    new Map();
   private trafficFlowEngine: TrafficFlowEngine = new TrafficFlowEngine();
 
   // Advanced simulation configuration
   private trafficPatternConfig?: TrafficPatternConfig;
   private failureInjections: FailureInjectionConfig[] = [];
-  private cacheAccessPattern: CacheAccessPattern = 'zipf';
-  private queryComplexity: QueryComplexity = 'moderate';
-  private ioPattern: IOPattern = 'random';
+  private cacheAccessPattern: CacheAccessPattern = "zipf";
+  private queryComplexity: QueryComplexity = "moderate";
+  private ioPattern: IOPattern = "random";
 
   // Reliability pattern configuration
   private retryConfig: RetryConfig = DEFAULT_RETRY_CONFIG;
-  private circuitBreakerConfig: CircuitBreakerConfig = DEFAULT_CIRCUIT_BREAKER_CONFIG;
+  private circuitBreakerConfig: CircuitBreakerConfig =
+    DEFAULT_CIRCUIT_BREAKER_CONFIG;
   private timeoutConfig: TimeoutConfig = DEFAULT_TIMEOUT_CONFIG;
   private queueConfig: QueueConfig = DEFAULT_QUEUE_CONFIG;
 
   // Python code for code-aware simulation
-  private pythonCode: string = '';
+  private pythonCode: string = "";
   private codeUsesCache: boolean = false;
   private codeUsesDatabase: boolean = false;
   private codeUsesQueue: boolean = false;
@@ -94,7 +93,7 @@ export class SimulationEngine {
    */
   setPythonCode(code: string): void {
     this.pythonCode = code;
-    
+
     // Analyze code to determine what components it uses
     this.codeUsesCache = /context\[['"]cache['"]\]|context\.cache/.test(code);
     this.codeUsesDatabase = /context\[['"]db['"]\]|context\.db/.test(code);
@@ -170,9 +169,9 @@ export class SimulationEngine {
   resetAdvancedConfig(): void {
     this.trafficPatternConfig = undefined;
     this.failureInjections = [];
-    this.cacheAccessPattern = 'zipf';
-    this.queryComplexity = 'moderate';
-    this.ioPattern = 'random';
+    this.cacheAccessPattern = "zipf";
+    this.queryComplexity = "moderate";
+    this.ioPattern = "random";
     this.retryConfig = DEFAULT_RETRY_CONFIG;
     this.circuitBreakerConfig = DEFAULT_CIRCUIT_BREAKER_CONFIG;
     this.timeoutConfig = DEFAULT_TIMEOUT_CONFIG;
@@ -190,39 +189,39 @@ export class SimulationEngine {
       let component: Component;
 
       switch (node.type) {
-        case 'client':
+        case "client":
           component = new Client(node.id, node.type, node.config);
           break;
-        case 'load_balancer':
+        case "load_balancer":
           component = new LoadBalancer(node.id, node.config);
           break;
-        case 'app_server':
+        case "app_server":
           component = new AppServer(node.id, node.config);
           break;
-        case 'worker':
+        case "worker":
           component = new Worker(node.id, node.config);
           break;
-        case 'database':
-        case 'postgresql':
+        case "database":
+        case "postgresql":
           component = new PostgreSQL(node.id, node.config);
           break;
-        case 'mongodb':
+        case "mongodb":
           component = new MongoDB(node.id, node.config);
           break;
-        case 'cassandra':
+        case "cassandra":
           component = new Cassandra(node.id, node.config);
           break;
-        case 'cache':
-        case 'redis':
+        case "cache":
+        case "redis":
           component = new RedisCache(node.id, node.config);
           break;
-        case 'message_queue':
+        case "message_queue":
           component = new MessageQueue(node.id, node.config);
           break;
-        case 'cdn':
+        case "cdn":
           component = new CDN(node.id, node.config);
           break;
-        case 's3':
+        case "s3":
           component = new S3(node.id, node.config);
           break;
         default:
@@ -241,160 +240,168 @@ export class SimulationEngine {
   }
 
   private findNodeIdByType(type: string): string | undefined {
-      for (const comp of this.components.values()) {
-        if (comp.type === type) return comp.id;
-      }
-      return undefined;
+    for (const comp of this.components.values()) {
+      if (comp.type === type) return comp.id;
     }
+    return undefined;
+  }
 
   /**
    * Calculate incoming traffic for all nodes using BFS traversal
    */
   private calculateNodeTraffic(
-      entryPoints: string[],
-      totalReadRps: number,
-      totalWriteRps: number
+    entryPoints: string[],
+    totalReadRps: number,
+    totalWriteRps: number,
   ): Map<string, { read: number; write: number }> {
-      const traffic = new Map<string, { read: number; write: number }>();
+    const traffic = new Map<string, { read: number; write: number }>();
 
-      // Initialize traffic map
-      for (const id of this.components.keys()) {
-          traffic.set(id, { read: 0, write: 0 });
+    // Initialize traffic map
+    for (const id of this.components.keys()) {
+      traffic.set(id, { read: 0, write: 0 });
+    }
+
+    // Initialize entry points
+    // Split initial traffic equally among entry points (if multiple clients)
+    const readPerEntry = totalReadRps / Math.max(1, entryPoints.length);
+    const writePerEntry = totalWriteRps / Math.max(1, entryPoints.length);
+
+    const queue: string[] = [];
+
+    for (const entryId of entryPoints) {
+      const current = traffic.get(entryId)!;
+      current.read += readPerEntry;
+      current.write += writePerEntry;
+      queue.push(entryId);
+    }
+
+    // Process nodes in topological-like order (BFS is a good approximation for acyclic)
+    // For true DAGs we might want Kahn's algo, but BFS handles simple cases well enough
+    // We use a processing count to handle merges? No, just propagate.
+    // For cycles, we need a visited set or limit depth. Let's limit depth for now.
+
+    const processed = new Set<string>();
+    let iteration = 0;
+    const MAX_ITERATIONS = 1000; // Safety break
+
+    while (queue.length > 0 && iteration < MAX_ITERATIONS) {
+      iteration++;
+      // BFS Level processing to handle merges better?
+      // Actually, standard BFS is fine. But if A->B and A->C->B, B might be processed twice.
+      // We should accumulate traffic.
+
+      const nodeId = queue.shift()!;
+      const input = traffic.get(nodeId)!;
+      const component = this.components.get(nodeId)!;
+
+      // Determine Output Traffic
+      let outputRead = input.read;
+      let outputWrite = input.write;
+
+      // Special Component Logic
+      if (component.type === "redis" || component.type === "cache") {
+        // Need to calculate hit ratio to know what goes downstream
+        // We can reuse the logic from simulate(), but simulate() needs the RPS.
+        // Circular dependency?
+        // No, simulate() uses RPS to calc utilization.
+        // Hit Ratio is usually config based or capacity based.
+        // For traffic propagation, let's look at config.
+        const cacheConfig = (component as any).config || {};
+        // Default hit ratio from config or 0.9
+        // NOTE: Dynamic hit ratio logic is complex to invoke here without full context.
+        // For propagation, let's stick to a simple model or re-invoke dynamic logic if critical.
+        // Using a simple estimate for flow propagation:
+        const hitRatio =
+          cacheConfig.hitRatio !== undefined
+            ? Number(cacheConfig.hitRatio)
+            : 0.9;
+
+        // Hits return, Misses continue.
+        outputRead = input.read * (1 - hitRatio);
+        // Writes usually go through (write-through or invalidate)
+        outputWrite = input.write;
       }
 
-      // Initialize entry points
-      // Split initial traffic equally among entry points (if multiple clients)
-      const readPerEntry = totalReadRps / Math.max(1, entryPoints.length);
-      const writePerEntry = totalWriteRps / Math.max(1, entryPoints.length);
+      // Get connections
+      const edges = this.adjacency.get(nodeId) || [];
+      if (edges.length === 0) continue;
 
-      const queue: string[] = [];
+      // Distribute to children
+      // Group edges by destination
+      // Heuristic:
+      // 1. Load Balancer: Split equally among all children.
+      // 2. Others:
+      //    - If connecting to same type (e.g. DB shards/replicas): Split?
+      //    - If connecting to diff types (e.g. Cache and DB): Broadcast (Fanout).
 
-      for (const entryId of entryPoints) {
-          const current = traffic.get(entryId)!;
-          current.read += readPerEntry;
-          current.write += writePerEntry;
-          queue.push(entryId);
+      // Implementation:
+      // If LB, splitFactor = 1 / edges.length.
+      // Else, splitFactor = 1 (Broadcast).
+
+      let splitFactorRead = 1.0;
+      let splitFactorWrite = 1.0;
+
+      if (component.type === "load_balancer") {
+        splitFactorRead = 1.0 / edges.length;
+        splitFactorWrite = 1.0 / edges.length;
+      } else {
+        // Check if we are connecting to multiple instances of the same type (Sharding/Replication)
+        const types = new Set(
+          edges.map((e) => this.components.get(e.to)?.type),
+        );
+        if (types.size === 1 && edges.length > 1) {
+          // Connecting to multiple of same type -> Assumed Load Balancing/Sharding
+          splitFactorRead = 1.0 / edges.length;
+          splitFactorWrite = 1.0 / edges.length;
+        }
+        // Else (Diff types or Single child) -> Broadcast (1.0)
       }
 
-      // Process nodes in topological-like order (BFS is a good approximation for acyclic)
-      // For true DAGs we might want Kahn's algo, but BFS handles simple cases well enough
-      // We use a processing count to handle merges? No, just propagate.
-      // For cycles, we need a visited set or limit depth. Let's limit depth for now.
+      for (const edge of edges) {
+        const childId = edge.to;
+        const childTraffic = traffic.get(childId)!;
 
-      const processed = new Set<string>();
-      let iteration = 0;
-      const MAX_ITERATIONS = 1000; // Safety break
+        let flowRead = 0;
+        let flowWrite = 0;
 
-      while (queue.length > 0 && iteration < MAX_ITERATIONS) {
-          iteration++;
-          // BFS Level processing to handle merges better?
-          // Actually, standard BFS is fine. But if A->B and A->C->B, B might be processed twice.
-          // We should accumulate traffic.
+        if (edge.type === "read" || edge.type === "read_write") {
+          flowRead = outputRead * splitFactorRead;
+        }
+        if (edge.type === "write" || edge.type === "read_write") {
+          flowWrite = outputWrite * splitFactorWrite;
+        }
 
-          const nodeId = queue.shift()!;
-          const input = traffic.get(nodeId)!;
-          const component = this.components.get(nodeId)!;
+        // Add to child
+        if (flowRead > 0 || flowWrite > 0) {
+          childTraffic.read += flowRead;
+          childTraffic.write += flowWrite;
 
-          // Determine Output Traffic
-          let outputRead = input.read;
-          let outputWrite = input.write;
+          // If child hasn't been queued yet (or needs re-processing in DAG), queue it.
+          // Simple BFS queues blindly.
+          // Optimization: Use indegree map for Kahn's?
+          // For now, to support A->B and A->C->B, we allow re-queueing but maybe limit visits?
+          // Actually, in BFS, B is visited after A.
+          // If C is visited after A, and C->B, B is queued again?
+          // Yes. traffic.read is accumulated.
 
-          // Special Component Logic
-          if (component.type === 'redis' || component.type === 'cache') {
-               // Need to calculate hit ratio to know what goes downstream
-               // We can reuse the logic from simulate(), but simulate() needs the RPS.
-               // Circular dependency?
-               // No, simulate() uses RPS to calc utilization.
-               // Hit Ratio is usually config based or capacity based.
-               // For traffic propagation, let's look at config.
-               const cacheConfig = (component as any).config || {};
-               // Default hit ratio from config or 0.9
-               // NOTE: Dynamic hit ratio logic is complex to invoke here without full context.
-               // For propagation, let's stick to a simple model or re-invoke dynamic logic if critical.
-               // Using a simple estimate for flow propagation:
-               const hitRatio = (cacheConfig.hitRatio !== undefined) ? Number(cacheConfig.hitRatio) : 0.9;
-
-               // Hits return, Misses continue.
-               outputRead = input.read * (1 - hitRatio);
-               // Writes usually go through (write-through or invalidate)
-               outputWrite = input.write;
-          }
-
-          // Get connections
-          const edges = this.adjacency.get(nodeId) || [];
-          if (edges.length === 0) continue;
-
-          // Distribute to children
-          // Group edges by destination
-          // Heuristic:
-          // 1. Load Balancer: Split equally among all children.
-          // 2. Others:
-          //    - If connecting to same type (e.g. DB shards/replicas): Split?
-          //    - If connecting to diff types (e.g. Cache and DB): Broadcast (Fanout).
-
-          // Implementation:
-          // If LB, splitFactor = 1 / edges.length.
-          // Else, splitFactor = 1 (Broadcast).
-
-          let splitFactorRead = 1.0;
-          let splitFactorWrite = 1.0;
-
-          if (component.type === 'load_balancer') {
-              splitFactorRead = 1.0 / edges.length;
-              splitFactorWrite = 1.0 / edges.length;
-          } else {
-               // Check if we are connecting to multiple instances of the same type (Sharding/Replication)
-               const types = new Set(edges.map(e => this.components.get(e.to)?.type));
-               if (types.size === 1 && edges.length > 1) {
-                   // Connecting to multiple of same type -> Assumed Load Balancing/Sharding
-                   splitFactorRead = 1.0 / edges.length;
-                   splitFactorWrite = 1.0 / edges.length;
-               }
-               // Else (Diff types or Single child) -> Broadcast (1.0)
-          }
-
-          for (const edge of edges) {
-               const childId = edge.to;
-               const childTraffic = traffic.get(childId)!;
-
-               let flowRead = 0;
-               let flowWrite = 0;
-
-               if (edge.type === 'read' || edge.type === 'read_write') {
-                   flowRead = outputRead * splitFactorRead;
-               }
-               if (edge.type === 'write' || edge.type === 'read_write') {
-                   flowWrite = outputWrite * splitFactorWrite;
-               }
-
-               // Add to child
-               if (flowRead > 0 || flowWrite > 0) {
-                   childTraffic.read += flowRead;
-                   childTraffic.write += flowWrite;
-
-                   // If child hasn't been queued yet (or needs re-processing in DAG), queue it.
-                   // Simple BFS queues blindly.
-                   // Optimization: Use indegree map for Kahn's?
-                   // For now, to support A->B and A->C->B, we allow re-queueing but maybe limit visits?
-                   // Actually, in BFS, B is visited after A.
-                   // If C is visited after A, and C->B, B is queued again?
-                   // Yes. traffic.read is accumulated.
-
-                   // Avoid infinite loops for Cycles
-                   // We use MAX_ITERATIONS.
-                   queue.push(childId);
-               }
-          }
+          // Avoid infinite loops for Cycles
+          // We use MAX_ITERATIONS.
+          queue.push(childId);
+        }
       }
+    }
 
-      return traffic;
+    return traffic;
   }
 
   /**
    * Validate that the graph has valid traffic paths
    * Note: Assumes buildComponents() has already been called
    */
-  private validateGraphInternal(graph: SystemGraph): { valid: boolean; errors: string[] } {
+  private validateGraphInternal(graph: SystemGraph): {
+    valid: boolean;
+    errors: string[];
+  } {
     this.trafficFlowEngine.buildGraph(graph, this.components);
     return this.trafficFlowEngine.validateGraph();
   }
@@ -403,9 +410,7 @@ export class SimulationEngine {
    * Get traffic flow visualization data
    * Note: Assumes buildComponents() and trafficFlowEngine.buildGraph() have been called
    */
-  private getTrafficFlowInternal(
-    testCase: TestCase
-  ): {
+  private getTrafficFlowInternal(testCase: TestCase): {
     flowViz: FlowVisualization;
     pathsFound: boolean;
   } {
@@ -417,7 +422,8 @@ export class SimulationEngine {
     const { flowViz } = this.trafficFlowEngine.sendTraffic(testCase, context);
 
     // Check if any successful paths were found
-    const pathsFound = flowViz.readPaths.length > 0 || flowViz.writePaths.length > 0;
+    const pathsFound =
+      flowViz.readPaths.length > 0 || flowViz.writePaths.length > 0;
 
     return { flowViz, pathsFound };
   }
@@ -428,15 +434,15 @@ export class SimulationEngine {
    */
   simulateTraffic(
     graph: SystemGraph,
-    testCase: TestCase
+    testCase: TestCase,
   ): {
     metrics: TestMetrics;
     componentMetrics: Map<string, ComponentMetrics>;
     flowViz?: FlowVisualization;
   } {
     // Log for all NFR tests to debug failures
-    const shouldLog = testCase.type !== 'functional';
-    
+    const shouldLog = testCase.type !== "functional";
+
     // 1. Build Components
     this.buildComponents(graph);
     this.trafficFlowEngine.buildGraph(graph, this.components);
@@ -446,25 +452,33 @@ export class SimulationEngine {
     let totalWriteRps = 0;
     let totalRps = 0;
 
-    if (testCase.traffic.readRps !== undefined && testCase.traffic.writeRps !== undefined) {
+    if (
+      testCase.traffic.readRps !== undefined &&
+      testCase.traffic.writeRps !== undefined
+    ) {
       totalReadRps = testCase.traffic.readRps;
       totalWriteRps = testCase.traffic.writeRps;
       totalRps = totalReadRps + totalWriteRps;
     } else if (testCase.traffic.rps !== undefined) {
       totalRps = testCase.traffic.rps;
-      const readRatio = testCase.traffic.readRatio !== undefined ? testCase.traffic.readRatio :
-                        (testCase.traffic.type === 'write' ? 0.0 :
-                         testCase.traffic.type === 'read' ? 1.0 : 0.5);
+      const readRatio =
+        testCase.traffic.readRatio !== undefined
+          ? testCase.traffic.readRatio
+          : testCase.traffic.type === "write"
+            ? 0.0
+            : testCase.traffic.type === "read"
+              ? 1.0
+              : 0.5;
       totalReadRps = totalRps * readRatio;
       totalWriteRps = totalRps * (1 - readRatio);
     }
 
     // Apply traffic patterns
-    if (isEnabled('ENABLE_TRAFFIC_PATTERNS') && this.trafficPatternConfig) {
-       const patternResult = calculateTrafficAtTime(
+    if (isEnabled("ENABLE_TRAFFIC_PATTERNS") && this.trafficPatternConfig) {
+      const patternResult = calculateTrafficAtTime(
         testCase.duration / 2,
         this.trafficPatternConfig,
-        totalRps > 0 ? totalReadRps / totalRps : 0.9
+        totalRps > 0 ? totalReadRps / totalRps : 0.9,
       );
       totalRps = patternResult.rps;
       totalReadRps = patternResult.readRps;
@@ -472,29 +486,45 @@ export class SimulationEngine {
     }
 
     if (shouldLog) {
-        console.log(`  Traffic: ${totalRps} RPS (${totalReadRps.toFixed(0)} reads, ${totalWriteRps.toFixed(0)} writes)`);
+      console.log(
+        `  Traffic: ${totalRps} RPS (${totalReadRps.toFixed(0)} reads, ${totalWriteRps.toFixed(0)} writes)`,
+      );
     }
 
     // 3. Identify Entry Points
     const entryPoints: string[] = [];
     // Preferred: Clients
     for (const [id, comp] of this.components) {
-        if (comp.type === 'client') entryPoints.push(id);
+      if (comp.type === "client") entryPoints.push(id);
     }
     // Fallback: LB or App
     if (entryPoints.length === 0) {
-        for (const [id, comp] of this.components) {
-            if (comp.type === 'load_balancer') entryPoints.push(id);
-        }
+      for (const [id, comp] of this.components) {
+        if (comp.type === "load_balancer") entryPoints.push(id);
+      }
     }
     if (entryPoints.length === 0) {
-        for (const [id, comp] of this.components) {
-            if (comp.type === 'app_server') entryPoints.push(id);
-        }
+      for (const [id, comp] of this.components) {
+        if (comp.type === "app_server") entryPoints.push(id);
+      }
     }
 
     // 4. Calculate Traffic Distribution (Forward Pass)
-    const nodeTraffic = this.calculateNodeTraffic(entryPoints, totalReadRps, totalWriteRps);
+    const nodeTraffic = this.calculateNodeTraffic(
+      entryPoints,
+      totalReadRps,
+      totalWriteRps,
+    );
+
+    console.log("[SimulationEngine] Traffic distribution:", {
+      entryPoints,
+      totalRps,
+      nodeTraffic: Array.from(nodeTraffic.entries()).map(([id, traffic]) => ({
+        id,
+        readRps: traffic.readRps,
+        writeRps: traffic.writeRps,
+      })),
+    });
 
     // 5. Simulate Components
     const context: SimulationContext = {
@@ -503,12 +533,22 @@ export class SimulationEngine {
     };
 
     const componentMetrics = new Map<string, ComponentMetrics>();
-    const failureEffects = new Map<string, ReturnType<typeof calculateFailureEffect>>();
+    const failureEffects = new Map<
+      string,
+      ReturnType<typeof calculateFailureEffect>
+    >();
 
     // Pre-calculate failure effects
-    if (isEnabled('ENABLE_FAILURE_INJECTION') && this.failureInjections.length > 0) {
+    if (
+      isEnabled("ENABLE_FAILURE_INJECTION") &&
+      this.failureInjections.length > 0
+    ) {
       for (const [compId] of this.components) {
-        const effect = calculateFailureEffect(compId, context.currentTime, this.failureInjections);
+        const effect = calculateFailureEffect(
+          compId,
+          context.currentTime,
+          this.failureInjections,
+        );
         if (effect.isAffected) {
           failureEffects.set(compId, effect);
         }
@@ -519,46 +559,57 @@ export class SimulationEngine {
     let infrastructureCost = 0;
 
     for (const [id, comp] of this.components) {
-        const input = nodeTraffic.get(id)!;
-        const inputTotal = input.read + input.write;
+      const input = nodeTraffic.get(id)!;
+      const inputTotal = input.read + input.write;
 
-        // Skip simulation if no traffic (unless it's an infrastructure component that has base cost?)
-        // For now, simulate everything to catch base costs.
+      // Skip simulation if no traffic (unless it's an infrastructure component that has base cost?)
+      // For now, simulate everything to catch base costs.
 
-        let metrics: ComponentMetrics;
+      let metrics: ComponentMetrics;
 
-        // Special handling for DBs to support read/write differentiation in simulation
-        if (isDatabaseComponentType(comp.type)) {
-             // Use simulateWithReadWrite if available or cast
-             // Assuming PostgreSQL/Mongo/etc have this method.
-             // We need to cast to access it if it's not on Component interface
-             // Actually, we can try to check if method exists, or just use simulate(total)
-             // Most DBs in this codebase seem to support simulateWithReadWrite or handle split internally?
-             // Checking PostgreSQL.ts: simulateWithReadWrite is there.
-             // But Component interface only has simulate.
-             // We'll cast to any for now to support the generic call if method exists.
-             if ((comp as any).simulateWithReadWrite) {
-                 metrics = (comp as any).simulateWithReadWrite(input.read, input.write, context);
-             } else {
-                 metrics = comp.simulate(inputTotal, context);
-             }
+      // Special handling for DBs to support read/write differentiation in simulation
+      if (isDatabaseComponentType(comp.type)) {
+        // Use simulateWithReadWrite if available or cast
+        // Assuming PostgreSQL/Mongo/etc have this method.
+        // We need to cast to access it if it's not on Component interface
+        // Actually, we can try to check if method exists, or just use simulate(total)
+        // Most DBs in this codebase seem to support simulateWithReadWrite or handle split internally?
+        // Checking PostgreSQL.ts: simulateWithReadWrite is there.
+        // But Component interface only has simulate.
+        // We'll cast to any for now to support the generic call if method exists.
+        if ((comp as any).simulateWithReadWrite) {
+          metrics = (comp as any).simulateWithReadWrite(
+            input.read,
+            input.write,
+            context,
+          );
         } else {
-            metrics = comp.simulate(inputTotal, context);
+          metrics = comp.simulate(inputTotal, context);
         }
+      } else {
+        metrics = comp.simulate(inputTotal, context);
+      }
 
-        // Apply Failures
-        const failureEffect = failureEffects.get(id);
-        if (failureEffect && failureEffect.isAffected) {
-            metrics = this.applyFailureEffect(metrics, failureEffect);
-        }
+      // Apply Failures
+      const failureEffect = failureEffects.get(id);
+      if (failureEffect && failureEffect.isAffected) {
+        metrics = this.applyFailureEffect(metrics, failureEffect);
+      }
 
-        componentMetrics.set(id, metrics);
-        totalSystemCost += metrics.cost;
+      componentMetrics.set(id, metrics);
+      totalSystemCost += metrics.cost;
 
-        // Infrastructure Cost Logic
-        if (comp.type === 'app_server' || comp.type === 'load_balancer' || comp.type === 'worker' || isDatabaseComponentType(comp.type) || comp.type === 'redis' || comp.type === 'cache') {
-             infrastructureCost += metrics.cost;
-        }
+      // Infrastructure Cost Logic
+      if (
+        comp.type === "app_server" ||
+        comp.type === "load_balancer" ||
+        comp.type === "worker" ||
+        isDatabaseComponentType(comp.type) ||
+        comp.type === "redis" ||
+        comp.type === "cache"
+      ) {
+        infrastructureCost += metrics.cost;
+      }
     }
 
     // 6. Path Aggregation (Reverse/Trace Pass) to find End-to-End Latency
@@ -576,171 +627,243 @@ export class SimulationEngine {
     // We can perform a DFS/BFS from Entry to Leaves to accumulate Path Latency.
     // PathLatency = L_node + L_next
     // TotalLatency = Sum(PathLatency * PathFlow) / TotalFlow
-    
+
     // Let's use a recursive function with memoization or just BFS with path accumulation?
     // BFS with path accumulation can explode.
     // Better: "Expected Latency to Completion" for each node? (Reverse Topo)
     // Latency(Node) = Node_Processing_Time + WeightedAvg(Latency(Children))
-    
+
     // Reverse Topo Sort would be ideal.
     // Or just a simple recursive function with cycle breaking.
 
-    const getExpectedLatency = (nodeId: string, visited: Set<string>): number => {
-         if (visited.has(nodeId)) return 0; // Cycle break
-         visited.add(nodeId);
+    const getExpectedLatency = (
+      nodeId: string,
+      visited: Set<string>,
+    ): number => {
+      if (visited.has(nodeId)) return 0; // Cycle break
+      visited.add(nodeId);
 
-         const metrics = componentMetrics.get(nodeId)!;
-         const ownLatency = metrics.latency || 0;
+      const metrics = componentMetrics.get(nodeId)!;
+      const ownLatency = metrics.latency || 0;
 
-         const edges = this.adjacency.get(nodeId) || [];
-         if (edges.length === 0) return ownLatency;
+      const edges = this.adjacency.get(nodeId) || [];
+      if (edges.length === 0) return ownLatency;
 
-         // Calculate average latency of downstream
-         let sumDownstreamLatency = 0;
-         let count = 0;
+      // Calculate average latency of downstream
+      let sumDownstreamLatency = 0;
+      let count = 0;
 
-         // Check split factors from calculateNodeTraffic logic
-         // If LoadBalancer, we average children?
-         // If Broadcast, we take MAX? (Parallel) or SUM? (Sequential).
-         // The graph doesn't specify parallel/seq.
-         // Standard assumption: Request goes to A, then B. (Sequential).
-         // BUT `App -> Cache` and `App -> DB` is usually: Check Cache (return) OR Check DB.
-         // If Cache Hit: Latency = CacheLat.
-         // If Cache Miss: Latency = CacheLat + DBLat.
-         // This conditional logic is hard to genericize without knowing it's a cache.
+      // Check split factors from calculateNodeTraffic logic
+      // If LoadBalancer, we average children?
+      // If Broadcast, we take MAX? (Parallel) or SUM? (Sequential).
+      // The graph doesn't specify parallel/seq.
+      // Standard assumption: Request goes to A, then B. (Sequential).
+      // BUT `App -> Cache` and `App -> DB` is usually: Check Cache (return) OR Check DB.
+      // If Cache Hit: Latency = CacheLat.
+      // If Cache Miss: Latency = CacheLat + DBLat.
+      // This conditional logic is hard to genericize without knowing it's a cache.
 
-         // Heuristic:
-         // If Node is Cache:
-         //   Effective = Latency + (MissRatio * DownstreamLatency)
-         // Else:
-         //   Effective = Latency + Average(DownstreamLatency) [Split] or Sum(DownstreamLatency) [Broadcast]?
-         //   Actually, if LB splits, a request only goes to ONE child. So Average is correct.
-         //   If App calls ServiceA AND ServiceB (Fanout), it waits for both. So MAX (if parallel) or SUM (if serial).
-         //   Let's assume SUM for fanout (safer/pessimistic).
+      // Heuristic:
+      // If Node is Cache:
+      //   Effective = Latency + (MissRatio * DownstreamLatency)
+      // Else:
+      //   Effective = Latency + Average(DownstreamLatency) [Split] or Sum(DownstreamLatency) [Broadcast]?
+      //   Actually, if LB splits, a request only goes to ONE child. So Average is correct.
+      //   If App calls ServiceA AND ServiceB (Fanout), it waits for both. So MAX (if parallel) or SUM (if serial).
+      //   Let's assume SUM for fanout (safer/pessimistic).
 
-         const comp = this.components.get(nodeId)!;
+      const comp = this.components.get(nodeId)!;
 
-         if (comp.type === 'load_balancer' || isDatabaseComponentType(comp.type) && edges.length > 1) {
-              // Split logic -> Weighted Average
-              // Assumes uniform distribution for now (1/N)
-              for (const edge of edges) {
-                   sumDownstreamLatency += getExpectedLatency(edge.to, new Set(visited));
-                   count++;
-              }
-              return ownLatency + (count > 0 ? sumDownstreamLatency / count : 0);
-         } else if (comp.type === 'redis' || comp.type === 'cache') {
-              // Cache Logic
-              const cacheMetrics = metrics; // has cacheHits/Misses
-              const totalOps = (cacheMetrics.cacheHits || 0) + (cacheMetrics.cacheMisses || 0);
-              const missRatio = totalOps > 0 ? (cacheMetrics.cacheMisses || 0) / totalOps : 0; // Default 0 if no traffic?
+      if (
+        comp.type === "load_balancer" ||
+        (isDatabaseComponentType(comp.type) && edges.length > 1)
+      ) {
+        // Split logic -> Weighted Average
+        // Assumes uniform distribution for now (1/N)
+        for (const edge of edges) {
+          sumDownstreamLatency += getExpectedLatency(edge.to, new Set(visited));
+          count++;
+        }
+        return ownLatency + (count > 0 ? sumDownstreamLatency / count : 0);
+      } else if (comp.type === "redis" || comp.type === "cache") {
+        // Cache Logic
+        const cacheMetrics = metrics; // has cacheHits/Misses
+        const totalOps =
+          (cacheMetrics.cacheHits || 0) + (cacheMetrics.cacheMisses || 0);
+        const missRatio =
+          totalOps > 0 ? (cacheMetrics.cacheMisses || 0) / totalOps : 0; // Default 0 if no traffic?
 
-              // Find downstream (DB)
-              // Usually only 1 downstream for cache
-              let downstreamLat = 0;
-              if (edges.length > 0) {
-                  // Pick first or avg?
-                  downstreamLat = getExpectedLatency(edges[0].to, new Set(visited));
-              }
-              return ownLatency + (missRatio * downstreamLat);
-         } else {
-              // App Server or other components with potential read/write path separation
-              // Check if edges have different types (read vs write)
-              const readEdges = edges.filter(e => e.type === 'read' || e.type === 'read_write');
-              const writeEdges = edges.filter(e => e.type === 'write' || e.type === 'read_write');
+        // Find downstream (DB)
+        // Usually only 1 downstream for cache
+        let downstreamLat = 0;
+        if (edges.length > 0) {
+          // Pick first or avg?
+          downstreamLat = getExpectedLatency(edges[0].to, new Set(visited));
+        }
+        return ownLatency + missRatio * downstreamLat;
+      } else {
+        // App Server or other components with potential read/write path separation
+        // Check if edges have different types (read vs write)
+        const readEdges = edges.filter(
+          (e) => e.type === "read" || e.type === "read_write",
+        );
+        const writeEdges = edges.filter(
+          (e) => e.type === "write" || e.type === "read_write",
+        );
 
-              // Get traffic distribution for this node
-              const traffic = nodeTraffic.get(nodeId);
-              const readRps = traffic?.read || 0;
-              const writeRps = traffic?.write || 0;
-              const totalRps = readRps + writeRps;
+        // Get traffic distribution for this node
+        const traffic = nodeTraffic.get(nodeId);
+        const readRps = traffic?.read || 0;
+        const writeRps = traffic?.write || 0;
+        const totalRps = readRps + writeRps;
 
-              // If we have separate read and write paths AND traffic, calculate weighted average
-              if (readEdges.length > 0 && writeEdges.length > 0 && totalRps > 0) {
-                  // Calculate read path latency (average if multiple read edges)
-                  // Use separate visited sets for read and write paths since they are alternatives
-                  let readPathLatency = 0;
-                  for (const edge of readEdges) {
-                      readPathLatency += getExpectedLatency(edge.to, new Set(visited));
-                  }
-                  readPathLatency = readEdges.length > 0 ? readPathLatency / readEdges.length : 0;
+        // If we have separate read and write paths AND traffic, calculate weighted average
+        if (readEdges.length > 0 && writeEdges.length > 0 && totalRps > 0) {
+          // Calculate read path latency (average if multiple read edges)
+          // Use separate visited sets for read and write paths since they are alternatives
+          let readPathLatency = 0;
+          for (const edge of readEdges) {
+            readPathLatency += getExpectedLatency(edge.to, new Set(visited));
+          }
+          readPathLatency =
+            readEdges.length > 0 ? readPathLatency / readEdges.length : 0;
 
-                  // Calculate write path latency (average if multiple write edges)
-                  let writePathLatency = 0;
-                  for (const edge of writeEdges) {
-                      writePathLatency += getExpectedLatency(edge.to, new Set(visited));
-                  }
-                  writePathLatency = writeEdges.length > 0 ? writePathLatency / writeEdges.length : 0;
+          // Calculate write path latency (average if multiple write edges)
+          let writePathLatency = 0;
+          for (const edge of writeEdges) {
+            writePathLatency += getExpectedLatency(edge.to, new Set(visited));
+          }
+          writePathLatency =
+            writeEdges.length > 0 ? writePathLatency / writeEdges.length : 0;
 
-                  // Weighted average based on traffic distribution
-                  const readRatio = readRps / totalRps;
-                  const writeRatio = writeRps / totalRps;
-                  const weightedDownstreamLatency = (readPathLatency * readRatio) + (writePathLatency * writeRatio);
+          // Weighted average based on traffic distribution
+          const readRatio = readRps / totalRps;
+          const writeRatio = writeRps / totalRps;
+          const weightedDownstreamLatency =
+            readPathLatency * readRatio + writePathLatency * writeRatio;
 
-                  const result = ownLatency + weightedDownstreamLatency;
+          const result = ownLatency + weightedDownstreamLatency;
 
-                  // Defensive check for NaN or Infinity
-                  if (!isFinite(result)) {
-                      console.error('Invalid latency calculation:', {
-                          nodeId,
-                          ownLatency,
-                          readPathLatency,
-                          writePathLatency,
-                          readRatio,
-                          writeRatio,
-                          weightedDownstreamLatency
-                      });
-                      return ownLatency; // Fallback to just own latency
-                  }
-                  return result;
-              } else {
-                  // Fallback: Broadcast/Fanout Logic (all edges are sequential)
-                  // Assume Sequential (Sum) - pessimistic assumption
-                  for (const edge of edges) {
-                       sumDownstreamLatency += getExpectedLatency(edge.to, new Set(visited));
-                  }
-                  return ownLatency + sumDownstreamLatency;
-              }
-         }
+          // Defensive check for NaN or Infinity
+          if (!isFinite(result)) {
+            console.error("Invalid latency calculation:", {
+              nodeId,
+              ownLatency,
+              readPathLatency,
+              writePathLatency,
+              readRatio,
+              writeRatio,
+              weightedDownstreamLatency,
+            });
+            return ownLatency; // Fallback to just own latency
+          }
+          return result;
+        } else {
+          // Fallback: Broadcast/Fanout Logic (all edges are sequential)
+          // Assume Sequential (Sum) - pessimistic assumption
+          for (const edge of edges) {
+            sumDownstreamLatency += getExpectedLatency(
+              edge.to,
+              new Set(visited),
+            );
+          }
+          return ownLatency + sumDownstreamLatency;
+        }
+      }
     };
 
     // Calculate System-Wide Metrics
     let p50Latency = 0;
     if (entryPoints.length > 0) {
-        // Average latency across entry points
-        let totalLat = 0;
-        for (const entry of entryPoints) {
-            totalLat += getExpectedLatency(entry, new Set());
-        }
-        p50Latency = totalLat / entryPoints.length;
+      // Average latency across entry points
+      let totalLat = 0;
+      for (const entry of entryPoints) {
+        totalLat += getExpectedLatency(entry, new Set());
+      }
+      p50Latency = totalLat / entryPoints.length;
     }
 
     // Combine Error Rates
     // Simple heuristic: 1 - Product(1 - errorRate) for all ACTIVE nodes
     let successRate = 1.0;
+    const errorComponents: Array<{ id: string; type: string; errorRate: number; utilization: number; traffic: { read: number; write: number } }> = [];
     for (const [id, metrics] of componentMetrics) {
-        const input = nodeTraffic.get(id)!;
-        if (input.read + input.write > 0) {
-            successRate *= (1 - metrics.errorRate);
+      const input = nodeTraffic.get(id)!;
+      if (input.read + input.write > 0) {
+        successRate *= 1 - metrics.errorRate;
+        // Track components with errors for debugging
+        if (metrics.errorRate > 0) {
+          errorComponents.push({
+            id,
+            type: this.components.get(id)?.type || 'unknown',
+            errorRate: metrics.errorRate,
+            utilization: metrics.utilization || 0,
+            traffic: { read: input.read, write: input.write },
+          });
         }
+      }
     }
     combinedErrorRate = 1 - successRate;
+    
+    // Log component errors for debugging
+    // ALWAYS log when there are ANY errors - this is critical for debugging test failures
+    const testName = (testCase as any).name || testCase.requirement || 'Unknown Test';
+    
+    // ALWAYS log error rate for NFR tests with errors to debug failures
+    const isNFRTest = testCase.type !== "functional";
+    const hasErrors = errorComponents.length > 0 || combinedErrorRate > 0.001;
+    
+    // Only log errors, not successful tests (to reduce console noise)
+    if (hasErrors) {
+      console.error(`🚨🚨🚨 [Simulation Engine] "${testName}" - Combined error rate: ${(combinedErrorRate * 100).toFixed(1)}%`);
+      console.error(`   Error components count: ${errorComponents.length}, Total components: ${componentMetrics.size}`);
+      
+      // Log all components when there are errors to see what's happening
+      console.error(`   📊 ALL component metrics for "${testName}":`);
+      Array.from(componentMetrics.entries()).forEach(([id, metrics]) => {
+        const compInstance = this.components.get(id);
+        const compConfig = compInstance?.config || {};
+        const input = nodeTraffic.get(id) || { read: 0, write: 0 };
+        const instances = compConfig.instances || 1;
+        const capacity = compInstance?.type === 'app_server' 
+          ? instances * 1000
+          : compInstance?.type === 'postgresql' || compInstance?.type === 'database'
+          ? 'calculated'
+          : compInstance?.type === 'message_queue'
+          ? `${(compConfig.numPartitions || 10) * 10000} RPS`
+          : 'unknown';
+        
+        const hasError = metrics.errorRate > 0.0001;
+        const prefix = hasError ? '🔴' : '  ';
+        // Only log if there are actual errors (hasErrors is true)
+        if (hasError) {
+          console.error(
+            `${prefix} ${id} (${compInstance?.type || 'unknown'}): ` +
+            `error=${(metrics.errorRate * 100).toFixed(1)}%, ` +
+            `util=${((metrics.utilization || 0) * 100).toFixed(1)}%, ` +
+            `traffic=${(input.read + input.write).toFixed(0)} RPS (${input.read.toFixed(0)}R/${input.write.toFixed(0)}W), ` +
+            `instances=${instances}, capacity=${capacity}`
+          );
+        }
+      });
+    }
 
     // Availability (Min of all active nodes)
     for (const [id, metrics] of componentMetrics) {
-        const input = nodeTraffic.get(id)!;
-        if (input.read + input.write > 0 && metrics.downtime) {
-             const nodeAvail = Math.max(0, 1 - metrics.downtime / testCase.duration);
-             combinedAvailability = Math.min(combinedAvailability, nodeAvail);
-        }
+      const input = nodeTraffic.get(id)!;
+      if (input.read + input.write > 0 && metrics.downtime) {
+        const nodeAvail = Math.max(0, 1 - metrics.downtime / testCase.duration);
+        combinedAvailability = Math.min(combinedAvailability, nodeAvail);
+      }
     }
 
     // Reliability Patterns
     // Apply global reliability effects if enabled
-     const anyReliabilityEnabled =
-      isEnabled('ENABLE_RETRY_LOGIC') ||
-      isEnabled('ENABLE_CIRCUIT_BREAKER') ||
-      isEnabled('ENABLE_TIMEOUT_ENFORCEMENT') ||
-      isEnabled('ENABLE_BACKPRESSURE');
+    const anyReliabilityEnabled =
+      isEnabled("ENABLE_RETRY_LOGIC") ||
+      isEnabled("ENABLE_CIRCUIT_BREAKER") ||
+      isEnabled("ENABLE_TIMEOUT_ENFORCEMENT") ||
+      isEnabled("ENABLE_BACKPRESSURE");
 
     if (anyReliabilityEnabled && totalRps > 0) {
       const reliabilityResult = calculateCombinedReliabilityEffect(
@@ -751,12 +874,12 @@ export class SimulationEngine {
         this.retryConfig,
         this.circuitBreakerConfig,
         this.timeoutConfig,
-        this.queueConfig
+        this.queueConfig,
       );
 
       combinedErrorRate = this.combineErrorRates(
         combinedErrorRate,
-        reliabilityResult.effectiveErrorRate - combinedErrorRate
+        reliabilityResult.effectiveErrorRate - combinedErrorRate,
       );
       p50Latency = reliabilityResult.effectiveLatencyMs;
 
@@ -769,7 +892,7 @@ export class SimulationEngine {
     // Used for statistical distribution tail calculation
     const componentCount = componentMetrics.size;
     const maxUtilization = Math.max(
-      ...Array.from(componentMetrics.values()).map(m => m.utilization || 0)
+      ...Array.from(componentMetrics.values()).map((m) => m.utilization || 0),
     );
 
     const percentiles = calculateRequestPercentiles(
@@ -781,7 +904,7 @@ export class SimulationEngine {
         componentCount,
         cacheHitRatio: 0.5, // Hard to calc generic hit ratio, use median
         loadFactor: Math.min(1, maxUtilization),
-      }
+      },
     );
 
     // Flow Visualization (Keep existing logic)
@@ -790,7 +913,7 @@ export class SimulationEngine {
       const result = this.getTrafficFlowInternal(testCase);
       flowViz = result.flowViz;
     } catch (error) {
-      console.warn('Flow visualization failed:', error);
+      console.warn("Flow visualization failed:", error);
       flowViz = undefined;
     }
 
@@ -809,7 +932,7 @@ export class SimulationEngine {
     return {
       metrics: finalMetrics,
       componentMetrics,
-      flowViz
+      flowViz,
     };
   }
 
@@ -826,7 +949,7 @@ export class SimulationEngine {
    */
   private applyFailureEffect(
     metrics: ComponentMetrics,
-    effect: ReturnType<typeof calculateFailureEffect>
+    effect: ReturnType<typeof calculateFailureEffect>,
   ): ComponentMetrics {
     const adjustedMetrics = { ...metrics };
 
@@ -838,7 +961,8 @@ export class SimulationEngine {
       adjustedMetrics.utilization = 0;
       adjustedMetrics.downtime = (adjustedMetrics.downtime || 0) + 1; // Mark as down
     } else {
-      adjustedMetrics.latency = (metrics.latency || 0) * effect.latencyMultiplier;
+      adjustedMetrics.latency =
+        (metrics.latency || 0) * effect.latencyMultiplier;
       if (adjustedMetrics.readLatency) {
         adjustedMetrics.readLatency *= effect.latencyMultiplier;
       }
@@ -850,7 +974,7 @@ export class SimulationEngine {
     // Apply error rate increase
     adjustedMetrics.errorRate = this.combineErrorRates(
       metrics.errorRate,
-      effect.errorRateIncrease
+      effect.errorRateIncrease,
     );
 
     // Apply availability factor
@@ -858,14 +982,14 @@ export class SimulationEngine {
       // Reduce effective capacity
       adjustedMetrics.utilization = Math.min(
         1,
-        (metrics.utilization || 0) / effect.availabilityFactor
+        (metrics.utilization || 0) / effect.availabilityFactor,
       );
 
       // Add partial failure to error rate
       const unavailabilityError = 1 - effect.availabilityFactor;
       adjustedMetrics.errorRate = this.combineErrorRates(
         adjustedMetrics.errorRate,
-        unavailabilityError * 0.5 // 50% of unavailable capacity causes errors
+        unavailabilityError * 0.5, // 50% of unavailable capacity causes errors
       );
     }
 
@@ -875,7 +999,7 @@ export class SimulationEngine {
     }
     adjustedMetrics.warnings.push(effect.failureDescription);
 
-    verboseLog('Applied failure effect', {
+    verboseLog("Applied failure effect", {
       originalLatency: metrics.latency,
       adjustedLatency: adjustedMetrics.latency,
       originalErrorRate: metrics.errorRate,
@@ -890,7 +1014,7 @@ export class SimulationEngine {
    * Identify bottlenecks in the system
    */
   identifyBottlenecks(
-    componentMetrics: Map<string, ComponentMetrics>
+    componentMetrics: Map<string, ComponentMetrics>,
   ): Bottleneck[] {
     const bottlenecks: Bottleneck[] = [];
 
@@ -902,9 +1026,10 @@ export class SimulationEngine {
         bottlenecks.push({
           componentId: id,
           componentType: component.type,
-          issue: metrics.utilization > 0.95
-            ? 'Critical utilization - system overloaded'
-            : 'High utilization - approaching capacity',
+          issue:
+            metrics.utilization > 0.95
+              ? "Critical utilization - system overloaded"
+              : "High utilization - approaching capacity",
           utilization: metrics.utilization,
           recommendation: this.getRecommendation(component, metrics),
         });
@@ -919,22 +1044,22 @@ export class SimulationEngine {
    */
   private getRecommendation(
     component: Component,
-    metrics: ComponentMetrics
+    metrics: ComponentMetrics,
   ): string {
     switch (component.type) {
-      case 'app_server':
+      case "app_server":
         const currentInstances = (metrics as any).instances || 1;
         const suggestedInstances = Math.ceil(currentInstances * 1.5);
         return `Add more instances (currently: ${currentInstances}, suggested: ${suggestedInstances})`;
 
-      case 'postgresql':
+      case "postgresql":
         if ((metrics as any).writeUtil > 0.8) {
           return `Database write capacity is saturated. Consider: (1) Increasing write capacity, (2) Adding write caching, (3) Sharding`;
         } else {
           return `Database read capacity is saturated. Consider: (1) Increasing read capacity, (2) Adding caching with higher hit ratio, (3) Adding read replicas`;
         }
 
-      case 'redis':
+      case "redis":
         return `Cache is undersized or hit ratio is too low. Consider: (1) Increasing memory size, (2) Increasing TTL, (3) Pre-warming cache`;
 
       default:
