@@ -12,6 +12,10 @@ export const sdpDnsLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'beginner',
   estimatedMinutes: 55,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-5-primer',
+  sequenceOrder: 2,
   stages: [
     {
       id: 'intro-dns',

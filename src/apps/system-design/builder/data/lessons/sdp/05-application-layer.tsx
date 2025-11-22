@@ -12,6 +12,10 @@ export const sdpApplicationLayerLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'intermediate',
   estimatedMinutes: 75,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-5-primer',
+  sequenceOrder: 5,
   stages: [
     {
       id: 'intro-application-layer',

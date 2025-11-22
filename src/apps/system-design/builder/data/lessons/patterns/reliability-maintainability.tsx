@@ -12,6 +12,11 @@ export const reliabilityMaintainabilityLesson: SystemDesignLesson = {
   category: 'patterns',
   difficulty: 'intermediate',
   estimatedMinutes: 60,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 12,
+
   stages: [
     {
       id: 'software-errors',

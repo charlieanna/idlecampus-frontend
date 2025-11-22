@@ -1,7 +1,8 @@
 // Export all system design lessons
-// Lessons are organized by category: fundamentals, components, patterns, problem-solving
+// Lessons are organized into progressive modules for sequential learning
 
 import type { SystemDesignLesson } from '../../types/lesson';
+import { courseModules, type CourseModule } from './modules';
 
 // Fundamentals lessons (Level 1)
 import { introductionLesson } from './fundamentals/01-introduction.tsx';
@@ -142,8 +143,100 @@ export function getLessonsByDifficulty(difficulty: SystemDesignLesson['difficult
  * Get recommended lessons for a challenge
  */
 export function getRecommendedLessons(challengeId: string): SystemDesignLesson[] {
-  return allLessons.filter(lesson => 
+  return allLessons.filter(lesson =>
     lesson.relatedChallenges?.includes(challengeId)
   );
+}
+
+/**
+ * Export course modules
+ */
+export { courseModules, type CourseModule };
+
+/**
+ * Get lessons by module ID
+ */
+export function getLessonsByModule(moduleId: string): SystemDesignLesson[] {
+  return allLessons
+    .filter(lesson => lesson.moduleId === moduleId)
+    .sort((a, b) => (a.sequenceOrder || 0) - (b.sequenceOrder || 0));
+}
+
+/**
+ * Get all lessons organized by modules
+ */
+export function getAllLessonsByModules(): Record<string, SystemDesignLesson[]> {
+  const lessonsByModule: Record<string, SystemDesignLesson[]> = {};
+
+  courseModules.forEach(module => {
+    lessonsByModule[module.id] = getLessonsByModule(module.id);
+  });
+
+  return lessonsByModule;
+}
+
+/**
+ * Get next lesson in sequence
+ */
+export function getNextLesson(currentLessonId: string): SystemDesignLesson | undefined {
+  const currentLesson = allLessons.find(l => l.id === currentLessonId);
+  if (!currentLesson || !currentLesson.moduleId || currentLesson.sequenceOrder === undefined) {
+    return undefined;
+  }
+
+  // First try to find next lesson in the same module
+  const nextInModule = allLessons.find(
+    l => l.moduleId === currentLesson.moduleId &&
+         l.sequenceOrder === (currentLesson.sequenceOrder || 0) + 1
+  );
+
+  if (nextInModule) {
+    return nextInModule;
+  }
+
+  // If no next lesson in module, get first lesson of next module
+  const currentModule = courseModules.find(m => m.id === currentLesson.moduleId);
+  if (!currentModule) return undefined;
+
+  const nextModule = courseModules.find(m => m.sequenceOrder === currentModule.sequenceOrder + 1);
+  if (!nextModule) return undefined;
+
+  // Return first lesson of next module
+  return allLessons.find(l => l.moduleId === nextModule.id && l.sequenceOrder === 1);
+}
+
+/**
+ * Get previous lesson in sequence
+ */
+export function getPreviousLesson(currentLessonId: string): SystemDesignLesson | undefined {
+  const currentLesson = allLessons.find(l => l.id === currentLessonId);
+  if (!currentLesson || !currentLesson.moduleId || currentLesson.sequenceOrder === undefined) {
+    return undefined;
+  }
+
+  // First try to find previous lesson in the same module
+  const prevInModule = allLessons.find(
+    l => l.moduleId === currentLesson.moduleId &&
+         l.sequenceOrder === (currentLesson.sequenceOrder || 0) - 1
+  );
+
+  if (prevInModule) {
+    return prevInModule;
+  }
+
+  // If no previous lesson in module and we're at the first lesson, get last lesson of previous module
+  if (currentLesson.sequenceOrder === 1) {
+    const currentModule = courseModules.find(m => m.id === currentLesson.moduleId);
+    if (!currentModule) return undefined;
+
+    const prevModule = courseModules.find(m => m.sequenceOrder === currentModule.sequenceOrder - 1);
+    if (!prevModule) return undefined;
+
+    // Return last lesson of previous module
+    const lessonsInPrevModule = getLessonsByModule(prevModule.id);
+    return lessonsInPrevModule[lessonsInPrevModule.length - 1];
+  }
+
+  return undefined;
 }
 

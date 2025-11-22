@@ -12,6 +12,10 @@ export const ddiaChapter7TransactionsLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'advanced',
   estimatedMinutes: 110,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-4-ddia',
+  sequenceOrder: 6,
   stages: [
     {
       id: 'intro-acid',

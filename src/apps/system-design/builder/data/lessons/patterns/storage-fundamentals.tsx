@@ -12,6 +12,11 @@ export const storageFundamentalsLesson: SystemDesignLesson = {
   category: 'patterns',
   difficulty: 'intermediate',
   estimatedMinutes: 50,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 9,
+
   stages: [
     {
       id: 'storage-types',

@@ -12,6 +12,10 @@ export const ddiaChapter8DistributedSystemsLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'advanced',
   estimatedMinutes: 95,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-4-ddia',
+  sequenceOrder: 7,
   stages: [
     {
       id: 'intro-distributed',

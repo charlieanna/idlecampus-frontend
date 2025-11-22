@@ -12,6 +12,10 @@ export const ddiaChapter9ConsensusLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'advanced',
   estimatedMinutes: 105,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-4-ddia',
+  sequenceOrder: 8,
   stages: [
     {
       id: 'intro-consensus',

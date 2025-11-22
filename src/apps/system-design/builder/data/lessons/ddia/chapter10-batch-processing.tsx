@@ -12,6 +12,10 @@ export const ddiaChapter10BatchProcessingLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'intermediate',
   estimatedMinutes: 85,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-4-ddia',
+  sequenceOrder: 9,
   stages: [
     {
       id: 'intro-batch',

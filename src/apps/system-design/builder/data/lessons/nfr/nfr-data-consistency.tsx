@@ -12,6 +12,10 @@ export const nfrDataConsistencyLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'intermediate',
   estimatedMinutes: 75,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-6-nfr',
+  sequenceOrder: 2,
   stages: [
     {
       id: 'intro-data-consistency',

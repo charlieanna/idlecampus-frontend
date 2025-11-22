@@ -14,6 +14,11 @@ export const capacityPlanningLesson: SystemDesignLesson = {
   category: 'fundamentals',
   tags: ['capacity', 'scaling', 'metrics', 'rps', 'throughput', 'peak-planning'],
   prerequisites: ['basic-components'],
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-1-fundamentals',
+  sequenceOrder: 3,
+
   learningObjectives: [
     'Understand RPS, latency, and throughput',
     'Learn to estimate capacity requirements',

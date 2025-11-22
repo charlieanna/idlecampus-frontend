@@ -12,6 +12,11 @@ export const gatewayFundamentalsLesson: SystemDesignLesson = {
   category: 'patterns',
   difficulty: 'intermediate',
   estimatedMinutes: 35,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 8,
+
   stages: [
     {
       id: 'what-is-gateway',

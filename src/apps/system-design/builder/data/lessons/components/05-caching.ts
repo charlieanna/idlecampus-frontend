@@ -11,6 +11,11 @@ export const cachingLesson: SystemDesignLesson = {
   category: 'components',
   tags: ['caching', 'performance', 'redis', 'cache-aside'],
   prerequisites: ['basic-components', 'understanding-scale'],
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-2-components',
+  sequenceOrder: 1,
+
   learningObjectives: [
     'Understand when caching helps',
     'Learn cache-aside pattern',

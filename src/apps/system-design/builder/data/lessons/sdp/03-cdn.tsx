@@ -12,6 +12,10 @@ export const sdpCdnLesson: SystemDesignLesson = {
   category: 'fundamentals',
   difficulty: 'intermediate',
   estimatedMinutes: 60,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-5-primer',
+  sequenceOrder: 3,
   stages: [
     {
       id: 'intro-cdn',

@@ -11,6 +11,11 @@ export const replicationLesson: SystemDesignLesson = {
   category: 'components',
   tags: ['replication', 'database', 'scaling', 'consistency'],
   prerequisites: ['basic-components', 'understanding-scale'],
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-2-components',
+  sequenceOrder: 2,
+
   learningObjectives: [
     'Understand different replication modes',
     'Learn when to use each mode',

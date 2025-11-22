@@ -12,6 +12,11 @@ export const platformMigrationStrategiesLesson: SystemDesignLesson = {
   category: 'patterns',
   difficulty: 'advanced',
   estimatedMinutes: 55,
+
+  // Progressive flow metadata
+  moduleId: 'sd-module-3-patterns',
+  sequenceOrder: 13,
+
   stages: [
     {
       id: 'migration-vs-building',
