@@ -60,7 +60,7 @@ export const CanvasPage: React.FC<CanvasPageProps> = ({
   );
 
   return (
-    <>
+    <div className="flex-1 flex overflow-hidden h-full">
       {/* Left Panel - Problem Description OR Submission Results */}
       {hasSubmitted ? (
         <SubmissionResultsPanel
@@ -95,10 +95,10 @@ export const CanvasPage: React.FC<CanvasPageProps> = ({
         </div>
       ) : (
         // Expanded: Full canvas with collapse button
-        <div className="flex-1 relative">
+        <div className="flex-1 relative h-full">
           <ReactFlowProvider>
             <DesignCanvas
-              systemGraph={systemGraph}
+              systemGraph={systemGraph || { components: [], connections: [] }}
               onSystemGraphChange={setSystemGraph}
               selectedNode={selectedNode}
               onNodeSelect={setSelectedNode}
@@ -178,7 +178,7 @@ export const CanvasPage: React.FC<CanvasPageProps> = ({
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 };
 

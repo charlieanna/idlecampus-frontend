@@ -152,33 +152,26 @@ export function TieredSystemDesignBuilder({
           : undefined);
       if (!solution) return;
 
-      // Convert solution to SystemGraph
+      // Convert solution to SystemGraph format (components + connections)
       const components = solution.components.map((comp, index) => {
         const solutionConfig = comp.config || {};
         const defaultCfg = getDefaultConfig(comp.type);
         const mergedConfig: Record<string, any> = { ...defaultCfg, ...solutionConfig };
 
+        // Return ComponentNode format
         return {
           id: mergedConfig.id || `${comp.type}_${index + 1}`,
           type: comp.type,
-          data: {
-            label: comp.type,
-            config: mergedConfig,
-          },
-          position: { x: 100 + index * 200, y: 100 },
+          config: mergedConfig,
         };
       });
 
-      const edges = solution.connections.map((conn, index) => ({
-        id: `edge-${index}`,
-        source: conn.from,
-        target: conn.to,
-        type: "default",
-      }));
+      // Use connections directly from solution (they're already in Connection format)
+      const connections = solution.connections || [];
 
       setSystemGraph({
-        nodes: components,
-        edges: edges,
+        components,
+        connections,
       });
 
       setSolution(solution);
@@ -190,20 +183,23 @@ export function TieredSystemDesignBuilder({
   // Handle adding component
   const handleAddComponent = useCallback(
     (type: string) => {
-      const nodeCount = systemGraph.nodes?.filter((n) => n.type === type).length || 0;
-      const newId = `${type}_${nodeCount + 1}`;
+      const componentCount = systemGraph.components?.filter((c) => c.type === type).length || 0;
+      const id = `${type}_${Date.now()}`;
+      const defaultConfig = getDefaultConfig(type);
       
-      const newNode = {
-        id: newId,
-        type: type,
-        data: {
-          label: type,
-          config: getDefaultConfig(type),
-        },
-        position: { x: 100 + nodeCount * 50, y: 100 + nodeCount * 50 },
+      // For app_server, initialize with empty handledAPIs array
+      if (type === "app_server") {
+        defaultConfig.handledAPIs = [];
+      }
+
+      // Create ComponentNode format
+      const newComponent = {
+        id,
+        type: type as any,
+        config: defaultConfig,
       };
 
-      addNode(newNode);
+      addNode(newComponent);
     },
     [systemGraph, addNode]
   );
@@ -211,14 +207,19 @@ export function TieredSystemDesignBuilder({
   // Handle updating config
   const handleUpdateConfig = useCallback(
     (nodeId: string, config: any) => {
-      updateNode(nodeId, {
-        data: {
-          ...systemGraph.nodes.find((n) => n.id === nodeId)?.data,
-          config: config,
-        },
+      updateSystemGraph((currentGraph) => {
+        const updatedComponents = currentGraph.components.map((comp) =>
+          comp.id === nodeId
+            ? { ...comp, config: { ...comp.config, ...config } }
+            : comp
+        );
+        return {
+          ...currentGraph,
+          components: updatedComponents,
+        };
       });
     },
-    [systemGraph, updateNode]
+    [updateSystemGraph]
   );
 
   // Handle submit

@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate, useParams } from 'react-router-dom';
 import { ProblemCatalog } from './builder/ui/components/ProblemCatalog';
-import { TieredSystemDesignBuilder } from './builder/ui/TieredSystemDesignBuilder';
+import { TieredSystemDesignBuilder } from './builder/ui/TieredSystemDesignBuilderRefactored';
 import { LessonsPage } from './builder/ui/pages/LessonsPage';
 import { LessonViewer } from './builder/ui/pages/LessonViewer';
 

@@ -26,10 +26,10 @@ interface CanvasState {
 }
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
-  // Initial state
+  // Initial state - matches SystemGraph type
   systemGraph: {
-    nodes: [],
-    edges: [],
+    components: [],
+    connections: [],
   },
   selectedNode: null,
   canvasCollapsed: false,
@@ -54,15 +54,16 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   addNode: (node) => set((state) => ({
     systemGraph: {
       ...state.systemGraph,
-      nodes: [...state.systemGraph.nodes, node],
+      components: [...state.systemGraph.components, node],
     },
   })),
   
   removeNode: (nodeId) => set((state) => ({
     systemGraph: {
-      nodes: state.systemGraph.nodes.filter((n) => n.id !== nodeId),
-      edges: state.systemGraph.edges.filter(
-        (e) => e.source !== nodeId && e.target !== nodeId
+      ...state.systemGraph,
+      components: state.systemGraph.components.filter((c) => c.id !== nodeId),
+      connections: state.systemGraph.connections.filter(
+        (conn) => conn.from !== nodeId && conn.to !== nodeId
       ),
     },
   })),
@@ -70,8 +71,8 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   updateNode: (nodeId, updates) => set((state) => ({
     systemGraph: {
       ...state.systemGraph,
-      nodes: state.systemGraph.nodes.map((node) =>
-        node.id === nodeId ? { ...node, ...updates } : node
+      components: state.systemGraph.components.map((comp) =>
+        comp.id === nodeId ? { ...comp, ...updates } : comp
       ),
     },
   })),
@@ -79,14 +80,16 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
   addEdge: (edge) => set((state) => ({
     systemGraph: {
       ...state.systemGraph,
-      edges: [...state.systemGraph.edges, edge],
+      connections: [...state.systemGraph.connections, edge],
     },
   })),
   
   removeEdge: (edgeId) => set((state) => ({
     systemGraph: {
       ...state.systemGraph,
-      edges: state.systemGraph.edges.filter((e) => e.id !== edgeId),
+      connections: state.systemGraph.connections.filter(
+        (conn) => `${conn.from}-${conn.to}` !== edgeId
+      ),
     },
   })),
 }));
