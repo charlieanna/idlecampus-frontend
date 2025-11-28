@@ -7,6 +7,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { getChallengeUrl } from '../../builder/utils/challengeUrl';
 import { ProgressiveChallenge, ChallengeProgress } from '../types';
 
 interface ChallengeProgressCardProps {
@@ -189,21 +190,21 @@ export function ChallengeProgressCard({
           <span className="text-xs text-gray-500">🔒 Locked</span>
         ) : !progress ? (
           <Link
-            to={`/system-design/challenges/${challenge.id}`}
+            to={getChallengeUrl(challenge.id)}
             className={`w-full text-center px-3 py-2 ${colors.bg} text-white text-sm font-medium rounded-md ${colors.hover}`}
           >
             Start →
           </Link>
         ) : progress.status === 'completed' ? (
           <Link
-            to={`/system-design/challenges/${challenge.id}`}
+            to={getChallengeUrl(challenge.id)}
             className="w-full text-center px-3 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700"
           >
             Review
           </Link>
         ) : (
           <Link
-            to={`/system-design/challenges/${challenge.id}`}
+            to={getChallengeUrl(challenge.id)}
             className={`w-full text-center px-3 py-2 ${colors.bg} text-white text-sm font-medium rounded-md ${colors.hover}`}
           >
             Continue L{currentLevel} →

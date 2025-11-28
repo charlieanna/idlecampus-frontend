@@ -5,14 +5,12 @@
  * Shows learning tracks, user progress, and available challenges.
  */
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { progressiveProgressService } from '../services/progressService';
-import { getAllProgressiveChallenges, getChallengeStats } from '../services/challengeMapper';
+import { getChallengeStats } from '../services/challengeMapper';
 import {
-  UserProgressState,
-  LearningTrackType,
-  getXPProgressInLevel
+  UserProgressState
 } from '../types';
 import { ProgressStatsWidget } from '../components/ProgressStatsWidget';
 import { TrackCard } from '../components/TrackCard';
@@ -45,9 +43,6 @@ export function ProgressiveDashboard() {
     );
   }
 
-  const xpProgress = getXPProgressInLevel(progress.totalXP);
-  const allChallenges = getAllProgressiveChallenges();
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -67,6 +62,12 @@ export function ProgressiveDashboard() {
               className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 flex items-center gap-2"
             >
               ← Classic View
+            </Link>
+            <Link
+              to="/progressive/all"
+              className="ml-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 flex items-center gap-2"
+            >
+              View All Challenges →
             </Link>
           </div>
         </div>

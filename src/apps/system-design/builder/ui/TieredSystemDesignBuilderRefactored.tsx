@@ -144,6 +144,60 @@ export function TieredSystemDesignBuilder({
     selectedChallenge?.pythonTemplate &&
     selectedChallenge.pythonTemplate.length > 0;
 
+  // Get available APIs for API assignment to app servers
+  const getAvailableAPIs = useCallback((): string[] => {
+    if (!selectedChallenge) return [];
+    
+    // Check if challenge has explicit API definitions
+    const problemDef = (selectedChallenge as any).problemDefinition;
+    if (problemDef?.userFacingFRs) {
+      // Extract APIs from functional requirements
+      const apis: string[] = [];
+      const frs = problemDef.userFacingFRs;
+      
+      // Common patterns
+      if (frs.some(fr => fr.toLowerCase().includes('create') || fr.toLowerCase().includes('shorten'))) {
+        apis.push('POST /api/v1/urls');
+      }
+      if (frs.some(fr => fr.toLowerCase().includes('redirect') || fr.toLowerCase().includes('expand') || fr.toLowerCase().includes('get'))) {
+        apis.push('GET /api/v1/urls/*');
+      }
+      if (frs.some(fr => fr.toLowerCase().includes('stats') || fr.toLowerCase().includes('analytics'))) {
+        apis.push('GET /api/v1/stats');
+      }
+      
+      if (apis.length > 0) return apis;
+    }
+    
+    // Challenge-specific API definitions
+    if (selectedChallenge.id === "tiny_url") {
+      return ["POST /api/v1/urls", "GET /api/v1/urls/*", "GET /api/v1/stats"];
+    }
+    
+    // Generic fallback - extract from functional requirements
+    const functionalReqs = selectedChallenge.requirements?.functional || [];
+    const apis: string[] = [];
+    
+    functionalReqs.forEach(req => {
+      const lowerReq = req.toLowerCase();
+      if (lowerReq.includes('create') || lowerReq.includes('post') || lowerReq.includes('add')) {
+        apis.push('POST /api/v1/*');
+      }
+      if (lowerReq.includes('read') || lowerReq.includes('get') || lowerReq.includes('retrieve')) {
+        apis.push('GET /api/v1/*');
+      }
+      if (lowerReq.includes('update') || lowerReq.includes('put') || lowerReq.includes('modify')) {
+        apis.push('PUT /api/v1/*');
+      }
+      if (lowerReq.includes('delete') || lowerReq.includes('remove')) {
+        apis.push('DELETE /api/v1/*');
+      }
+    });
+    
+    // Remove duplicates and return
+    return Array.from(new Set(apis));
+  }, [selectedChallenge]);
+
   // Initialize challenge
   useEffect(() => {
     if (!challengeId) {
@@ -192,6 +246,39 @@ export function TieredSystemDesignBuilder({
       console.log(`Sample available challenge IDs:`, sampleIds);
     }
   }, [challengeId, effectiveChallenges, setSelectedChallenge, setActiveTab]);
+
+  // Initialize Python code and reset state when challenge changes
+  useEffect(() => {
+    if (selectedChallenge) {
+      console.log(`[ChallengeInit] Initializing challenge: ${selectedChallenge.id}`);
+      console.log(`[ChallengeInit] Has pythonTemplate:`, !!selectedChallenge.pythonTemplate);
+      console.log(`[ChallengeInit] Template length:`, selectedChallenge.pythonTemplate?.length || 0);
+      
+      // Initialize Python code from template
+      const template = selectedChallenge.pythonTemplate || "";
+      setPythonCode(template);
+      setPythonCodeByServer({});
+      
+      // Reset canvas
+      setSystemGraph({
+        components: [],
+        connections: [],
+      });
+      
+      // Reset test state
+      clearTestResults();
+      setHasSubmitted(false);
+      setSelectedNode(null);
+      
+      // Set problem definition for test runner
+      const problemDef = (selectedChallenge as any).problemDefinition;
+      if (problemDef) {
+        testRunner.setProblemDefinition(problemDef);
+      }
+      
+      console.log(`[ChallengeInit] Python code initialized:`, template.substring(0, 100) + "...");
+    }
+  }, [selectedChallenge, setPythonCode, setPythonCodeByServer, setSystemGraph, clearTestResults, setHasSubmitted, setSelectedNode, testRunner]);
 
   // Load solution to canvas
   const loadSolutionToCanvas = useCallback(
@@ -318,26 +405,58 @@ export function TieredSystemDesignBuilder({
 
   // Handle adding component
   const handleAddComponent = useCallback(
-    (type: string) => {
-      const componentCount = systemGraph.components?.filter((c) => c.type === type).length || 0;
-      const id = `${type}_${Date.now()}`;
+    (type: string, configOverride?: any) => {
+      // Get current systemGraph from store to ensure we have latest state
+      const currentGraph = useCanvasStore.getState().systemGraph;
+      const componentCount = currentGraph.components?.filter((c) => c.type === type).length || 0;
+      
+      // Generate unique ID with timestamp and random suffix to avoid collisions
+      const id = `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const defaultConfig = getDefaultConfig(type);
       
-      // For app_server, initialize with empty handledAPIs array
-      if (type === "app_server") {
-        defaultConfig.handledAPIs = [];
+      // Merge any provided config override
+      const mergedConfig = configOverride 
+        ? { ...defaultConfig, ...configOverride }
+        : defaultConfig;
+      
+      // For app_server, initialize with empty handledAPIs array if not provided
+      if (type === "app_server" && !mergedConfig.handledAPIs) {
+        mergedConfig.handledAPIs = [];
+      }
+
+      // Ensure app_server has instances
+      if (type === "app_server" && !mergedConfig.instances) {
+        mergedConfig.instances = 1;
       }
 
       // Create ComponentNode format
       const newComponent = {
         id,
         type: type as any,
-        config: defaultConfig,
+        config: mergedConfig,
       };
 
+      console.log(`[AddComponent] Adding ${type} component:`, {
+        id,
+        type,
+        config: mergedConfig,
+        currentComponentCount: currentGraph.components.length,
+      });
+
       addNode(newComponent);
+      
+      // Verify it was added (for debugging)
+      setTimeout(() => {
+        const updatedGraph = useCanvasStore.getState().systemGraph;
+        const added = updatedGraph.components.find(c => c.id === id);
+        if (!added) {
+          console.error(`[AddComponent] Component ${id} was not added! Current components:`, updatedGraph.components.map(c => ({ id: c.id, type: c.type })));
+        } else {
+          console.log(`[AddComponent] Component ${id} successfully added. Total components:`, updatedGraph.components.length);
+        }
+      }, 100);
     },
-    [systemGraph, addNode]
+    [addNode]
   );
 
   // Handle updating config
@@ -513,6 +632,7 @@ export function TieredSystemDesignBuilder({
             onUpdateConfig={handleUpdateConfig}
             onSubmit={handleSubmit}
             onLoadSolution={loadSolutionToCanvas}
+            availableAPIs={getAvailableAPIs()}
           />
         )}
 

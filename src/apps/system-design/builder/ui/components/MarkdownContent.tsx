@@ -10,8 +10,16 @@ interface MarkdownContentProps {
  * Replaces ReactMarkdown with custom styled rendering
  */
 export function MarkdownContent({ content, className = '' }: MarkdownContentProps) {
+  // Handle undefined/null content gracefully
+  if (!content) {
+    return <div className={className}>No content available</div>;
+  }
+
   // Simple markdown parser that converts to styled HTML
   const parseMarkdown = (text: string): React.ReactNode => {
+    if (!text || typeof text !== 'string') {
+      return <div>No content available</div>;
+    }
     const lines = text.split('\n');
     const elements: React.ReactNode[] = [];
     let currentParagraph: string[] = [];

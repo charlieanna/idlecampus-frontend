@@ -1,85 +1,52 @@
 /**
- * Track Detail Page
+ * All Challenges Page
  * 
- * Shows all challenges within a specific track with 5-level progression.
- * Based on PROGRESSIVE_FLOW_WIREFRAMES.md section 3 & 4.
+ * Shows all available progressive challenges in a single list.
+ * Allows users to browse and access any challenge regardless of track.
  */
 
-import React, { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { progressiveProgressService } from '../services/progressService';
-import { getChallengesByTrack, isChallengeUnlocked } from '../services/challengeMapper';
-import { getChallengeUrl } from '../../builder/utils/challengeUrl';
-import { 
-  LearningTrackType, 
+import { getAllProgressiveChallenges, isChallengeUnlocked } from '../services/challengeMapper';
+import {
   ProgressiveChallenge,
   ChallengeProgress,
-  UserProgressState,
-  LEVEL_NAMES
+  UserProgressState
 } from '../types';
 
 /**
- * Track metadata
+ * All Challenges Page Component
  */
-const TRACK_META = {
-  fundamentals: {
-    name: 'Fundamentals',
-    icon: '📘',
-    color: 'blue',
-    description: 'Master core system design concepts and basic patterns',
-    estimatedHours: 20
-  },
-  concepts: {
-    name: 'Concepts',
-    icon: '📗',
-    color: 'purple',
-    description: 'Learn advanced patterns and distributed systems concepts',
-    estimatedHours: 35
-  },
-  systems: {
-    name: 'Systems',
-    icon: '📕',
-    color: 'green',
-    description: 'Design complex, production-grade distributed systems',
-    estimatedHours: 45
-  }
-};
-
-/**
- * Track Detail Page Component
- */
-export function TrackDetailPage() {
-  const { trackId } = useParams<{ trackId: LearningTrackType }>();
-  const navigate = useNavigate();
+export function ProgressiveAllChallengesPage() {
   const [progress, setProgress] = useState<UserProgressState | null>(null);
   const [challenges, setChallenges] = useState<ProgressiveChallenge[]>([]);
 
   useEffect(() => {
-    if (!trackId || !['fundamentals', 'concepts', 'systems'].includes(trackId)) {
-      navigate('/system-design/progressive');
-      return;
-    }
-
     const userProgress = progressiveProgressService.getProgress();
     setProgress(userProgress);
 
-    const trackChallenges = getChallengesByTrack(trackId as LearningTrackType);
-    setChallenges(trackChallenges);
-  }, [trackId, navigate]);
+    // Get all challenges and flatten them into a single array
+    const allChallenges = getAllProgressiveChallenges();
+    const flattenedChallenges = [
+      ...allChallenges.fundamentals,
+      ...allChallenges.concepts,
+      ...allChallenges.systems
+    ];
+    setChallenges(flattenedChallenges);
+  }, []);
 
-  if (!progress || !trackId) {
+  if (!progress) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading track...</p>
+          <p className="mt-4 text-gray-600">Loading challenges...</p>
         </div>
       </div>
     );
   }
 
-  const trackMeta = TRACK_META[trackId as LearningTrackType];
-  const trackProgress = progress.trackProgress[trackId as LearningTrackType];
   const completedChallenges = Object.keys(progress.challengeProgress).filter(
     id => progress.challengeProgress[id].status === 'completed'
   );
@@ -101,13 +68,13 @@ export function TrackDetailPage() {
               </Link>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-3xl">{trackMeta.icon}</span>
+                  <span className="text-3xl">📚</span>
                   <h1 className="text-2xl font-bold text-gray-900">
-                    {trackMeta.name} Track
+                    All Challenges
                   </h1>
                 </div>
                 <p className="mt-1 text-sm text-gray-500">
-                  {trackMeta.description}
+                  Browse all {challenges.length} system design challenges
                 </p>
               </div>
             </div>
@@ -116,88 +83,8 @@ export function TrackDetailPage() {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Track Overview */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div>
-              <div className="text-sm font-medium text-gray-500">Progress</div>
-              <div className="mt-1 text-2xl font-bold text-gray-900">
-                {Math.round(trackProgress.progressPercentage)}%
-              </div>
-              <div className="mt-2 w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className={`bg-${trackMeta.color}-600 h-2 rounded-full`}
-                  style={{ width: `${trackProgress.progressPercentage}%` }}
-                ></div>
-              </div>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-500">Challenges</div>
-              <div className="mt-1 text-2xl font-bold text-gray-900">
-                {trackProgress.challengesCompleted} / {trackProgress.totalChallenges}
-              </div>
-              <div className="mt-2 text-xs text-gray-500">completed</div>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-500">Estimated Time</div>
-              <div className="mt-1 text-2xl font-bold text-gray-900">
-                {trackMeta.estimatedHours}h
-              </div>
-              <div className="mt-2 text-xs text-gray-500">total</div>
-            </div>
-            <div>
-              <div className="text-sm font-medium text-gray-500">Time Spent</div>
-              <div className="mt-1 text-2xl font-bold text-gray-900">
-                {Math.round((trackProgress.timeSpentMinutes || 0) / 60)}h
-              </div>
-              <div className="mt-2 text-xs text-gray-500">
-                {trackProgress.timeSpentMinutes || 0} minutes
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Track locked message */}
-        {trackProgress.status === 'locked' && (
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-8">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-6 w-6 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-yellow-800">
-                  Track Locked
-                </h3>
-                <div className="mt-2 text-sm text-yellow-700">
-                  <p>Complete previous tracks to unlock this learning path.</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Track Guidance */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 mb-8">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
-            🎯 Track Objectives
-          </h3>
-          <p className="text-sm text-gray-700">
-            {trackId === 'fundamentals' && 
-              'Build a strong foundation in system design basics. Learn about load balancing, caching, databases, and essential distributed system patterns.'}
-            {trackId === 'concepts' && 
-              'Master advanced concepts like message queues, streaming, data consistency, and complex caching strategies.'}
-            {trackId === 'systems' && 
-              'Design complete production systems with multiple components, handling real-world scale, reliability, and complexity.'}
-          </p>
-        </div>
-
         {/* Challenge List */}
         <div>
-          <h2 className="text-xl font-bold text-gray-900 mb-4">
-            Challenges ({challenges.length})
-          </h2>
           <div className="space-y-4">
             {challenges.map((challenge) => {
               const challengeProgress = progress.challengeProgress[challenge.id];
@@ -208,13 +95,18 @@ export function TrackDetailPage() {
                 progress.trackProgress
               );
 
+              // Determine track color
+              let trackColor = 'blue';
+              if (challenge.track === 'concepts') trackColor = 'purple';
+              if (challenge.track === 'systems') trackColor = 'green';
+
               return (
                 <ChallengeCard
                   key={challenge.id}
                   challenge={challenge}
                   progress={challengeProgress}
                   isUnlocked={isUnlocked}
-                  trackColor={trackMeta.color}
+                  trackColor={trackColor}
                 />
               );
             })}
@@ -227,6 +119,7 @@ export function TrackDetailPage() {
 
 /**
  * Challenge Card Component
+ * (Duplicated from TrackDetailPage for independence, could be refactored to shared component)
  */
 interface ChallengeCardProps {
   challenge: ProgressiveChallenge;
@@ -243,6 +136,8 @@ function ChallengeCard({ challenge, progress, isUnlocked, trackColor }: Challeng
 
   const getLevelStatus = (levelNum: number): 'completed' | 'current' | 'available' | 'locked' => {
     if (levelsCompleted.includes(levelNum as any)) return 'completed';
+    // For "All Challenges" view, we might want to show everything as unlocked or keep lock logic
+    // Keeping lock logic for consistency
     if (!isUnlocked) return 'locked';
     if (levelNum === currentLevel && progress?.status === 'in_progress') return 'current';
     if (levelNum <= currentLevel) return 'available';
@@ -250,15 +145,20 @@ function ChallengeCard({ challenge, progress, isUnlocked, trackColor }: Challeng
   };
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border-2 ${
-      !isUnlocked ? 'border-gray-200 opacity-60' : 'border-gray-200 hover:border-gray-300'
-    } p-6`}>
+    <div className={`bg-white rounded-lg shadow-sm border-2 ${!isUnlocked ? 'border-gray-200 opacity-60' : 'border-gray-200 hover:border-gray-300'
+      } p-6`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
           <div className="flex items-center gap-3 mb-2">
             <h3 className="text-lg font-semibold text-gray-900">
               {challenge.title}
             </h3>
+            <span className={`text-xs px-2 py-1 rounded-full ${challenge.track === 'fundamentals' ? 'bg-blue-100 text-blue-800' :
+              challenge.track === 'concepts' ? 'bg-purple-100 text-purple-800' :
+                'bg-green-100 text-green-800'
+              }`}>
+              {challenge.track}
+            </span>
             {!isUnlocked && (
               <span className="text-gray-400">
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -320,15 +220,14 @@ function ChallengeCard({ challenge, progress, isUnlocked, trackColor }: Challeng
                 <div key={level.levelNumber} className="flex flex-col items-center">
                   {/* Level circle */}
                   <div
-                    className={`w-12 h-12 rounded-full border-2 flex items-center justify-center z-10 transition-all ${
-                      status === 'completed'
-                        ? `bg-${trackColor}-600 border-${trackColor}-600 text-white`
-                        : status === 'current'
+                    className={`w-12 h-12 rounded-full border-2 flex items-center justify-center z-10 transition-all ${status === 'completed'
+                      ? `bg-${trackColor}-600 border-${trackColor}-600 text-white`
+                      : status === 'current'
                         ? `bg-white border-${trackColor}-600 text-${trackColor}-600`
                         : status === 'available'
-                        ? 'bg-white border-gray-300 text-gray-500'
-                        : 'bg-gray-100 border-gray-200 text-gray-400'
-                    }`}
+                          ? 'bg-white border-gray-300 text-gray-500'
+                          : 'bg-gray-100 border-gray-200 text-gray-400'
+                      }`}
                   >
                     {status === 'completed' ? (
                       <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 20 20">
@@ -371,7 +270,7 @@ function ChallengeCard({ challenge, progress, isUnlocked, trackColor }: Challeng
         )}
         {isUnlocked && !progress && (
           <Link
-            to={getChallengeUrl(challenge.id)}
+            to={`/system-design/progressive/challenge/${challenge.id}`}
             className={`px-4 py-2 bg-${trackColor}-600 text-white text-sm font-medium rounded-md hover:bg-${trackColor}-700`}
           >
             Start Challenge →
@@ -379,7 +278,7 @@ function ChallengeCard({ challenge, progress, isUnlocked, trackColor }: Challeng
         )}
         {isUnlocked && progress && progress.status !== 'completed' && (
           <Link
-            to={getChallengeUrl(challenge.id)}
+            to={`/system-design/progressive/challenge/${challenge.id}`}
             className={`px-4 py-2 bg-${trackColor}-600 text-white text-sm font-medium rounded-md hover:bg-${trackColor}-700`}
           >
             Continue Level {currentLevel} →
@@ -387,7 +286,7 @@ function ChallengeCard({ challenge, progress, isUnlocked, trackColor }: Challeng
         )}
         {progress && progress.status === 'completed' && (
           <Link
-            to={getChallengeUrl(challenge.id)}
+            to={`/system-design/progressive/challenge/${challenge.id}`}
             className="px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-md hover:bg-gray-700"
           >
             Review Challenge

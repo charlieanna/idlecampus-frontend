@@ -154,7 +154,12 @@ export function DesignCanvas({
       const newNodes: Node[] = newComponents.map((comp) => {
         const componentInfo = getComponentInfo(comp.type);
         const isClient = comp.type === 'client';
-        const position = calculateNodePosition(comp, systemGraph.components);
+        
+        // Check if component has a stored position in config, otherwise calculate
+        const storedPosition = comp.config?.position;
+        const position = storedPosition 
+          ? { x: storedPosition.x, y: storedPosition.y }
+          : calculateNodePosition(comp, systemGraph.components);
 
         // Debug log for cache and message_queue
         if (comp.type === 'cache' || comp.type === 'message_queue') {
@@ -169,8 +174,8 @@ export function DesignCanvas({
           id: comp.id,
           type: 'custom',
           position,
-          draggable: !isClient, // Client is not draggable
-          selectable: isClient, // Client is selectable (for info, but locked position)
+          draggable: !isClient, // Client is draggable now - user can position it
+          selectable: true, // All components are selectable
           data: {
             label: componentInfo.label,
             displayName: comp.config?.displayName || componentInfo.displayName,
@@ -182,18 +187,19 @@ export function DesignCanvas({
         };
       });
 
-      // Update existing nodes: update data and recalculate position if needed
+      // Update existing nodes: preserve position, only update data
       const updatedNodes = currentNodes.map((node) => {
         const component = systemGraph.components.find(c => c.id === node.id);
         if (!component) return null; // Will be filtered out
 
-        // Recalculate position to ensure proper layout (especially when loading solutions)
-        const newPosition = calculateNodePosition(component, systemGraph.components);
+        // Preserve existing position - don't recalculate unless it's a new component
+        // This allows users to manually position components
         const componentInfo = getComponentInfo(component.type);
         
         return {
           ...node,
-          position: newPosition, // Update position to ensure proper layout
+          // Keep existing position - only calculate if node doesn't have a valid position
+          position: node.position || calculateNodePosition(component, systemGraph.components),
           data: {
             ...node.data,
             label: componentInfo.label,
@@ -282,9 +288,26 @@ export function DesignCanvas({
     onNodeSelect(null);
   }, [onNodeSelect]);
 
+  // Handle node drag end - save position to component config
+  const onNodeDragStop = useCallback(
+    (_event: React.MouseEvent, node: Node) => {
+      // Update component config with new position
+      const component = systemGraph.components.find(c => c.id === node.id);
+      if (component) {
+        onUpdateConfig(node.id, {
+          ...component.config,
+          position: { x: node.position.x, y: node.position.y },
+        });
+      }
+    },
+    [systemGraph.components, onUpdateConfig]
+  );
+
   // Capture ReactFlow instance when it initializes
   const onInit = useCallback((instance: ReactFlowInstance) => {
     reactFlowInstanceRef.current = instance;
+    // Fit view once on init with constrained zoom (max 1x to prevent oversized components)
+    instance.fitView({ maxZoom: 1, padding: 0.2 });
   }, []);
 
   // Handle drag over
@@ -310,21 +333,26 @@ export function DesignCanvas({
         return;
       }
 
-      // Get the position relative to the ReactFlow canvas
-      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
+      // Convert screen coordinates to flow coordinates
+      // screenToFlowPosition expects absolute screen coordinates (clientX/clientY)
       const position = reactFlowInstanceRef.current.screenToFlowPosition({
-        x: event.clientX - reactFlowBounds.left,
-        y: event.clientY - reactFlowBounds.top,
+        x: event.clientX,
+        y: event.clientY,
       });
 
-      // Create new component with the drop position
-      const id = `${componentType}_${Date.now()}`;
+      // Create new component with the drop position stored in config
+      const id = `${componentType}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const componentInfo = getComponentInfo(componentType);
+      const defaultConfig = getDefaultConfig(componentType);
 
+      // Store position in component config so it persists across re-renders
       const newComponent = {
         id,
         type: componentType as any,
-        config: getDefaultConfig(componentType),
+        config: {
+          ...defaultConfig,
+          position: { x: position.x, y: position.y }, // Store position in config
+        },
       };
 
       // Update system graph
@@ -340,12 +368,17 @@ export function DesignCanvas({
           id,
           type: 'custom',
           position,
+          draggable: true, // Allow dragging for all components
+          selectable: true,
           data: {
             label: componentInfo.label,
             displayName: componentInfo.displayName,
             subtitle: componentInfo.subtitle,
             componentType: componentType,
-            config: getDefaultConfig(componentType),
+            config: newComponent.config,
+            onUpdateConfig: (newConfig: Record<string, any>) => {
+              // This will be set up properly by the useEffect sync
+            },
           },
         },
       ]);
@@ -395,6 +428,7 @@ export function DesignCanvas({
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
           onNodeClick={onNodeClick}
+          onNodeDragStop={onNodeDragStop}
           onPaneClick={onPaneClick}
           onInit={onInit}
           nodeTypes={nodeTypes}
@@ -402,7 +436,6 @@ export function DesignCanvas({
           defaultEdgeOptions={defaultEdgeOptions}
           connectionLineStyle={{ stroke: '#3b82f6', strokeWidth: 3 }}
           connectionLineType="straight"
-          fitView
           minZoom={0.5}
           maxZoom={1.5}
         >

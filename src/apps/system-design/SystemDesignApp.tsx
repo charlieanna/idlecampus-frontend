@@ -12,11 +12,18 @@ import { LeaderboardPage } from './progressive/pages/LeaderboardPage';
 import { UserProfilePage } from './progressive/pages/UserProfilePage';
 import { ChallengeDetailPage } from './progressive/pages/ChallengeDetailPage';
 import { ProgressDashboardPage } from './progressive/pages/ProgressDashboardPage';
+import { ProgressiveAllChallengesPage } from './progressive/pages/ProgressiveAllChallengesPage';
 
 // Component to handle dynamic challenge routes
 // All challenges now use the tiered system (658 challenges with tier support)
 function ChallengeRoute() {
   const { challengeId } = useParams<{ challengeId: string }>();
+
+  // Redirect to catalog if no challengeId provided
+  if (!challengeId) {
+    return <Navigate to="/system-design" replace />;
+  }
+
   return <TieredSystemDesignBuilder challengeId={challengeId} />;
 }
 
@@ -24,6 +31,7 @@ export default function SystemDesignApp() {
   return (
     <Routes>
       {/* Catalog view as the landing page */}
+      <Route index element={<ProblemCatalog />} />
       <Route path="/" element={<ProblemCatalog />} />
 
       {/* Progressive Flow routes */}
@@ -37,12 +45,14 @@ export default function SystemDesignApp() {
       <Route path="/progressive/profile" element={<UserProfilePage />} />
       <Route path="/progressive/challenge/:id" element={<ChallengeDetailPage />} />
       <Route path="/progressive/progress" element={<ProgressDashboardPage />} />
+      <Route path="/progressive/all" element={<ProgressiveAllChallengesPage />} />
 
       {/* Lessons routes */}
       <Route path="/lessons" element={<LessonsPage />} />
       <Route path="/lessons/:lessonId" element={<LessonViewer />} />
 
       {/* Individual challenge routes - all use tiered system now */}
+      {/* Only match if challengeId is not empty and not one of the reserved paths */}
       <Route path="/:challengeId" element={<ChallengeRoute />} />
 
       {/* Fallback to catalog */}

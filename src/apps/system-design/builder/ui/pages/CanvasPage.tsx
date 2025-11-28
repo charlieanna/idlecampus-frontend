@@ -3,7 +3,7 @@ import { ReactFlowProvider } from 'reactflow';
 import { DesignCanvas } from '../components/DesignCanvas';
 import { ProblemDescriptionPanel } from '../components/ProblemDescriptionPanel';
 import { SubmissionResultsPanel } from '../components/SubmissionResultsPanel';
-import { ComponentPalette } from '../components/ComponentPalette';
+import { RightSidebar } from '../components/RightSidebar';
 import { ContextualHelpPanel } from '../components/ContextualHelpPanel';
 import { useBuilderStore, useCanvasStore, useTestStore, useUIStore } from '../store';
 import { Challenge, TestResult } from '../../types/testCase';
@@ -16,6 +16,7 @@ interface CanvasPageProps {
   onUpdateConfig: (nodeId: string, config: any) => void;
   onSubmit: () => void;
   onLoadSolution: () => void;
+  availableAPIs?: string[];
 }
 
 /**
@@ -28,6 +29,7 @@ export const CanvasPage: React.FC<CanvasPageProps> = ({
   onUpdateConfig,
   onSubmit,
   onLoadSolution,
+  availableAPIs = [],
 }) => {
   // Store state
   const { hasSubmitted, setHasSubmitted } = useBuilderStore();
@@ -151,23 +153,28 @@ export const CanvasPage: React.FC<CanvasPageProps> = ({
         </div>
       )}
 
-      {/* Right Panel - Component Palette with Submit Button */}
+      {/* Right Panel - RightSidebar (shows Inspector when node selected, ComponentPalette otherwise) with Submit Button */}
       {!hasSubmitted && (
         <div
           className={`flex flex-col bg-white border-l border-gray-200 transition-all ${
             canvasCollapsed ? "flex-1" : "w-80"
           }`}
         >
-          {/* Component Palette */}
-          <div className="flex-1 overflow-y-auto">
-            <ComponentPalette
+          {/* RightSidebar - Shows Inspector when node selected, ComponentPalette otherwise */}
+          <div className="flex-1 overflow-hidden flex flex-col">
+            <RightSidebar
               availableComponents={challenge.availableComponents || []}
               onAddComponent={onAddComponent}
+              selectedNode={selectedNode}
+              systemGraph={systemGraph || { components: [], connections: [] }}
+              onUpdateConfig={onUpdateConfig}
+              onBackToPalette={() => setSelectedNode(null)}
+              availableAPIs={availableAPIs}
             />
           </div>
 
           {/* Submit Button */}
-          <div className="p-4 border-t border-gray-200 bg-gray-50">
+          <div className="p-4 border-t border-gray-200 bg-gray-50 flex-shrink-0">
             <button
               onClick={onSubmit}
               disabled={isRunning}

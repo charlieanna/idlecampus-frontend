@@ -134,23 +134,80 @@ export function StageManager({
 
   // Save progress to localStorage
   useEffect(() => {
-    const progress: MultiStageProgress = {
-      lessonId: lesson.id,
-      currentStageIndex,
-      completedStages,
-      stageScores,
-      lastAccessedAt: new Date(),
-      timeSpentSeconds: Math.floor((Date.now() - startTime) / 1000),
+    // Ensure we only have serializable primitives by converting Sets/Maps to arrays first
+    let completedStagesArray: string[] = [];
+    try {
+      completedStagesArray = Array.from(completedStages).filter(
+        (id) => typeof id === 'string' && id !== null && id !== undefined
+      ) as string[];
+    } catch (e) {
+      console.error('Error converting completedStages to array:', e);
+      completedStagesArray = [];
+    }
+    
+    let stageScoresArray: [string, number][] = [];
+    try {
+      stageScoresArray = Array.from(stageScores.entries())
+        .filter(([key, value]) => 
+          typeof key === 'string' && 
+          typeof value === 'number' && 
+          !isNaN(value) &&
+          key !== null && 
+          key !== undefined
+        )
+        .map(([key, value]) => [String(key), Number(value)]) as [string, number][];
+    } catch (e) {
+      console.error('Error converting stageScores to array:', e);
+      stageScoresArray = [];
+    }
+
+    // Create a serializable progress object with only primitives - avoid any spread operators
+    const serializableProgress: Record<string, unknown> = {
+      lessonId: String(lesson.id || ''),
+      currentStageIndex: Number(currentStageIndex || 0),
+      completedStages: completedStagesArray,
+      stageScores: stageScoresArray,
+      lastAccessedAt: new Date().toISOString(),
+      timeSpentSeconds: Math.floor((Date.now() - (startTime || Date.now())) / 1000),
     };
 
-    localStorage.setItem(
-      `multiStageProgress_${lesson.id}`,
-      JSON.stringify({
-        ...progress,
-        completedStages: Array.from(completedStages),
-        stageScores: Array.from(stageScores.entries()),
-      })
-    );
+    try {
+      // Use JSON.stringify with a replacer function to catch any remaining circular references
+      const jsonString = JSON.stringify(serializableProgress, (key, value) => {
+        // Skip any non-primitive values that shouldn't be there
+        if (typeof value === 'object' && value !== null) {
+          if (value instanceof Set || value instanceof Map) {
+            return undefined; // Skip Sets/Maps that weren't converted
+          }
+          if (value instanceof HTMLElement) {
+            return undefined; // Skip DOM elements
+          }
+          if (value.constructor && value.constructor.name === 'FiberNode') {
+            return undefined; // Skip React fibers
+          }
+        }
+        return value;
+      });
+      
+      localStorage.setItem(
+        `multiStageProgress_${lesson.id}`,
+        jsonString
+      );
+    } catch (error) {
+      console.error('Failed to save progress to localStorage:', error);
+      // Last resort: just save the essential data
+      try {
+        localStorage.setItem(
+          `multiStageProgress_${lesson.id}`,
+          JSON.stringify({
+            lessonId: String(lesson.id || ''),
+            currentStageIndex: Number(currentStageIndex || 0),
+          })
+        );
+      } catch (finalError) {
+        console.error('Failed to save essential progress:', finalError);
+      }
+    }
   }, [lesson.id, currentStageIndex, completedStages, stageScores, startTime]);
 
   return (

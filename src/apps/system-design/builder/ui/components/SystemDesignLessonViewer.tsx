@@ -169,10 +169,22 @@ function ConceptStageRenderer({
     onComplete();
   };
 
+  // Handle different content formats
+  const getContent = () => {
+    if (!stage.content) return '';
+    // If content is a string, use it directly
+    if (typeof stage.content === 'string') return stage.content;
+    // If content is an object with markdown property
+    if (typeof stage.content === 'object' && 'markdown' in stage.content) {
+      return stage.content.markdown || '';
+    }
+    return '';
+  };
+
   return (
     <div className="space-y-6">
       <Card className="p-8">
-        <MarkdownContent content={stage.content.markdown} />
+        <MarkdownContent content={getContent()} />
 
         {stage.keyPoints && stage.keyPoints.length > 0 && (
           <div className="mt-8 p-6 bg-blue-50 border-l-4 border-blue-500 rounded">
@@ -188,7 +200,7 @@ function ConceptStageRenderer({
           </div>
         )}
 
-        {stage.content.externalLinks && stage.content.externalLinks.length > 0 && (
+        {stage.content && typeof stage.content === 'object' && 'externalLinks' in stage.content && stage.content.externalLinks && stage.content.externalLinks.length > 0 && (
           <div className="mt-6 pt-6 border-t">
             <h4 className="font-semibold mb-3">Additional Resources</h4>
             <div className="space-y-2">

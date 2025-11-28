@@ -214,9 +214,8 @@ export function ProblemCatalog() {
   }, [filteredChallenges]);
 
   const handleSelectChallenge = (challengeId: string) => {
-    // Convert challenge ID to URL format (replace _ with -)
-    const urlId = challengeId.replace(/_/g, '-');
-    navigate(`/system-design/${urlId}`);
+    // Use utility function to ensure consistent URL format
+    navigate(`/system-design/${challengeId.replace(/_/g, '-')}`);
   };
 
   return (

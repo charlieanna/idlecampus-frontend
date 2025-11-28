@@ -559,11 +559,17 @@ ${functions.join('\n\n')}
                 minimap: { enabled: false },
                 fontSize: 14,
                 lineNumbers: 'on',
-                scrollBeyondLastLine: false,
-                automaticLayout: false,
+                scrollBeyondLastLine: true,
+                automaticLayout: true,
                 tabSize: 4,
                 wordWrap: 'on',
                 readOnly: isRunning,
+                scrollbar: {
+                  vertical: 'visible',
+                  horizontal: 'visible',
+                  verticalScrollbarSize: 10,
+                  horizontalScrollbarSize: 10,
+                },
               }}
             />
           </div>

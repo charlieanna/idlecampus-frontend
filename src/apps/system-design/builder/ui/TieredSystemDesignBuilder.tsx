@@ -505,7 +505,7 @@ export function TieredSystemDesignBuilder({
 
         // Use ID from config if available, otherwise generate one
         const componentId = mergedConfig.id || `${comp.type}_${Date.now()}_${index}`;
-        
+
         return {
           id: componentId,
           type: comp.type as any,
@@ -1191,12 +1191,12 @@ if __name__ == "__main__":
 
     // ALL challenges now use Python code validation (TieredChallenge format)
     // Step 1: Smart Validation - Validate Python code connections
-    // If user has database/cache on canvas but not connected, that's an error
-    // If user doesn't have database/cache on canvas, that's OK (uses in-memory)
-    const connectionValidation = validateSmartConnections(
-      pythonCode,
-      systemGraph,
-    );
+      // If user has database/cache on canvas but not connected, that's an error
+      // If user doesn't have database/cache on canvas, that's OK (uses in-memory)
+      const connectionValidation = validateSmartConnections(
+        pythonCode,
+        systemGraph,
+      );
 
       if (!connectionValidation.valid) {
         console.error(
@@ -1286,7 +1286,7 @@ if __name__ == "__main__":
         }
 
         console.log("✅ Schema validation passed");
-      }
+    }
 
     // Step 3: Run system design simulation tests (FR + NFR) if testCases are defined
     if (selectedChallenge.testCases && selectedChallenge.testCases.length > 0) {
