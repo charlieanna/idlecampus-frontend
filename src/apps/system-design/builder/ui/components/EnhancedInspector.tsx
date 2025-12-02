@@ -3,6 +3,7 @@ import { Node } from 'reactflow';
 import { SystemGraph } from '../../types/graph';
 import { DatabaseCategory } from '../../types/component';
 import { isDatabaseComponentType, inferDatabaseCategory, inferDatabaseType } from '../../utils/database';
+import { validateAPIPattern } from '../../utils/apiRouting';
 
 interface InspectorProps {
   node?: Node | null;
@@ -242,12 +243,38 @@ function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [] }
   const handledAPIs = config.handledAPIs || [];
   const lbStrategy = config.lbStrategy || 'round-robin';
 
+  // State for manual API input
+  const [newAPIPattern, setNewAPIPattern] = React.useState('');
+  const [apiError, setApiError] = React.useState<string | null>(null);
+
   const handleAPIToggle = (api: string) => {
     const currentAPIs = config.handledAPIs || [];
     const newAPIs = currentAPIs.includes(api)
       ? currentAPIs.filter((a: string) => a !== api)
       : [...currentAPIs, api];
     onChange('handledAPIs', newAPIs);
+  };
+
+  const handleAddAPI = () => {
+    if (!newAPIPattern.trim()) return;
+
+    const validation = validateAPIPattern(newAPIPattern);
+    if (!validation.valid) {
+      setApiError(validation.error || 'Invalid API pattern');
+      return;
+    }
+
+    const currentAPIs = config.handledAPIs || [];
+    if (!currentAPIs.includes(newAPIPattern)) {
+      onChange('handledAPIs', [...currentAPIs, newAPIPattern]);
+      setNewAPIPattern('');
+      setApiError(null);
+    }
+  };
+
+  const handleRemoveAPI = (api: string) => {
+    const currentAPIs = config.handledAPIs || [];
+    onChange('handledAPIs', currentAPIs.filter((a: string) => a !== api));
   };
 
   return (
@@ -362,42 +389,75 @@ function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [] }
         </div>
       )}
 
-      {/* API Assignment Section */}
-      {availableAPIs.length > 0 && (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            API Assignment
-          </label>
-          <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-            <div className="text-xs text-gray-600 mb-2">
-              Select which APIs this server should handle:
-            </div>
-            <div className="space-y-2">
-              {availableAPIs.map((api) => (
-                <label key={api} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-2 rounded">
-                  <input
-                    type="checkbox"
-                    checked={handledAPIs.includes(api)}
-                    onChange={() => handleAPIToggle(api)}
-                    className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <span className="text-sm font-mono text-gray-700">{api}</span>
-                </label>
-              ))}
-            </div>
-            {handledAPIs.length === 0 && (
-              <div className="mt-2 text-xs text-gray-500 italic">
-                No APIs assigned - this server will handle all requests
+      {/* API Configuration Section */}
+      <div>
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Handled APIs
+        </label>
+
+        {/* Current APIs List */}
+        {handledAPIs.length > 0 && (
+          <div className="space-y-1 mb-3">
+            {handledAPIs.map((api: string, index: number) => (
+              <div key={index} className="flex items-center justify-between bg-purple-50 rounded px-3 py-2">
+                <span className="text-sm font-mono text-purple-800">{api}</span>
+                <button
+                  onClick={() => handleRemoveAPI(api)}
+                  className="text-red-500 hover:text-red-700 text-sm font-medium"
+                >
+                  Remove
+                </button>
               </div>
-            )}
-            {handledAPIs.length > 0 && (
-              <div className="mt-2 text-xs text-green-700">
-                ✓ Handling {handledAPIs.length} API{handledAPIs.length !== 1 ? 's' : ''}
-              </div>
-            )}
+            ))}
+          </div>
+        )}
+
+        {/* Add New API Input */}
+        <div className="flex gap-2 mb-2">
+          <input
+            type="text"
+            value={newAPIPattern}
+            onChange={(e) => { setNewAPIPattern(e.target.value); setApiError(null); }}
+            onKeyPress={(e) => e.key === 'Enter' && handleAddAPI()}
+            placeholder="e.g., GET /api/v1/urls/*"
+            className="flex-1 px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <button
+            onClick={handleAddAPI}
+            className="px-4 py-2 text-sm bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+          >
+            Add
+          </button>
+        </div>
+
+        {/* Error Display */}
+        {apiError && (
+          <p className="text-xs text-red-500 mb-2">{apiError}</p>
+        )}
+
+        {/* Quick Patterns */}
+        <div className="mb-3">
+          <p className="text-xs text-gray-500 mb-2">Quick patterns:</p>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => setNewAPIPattern('GET /api/v1/*')} className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200">All GETs</button>
+            <button onClick={() => setNewAPIPattern('POST /api/v1/*')} className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200">All POSTs</button>
+            <button onClick={() => setNewAPIPattern('* /api/v1/urls/*')} className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200">URL Service</button>
+            <button onClick={() => setNewAPIPattern('* /api/v1/users/*')} className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200">User Service</button>
           </div>
         </div>
-      )}
+
+        {/* Help Text */}
+        <p className="text-xs text-gray-400 italic">
+          Leave empty for this server to handle all requests. Use patterns like "GET /api/v1/*" or "* /api/v1/urls/*".
+        </p>
+
+        {/* Status */}
+        {handledAPIs.length > 0 && (
+          <div className="mt-2 text-xs text-green-700">
+            Handling {handledAPIs.length} API{handledAPIs.length !== 1 ? 's' : ''}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

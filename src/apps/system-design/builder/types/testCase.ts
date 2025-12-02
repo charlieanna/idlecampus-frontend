@@ -1,6 +1,7 @@
 import { Bottleneck } from './graph';
 import { FlowVisualization } from './request';
 import { CodeChallenge } from './codeChallenge';
+import { ProblemDefinition } from './problemDefinition';
 
 /**
  * Failure injection for test cases
@@ -174,4 +175,5 @@ export interface Challenge {
   pythonTemplate?: string; // Python implementation template for the problem
   requiredAPIs?: string[]; // Required context APIs: ['db', 'cache', 'queue', 'cdn', 'search']
   solution?: Solution; // Complete solution that passes all test cases
+  problemDefinition?: ProblemDefinition; // Full problem definition with guided tutorial
 }

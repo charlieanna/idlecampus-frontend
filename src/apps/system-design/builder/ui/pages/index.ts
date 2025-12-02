@@ -4,6 +4,7 @@
  */
 
 export { CanvasPage } from './CanvasPage';
+export { GuidedCanvasPage } from './GuidedCanvasPage';
 export { PythonCodePage } from './PythonCodePage';
 export { AppServerPage } from './AppServerPage';
 export { LoadBalancerPage } from './LoadBalancerPage';

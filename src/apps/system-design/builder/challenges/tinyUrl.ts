@@ -1,10 +1,13 @@
 import { Challenge } from '../types/testCase';
 import { tinyUrlCodeChallenges } from './code/tinyUrlChallenges';
+import { tinyUrlProblemDefinition } from './tinyUrlProblemDefinition';
 
 export const tinyUrlChallenge: Challenge = {
   id: 'tiny_url',
   title: 'Tiny URL Shortener',
   difficulty: 'beginner',
+  // Attach problem definition with guided tutorial
+  problemDefinition: tinyUrlProblemDefinition,
   description: `Design a URL shortening service (like bit.ly) that accepts long URLs and returns short codes.
 
 Users can then use these short codes to redirect to the original URLs.

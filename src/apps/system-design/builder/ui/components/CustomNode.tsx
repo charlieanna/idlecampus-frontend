@@ -96,11 +96,9 @@ function CustomNode({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`px-4 py-3 rounded-lg border-2 shadow-md transition-all min-w-[160px] ${
-        style.bgColor
-      } ${style.borderColor} ${
-        selected ? 'ring-2 ring-blue-500 ring-offset-1 shadow-lg' : 'hover:shadow-lg'
-      } ${isClient ? 'cursor-default' : ''} relative`}
+      className={`px-2 py-1.5 rounded-lg border-2 shadow-sm transition-all w-[100px] max-w-[100px] ${style.bgColor
+        } ${style.borderColor} ${selected ? 'ring-2 ring-blue-500 ring-offset-1 shadow-md' : 'hover:shadow-md'
+        } ${isClient ? 'cursor-default' : ''} relative`}
       onContextMenu={handleContextMenu}
     >
       {/* Input Handle (Top) - Hidden for client since it's the source */}
@@ -108,46 +106,38 @@ function CustomNode({ data, selected }: NodeProps) {
         <Handle
           type="target"
           position={Position.Top}
-          className="w-3 h-3 !bg-blue-500 !border-2 !border-white"
+          className="w-2 h-2 !bg-blue-500 !border !border-white"
         />
       )}
 
       {/* Node Content */}
-      <div className="flex flex-col gap-1.5">
-        <div className="flex items-center gap-2">
-          <span className="text-xl">{style.icon}</span>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-1.5">
+          <span className="text-base">{style.icon}</span>
           <div className="flex-1 min-w-0">
-            <div className={`font-semibold text-sm ${style.color} truncate flex items-center gap-1`}>
+            <div className={`font-semibold text-xs ${style.color} truncate flex items-center gap-0.5`}>
               {displayName}
-              {isClient && <span className="text-xs">🔒</span>}
+              {isClient && <span className="text-[10px]">🔒</span>}
             </div>
-            {data.subtitle && (
-              <div className="text-xs text-gray-500 truncate">{data.subtitle}</div>
-            )}
           </div>
         </div>
 
         {/* Database Configuration Display */}
         {isDatabase && (
-          <div className="flex flex-wrap gap-1 px-1">
-            {/* Data Model Badge */}
+          <div className="flex flex-wrap gap-0.5">
             {DATA_MODEL_BADGES[dataModel] && (
-              <span className={`text-xs px-2 py-0.5 rounded font-medium ${DATA_MODEL_BADGES[dataModel].color}`}>
+              <span className={`text-[10px] px-1 py-0.5 rounded font-medium ${DATA_MODEL_BADGES[dataModel].color}`}>
                 {DATA_MODEL_BADGES[dataModel].label}
               </span>
             )}
-
-            {/* Replicas Badge */}
             {replicas > 1 && (
-              <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">
+              <span className="text-[10px] px-1 py-0.5 rounded bg-gray-100 text-gray-600">
                 {replicas}R
               </span>
             )}
-
-            {/* Sharding Badge */}
             {isSharded && (
-              <span className="text-xs px-2 py-0.5 rounded bg-yellow-100 text-yellow-700">
-                ⚡S
+              <span className="text-[10px] px-1 py-0.5 rounded bg-yellow-100 text-yellow-700">
+                S
               </span>
             )}
           </div>
@@ -155,34 +145,25 @@ function CustomNode({ data, selected }: NodeProps) {
 
         {/* App Server API Display */}
         {componentType === 'app_server' && data.config?.handledAPIs && data.config.handledAPIs.length > 0 && (
-          <div className="px-1 mt-1">
-            <div className="flex flex-wrap gap-1">
-              {data.config.handledAPIs.slice(0, 3).map((api: string, index: number) => {
-                // Parse the API pattern to show a compact version
-                const parts = api.trim().split(/\s+/);
-                const method = parts.length > 1 ? parts[0] : 'API';
-                const path = parts.length > 1 ? parts[1] : parts[0];
-
-                // Extract the main path segment for display
-                const pathSegments = path.split('/').filter(s => s && !s.includes('*'));
-                const displayPath = pathSegments[pathSegments.length - 1] || 'api';
-
-                return (
-                  <span
-                    key={index}
-                    className="text-xs px-2 py-0.5 rounded bg-purple-100 text-purple-700 font-medium"
-                    title={api}
-                  >
-                    {method === '*' ? displayPath : `${method.substring(0, 3)} ${displayPath}`}
-                  </span>
-                );
-              })}
-              {data.config.handledAPIs.length > 3 && (
-                <span className="text-xs px-2 py-0.5 rounded bg-gray-100 text-gray-600">
-                  +{data.config.handledAPIs.length - 3}
+          <div className="flex flex-wrap gap-0.5">
+            {data.config.handledAPIs.slice(0, 2).map((api: string, index: number) => {
+              const parts = api.trim().split(/\s+/);
+              const method = parts.length > 1 ? parts[0] : '*';
+              return (
+                <span
+                  key={index}
+                  className="text-[10px] px-1 py-0.5 rounded bg-purple-100 text-purple-700 font-medium"
+                  title={api}
+                >
+                  {method.substring(0, 3)}
                 </span>
-              )}
-            </div>
+              );
+            })}
+            {data.config.handledAPIs.length > 2 && (
+              <span className="text-[10px] px-1 py-0.5 rounded bg-gray-100 text-gray-600">
+                +{data.config.handledAPIs.length - 2}
+              </span>
+            )}
           </div>
         )}
       </div>
@@ -224,7 +205,7 @@ function CustomNode({ data, selected }: NodeProps) {
       <Handle
         type="source"
         position={Position.Bottom}
-        className="w-3 h-3 !bg-green-500 !border-2 !border-white"
+        className="w-2 h-2 !bg-green-500 !border !border-white"
       />
 
       {/* Left Handle */}
@@ -232,7 +213,7 @@ function CustomNode({ data, selected }: NodeProps) {
         type="target"
         position={Position.Left}
         id="left"
-        className="w-3 h-3 !bg-blue-500 !border-2 !border-white"
+        className="w-2 h-2 !bg-blue-500 !border !border-white"
       />
 
       {/* Right Handle */}
@@ -240,7 +221,7 @@ function CustomNode({ data, selected }: NodeProps) {
         type="source"
         position={Position.Right}
         id="right"
-        className="w-3 h-3 !bg-green-500 !border-2 !border-white"
+        className="w-2 h-2 !bg-green-500 !border !border-white"
       />
     </div>
   );

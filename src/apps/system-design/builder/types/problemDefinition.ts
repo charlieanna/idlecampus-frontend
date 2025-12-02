@@ -2,6 +2,7 @@ import { SystemGraph } from './graph';
 import { TestCase } from './testCase';
 import { CacheStrategy } from './advancedConfig';
 import { NFRWizardFlow } from './nfrWizard';
+import { GuidedTutorial } from './guidedTutorial';
 
 /**
  * Problem Definition - Defines how to validate any system design problem
@@ -143,4 +144,8 @@ export interface ProblemDefinition {
 
   // NFR Wizard - Interactive teaching flow (optional)
   wizardFlow?: NFRWizardFlow;
+
+  // Pre-defined Guided Tutorial with rich teaching content (optional)
+  // If provided, this will be used instead of auto-generating from userFacingFRs
+  guidedTutorial?: GuidedTutorial;
 }

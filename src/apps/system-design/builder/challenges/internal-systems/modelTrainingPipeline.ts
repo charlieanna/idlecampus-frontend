@@ -832,7 +832,7 @@ test_cases: List[TestCase] = [
     }
 ]
 
-
+`;
 export const modelTrainingPipelineChallenge: SystemDesignChallenge = {
   id: 'model_training_pipeline',
   title: 'Model Training Pipeline',

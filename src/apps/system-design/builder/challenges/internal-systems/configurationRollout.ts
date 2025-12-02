@@ -736,7 +736,7 @@ test_cases: List[TestCase] = [
     }
 ]
 
-
+`;
 export const configurationRolloutChallenge: SystemDesignChallenge = {
   id: 'configuration_rollout',
   title: 'Configuration Rollout Platform',

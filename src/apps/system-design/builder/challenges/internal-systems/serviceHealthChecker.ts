@@ -753,7 +753,7 @@ test_cases: List[TestCase] = [
     }
 ]
 
-
+`;
 export const serviceHealthCheckerChallenge: SystemDesignChallenge = {
   id: 'service_health_checker',
   title: 'Service Health Checker',

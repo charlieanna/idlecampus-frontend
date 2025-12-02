@@ -8,4 +8,5 @@ export { useCanvasStore } from './useCanvasStore';
 export { useCodeStore } from './useCodeStore';
 export { useTestStore } from './useTestStore';
 export { useUIStore } from './useUIStore';
+export { useGuidedStore } from './useGuidedStore';
 

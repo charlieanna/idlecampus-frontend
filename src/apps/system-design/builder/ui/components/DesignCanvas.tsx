@@ -69,80 +69,25 @@ export function DesignCanvas({
     localStorage.setItem('showCanvasTips', 'false');
   }, []);
 
+  // Counter for default positioning of new components (no auto-layout)
+  const nextPositionRef = useRef({ x: 150, y: 100 });
+
   // Sync nodes with systemGraph components
   useEffect(() => {
     setNodes((currentNodes) => {
       const existingNodeIds = new Set(currentNodes.map((n) => n.id));
       const componentIds = new Set(systemGraph.components.map((c) => c.id));
 
-      // Helper function to calculate node position based on component type and layer
-      // Layout follows standard system design whiteboard conventions based on reference solutions:
-      //
-      // Standard Flow (TinyURL pattern):
-      // Client → Load Balancer → App Servers → Cache → Database
-      //
-      // CDN Flow (Food Blog pattern):
-      // Client → CDN → S3 (parallel path for static content)
-      // Client → Load Balancer → App Servers → Database (dynamic content)
-      const calculateNodePosition = (comp: any, allComponents: any[]): { x: number; y: number } => {
-        // Define horizontal layers based on data flow (left to right)
-        const componentLayer: Record<string, number> = {
-          client: 0,
-          cdn: 1,          // Edge layer for static content
-          load_balancer: 2,
-          app_server: 3,
-          cache: 4,
-          redis: 4,
-          memcached: 4,
-          message_queue: 4,
-          kafka: 4,
-          rabbitmq: 4,
-          sqs: 4,
-          s3: 5,           // Storage layer (parallel to database)
-          database: 5,
-          postgresql: 5,
-          mongodb: 5,
-          dynamodb: 5,
-          cassandra: 5,
-        };
-
-        const layer = componentLayer[comp.type] ?? 3;
-
-        // Horizontal spacing between layers (generous spacing for clarity)
-        const layerSpacing = 350;
-        const x = 100 + (layer * layerSpacing);
-
-        // Vertical positioning: center-align by default, then stack multiples
-        const baseY = 250; // center of canvas
-        let y = baseY;
-
-        // Group components by layer for vertical stacking
-        const componentsInSameLayer = allComponents.filter(c => {
-          const cLayer = componentLayer[c.type] ?? 3;
-          return cLayer === layer;
-        });
-
-        if (componentsInSameLayer.length > 1) {
-          // Multiple components in same layer - stack them vertically
-          const indexInLayer = componentsInSameLayer.indexOf(comp);
-          const totalHeight = (componentsInSameLayer.length - 1) * 200;
-          const startY = baseY - (totalHeight / 2);
-          y = startY + (indexInLayer * 200);
+      // Simple positioning - just place new components in a grid, no auto-layout
+      const getNextPosition = (): { x: number; y: number } => {
+        const pos = { ...nextPositionRef.current };
+        // Move to next position (simple grid)
+        nextPositionRef.current.x += 150;
+        if (nextPositionRef.current.x > 600) {
+          nextPositionRef.current.x = 150;
+          nextPositionRef.current.y += 120;
         }
-
-        // Special positioning for specific component types
-        if (comp.type === 'app_server') {
-          // App servers: if multiple instances, show them in a tight vertical group
-          const appServers = allComponents.filter(c => c.type === 'app_server');
-          if (appServers.length > 1) {
-            const appIndex = appServers.indexOf(comp);
-            const totalHeight = (appServers.length - 1) * 150;
-            const startY = baseY - (totalHeight / 2);
-            y = startY + (appIndex * 150);
-          }
-        }
-
-        return { x, y };
+        return pos;
       };
 
       // Find new components that need nodes
@@ -153,53 +98,41 @@ export function DesignCanvas({
       // Create nodes for new components
       const newNodes: Node[] = newComponents.map((comp) => {
         const componentInfo = getComponentInfo(comp.type);
-        const isClient = comp.type === 'client';
-        
-        // Check if component has a stored position in config, otherwise calculate
-        const storedPosition = comp.config?.position;
-        const position = storedPosition 
-          ? { x: storedPosition.x, y: storedPosition.y }
-          : calculateNodePosition(comp, systemGraph.components);
 
-        // Debug log for cache and message_queue
-        if (comp.type === 'cache' || comp.type === 'message_queue') {
-          console.log(`[Canvas] Creating node for ${comp.type}:`, {
-            id: comp.id,
-            position,
-            displayName: comp.config?.displayName || componentInfo.displayName,
-          });
-        }
+        // Use stored position from config, or get next grid position
+        const storedPosition = comp.config?.position;
+        const position = storedPosition
+          ? { x: storedPosition.x, y: storedPosition.y }
+          : getNextPosition();
 
         return {
           id: comp.id,
           type: 'custom',
           position,
-          draggable: !isClient, // Client is draggable now - user can position it
-          selectable: true, // All components are selectable
+          draggable: true, // All components are draggable
+          selectable: true,
           data: {
             label: componentInfo.label,
             displayName: comp.config?.displayName || componentInfo.displayName,
             subtitle: comp.config?.subtitle || componentInfo.subtitle,
             componentType: comp.type,
-            config: comp.config, // Pass the full config to the node
+            config: comp.config,
             onUpdateConfig: (newConfig: Record<string, any>) => onUpdateConfig(comp.id, newConfig),
           },
         };
       });
 
-      // Update existing nodes: preserve position, only update data
+      // Update existing nodes: preserve position, only update data (NEVER recalculate position)
       const updatedNodes = currentNodes.map((node) => {
         const component = systemGraph.components.find(c => c.id === node.id);
-        if (!component) return null; // Will be filtered out
+        if (!component) return null;
 
-        // Preserve existing position - don't recalculate unless it's a new component
-        // This allows users to manually position components
         const componentInfo = getComponentInfo(component.type);
-        
+
         return {
           ...node,
-          // Keep existing position - only calculate if node doesn't have a valid position
-          position: node.position || calculateNodePosition(component, systemGraph.components),
+          // ALWAYS keep existing position - never recalculate
+          position: node.position,
           data: {
             ...node.data,
             label: componentInfo.label,
@@ -214,13 +147,7 @@ export function DesignCanvas({
 
       // Return updated nodes if there are changes
       const allNodes = [...updatedNodes, ...newNodes];
-      
-      // Debug: Log all node types
-      if (newNodes.length > 0) {
-        console.log(`[Canvas] Created ${newNodes.length} new nodes:`, newNodes.map(n => ({ id: n.id, type: n.data.componentType, position: n.position })));
-        console.log(`[Canvas] Total nodes: ${allNodes.length}`, allNodes.map(n => n.data.componentType));
-      }
-      
+
       if (newNodes.length > 0 || updatedNodes.length !== currentNodes.length) {
         return allNodes;
       }
@@ -306,8 +233,6 @@ export function DesignCanvas({
   // Capture ReactFlow instance when it initializes
   const onInit = useCallback((instance: ReactFlowInstance) => {
     reactFlowInstanceRef.current = instance;
-    // Fit view once on init with constrained zoom (max 1x to prevent oversized components)
-    instance.fitView({ maxZoom: 1, padding: 0.2 });
   }, []);
 
   // Handle drag over
@@ -333,11 +258,11 @@ export function DesignCanvas({
         return;
       }
 
-      // Convert screen coordinates to flow coordinates
-      // screenToFlowPosition expects absolute screen coordinates (clientX/clientY)
+      // Get the position relative to the ReactFlow canvas
+      const reactFlowBounds = reactFlowWrapper.current.getBoundingClientRect();
       const position = reactFlowInstanceRef.current.screenToFlowPosition({
-        x: event.clientX,
-        y: event.clientY,
+        x: event.clientX - reactFlowBounds.left,
+        y: event.clientY - reactFlowBounds.top,
       });
 
       // Create new component with the drop position stored in config
@@ -436,6 +361,7 @@ export function DesignCanvas({
           defaultEdgeOptions={defaultEdgeOptions}
           connectionLineStyle={{ stroke: '#3b82f6', strokeWidth: 3 }}
           connectionLineType="straight"
+          fitView
           minZoom={0.5}
           maxZoom={1.5}
         >

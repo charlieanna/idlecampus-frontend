@@ -790,7 +790,7 @@ test_cases: List[TestCase] = [
     }
 ]
 
-
+`;
 export const mlExperimentTrackingChallenge: SystemDesignChallenge = {
   id: 'ml_experiment_tracking',
   title: 'ML Experiment Tracking',

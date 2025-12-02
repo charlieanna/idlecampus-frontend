@@ -7,10 +7,9 @@ import { MainLayout, TabLayout } from "./layouts";
 import { Tab } from "./design-system";
 import {
   CanvasPage,
+  GuidedCanvasPage,
   PythonCodePage,
-  AppServerPage,
   LoadBalancerPage,
-  LessonsPage,
   APIsPage,
 } from "./pages";
 import {
@@ -19,6 +18,7 @@ import {
   useCodeStore,
   useTestStore,
   useUIStore,
+  useGuidedStore,
 } from "./store";
 
 // Import existing components still needed
@@ -75,12 +75,6 @@ export function TieredSystemDesignBuilder({
           ? tieredChallenges 
           : challengesFromIndex || []);
   
-  console.log('TieredSystemDesignBuilder initialized:', {
-    challengeId,
-    challengesLength: effectiveChallenges.length,
-    hasChallenges: !!effectiveChallenges && effectiveChallenges.length > 0,
-  });
-
   // Store hooks
   const {
     selectedChallenge,
@@ -134,6 +128,13 @@ export function TieredSystemDesignBuilder({
     setActiveTab,
   } = useUIStore();
 
+  // Guided tutorial store
+  const {
+    mode: guidedMode,
+    setMode: setGuidedMode,
+    isTutorialCompleted,
+  } = useGuidedStore();
+
   // Helper flags for challenge-specific behavior
   const isTinyUrl = selectedChallenge?.id === "tiny_url";
   const isWebCrawler = selectedChallenge?.id === "web_crawler";
@@ -143,6 +144,16 @@ export function TieredSystemDesignBuilder({
   const hasPythonTemplate =
     selectedChallenge?.pythonTemplate &&
     selectedChallenge.pythonTemplate.length > 0;
+
+  // Check if any app server has APIs configured
+  const hasAppServerWithAPIs = systemGraph.components?.some(
+    (c) => c.type === "app_server" && c.config?.handledAPIs && c.config.handledAPIs.length > 0
+  ) || false;
+
+  // Get app servers with their configured APIs
+  const appServersWithAPIs = systemGraph.components?.filter(
+    (c) => c.type === "app_server" && c.config?.handledAPIs && c.config.handledAPIs.length > 0
+  ) || [];
 
   // Get available APIs for API assignment to app servers
   const getAvailableAPIs = useCallback((): string[] => {
@@ -201,16 +212,13 @@ export function TieredSystemDesignBuilder({
   // Initialize challenge
   useEffect(() => {
     if (!challengeId) {
-      console.log("No challengeId provided");
       return;
     }
     
     if (!effectiveChallenges || effectiveChallenges.length === 0) {
-      console.warn("Challenges array is empty or undefined");
       return;
     }
     
-    console.log(`Looking for challenge: ${challengeId}, total challenges available: ${effectiveChallenges.length}`);
     
     // Try exact match first
     let challenge = effectiveChallenges.find((c) => c.id === challengeId);
@@ -218,41 +226,32 @@ export function TieredSystemDesignBuilder({
     // If not found, try normalizing hyphens to underscores (for URL slugs like tiny-url -> tiny_url)
     if (!challenge) {
       const normalizedId = challengeId.replace(/-/g, '_');
-      console.log(`Trying normalized ID: ${normalizedId}`);
       challenge = effectiveChallenges.find((c) => c.id === normalizedId);
     }
     
     // If still not found, try the reverse (underscores to hyphens)
     if (!challenge) {
       const reverseId = challengeId.replace(/_/g, '-');
-      console.log(`Trying reverse ID: ${reverseId}`);
       challenge = effectiveChallenges.find((c) => c.id === reverseId);
     }
     
     // If still not found, try finding by slug pattern (e.g., tiny-url -> tiny-url-l6)
     if (!challenge) {
-      console.log(`Trying prefix match for: ${challengeId}`);
       challenge = effectiveChallenges.find((c) => c.id?.startsWith(challengeId));
     }
     
     if (challenge) {
-      console.log(`✅ Found challenge: ${challenge.id} - ${challenge.title}`);
       setSelectedChallenge(challenge);
       setActiveTab("canvas");
     } else {
-      console.error(`❌ Challenge not found: ${challengeId}`);
       // Show first few available challenge IDs for debugging
       const sampleIds = effectiveChallenges.slice(0, 10).map(c => c.id);
-      console.log(`Sample available challenge IDs:`, sampleIds);
     }
   }, [challengeId, effectiveChallenges, setSelectedChallenge, setActiveTab]);
 
   // Initialize Python code and reset state when challenge changes
   useEffect(() => {
     if (selectedChallenge) {
-      console.log(`[ChallengeInit] Initializing challenge: ${selectedChallenge.id}`);
-      console.log(`[ChallengeInit] Has pythonTemplate:`, !!selectedChallenge.pythonTemplate);
-      console.log(`[ChallengeInit] Template length:`, selectedChallenge.pythonTemplate?.length || 0);
       
       // Initialize Python code from template
       const template = selectedChallenge.pythonTemplate || "";
@@ -276,7 +275,6 @@ export function TieredSystemDesignBuilder({
         testRunner.setProblemDefinition(problemDef);
       }
       
-      console.log(`[ChallengeInit] Python code initialized:`, template.substring(0, 100) + "...");
     }
   }, [selectedChallenge, setPythonCode, setPythonCodeByServer, setSystemGraph, clearTestResults, setHasSubmitted, setSelectedNode, testRunner]);
 
@@ -290,17 +288,12 @@ export function TieredSystemDesignBuilder({
           : undefined);
       if (!solution) return;
 
-      console.log("📋 Loading solution:", solutionOverride ? "test-case-specific" : "generated-fresh");
-      console.log("📋 Solution components count:", solution.components?.length || 0);
-      console.log("📋 Solution connections:", solution.connections?.length || 0);
 
       // Safety check for components and connections
       if (!solution.components || !Array.isArray(solution.components)) {
-        console.error("Solution missing components array");
         return;
       }
       if (!solution.connections || !Array.isArray(solution.connections)) {
-        console.error("Solution missing connections array");
         return;
       }
 
@@ -367,13 +360,6 @@ export function TieredSystemDesignBuilder({
           }
 
           if (!fromComp || !toComp) {
-            console.warn(
-              `Missing component for connection: ${conn.from} -> ${conn.to}`,
-              {
-                fromCandidates: fromCandidates.length,
-                toCandidates: toCandidates.length,
-              },
-            );
             return null;
           }
 
@@ -386,8 +372,6 @@ export function TieredSystemDesignBuilder({
         .filter((c) => c !== null) as any[];
 
       // Update the system graph
-      console.log("📋 Setting system graph with components:", components.length);
-      console.log("📋 Setting system graph with connections:", connections.length);
 
       setSystemGraph({
         components,
@@ -436,25 +420,7 @@ export function TieredSystemDesignBuilder({
         config: mergedConfig,
       };
 
-      console.log(`[AddComponent] Adding ${type} component:`, {
-        id,
-        type,
-        config: mergedConfig,
-        currentComponentCount: currentGraph.components.length,
-      });
-
       addNode(newComponent);
-      
-      // Verify it was added (for debugging)
-      setTimeout(() => {
-        const updatedGraph = useCanvasStore.getState().systemGraph;
-        const added = updatedGraph.components.find(c => c.id === id);
-        if (!added) {
-          console.error(`[AddComponent] Component ${id} was not added! Current components:`, updatedGraph.components.map(c => ({ id: c.id, type: c.type })));
-        } else {
-          console.log(`[AddComponent] Component ${id} successfully added. Total components:`, updatedGraph.components.length);
-        }
-      }, 100);
     },
     [addNode]
   );
@@ -516,7 +482,6 @@ export function TieredSystemDesignBuilder({
         (tc) => tc.type !== "functional",
       );
 
-      console.log(`🚀 Running ${frTests.length} FR tests...`);
 
       // Pass Python code to test runner for code-aware simulation
       testRunner.setPythonCode(pythonCode);
@@ -528,12 +493,7 @@ export function TieredSystemDesignBuilder({
       // If FR tests pass, automatically run NFR tests
       let nfrResults: TestResult[] = [];
       if (allFrPassed && nfrTests.length > 0) {
-        console.log(`🚀 Running ${nfrTests.length} NFR tests...`);
         nfrResults = testRunner.runAllTestCases(systemGraph, nfrTests);
-      } else if (!allFrPassed) {
-        console.log(
-          `⚠️ Skipping NFR tests because ${frResults.filter((r) => !r.passed).length} FR test(s) failed`,
-        );
       }
 
       // Combine results (FR first, then NFR if they ran)
@@ -554,7 +514,6 @@ export function TieredSystemDesignBuilder({
 
       setTestResults(resultsMap);
     } catch (error) {
-      console.error("Test execution error:", error);
     } finally {
       setIsRunning(false);
     }
@@ -574,7 +533,6 @@ export function TieredSystemDesignBuilder({
   // Handle Python tests
   const handleRunPythonTests = useCallback(() => {
     // Implementation for Python-specific tests
-    console.log("Running Python tests...");
   }, []);
 
   // Handle back to challenges
@@ -590,13 +548,22 @@ export function TieredSystemDesignBuilder({
     );
   }
 
-  // Define tabs
+  // Check which components exist on canvas
+  const hasLoadBalancer = systemGraph.components?.some((c) => c.type === "load_balancer") || false;
+
+  // Define tabs - only show tabs for components that exist on canvas
+  // Create a separate tab for each app server with APIs configured
+  const appServerTabs: Tab[] = appServersWithAPIs.map((server) => ({
+    id: `app-server-${server.id}`,
+    label: server.config?.displayName || server.config?.serviceName || `Server ${server.id.slice(0, 6)}`,
+    icon: "🐍",
+  }));
+
   const tabs: Tab[] = [
     { id: "canvas", label: "Canvas", icon: "🎨" },
-    { id: "python", label: "Python Application Server", icon: "🐍", disabled: !hasPythonTemplate },
-    { id: "app-server", label: "App Server", icon: "📦", disabled: !systemGraph.components?.some((c) => c.type === "app_server") },
-    { id: "load-balancer", label: "Load Balancer", icon: "⚖️", disabled: !systemGraph.components?.some((c) => c.type === "load_balancer") },
-    { id: "lessons", label: "Lessons", icon: "📖" },
+    // Add a tab for each app server with APIs
+    ...appServerTabs,
+    ...(hasLoadBalancer ? [{ id: "load-balancer", label: "Load Balancer", icon: "⚖️" }] : []),
     { id: "apis", label: "APIs Available", icon: "📚" },
   ];
 
@@ -624,39 +591,44 @@ export function TieredSystemDesignBuilder({
         activeTab={activeTab}
         onTabChange={setActiveTab}
       >
-        {/* Canvas Tab */}
+        {/* Canvas Tab - Conditionally render Guided or Free mode */}
         {activeTab === "canvas" && (
-          <CanvasPage
-            challenge={selectedChallenge}
-            onAddComponent={handleAddComponent}
-            onUpdateConfig={handleUpdateConfig}
-            onSubmit={handleSubmit}
-            onLoadSolution={loadSolutionToCanvas}
-            availableAPIs={getAvailableAPIs()}
-          />
+          guidedMode === 'guided-tutorial' && selectedChallenge?.problemDefinition ? (
+            <GuidedCanvasPage
+              challenge={selectedChallenge}
+              onAddComponent={handleAddComponent}
+              onUpdateConfig={handleUpdateConfig}
+              onModeChange={(mode) => setGuidedMode(mode)}
+            />
+          ) : (
+            <CanvasPage
+              challenge={selectedChallenge}
+              onAddComponent={handleAddComponent}
+              onUpdateConfig={handleUpdateConfig}
+              onSubmit={handleSubmit}
+              onLoadSolution={loadSolutionToCanvas}
+              availableAPIs={getAvailableAPIs()}
+            />
+          )
         )}
 
-        {/* Python Code Tab */}
-        {activeTab === "python" && hasPythonTemplate && (
-          <PythonCodePage
-            challenge={selectedChallenge}
-            systemGraph={systemGraph}
-            onRunTests={handleRunPythonTests}
-            onSubmit={handleSubmit}
-            isTinyUrl={isTinyUrl}
-            isWebCrawler={isWebCrawler}
-            hasCodeChallenges={hasCodeChallenges}
-            hasPythonTemplate={hasPythonTemplate}
-          />
-        )}
-
-        {/* App Server Tab */}
-        {activeTab === "app-server" && (
-          <AppServerPage
-            systemGraph={systemGraph}
-            onUpdateConfig={handleUpdateConfig}
-          />
-        )}
+        {/* Dynamic App Server Tabs - Each shows Python code for that server's APIs */}
+        {appServersWithAPIs.map((server) => (
+          activeTab === `app-server-${server.id}` && (
+            <PythonCodePage
+              key={server.id}
+              challenge={selectedChallenge}
+              systemGraph={systemGraph}
+              onRunTests={handleRunPythonTests}
+              onSubmit={handleSubmit}
+              isTinyUrl={isTinyUrl}
+              isWebCrawler={isWebCrawler}
+              hasCodeChallenges={hasCodeChallenges}
+              hasPythonTemplate={hasPythonTemplate}
+              appServersWithAPIs={[server]}
+            />
+          )
+        ))}
 
         {/* Load Balancer Tab */}
         {activeTab === "load-balancer" && (
@@ -665,9 +637,6 @@ export function TieredSystemDesignBuilder({
             onUpdateConfig={handleUpdateConfig}
           />
         )}
-
-        {/* Lessons Tab */}
-        {activeTab === "lessons" && <LessonsPage />}
 
         {/* APIs Tab */}
         {activeTab === "apis" && <APIsPage />}

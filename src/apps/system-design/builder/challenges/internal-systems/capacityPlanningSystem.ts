@@ -735,7 +735,7 @@ test_cases: List[TestCase] = [
     }
 ]
 
-
+`;
 export const capacityPlanningSystemChallenge: SystemDesignChallenge = {
   id: 'capacity_planning_system',
   title: 'Capacity Planning System',

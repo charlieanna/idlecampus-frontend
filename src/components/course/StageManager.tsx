@@ -34,9 +34,11 @@ export function StageManager({
   const [currentStageIndex, setCurrentStageIndex] = useState(
     initialProgress?.currentStageIndex ?? 0
   );
-  const [completedStages, setCompletedStages] = useState<Set<string>>(
-    initialProgress?.completedStages ?? new Set()
-  );
+  const [completedStages, setCompletedStages] = useState<Set<string>>(() => {
+    const init = initialProgress?.completedStages;
+    // If init is already a Set, use it directly; otherwise, convert array or undefined to a Set
+    return init instanceof Set ? init : new Set(init ?? []);
+  });
   const [stageScores, setStageScores] = useState<Map<string, number>>(
     initialProgress?.stageScores ?? new Map()
   );
@@ -50,15 +52,15 @@ export function StageManager({
   const completionPercentage = (completedStages.size / lesson.stages.length) * 100;
 
   // Calculate if user can proceed
-  const canGoNext =
+  const canGoNext: boolean =
     isCurrentStageComplete ||
     currentStage.optional ||
-    currentStage.completionCriteria?.allowSkip;
+    (currentStage.completionCriteria?.allowSkip ?? false);
 
   // Navigation state
   const navigation: StageNavigation = {
     canGoBack: !isFirstStage,
-    canGoNext: !isLastStage && canGoNext,
+    canGoNext: !isLastStage && !!canGoNext,
     canSkip: currentStage.completionCriteria?.allowSkip ?? false,
     totalStages: lesson.stages.length,
     currentStageIndex,
@@ -144,15 +146,15 @@ export function StageManager({
       console.error('Error converting completedStages to array:', e);
       completedStagesArray = [];
     }
-    
+
     let stageScoresArray: [string, number][] = [];
     try {
       stageScoresArray = Array.from(stageScores.entries())
-        .filter(([key, value]) => 
-          typeof key === 'string' && 
-          typeof value === 'number' && 
+        .filter(([key, value]) =>
+          typeof key === 'string' &&
+          typeof value === 'number' &&
           !isNaN(value) &&
-          key !== null && 
+          key !== null &&
           key !== undefined
         )
         .map(([key, value]) => [String(key), Number(value)]) as [string, number][];
@@ -188,7 +190,7 @@ export function StageManager({
         }
         return value;
       });
-      
+
       localStorage.setItem(
         `multiStageProgress_${lesson.id}`,
         jsonString
@@ -261,14 +263,14 @@ export function StageManager({
                 className={cn(
                   'flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap',
                   isCurrent &&
-                    'bg-blue-100 text-blue-900 ring-2 ring-blue-500',
+                  'bg-blue-100 text-blue-900 ring-2 ring-blue-500',
                   !isCurrent && isCompleted && 'bg-green-50 text-green-900',
                   !isCurrent &&
-                    !isCompleted &&
-                    isAccessible &&
-                    'bg-gray-100 text-gray-700 hover:bg-gray-200',
+                  !isCompleted &&
+                  isAccessible &&
+                  'bg-gray-100 text-gray-700 hover:bg-gray-200',
                   !isAccessible &&
-                    'bg-gray-50 text-gray-400 cursor-not-allowed opacity-50'
+                  'bg-gray-50 text-gray-400 cursor-not-allowed opacity-50'
                 )}
               >
                 {isCompleted && <Check className="w-4 h-4" />}

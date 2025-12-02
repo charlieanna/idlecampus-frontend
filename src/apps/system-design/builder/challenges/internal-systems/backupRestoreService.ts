@@ -770,7 +770,7 @@ test_cases: List[TestCase] = [
     }
 ]
 
-
+`;
 export const backupRestoreServiceChallenge: SystemDesignChallenge = {
   id: 'backup_restore_service',
   title: 'Backup & Restore Service',

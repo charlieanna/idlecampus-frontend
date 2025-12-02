@@ -724,7 +724,7 @@ test_cases: List[TestCase] = [
     }
 ]
 
-
+`;
 export const changeDataCaptureChallenge: SystemDesignChallenge = {
   id: 'change_data_capture',
   title: 'Change Data Capture (CDC)',

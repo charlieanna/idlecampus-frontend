@@ -15,6 +15,7 @@ import {
   cacheInvalidationValidator,
   dataDurabilityValidator,
 } from '../validation/validators/cachingValidators';
+import { tinyUrlGuidedTutorial } from './definitions/tinyUrlGuided';
 
 /**
  * TinyURL Problem Definition
@@ -273,4 +274,7 @@ def expand(code: str) -> Optional[str]:
     # TODO: Implement this function
     pass
 `,
+
+  // Pre-defined Guided Tutorial with rich TEACH -> SOLVE pedagogy
+  guidedTutorial: tinyUrlGuidedTutorial,
 };

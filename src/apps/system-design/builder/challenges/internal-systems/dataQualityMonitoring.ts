@@ -740,7 +740,7 @@ test_cases: List[TestCase] = [
     }
 ]
 
-
+`;
 export const dataQualityMonitoringChallenge: SystemDesignChallenge = {
   id: 'data_quality_monitoring',
   title: 'Data Quality Monitoring',

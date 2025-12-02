@@ -710,7 +710,7 @@ test_cases: List[TestCase] = [
     }
 ]
 
-
+`;
 export const developerMetricsDashboardChallenge: SystemDesignChallenge = {
   id: 'developer_metrics_dashboard',
   title: 'Developer Metrics Dashboard (DORA)',

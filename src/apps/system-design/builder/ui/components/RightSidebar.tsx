@@ -25,7 +25,7 @@ export function RightSidebar({
   // Show Inspector when a node is selected, otherwise show ComponentPalette
   if (selectedNode) {
     return (
-      <div className="w-80 bg-white border-l border-gray-200 flex flex-col">
+      <div className="w-80 h-full bg-white border-l border-gray-200 flex flex-col">
         {/* Back Button */}
         <div className="p-3 border-b border-gray-200 bg-gray-50">
           <button
@@ -50,7 +50,7 @@ export function RightSidebar({
         </div>
 
         {/* Inspector */}
-        <div className="flex-1 overflow-hidden">
+        <div className="flex-1 overflow-y-auto">
           <EnhancedInspector
             selectedNode={selectedNode}
             systemGraph={systemGraph}

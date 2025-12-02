@@ -21,6 +21,10 @@
     "noFallthroughCasesInSwitch": true
   },
   "include": ["src"],
+  "exclude": [
+    "src/apps/system-design/builder/challenges/internal-systems",
+    "src/data/chemistry"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
 
