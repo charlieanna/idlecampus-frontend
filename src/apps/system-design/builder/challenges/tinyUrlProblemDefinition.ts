@@ -246,32 +246,40 @@ from typing import Optional
 # You can create your own data structures here
 # For example: url_map = {}
 
-def shorten(url: str) -> Optional[str]:
+def shorten(url: str, context: dict) -> Optional[str]:
     """
     Create a short code for the given URL.
 
     Args:
         url: The long URL to shorten
+        context: System context with access to databases, caches, etc.
+                 Use context.get('url_mappings', {}) to access storage
 
     Returns:
         A short code string, or None if invalid
     """
     # TODO: Implement this function
-    # Hint: Use a dictionary to store URL mappings
+    # Hint: Use context dictionary to store URL mappings
+    #   Example: context['url_mappings'] = context.get('url_mappings', {})
     # Hint: Use hashlib to generate short codes
+    #   Example: code = hashlib.md5(url.encode()).hexdigest()[:8]
     pass
 
-def expand(code: str) -> Optional[str]:
+def expand(code: str, context: dict) -> Optional[str]:
     """
     Retrieve the original URL from a short code.
 
     Args:
         code: The short code to expand
+        context: System context with access to databases, caches, etc.
+                 Use context.get('url_mappings', {}) to access storage
 
     Returns:
         The original URL, or None if not found
     """
     # TODO: Implement this function
+    # Hint: Look up code in context dictionary
+    #   Example: return context.get('url_mappings', {}).get(code)
     pass
 `,
 

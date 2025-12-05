@@ -11,6 +11,8 @@ interface InspectorModalProps {
   onUpdateConfig: (nodeId: string, config: Record<string, any>) => void;
   onClose: () => void;
   onDelete?: (nodeId: string) => void;
+  availableAPIs?: string[];
+  onAPIAssigned?: (serverId: string) => void;
 }
 
 export function InspectorModal({
@@ -20,6 +22,8 @@ export function InspectorModal({
   onUpdateConfig,
   onClose,
   onDelete,
+  availableAPIs = [],
+  onAPIAssigned,
 }: InspectorModalProps) {
   // Support both node prop and nodeId prop
   const node = nodeProp || (() => {
@@ -99,6 +103,8 @@ export function InspectorModal({
               systemGraph={systemGraph}
               onUpdateConfig={onUpdateConfig}
               isModal={true}
+              availableAPIs={availableAPIs}
+              onAPIAssigned={onAPIAssigned}
             />
           </div>
 

@@ -1,0 +1,763 @@
+import { useState, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ReactFlowProvider } from 'reactflow';
+import { useNavigate } from 'react-router-dom';
+import { DesignCanvas } from '../components/DesignCanvas';
+import { InspectorModal } from '../components/InspectorModal';
+import { StoryPanel, CelebrationPanel, FullScreenLearnPanel } from '../components/guided';
+import { useCanvasStore, useGuidedStore } from '../store';
+import { Challenge } from '../../types/testCase';
+import { validateStep } from '../../guided/validateStep';
+import { generateGuidedTutorial } from '../../guided/generateGuidedTutorial';
+import { StepValidationResult, GuidedStep, StepPhase } from '../../types/guidedTutorial';
+import { ProblemDefinition } from '../../types/problemDefinition';
+
+interface ChallengeWithProblemDefinition extends Challenge {
+  problemDefinition?: ProblemDefinition;
+}
+
+interface GuidedWizardPageProps {
+  challenge: ChallengeWithProblemDefinition;
+}
+
+/**
+ * GuidedWizardPage - Step-by-step wizard tutorial
+ *
+ * Flow: Story → Learn → Practice (wizard) → Celebrate → Next Step
+ *
+ * Practice phase uses Option D: embedded canvas with focused task panel
+ */
+export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge }) => {
+  const navigate = useNavigate();
+
+  // Canvas store
+  const {
+    systemGraph,
+    setSystemGraph,
+    selectedNode,
+    setSelectedNode,
+  } = useCanvasStore();
+
+  // Guided store
+  const {
+    tutorial,
+    setTutorial,
+    progress,
+    advanceToNextStep,
+    setPhase,
+    incrementAttempt,
+    setHintLevel,
+    markTutorialComplete,
+  } = useGuidedStore();
+
+  // Local state
+  const [validationResult, setValidationResult] = useState<StepValidationResult | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
+  const [showHint, setShowHint] = useState(false);
+  const [showInspector, setShowInspector] = useState(false);
+  const [inspectorNodeId, setInspectorNodeId] = useState<string | null>(null);
+
+  // Initialize tutorial - only reset if no existing progress for this challenge
+  useEffect(() => {
+    console.log('[GuidedWizard] === MOUNT CHECK ===');
+    console.log('[GuidedWizard] Challenge:', challenge?.id);
+
+    if (!challenge?.problemDefinition) {
+      console.log('[GuidedWizard] No problemDefinition found');
+      return;
+    }
+
+    const loadedTutorial = challenge.problemDefinition.guidedTutorial
+      ? challenge.problemDefinition.guidedTutorial
+      : generateGuidedTutorial(challenge.problemDefinition);
+
+    console.log('[GuidedWizard] Tutorial loaded:', loadedTutorial.steps.length, 'steps');
+
+    // Check if we already have progress for this challenge
+    const existingProgress = useGuidedStore.getState().progress;
+    const existingTutorial = useGuidedStore.getState().tutorial;
+
+    if (existingProgress?.problemId === challenge.id && existingTutorial) {
+      console.log('[GuidedWizard] Resuming existing progress - step:', existingProgress.currentStepIndex, 'phase:', existingProgress.currentPhase);
+      // Just sync local state with store, don't reset
+      setTutorial(existingTutorial);
+      setValidationResult(null);
+      setShowHint(false);
+      setIsValidating(false);
+
+      // Ensure canvas has Client (it might have been cleared)
+      const currentGraph = useCanvasStore.getState().systemGraph;
+      const hasClient = currentGraph?.components?.some(c => c.type === 'client');
+      if (!hasClient) {
+        console.log('[GuidedWizard] Canvas missing Client, adding it');
+        setSystemGraph({
+          components: [
+            {
+              id: 'client-1',
+              type: 'client' as any,
+              config: {
+                displayName: 'Client',
+                requestsPerSecond: 100,
+                position: { x: 100, y: 150 },
+              },
+            },
+            ...(currentGraph?.components || []),
+          ],
+          connections: currentGraph?.connections || [],
+        });
+      }
+      return;
+    }
+
+    console.log('[GuidedWizard] No existing progress, initializing fresh');
+
+    // Reset EVERYTHING for new challenge
+    const firstStep = loadedTutorial.steps[0];
+    const initialPhase: StepPhase = firstStep?.story ? 'story' : 'learn';
+
+    console.log('[GuidedWizard] Starting at step 0, phase:', initialPhase);
+
+    // Set all state at once
+    setTutorial(loadedTutorial);
+    setValidationResult(null);
+    setShowHint(false);
+    setIsValidating(false);
+
+    // Force the store state directly
+    useGuidedStore.setState({
+      mode: 'guided-tutorial',
+      tutorial: loadedTutorial,
+      progress: {
+        problemId: challenge.id,
+        currentStepIndex: 0,
+        currentPhase: initialPhase,
+        completedStepIds: [],
+        attemptCounts: {},
+        hintLevel: 'none',
+        startedAt: new Date().toISOString(),
+        lastAccessedAt: new Date().toISOString(),
+        quizAnswers: {},
+      },
+    });
+
+    // Reset canvas with only Client
+    setSystemGraph({
+      components: [
+        {
+          id: 'client-1',
+          type: 'client' as any,
+          config: {
+            displayName: 'Client',
+            requestsPerSecond: 100,
+            position: { x: 100, y: 150 },
+          },
+        },
+      ],
+      connections: [],
+    });
+
+    console.log('[GuidedWizard] === INITIALIZATION COMPLETE ===');
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount!
+
+  // Get current step
+  const currentStep = tutorial?.steps[progress?.currentStepIndex || 0] || null;
+  const currentPhase = progress?.currentPhase || 'story';
+
+  // Debug logging
+  console.log('[GuidedWizard] Render - stepIndex:', progress?.currentStepIndex, 'phase:', currentPhase, 'step:', currentStep?.story?.scenario?.substring(0, 30));
+
+  // Handle story continue → go to learn
+  const handleStoryContinue = useCallback(() => {
+    setPhase('learn');
+  }, [setPhase]);
+
+  // Handle learn continue → go to practice
+  const handleStartPractice = useCallback(() => {
+    console.log('[GuidedWizard] Starting practice - resetting validation state');
+    setValidationResult(null);  // MUST reset before changing phase
+    setShowHint(false);
+    setPhase('practice');
+  }, [setPhase]);
+
+  // Handle check design
+  const handleCheckDesign = useCallback(() => {
+    console.log('[GuidedWizard] handleCheckDesign called');
+    if (!currentStep || !systemGraph) return;
+
+    console.log('[GuidedWizard] Graph components:', systemGraph.components.map(c => ({ id: c.id, type: c.type })));
+    console.log('[GuidedWizard] Graph connections:', systemGraph.connections);
+    console.log('[GuidedWizard] Step validation requirements:', currentStep.validation);
+
+    setIsValidating(true);
+    setValidationResult(null);
+
+    setTimeout(() => {
+      const result = validateStep(currentStep, systemGraph);
+      console.log('[GuidedWizard] Validation result:', JSON.stringify(result, null, 2));
+      setValidationResult(result);
+      setIsValidating(false);
+
+      if (!result.passed) {
+        incrementAttempt();
+      }
+    }, 500);
+  }, [currentStep, systemGraph, incrementAttempt]);
+
+  // Handle step complete → show celebration (only if validation actually passed)
+  const handleStepComplete = useCallback(() => {
+    console.log('[GuidedWizard] handleStepComplete called - validationResult:', validationResult);
+    if (!validationResult?.passed) {
+      console.log('[GuidedWizard] BLOCKED - no valid validation result!');
+      return;
+    }
+    console.log('[GuidedWizard] Moving to celebrate');
+    setPhase('celebrate');
+  }, [setPhase, validationResult]);
+
+  // Handle celebration continue → next step or finish
+  const handleCelebrationContinue = useCallback(() => {
+    setValidationResult(null);
+    setShowHint(false);
+
+    if (tutorial && progress && progress.currentStepIndex === tutorial.totalSteps - 1) {
+      // Tutorial complete - go to solve on your own
+      markTutorialComplete(challenge.id);
+      navigate(`/system-design/${challenge.id}`);
+    } else {
+      advanceToNextStep();
+    }
+  }, [tutorial, progress, advanceToNextStep, markTutorialComplete, challenge?.id, navigate]);
+
+  // Handle hint toggle
+  const handleToggleHint = useCallback(() => {
+    setShowHint((prev) => !prev);
+    if (!showHint) {
+      setHintLevel('level1');
+    }
+  }, [showHint, setHintLevel]);
+
+  // Handle adding a component from the task panel
+  const handleAddComponent = useCallback((type: string) => {
+    console.log('[GuidedWizard] handleAddComponent called:', type, 'current graph:', systemGraph);
+    if (!systemGraph) {
+      console.log('[GuidedWizard] No systemGraph!');
+      return;
+    }
+
+    const position = getPositionForType(type, systemGraph.components.length);
+    const newComponent = {
+      id: `${type}-${Date.now()}`,
+      type: type as any,
+      config: {
+        displayName: getDisplayName(type),
+        position,
+      },
+    };
+
+    const newGraph = {
+      ...systemGraph,
+      components: [...systemGraph.components, newComponent] as any,
+    };
+    console.log('[GuidedWizard] Setting new graph:', newGraph);
+    setSystemGraph(newGraph);
+  }, [systemGraph, setSystemGraph]);
+
+  // Handle updating component config
+  const handleUpdateConfig = useCallback((nodeId: string, config: Record<string, any>) => {
+    if (!systemGraph) return;
+
+    const newGraph = {
+      ...systemGraph,
+      components: systemGraph.components.map((comp) =>
+        comp.id === nodeId ? { ...comp, config: { ...comp.config, ...config } } : comp
+      ),
+    };
+    setSystemGraph(newGraph);
+  }, [systemGraph, setSystemGraph]);
+
+  // Handle node selection - open inspector for configuration
+  const handleNodeSelect = useCallback((node: any) => {
+    setSelectedNode(node);
+    if (node) {
+      setInspectorNodeId(node.id);
+      setShowInspector(true);
+    }
+  }, [setSelectedNode]);
+
+  // Handle closing inspector
+  const handleCloseInspector = useCallback(() => {
+    setShowInspector(false);
+    setInspectorNodeId(null);
+  }, []);
+
+  // Handle restart tutorial
+  const handleRestartTutorial = useCallback(() => {
+    if (!challenge?.problemDefinition) return;
+
+    const loadedTutorial = challenge.problemDefinition.guidedTutorial
+      ? challenge.problemDefinition.guidedTutorial
+      : generateGuidedTutorial(challenge.problemDefinition);
+
+    const firstStep = loadedTutorial.steps[0];
+    const initialPhase: StepPhase = firstStep?.story ? 'story' : 'learn';
+
+    // Reset everything
+    setTutorial(loadedTutorial);
+    setValidationResult(null);
+    setShowHint(false);
+    setIsValidating(false);
+
+    useGuidedStore.setState({
+      mode: 'guided-tutorial',
+      tutorial: loadedTutorial,
+      progress: {
+        problemId: challenge.id,
+        currentStepIndex: 0,
+        currentPhase: initialPhase,
+        completedStepIds: [],
+        attemptCounts: {},
+        hintLevel: 'none',
+        startedAt: new Date().toISOString(),
+        lastAccessedAt: new Date().toISOString(),
+        quizAnswers: {},
+      },
+    });
+
+    // Reset canvas with only Client
+    setSystemGraph({
+      components: [
+        {
+          id: 'client-1',
+          type: 'client' as any,
+          config: {
+            displayName: 'Client',
+            requestsPerSecond: 100,
+            position: { x: 100, y: 150 },
+          },
+        },
+      ],
+      connections: [],
+    });
+
+    console.log('[GuidedWizard] Tutorial restarted');
+  }, [challenge, setTutorial, setSystemGraph]);
+
+  // Loading state
+  if (!tutorial || !progress) {
+    return (
+      <div className="flex-1 flex items-center justify-center bg-slate-50">
+        <div className="text-center">
+          <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-gray-600">Loading tutorial...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex-1 flex flex-col h-full bg-slate-50 overflow-hidden relative">
+      {/* Restart button - always visible in corner */}
+      <button
+        onClick={handleRestartTutorial}
+        className="absolute top-2 right-2 z-[60] px-2 py-1 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 rounded border border-gray-300 transition-colors"
+        title="Restart tutorial from beginning"
+      >
+        ↺ Restart
+      </button>
+
+      <AnimatePresence mode="wait">
+        {/* Story Phase */}
+        {currentPhase === 'story' && currentStep?.story && (
+          <StoryPanel
+            key="story"
+            story={currentStep.story}
+            stepNumber={currentStep.stepNumber}
+            totalSteps={tutorial.totalSteps}
+            onContinue={handleStoryContinue}
+          />
+        )}
+
+        {/* Learn Phase */}
+        {currentPhase === 'learn' && currentStep?.learnPhase && (
+          <FullScreenLearnPanel
+            key="learn"
+            content={currentStep.learnPhase}
+            stepNumber={currentStep.stepNumber}
+            totalSteps={tutorial.totalSteps}
+            onStartPractice={handleStartPractice}
+          />
+        )}
+
+        {/* Practice Phase - Wizard Style */}
+        {currentPhase === 'practice' && currentStep && (
+          <PracticeWizard
+            key="practice"
+            step={currentStep}
+            totalSteps={tutorial.totalSteps}
+            systemGraph={systemGraph}
+            setSystemGraph={setSystemGraph}
+            selectedNode={selectedNode}
+            setSelectedNode={handleNodeSelect}
+            validationResult={validationResult}
+            isValidating={isValidating}
+            showHint={showHint}
+            onCheckDesign={handleCheckDesign}
+            onStepComplete={handleStepComplete}
+            onToggleHint={handleToggleHint}
+            onAddComponent={handleAddComponent}
+            onUpdateConfig={handleUpdateConfig}
+          />
+        )}
+
+        {/* Celebration Phase */}
+        {currentPhase === 'celebrate' && currentStep?.celebration && (
+          <CelebrationPanel
+            key="celebrate"
+            celebration={currentStep.celebration}
+            stepNumber={currentStep.stepNumber}
+            totalSteps={tutorial.totalSteps}
+            isLastStep={progress.currentStepIndex === tutorial.totalSteps - 1}
+            onContinue={handleCelebrationContinue}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Inspector Modal - shown when user clicks a component */}
+      {showInspector && inspectorNodeId && systemGraph && (
+        <InspectorModal
+          nodeId={inspectorNodeId}
+          systemGraph={systemGraph}
+          onUpdateConfig={handleUpdateConfig}
+          onClose={handleCloseInspector}
+          availableAPIs={[
+            'POST /api/v1/urls',
+            'GET /api/v1/urls/:code',
+          ]}
+        />
+      )}
+    </div>
+  );
+};
+
+// =============================================================================
+// Practice Wizard Component (Option D Layout)
+// =============================================================================
+
+interface PracticeWizardProps {
+  step: GuidedStep;
+  totalSteps: number;
+  systemGraph: any;
+  setSystemGraph: (graph: any) => void;
+  selectedNode: any;
+  setSelectedNode: (node: any) => void;
+  validationResult: StepValidationResult | null;
+  isValidating: boolean;
+  showHint: boolean;
+  onCheckDesign: () => void;
+  onStepComplete: () => void;
+  onToggleHint: () => void;
+  onAddComponent: (type: string) => void;
+  onUpdateConfig: (nodeId: string, config: Record<string, any>) => void;
+}
+
+function PracticeWizard({
+  step,
+  totalSteps,
+  systemGraph,
+  setSystemGraph,
+  selectedNode,
+  setSelectedNode,
+  validationResult,
+  isValidating,
+  showHint,
+  onCheckDesign,
+  onStepComplete,
+  onToggleHint,
+  onAddComponent,
+  onUpdateConfig,
+}: PracticeWizardProps) {
+  // Click to add component (simpler than drag-drop for embedded canvas)
+  const handleAddClick = (componentType: string) => {
+    console.log('[PracticeWizard] Adding component:', componentType);
+    onAddComponent(componentType);
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="flex-1 flex flex-col h-full"
+    >
+      {/* Progress Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium text-gray-500">
+              Step {step.stepNumber} of {totalSteps}
+            </span>
+            <span className="text-sm text-blue-600 font-medium">Practice Mode</span>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="flex items-center gap-2">
+            {Array.from({ length: totalSteps }).map((_, i) => (
+              <div
+                key={i}
+                className={`h-2 flex-1 rounded-full transition-colors ${
+                  i < step.stepNumber
+                    ? 'bg-blue-500'
+                    : i === step.stepNumber - 1
+                    ? 'bg-blue-300'
+                    : 'bg-gray-200'
+                }`}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-4xl mx-auto px-6 py-8">
+          {/* Task Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6"
+          >
+            <div className="p-6 border-b border-gray-100">
+              <h2 className="text-xl font-bold text-gray-900 mb-2">
+                {step.practicePhase.taskDescription}
+              </h2>
+              <p className="text-gray-600">
+                {step.practicePhase.frText}
+              </p>
+            </div>
+
+            {/* Task Content - varies by step type */}
+            <div className="p-6 bg-gray-50">
+              {step.practicePhase.componentsNeeded.length > 0 ? (
+                /* "Add Component" type step */
+                <>
+                  <p className="text-sm font-medium text-gray-700 mb-3">
+                    Click to add this component to the canvas:
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {step.practicePhase.componentsNeeded.map((comp) => (
+                      <button
+                        key={comp.type}
+                        onClick={() => handleAddClick(comp.type)}
+                        className="flex items-center gap-3 bg-blue-50 border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-100 rounded-lg px-4 py-3 cursor-pointer transition-all group"
+                      >
+                        <span className="text-2xl group-hover:scale-110 transition-transform">{getComponentIcon(comp.type)}</span>
+                        <div className="text-left">
+                          <p className="font-medium text-gray-900">{comp.displayName}</p>
+                          <p className="text-xs text-gray-500">{comp.reason}</p>
+                        </div>
+                        <span className="ml-2 text-blue-500 font-medium text-sm">+ Add</span>
+                      </button>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                /* "Configuration" type step (no new components needed) */
+                <div className="space-y-4">
+                  <p className="text-sm font-medium text-gray-700 mb-3">
+                    Your task:
+                  </p>
+                  <div className="space-y-3">
+                    {step.practicePhase.successCriteria.map((criterion, index) => (
+                      <div
+                        key={index}
+                        className="flex items-start gap-3 bg-white border border-gray-200 rounded-lg p-4"
+                      >
+                        <span className="flex-shrink-0 w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-sm font-medium">
+                          {index + 1}
+                        </span>
+                        <span className="text-gray-800">{criterion}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
+                    <div className="flex items-start gap-3">
+                      <span className="text-xl">👆</span>
+                      <div className="text-sm text-amber-800">
+                        <strong>Tip:</strong> Click on the <span className="font-semibold">App Server</span> node in the canvas below to open the configuration panel. Then configure the APIs and write your Python code.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </motion.div>
+
+          {/* Canvas Area */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden"
+          >
+            <div className="h-[400px] relative">
+              <ReactFlowProvider>
+                <DesignCanvas
+                  systemGraph={systemGraph || { components: [], connections: [] }}
+                  onSystemGraphChange={setSystemGraph}
+                  selectedNode={selectedNode}
+                  onNodeSelect={setSelectedNode}
+                  onAddComponent={(type) => onAddComponent(type)}
+                  onUpdateConfig={onUpdateConfig}
+                />
+              </ReactFlowProvider>
+            </div>
+          </motion.div>
+
+          {/* Hint Section */}
+          <AnimatePresence>
+            {showHint && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">💡</span>
+                  <div>
+                    <p className="font-medium text-amber-900 mb-1">Hint</p>
+                    <p className="text-amber-800">{step.hints.level1}</p>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Validation Feedback */}
+          <AnimatePresence>
+            {validationResult && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className={`rounded-xl p-4 mb-6 ${
+                  validationResult.passed
+                    ? 'bg-green-50 border border-green-200'
+                    : 'bg-red-50 border border-red-200'
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl">
+                    {validationResult.passed ? '✅' : '❌'}
+                  </span>
+                  <div>
+                    <p className={`font-medium mb-1 ${
+                      validationResult.passed ? 'text-green-900' : 'text-red-900'
+                    }`}>
+                      {validationResult.passed ? 'Great job!' : 'Not quite right'}
+                    </p>
+                    <p className={validationResult.passed ? 'text-green-800' : 'text-red-800'}>
+                      {validationResult.feedback}
+                    </p>
+                    {validationResult.suggestions && validationResult.suggestions.length > 0 && (
+                      <ul className="mt-2 space-y-1">
+                        {validationResult.suggestions.map((suggestion, i) => (
+                          <li key={i} className="text-sm text-red-700">
+                            • {suggestion}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Action Buttons */}
+          <div className="flex items-center justify-between">
+            <button
+              onClick={onToggleHint}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                showHint
+                  ? 'bg-amber-100 text-amber-800'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+            >
+              <span>💡</span>
+              {showHint ? 'Hide Hint' : 'Need a Hint?'}
+            </button>
+
+            {validationResult?.passed ? (
+              <motion.button
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                onClick={onStepComplete}
+                className="bg-green-600 hover:bg-green-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg"
+              >
+                Continue →
+              </motion.button>
+            ) : (
+              <button
+                onClick={onCheckDesign}
+                disabled={isValidating}
+                className="bg-blue-600 hover:bg-blue-500 disabled:bg-blue-300 text-white font-semibold px-6 py-3 rounded-xl shadow-lg transition-colors"
+              >
+                {isValidating ? (
+                  <span className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Checking...
+                  </span>
+                ) : (
+                  'Check My Design'
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// =============================================================================
+// Helper Functions
+// =============================================================================
+
+function getDisplayName(type: string): string {
+  const names: Record<string, string> = {
+    app_server: 'App Server',
+    database: 'Database',
+    cache: 'Cache (Redis)',
+    load_balancer: 'Load Balancer',
+    client: 'Client',
+  };
+  return names[type] || type;
+}
+
+function getComponentIcon(type: string): string {
+  const icons: Record<string, string> = {
+    app_server: '📦',
+    database: '💾',
+    cache: '⚡',
+    load_balancer: '🌐',
+    client: '👤',
+  };
+  return icons[type] || '📦';
+}
+
+function getPositionForType(type: string, existingCount: number): { x: number; y: number } {
+  const basePositions: Record<string, { x: number; y: number }> = {
+    app_server: { x: 300, y: 150 },
+    database: { x: 500, y: 150 },
+    cache: { x: 500, y: 50 },
+    load_balancer: { x: 200, y: 150 },
+  };
+
+  const pos = basePositions[type] || { x: 300 + existingCount * 150, y: 150 };
+  return pos;
+}
+
+export default GuidedWizardPage;

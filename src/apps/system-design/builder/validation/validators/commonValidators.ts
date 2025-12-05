@@ -322,7 +322,8 @@ export const validConnectionFlowValidator: ValidatorFunction = (graph, scenario)
     };
   }
 
-  // Check: Cache should be between app and database
+  // Check: Cache connection patterns
+  // Supports both cache-aside (App → Cache + App → DB) and read-through (App → Cache → DB)
   const cache = graph.components.find(c => c.type === 'cache' || c.type === 'redis');
   if (cache) {
     const hasAppToCache = graph.connections.some(conn => {
@@ -330,15 +331,32 @@ export const validConnectionFlowValidator: ValidatorFunction = (graph, scenario)
       return fromComp?.type === 'app_server' && conn.to === cache.id;
     });
 
+    if (!hasAppToCache) {
+      return {
+        valid: false,
+        hint: 'App Server should be connected to Cache for caching to work',
+      };
+    }
+
+    // For cache-aside pattern: App → Cache + App → DB (both separate)
+    // For read-through pattern: App → Cache → DB (cache queries DB)
+    // Both are valid - check that at least one pattern is implemented
     const hasCacheToDb = graph.connections.some(conn => {
       const toComp = graph.components.find(c => c.id === conn.to);
       return conn.from === cache.id && toComp && isDatabaseComponentType(toComp.type);
     });
 
-    if (!hasAppToCache || !hasCacheToDb) {
+    const hasAppToDb = graph.connections.some(conn => {
+      const fromComp = graph.components.find(c => c.id === conn.from);
+      const toComp = graph.components.find(c => c.id === conn.to);
+      return fromComp?.type === 'app_server' && toComp && isDatabaseComponentType(toComp.type);
+    });
+
+    // Either cache-aside (App → DB) or read-through (Cache → DB) must exist
+    if (!hasCacheToDb && !hasAppToDb) {
       return {
         valid: false,
-        hint: 'Cache should be between app server and database: App Server → Cache → Database',
+        hint: 'Missing database connection. For cache-aside: connect App Server → Database. For read-through: connect Cache → Database.',
       };
     }
   }

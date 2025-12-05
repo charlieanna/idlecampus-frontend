@@ -109,6 +109,53 @@ const DEFAULT_HIDDEN_TEST_CASES: TestCase[] = [
   }
 ];
 
+// Complete solution for testing the flow
+const SOLUTION_CODE = `import hashlib
+
+# In-memory storage for URL mappings
+url_to_code = {}
+code_to_url = {}
+
+def shorten(long_url: str) -> str:
+    """
+    Create a short code for the given URL.
+    Returns the same code if URL was already shortened.
+    """
+    if not long_url:
+        return None
+
+    # Check if URL already exists
+    if long_url in url_to_code:
+        return url_to_code[long_url]
+
+    # Generate a short code using MD5 hash
+    hash_obj = hashlib.md5(long_url.encode())
+    short_code = hash_obj.hexdigest()[:6]
+
+    # Handle collision (simple approach: append counter)
+    original_code = short_code
+    counter = 0
+    while short_code in code_to_url:
+        counter += 1
+        short_code = original_code + str(counter)
+
+    # Store mappings
+    url_to_code[long_url] = short_code
+    code_to_url[short_code] = long_url
+
+    return short_code
+
+def expand(short_code: str) -> str:
+    """
+    Retrieve the original URL for a short code.
+    Returns None if code doesn't exist.
+    """
+    if not short_code:
+        return None
+
+    return code_to_url.get(short_code, None)
+`;
+
 export function PythonCodeChallengePanel({
   pythonCode,
   setPythonCode,
@@ -277,8 +324,8 @@ ${functions.join('\n\n')}
     return pythonCode;
   };
 
-  const formatTestResultsAsText = (results: TestResult[]): string => {
-    if (results.length === 0) {
+  const formatTestResultsAsText = (results: TestResult[] | undefined): string => {
+    if (!results || results.length === 0) {
       return 'No test results available.';
     }
 
@@ -319,12 +366,14 @@ ${functions.join('\n\n')}
 
   const handleRunCode = async () => {
     setIsRunning(true);
+    setShowTestResultsPanel(true);
     try {
-      const results = await onRunTests(pythonCode, exampleTestCases);
+      const codeToRun = getCurrentCode();
+      const results = await runTestsLocally(codeToRun, exampleTestCases);
       setTestResults(results);
-      setShowTestResultsPanel(true);
     } catch (error) {
       console.error('Error running tests:', error);
+      setTestResults([]);
     } finally {
       setIsRunning(false);
       // Force editor layout update after state changes
@@ -336,14 +385,95 @@ ${functions.join('\n\n')}
     }
   };
 
+  // Run tests locally using pythonExecutor
+  const runTestsLocally = async (code: string, testCases: TestCase[]): Promise<TestResult[]> => {
+    const results: TestResult[] = [];
+
+    // Register the code with the executor
+    pythonExecutor.setServiceCode('main', code);
+
+    // Create an execution context that maintains state across shorten/expand calls
+    const context = pythonExecutor.createContext();
+
+    for (const testCase of testCases) {
+      const operationResults: OperationResult[] = [];
+      let testPassed = true;
+      const prevResults: string[] = [];
+
+      for (const op of testCase.operations) {
+        let input = op.input;
+
+        // Handle RESULT_FROM_PREV references
+        if (input === 'RESULT_FROM_PREV' && prevResults.length > 0) {
+          input = prevResults[prevResults.length - 1];
+        } else if (input.startsWith('RESULT_FROM_PREV_')) {
+          const index = parseInt(input.split('_').pop() || '0');
+          input = prevResults[index] || '';
+        }
+
+        try {
+          const result = await pythonExecutor.execute(code, op.method, [input], context);
+          const actual = result?.toString() || '';
+          prevResults.push(actual);
+
+          let passed = false;
+          let expected = op.expected || '';
+
+          if (op.expected === 'VALID_CODE') {
+            // Any non-empty alphanumeric code is valid
+            passed = actual.length > 0 && /^[a-zA-Z0-9]+$/.test(actual);
+            expected = 'Valid short code';
+          } else if (op.expected === 'RESULT_FROM_PREV') {
+            expected = prevResults.length > 1 ? prevResults[prevResults.length - 2] : '';
+            passed = actual === expected;
+          } else if (op.expected === null) {
+            passed = actual === '' || actual === 'null' || actual === 'None';
+            expected = 'None/empty';
+          } else {
+            passed = actual === op.expected;
+          }
+
+          if (!passed) testPassed = false;
+
+          operationResults.push({
+            method: op.method,
+            input: op.input,
+            expected,
+            actual,
+            passed,
+          });
+        } catch (error) {
+          testPassed = false;
+          operationResults.push({
+            method: op.method,
+            input: op.input,
+            expected: op.expected || '',
+            actual: `Error: ${error}`,
+            passed: false,
+          });
+        }
+      }
+
+      results.push({
+        testId: testCase.id,
+        testName: testCase.name,
+        passed: testPassed,
+        operations: operationResults,
+      });
+    }
+
+    return results;
+  };
+
   const handleSubmitSolution = async () => {
     setIsRunning(true);
+    setShowTestResultsPanel(true);
     try {
       // Run all test cases (example + hidden)
+      const codeToRun = getCurrentCode();
       const allTestCases = [...exampleTestCases, ...hiddenTestCases];
-      const results = await onRunTests(pythonCode, allTestCases);
+      const results = await runTestsLocally(codeToRun, allTestCases);
       setTestResults(results);
-      setShowTestResultsPanel(true);
 
       // If all tests pass, trigger the main submit (which runs load tests)
       const allPassed = results.every(r => r.passed);
@@ -352,6 +482,7 @@ ${functions.join('\n\n')}
       }
     } catch (error) {
       console.error('Error submitting solution:', error);
+      setTestResults([]);
     } finally {
       setIsRunning(false);
       // Force editor layout update after state changes
@@ -502,7 +633,30 @@ ${functions.join('\n\n')}
         <div className="flex-1 flex flex-col bg-white min-w-0">
           <div className="p-3 border-b border-gray-200 bg-gray-50 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-900">Code Editor</h3>
+              <div className="flex items-center gap-3">
+                <h3 className="font-semibold text-gray-900">Code Editor</h3>
+                {/* Show Solution button for testing */}
+                <button
+                  onClick={() => {
+                    if (selectedServiceId && setPythonCodeByServer) {
+                      const currentServer = appServersWithAPIs.find(s => s.id === selectedServiceId);
+                      setPythonCodeByServer({
+                        ...pythonCodeByServer,
+                        [selectedServiceId]: {
+                          code: SOLUTION_CODE,
+                          apis: currentServer?.config?.handledAPIs || []
+                        }
+                      });
+                    } else {
+                      setPythonCode(SOLUTION_CODE);
+                    }
+                  }}
+                  className="px-2 py-1 text-xs bg-purple-100 text-purple-700 hover:bg-purple-200 rounded border border-purple-300 transition-colors"
+                  title="Load complete solution for testing"
+                >
+                  Show Solution
+                </button>
+              </div>
 
               {/* Service Selector for Microservices */}
               {appServersWithAPIs.length > 0 && (

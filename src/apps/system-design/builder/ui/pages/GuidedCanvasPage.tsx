@@ -2,9 +2,15 @@ import { useState, useCallback, useEffect } from 'react';
 import { ReactFlowProvider } from 'reactflow';
 import { useNavigate } from 'react-router-dom';
 import { DesignCanvas } from '../components/DesignCanvas';
-import { GuidedTeachingPanel, GuidedSidebar, ModeSwitcher } from '../components/guided';
+import { InspectorModal } from '../components/InspectorModal';
+import { GuidedTeachingPanel, GuidedSidebar, ModeSwitcher, StoryPanel, CelebrationPanel, FullScreenLearnPanel } from '../components/guided';
 import { TutorialCompleteModal } from '../components/guided/TutorialCompleteModal';
-import { useCanvasStore, useGuidedStore } from '../store';
+import { PythonCodePage } from './PythonCodePage';
+import { LoadBalancerPage } from './LoadBalancerPage';
+import { APIsPage } from './APIsPage';
+import { TabLayout } from '../layouts';
+import { Tab } from '../design-system';
+import { useCanvasStore, useGuidedStore, useCodeStore, useUIStore } from '../store';
 import { Challenge } from '../../types/testCase';
 import { validateStep } from '../../guided/validateStep';
 import { generateGuidedTutorial } from '../../guided/generateGuidedTutorial';
@@ -36,7 +42,17 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
   const navigate = useNavigate();
 
   // Store state
-  const { systemGraph, setSystemGraph, selectedNode, setSelectedNode } = useCanvasStore();
+  const {
+    systemGraph,
+    setSystemGraph,
+    selectedNode,
+    setSelectedNode,
+    showInspectorModal,
+    setShowInspectorModal,
+    inspectorModalNodeId,
+    setInspectorModalNodeId,
+    removeNode,
+  } = useCanvasStore();
   const {
     mode,
     setMode,
@@ -54,21 +70,76 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
     markTutorialComplete,
   } = useGuidedStore();
 
+  // Code store for Python tabs (used by PythonCodePage internally)
+  useCodeStore();
+
+  // UI store for active tab
+  const { activeTab, setActiveTab } = useUIStore();
+
   // Local state
   const [validationResult, setValidationResult] = useState<StepValidationResult | null>(null);
   const [isValidating, setIsValidating] = useState(false);
   const [tutorialComplete, setTutorialComplete] = useState(false);
   const [showCompleteModal, setShowCompleteModal] = useState(false);
 
+  // Get app servers with configured APIs from the system graph
+  const appServersWithAPIs = systemGraph?.components?.filter(
+    (c) => c.type === 'app_server' && c.config?.handledAPIs && c.config.handledAPIs.length > 0
+  ) || [];
+
+  // Check if there's a load balancer
+  const hasLoadBalancer = systemGraph?.components?.some(
+    (c) => c.type === 'load_balancer'
+  ) || false;
+
+  // Helper flags
+  const isTinyUrl = challenge?.id === 'tiny_url';
+  const isWebCrawler = challenge?.id === 'web_crawler';
+  const hasCodeChallenges = !!(challenge?.codeChallenges && challenge.codeChallenges.length > 0);
+  const hasPythonTemplate = !!(challenge?.pythonTemplate && challenge.pythonTemplate.length > 0);
+
+  // Get available APIs for API assignment to app servers
+  const getAvailableAPIs = useCallback((): string[] => {
+    if (!challenge) return [];
+
+    // Check if challenge has explicit API definitions in problemDefinition
+    const problemDef = challenge.problemDefinition;
+    if (problemDef?.userFacingFRs) {
+      const apis: string[] = [];
+      const frs = problemDef.userFacingFRs;
+
+      // Common patterns based on FRs
+      if (frs.some((fr: string) => fr.toLowerCase().includes('create') || fr.toLowerCase().includes('shorten'))) {
+        apis.push('POST /api/v1/urls');
+      }
+      if (frs.some((fr: string) => fr.toLowerCase().includes('redirect') || fr.toLowerCase().includes('expand') || fr.toLowerCase().includes('get'))) {
+        apis.push('GET /api/v1/urls/*');
+      }
+      if (frs.some((fr: string) => fr.toLowerCase().includes('stats') || fr.toLowerCase().includes('analytics'))) {
+        apis.push('GET /api/v1/stats');
+      }
+
+      if (apis.length > 0) return apis;
+    }
+
+    // Challenge-specific API definitions
+    if (challenge.id === 'tiny_url') {
+      return ['POST /api/v1/urls', 'GET /api/v1/urls/*', 'GET /api/v1/stats'];
+    }
+
+    // Generic fallback
+    return ['POST /api/v1/*', 'GET /api/v1/*'];
+  }, [challenge]);
+
   // Initialize tutorial when challenge loads
   useEffect(() => {
     if (challenge?.problemDefinition) {
       // Use pre-defined rich tutorial if available, otherwise generate basic one
-      const tutorial = challenge.problemDefinition.guidedTutorial
+      const loadedTutorial = challenge.problemDefinition.guidedTutorial
         ? challenge.problemDefinition.guidedTutorial
         : generateGuidedTutorial(challenge.problemDefinition);
 
-      setTutorial(tutorial);
+      setTutorial(loadedTutorial);
       initializeProgress(challenge.id);
 
       // Check if already completed
@@ -77,8 +148,23 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
     }
   }, [challenge?.id]);
 
+  // Open inspector modal when a node is selected
+  useEffect(() => {
+    if (selectedNode && selectedNode.id) {
+      setInspectorModalNodeId(selectedNode.id);
+      setShowInspectorModal(true);
+    }
+  }, [selectedNode, setInspectorModalNodeId, setShowInspectorModal]);
+
   // Get current step
   const currentStep = tutorial?.steps[progress?.currentStepIndex || 0] || null;
+
+  // Determine if we should show story panel
+  // Show story only when phase is explicitly 'story'
+  const shouldShowStory = (() => {
+    if (!currentStep?.story || tutorialComplete) return false;
+    return progress?.currentPhase === 'story';
+  })();
 
   // Handle checking the user's design
   const handleCheckDesign = useCallback(() => {
@@ -98,21 +184,6 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
       }
     }, 500);
   }, [currentStep, systemGraph, incrementAttempt]);
-
-  // Handle advancing to next step
-  const handleNextStep = useCallback(() => {
-    setValidationResult(null);
-
-    // Check if this was the last step
-    if (tutorial && progress && progress.currentStepIndex === tutorial.totalSteps - 1) {
-      // Tutorial complete! Show celebration modal
-      setTutorialComplete(true);
-      setShowCompleteModal(true);
-      markTutorialComplete(challenge.id);
-    } else {
-      advanceToNextStep();
-    }
-  }, [tutorial, progress, advanceToNextStep, markTutorialComplete, challenge?.id]);
 
   // Handle modal actions
   const handleTryAnotherChallenge = useCallback(() => {
@@ -174,6 +245,62 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
     // This is handled by the canvas via the onAddComponent callback
   }, []);
 
+  // Stub handlers for Python tests (can be enhanced later)
+  const handleRunPythonTests = useCallback(() => {
+    console.log('Running Python tests...');
+  }, []);
+
+  const handleSubmit = useCallback(() => {
+    console.log('Submitting solution...');
+  }, []);
+
+  // Handle deleting a node
+  const handleDeleteNode = useCallback((nodeId: string) => {
+    removeNode(nodeId);
+    setShowInspectorModal(false);
+  }, [removeNode, setShowInspectorModal]);
+
+  // Handle API assignment - auto-switch to Python tab
+  const handleAPIAssigned = useCallback((serverId: string) => {
+    setShowInspectorModal(false);
+    setSelectedNode(null);
+    setActiveTab(`app-server-${serverId}`);
+  }, [setShowInspectorModal, setSelectedNode, setActiveTab]);
+
+  // Handle story panel "continue" - go to learn phase
+  const handleStoryContinue = useCallback(() => {
+    // After story, go to learn phase to show full-screen learning content
+    setPhase('learn');
+  }, [setPhase]);
+
+  // Handle learn panel "start practice" - go to practice phase
+  const handleStartPractice = useCallback(() => {
+    // After learning, go to practice phase to show the canvas
+    setPhase('practice');
+  }, [setPhase]);
+
+  // Handle celebration "continue" - go to next step's story or complete tutorial
+  const handleCelebrationContinue = useCallback(() => {
+    setValidationResult(null);
+    // Check if this was the last step
+    if (tutorial && progress && progress.currentStepIndex === tutorial.totalSteps - 1) {
+      // Tutorial complete!
+      setTutorialComplete(true);
+      setShowCompleteModal(true);
+      markTutorialComplete(challenge.id);
+    } else {
+      // Advance to next step and show story
+      advanceToNextStep();
+      // The new step will start with 'story' phase
+    }
+  }, [tutorial, progress, advanceToNextStep, markTutorialComplete, challenge?.id]);
+
+  // Modified: When step is validated successfully, show celebration instead of advancing
+  const handleStepComplete = useCallback(() => {
+    // Show celebration phase
+    setPhase('celebrate');
+  }, [setPhase]);
+
   // If no tutorial or progress, show loading
   if (!tutorial || !progress) {
     return (
@@ -184,6 +311,26 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
         </div>
       </div>
     );
+  }
+
+  // Build dynamic tabs based on what's in the system graph
+  const appServerTabs: Tab[] = appServersWithAPIs.map((server) => ({
+    id: `app-server-${server.id}`,
+    label: server.config?.displayName || server.config?.serviceName || `Server ${server.id.slice(0, 6)}`,
+    icon: '🐍',
+  }));
+
+  const tabs: Tab[] = [
+    { id: 'canvas', label: 'Canvas', icon: '🎨' },
+    ...appServerTabs,
+    ...(hasLoadBalancer ? [{ id: 'load-balancer', label: 'Load Balancer', icon: '⚖️' }] : []),
+    { id: 'apis', label: 'APIs Reference', icon: '📚' },
+  ];
+
+  // Ensure canvas is active tab if current tab no longer exists
+  const currentTabExists = tabs.some(t => t.id === activeTab);
+  if (!currentTabExists && activeTab !== 'canvas') {
+    setActiveTab('canvas');
   }
 
   return (
@@ -212,44 +359,120 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
         )}
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left Panel - Guided Teaching Panel */}
-        <GuidedTeachingPanel
-          tutorial={tutorial}
-          progress={progress}
-          validationResult={validationResult}
-          isValidating={isValidating}
-          onCheckDesign={handleCheckDesign}
-          onNextStep={handleNextStep}
-          onGoToStep={handleGoToStep}
-          onRequestHint={handleRequestHint}
-          onShowSolution={handleShowSolution}
-          isTutorialComplete={tutorialComplete}
-          onPhaseChange={handlePhaseChange}
-          onQuizAnswer={handleQuizAnswer}
-        />
+      {/* Tab Layout */}
+      <TabLayout
+        tabs={tabs}
+        activeTab={activeTab || 'canvas'}
+        onTabChange={setActiveTab}
+      >
+        {/* Canvas Tab */}
+        {(activeTab === 'canvas' || !activeTab) && (
+          <div className="flex-1 flex h-full min-h-0 relative">
+            {/* Full-screen Story Panel */}
+            {shouldShowStory && currentStep?.story && (
+              <StoryPanel
+                story={currentStep.story}
+                stepNumber={currentStep.stepNumber}
+                totalSteps={tutorial.totalSteps}
+                onContinue={handleStoryContinue}
+              />
+            )}
 
-        {/* Center Panel - Design Canvas */}
-        <div className="flex-1 relative h-full">
-          <ReactFlowProvider>
-            <DesignCanvas
+            {/* Full-screen Learn Panel (when in learn phase) */}
+            {!shouldShowStory && progress.currentPhase === 'learn' && currentStep?.learnPhase && (
+              <FullScreenLearnPanel
+                content={currentStep.learnPhase}
+                stepNumber={currentStep.stepNumber}
+                totalSteps={tutorial.totalSteps}
+                onStartPractice={handleStartPractice}
+              />
+            )}
+
+            {/* Full-screen Celebration Panel (when in celebrate phase) */}
+            {progress.currentPhase === 'celebrate' && currentStep?.celebration && (
+              <CelebrationPanel
+                celebration={currentStep.celebration}
+                stepNumber={currentStep.stepNumber}
+                totalSteps={tutorial.totalSteps}
+                isLastStep={progress.currentStepIndex === tutorial.totalSteps - 1}
+                onContinue={handleCelebrationContinue}
+              />
+            )}
+
+            {/* Canvas view (only during practice phase) */}
+            {!shouldShowStory && progress.currentPhase === 'practice' && (
+              <>
+                {/* Left Panel - Guided Teaching Panel */}
+                <GuidedTeachingPanel
+                  tutorial={tutorial}
+                  progress={progress}
+                  validationResult={validationResult}
+                  isValidating={isValidating}
+                  onCheckDesign={handleCheckDesign}
+                  onNextStep={handleStepComplete}
+                  onGoToStep={handleGoToStep}
+                  onRequestHint={handleRequestHint}
+                  onShowSolution={handleShowSolution}
+                  isTutorialComplete={tutorialComplete}
+                  onPhaseChange={handlePhaseChange}
+                  onQuizAnswer={handleQuizAnswer}
+                />
+
+                {/* Center Panel - Design Canvas */}
+                <div className="flex-1 relative">
+                  <div className="absolute inset-0">
+                    <ReactFlowProvider>
+                      <DesignCanvas
+                        systemGraph={systemGraph || { components: [], connections: [] }}
+                        onSystemGraphChange={setSystemGraph}
+                        selectedNode={selectedNode}
+                        onNodeSelect={setSelectedNode}
+                        onAddComponent={onAddComponent}
+                        onUpdateConfig={onUpdateConfig}
+                      />
+                    </ReactFlowProvider>
+                  </div>
+                </div>
+
+                {/* Right Panel - Guided Sidebar */}
+                <GuidedSidebar
+                  currentStep={currentStep}
+                  onDragStart={handleDragStart}
+                />
+              </>
+            )}
+          </div>
+        )}
+
+        {/* Dynamic App Server Python Code Tabs */}
+        {appServersWithAPIs.map((server) => (
+          activeTab === `app-server-${server.id}` && (
+            <PythonCodePage
+              key={server.id}
+              challenge={challenge}
               systemGraph={systemGraph || { components: [], connections: [] }}
-              onSystemGraphChange={setSystemGraph}
-              selectedNode={selectedNode}
-              onNodeSelect={setSelectedNode}
-              onAddComponent={onAddComponent}
-              onUpdateConfig={onUpdateConfig}
+              onRunTests={handleRunPythonTests}
+              onSubmit={handleSubmit}
+              isTinyUrl={isTinyUrl}
+              isWebCrawler={isWebCrawler}
+              hasCodeChallenges={hasCodeChallenges}
+              hasPythonTemplate={hasPythonTemplate}
+              appServersWithAPIs={[server]}
             />
-          </ReactFlowProvider>
-        </div>
+          )
+        ))}
 
-        {/* Right Panel - Guided Sidebar */}
-        <GuidedSidebar
-          currentStep={currentStep}
-          onDragStart={handleDragStart}
-        />
-      </div>
+        {/* Load Balancer Tab */}
+        {activeTab === 'load-balancer' && (
+          <LoadBalancerPage
+            systemGraph={systemGraph || { components: [], connections: [] }}
+            onUpdateConfig={onUpdateConfig}
+          />
+        )}
+
+        {/* APIs Reference Tab */}
+        {activeTab === 'apis' && <APIsPage />}
+      </TabLayout>
 
       {/* Tutorial Complete Modal */}
       <TutorialCompleteModal
@@ -261,6 +484,22 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
         onSolveOnYourOwn={handleSolveOnYourOwn}
         onClose={handleCloseModal}
       />
+
+      {/* Inspector Modal for configuring components */}
+      {showInspectorModal && inspectorModalNodeId && (
+        <InspectorModal
+          nodeId={inspectorModalNodeId}
+          systemGraph={systemGraph || { components: [], connections: [] }}
+          onClose={() => {
+            setShowInspectorModal(false);
+            setSelectedNode(null);
+          }}
+          onUpdateConfig={onUpdateConfig}
+          onDelete={handleDeleteNode}
+          availableAPIs={getAvailableAPIs()}
+          onAPIAssigned={handleAPIAssigned}
+        />
+      )}
     </div>
   );
 };

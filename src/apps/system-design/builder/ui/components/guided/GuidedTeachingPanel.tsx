@@ -81,7 +81,7 @@ export function GuidedTeachingPanel({
   // If we have new phase-based content, render phase panels
   if (hasLearnPhase) {
     return (
-      <div className="w-96 border-r border-gray-200 flex flex-col h-full">
+      <div className="w-[440px] border-r border-gray-200 flex flex-col h-full min-h-0">
         {/* Step Progress Header */}
         <div className="p-3 bg-gray-50 border-b border-gray-200">
           <div className="flex items-center justify-between mb-2">
@@ -105,7 +105,7 @@ export function GuidedTeachingPanel({
         {/* Phase Content with transition animation */}
         <div
           className={`
-            flex-1 overflow-hidden
+            flex-1 flex flex-col min-h-0
             transition-opacity duration-150 ease-in-out
             ${isTransitioning ? 'opacity-0' : 'opacity-100'}
           `}
@@ -152,7 +152,7 @@ export function GuidedTeachingPanel({
   }
 
   return (
-    <div className="w-96 bg-white border-r border-gray-200 flex flex-col h-full">
+    <div className="w-96 bg-white border-r border-gray-200 flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-indigo-50">
         <div className="flex items-center justify-between mb-2">

@@ -8,6 +8,7 @@ import { Tab } from "./design-system";
 import {
   CanvasPage,
   GuidedCanvasPage,
+  GuidedWizardPage,
   PythonCodePage,
   LoadBalancerPage,
   APIsPage,
@@ -55,6 +56,7 @@ import { generateSolutionForChallenge } from "../challenges/problemDefinitionCon
 interface TieredSystemDesignBuilderProps {
   challengeId?: string;
   challenges?: Challenge[];
+  guidedOverride?: "auto" | "guided" | "classic";
 }
 
 /**
@@ -64,6 +66,7 @@ interface TieredSystemDesignBuilderProps {
 export function TieredSystemDesignBuilder({
   challengeId,
   challenges = tieredChallenges,
+  guidedOverride = "auto",
 }: TieredSystemDesignBuilderProps = {}) {
   const navigate = useNavigate();
 
@@ -135,6 +138,14 @@ export function TieredSystemDesignBuilder({
     isTutorialCompleted,
   } = useGuidedStore();
 
+  useEffect(() => {
+    if (guidedOverride === "guided") {
+      setGuidedMode("guided-tutorial");
+    } else if (guidedOverride === "classic") {
+      setGuidedMode("solve-on-own");
+    }
+  }, [guidedOverride, setGuidedMode]);
+
   // Helper flags for challenge-specific behavior
   const isTinyUrl = selectedChallenge?.id === "tiny_url";
   const isWebCrawler = selectedChallenge?.id === "web_crawler";
@@ -144,6 +155,16 @@ export function TieredSystemDesignBuilder({
   const hasPythonTemplate =
     selectedChallenge?.pythonTemplate &&
     selectedChallenge.pythonTemplate.length > 0;
+
+  const tutorialCompleted =
+    selectedChallenge?.id ? isTutorialCompleted(selectedChallenge.id) : false;
+  const wantsGuidedExperience =
+    guidedOverride === "guided" ||
+    (guidedOverride !== "classic" && guidedMode === "guided-tutorial");
+  const shouldShowGuidedWizard =
+    Boolean(selectedChallenge?.problemDefinition) &&
+    wantsGuidedExperience &&
+    (guidedOverride === "guided" || !tutorialCompleted);
 
   // Check if any app server has APIs configured
   const hasAppServerWithAPIs = systemGraph.components?.some(
@@ -591,15 +612,10 @@ export function TieredSystemDesignBuilder({
         activeTab={activeTab}
         onTabChange={setActiveTab}
       >
-        {/* Canvas Tab - Conditionally render Guided or Free mode */}
+        {/* Canvas Tab - Show Wizard for new users, Canvas for completed users */}
         {activeTab === "canvas" && (
-          guidedMode === 'guided-tutorial' && selectedChallenge?.problemDefinition ? (
-            <GuidedCanvasPage
-              challenge={selectedChallenge}
-              onAddComponent={handleAddComponent}
-              onUpdateConfig={handleUpdateConfig}
-              onModeChange={(mode) => setGuidedMode(mode)}
-            />
+          shouldShowGuidedWizard ? (
+            <GuidedWizardPage challenge={selectedChallenge as any} />
           ) : (
             <CanvasPage
               challenge={selectedChallenge}

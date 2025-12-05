@@ -121,8 +121,183 @@ export function validateStep(
     }
   }
 
+  // Check for API configuration requirement (Step 2 - configuration step)
+  let apiConfigPassed = true;
+  let apiConfigMessage = '';
+
+  if (step.validation.requireAPIConfiguration) {
+    // Find app server and check if it has APIs configured
+    const appServer = graph.components.find(c =>
+      typeMatches(c.type, 'app_server') || typeMatches(c.type, 'compute')
+    );
+
+    if (appServer) {
+      const handledAPIs = appServer.config?.handledAPIs || [];
+      if (handledAPIs.length === 0) {
+        apiConfigPassed = false;
+        apiConfigMessage = 'App Server needs API endpoints configured';
+        suggestions.push('Click on the App Server and assign at least one API endpoint (e.g., POST /api/v1/urls)');
+      }
+    } else {
+      apiConfigPassed = false;
+      apiConfigMessage = 'No App Server found to configure';
+    }
+  }
+
+  // Check for database replication requirement (Step 6)
+  let replicationPassed = true;
+  let replicationMessage = '';
+
+  if (step.validation.requireDatabaseReplication) {
+    const database = graph.components.find(c =>
+      typeMatches(c.type, 'database') || typeMatches(c.type, 'storage')
+    );
+
+    if (database) {
+      const replicationConfig = database.config?.replication;
+      const replicationEnabled =
+        (typeof replicationConfig === 'boolean' && replicationConfig) ||
+        (typeof replicationConfig === 'object' && replicationConfig?.enabled) ||
+        (typeof replicationConfig === 'string' && replicationConfig !== 'none');
+
+      const replicas = database.config?.replicas || 0;
+
+      if (!replicationEnabled || replicas < 2) {
+        replicationPassed = false;
+        replicationMessage = 'Database needs replication configured with at least 2 replicas';
+        suggestions.push('Click on the Database → Replication & Scaling → Enable replication with 2+ replicas');
+      }
+    } else {
+      replicationPassed = false;
+      replicationMessage = 'No Database found to configure replication';
+    }
+  }
+
+  // Check for multiple app server instances requirement (Step 7)
+  let multiInstancePassed = true;
+  let multiInstanceMessage = '';
+
+  if (step.validation.requireMultipleAppInstances) {
+    const appServers = graph.components.filter(c =>
+      typeMatches(c.type, 'app_server') || typeMatches(c.type, 'compute')
+    );
+
+    const totalInstances = appServers.reduce((sum, server) => {
+      return sum + (server.config?.instances || 1);
+    }, 0);
+
+    if (totalInstances < 2) {
+      multiInstancePassed = false;
+      multiInstanceMessage = 'App Server needs multiple instances for high availability';
+      suggestions.push('Click on the App Server → Set Instances to 2 or more');
+    }
+  }
+
+  // Check for cache strategy requirement (Step 8)
+  let cacheStrategyPassed = true;
+  let cacheStrategyMessage = '';
+
+  if (step.validation.requireCacheStrategy) {
+    const cache = graph.components.find(c =>
+      typeMatches(c.type, 'cache') || typeMatches(c.type, 'redis')
+    );
+
+    if (cache) {
+      const ttl = cache.config?.ttl || cache.config?.defaultTTL || 0;
+      const strategy = cache.config?.strategy || cache.config?.cacheStrategy || '';
+
+      if (!ttl || ttl <= 0) {
+        cacheStrategyPassed = false;
+        cacheStrategyMessage = 'Cache needs TTL (Time-To-Live) configured';
+        suggestions.push('Click on the Cache → Set TTL (e.g., 3600 seconds = 1 hour)');
+      } else if (!strategy) {
+        cacheStrategyPassed = false;
+        cacheStrategyMessage = 'Cache needs a caching strategy configured';
+        suggestions.push('Click on the Cache → Select a strategy (e.g., cache-aside)');
+      }
+    } else {
+      cacheStrategyPassed = false;
+      cacheStrategyMessage = 'No Cache found to configure strategy';
+    }
+  }
+
+  // Check for database capacity requirement (Step 9)
+  let capacityPassed = true;
+  let capacityMessage = '';
+
+  if (step.validation.requireDatabaseCapacity) {
+    const database = graph.components.find(c =>
+      typeMatches(c.type, 'database') || typeMatches(c.type, 'storage')
+    );
+
+    if (database) {
+      const writeCapacity = database.config?.writeCapacity || 0;
+      // For TinyURL with 1000 RPS and 10% writes = 100 write RPS needed
+      const minRequiredCapacity = 100;
+
+      if (writeCapacity < minRequiredCapacity) {
+        capacityPassed = false;
+        capacityMessage = `Database write capacity (${writeCapacity || 'not set'}) is below required ${minRequiredCapacity} RPS`;
+        suggestions.push('Click on the Database → Set Write Capacity to at least 100 RPS');
+      }
+    } else {
+      capacityPassed = false;
+      capacityMessage = 'No Database found to configure capacity';
+    }
+  }
+
+  // Check for cost under budget requirement (Step 10)
+  let costPassed = true;
+  let costMessage = '';
+
+  if (step.validation.requireCostUnderBudget) {
+    const maxBudget = 500; // $500/month
+    let totalCost = 0;
+
+    for (const component of graph.components) {
+      const instances = component.config?.instances || 1;
+
+      if (typeMatches(component.type, 'database') || typeMatches(component.type, 'storage')) {
+        const replication = component.config?.replication;
+        const replicas = typeof replication === 'object' && replication?.enabled
+          ? (replication.replicas || 1)
+          : (component.config?.replicas || 0);
+        const storageCost = (component.config?.storageSizeGB || 50) * 0.1;
+        totalCost += 120 * (1 + replicas) + storageCost;
+        continue;
+      }
+
+      const compType = component.type as string;
+      if (compType === 'app_server' || compType === 'compute') {
+        totalCost += 50 * instances;
+      } else if (compType === 'redis' || compType === 'cache') {
+        const memorySizeGB = component.config?.memorySizeGB || 1;
+        totalCost += 20 * memorySizeGB;
+      } else if (compType === 'load_balancer') {
+        totalCost += 30;
+      } else if (compType === 's3' || compType === 'object_storage') {
+        totalCost += 25;
+      } else if (compType === 'cdn') {
+        totalCost += 50;
+      }
+    }
+
+    if (totalCost > maxBudget) {
+      costPassed = false;
+      costMessage = `Design costs $${totalCost.toFixed(0)}/month, exceeds budget of $${maxBudget}/month`;
+      suggestions.push('Reduce instances, replica count, or memory sizes to stay under budget');
+    }
+  }
+
   // Generate feedback
-  const passed = missingComponents.length === 0 && missingConnections.length === 0;
+  const passed = missingComponents.length === 0 &&
+                 missingConnections.length === 0 &&
+                 apiConfigPassed &&
+                 replicationPassed &&
+                 multiInstancePassed &&
+                 cacheStrategyPassed &&
+                 capacityPassed &&
+                 costPassed;
   let feedback = '';
 
   if (passed) {
@@ -142,6 +317,30 @@ export function validateStep(
         .join(', ');
       issues.push(`Missing connections: ${connectionDescs}`);
       suggestions.push(`Connect: ${connectionDescs}`);
+    }
+
+    if (!apiConfigPassed && apiConfigMessage) {
+      issues.push(apiConfigMessage);
+    }
+
+    if (!replicationPassed && replicationMessage) {
+      issues.push(replicationMessage);
+    }
+
+    if (!multiInstancePassed && multiInstanceMessage) {
+      issues.push(multiInstanceMessage);
+    }
+
+    if (!cacheStrategyPassed && cacheStrategyMessage) {
+      issues.push(cacheStrategyMessage);
+    }
+
+    if (!capacityPassed && capacityMessage) {
+      issues.push(capacityMessage);
+    }
+
+    if (!costPassed && costMessage) {
+      issues.push(costMessage);
     }
 
     feedback = issues.join('. ');

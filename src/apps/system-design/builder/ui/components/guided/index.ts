@@ -17,3 +17,6 @@ export { HintSystem, HintIndicator } from './HintSystem';
 export { ModeSwitcher, ModeIndicator } from './ModeSwitcher';
 export { StepProgressIndicator, StepProgressIndicatorCompact } from './StepProgressIndicator';
 export { StepValidationFeedback, ValidationIndicator } from './StepValidationFeedback';
+export { StoryPanel } from './StoryPanel';
+export { CelebrationPanel } from './CelebrationPanel';
+export { FullScreenLearnPanel } from './FullScreenLearnPanel';

@@ -816,7 +816,20 @@ if __name__ == "__main__":
         // Use the actual challenge ID for execution (backend will use category-based config)
         const challengeId = selectedChallenge?.id || "generic";
         const response = await apiService.executeCode(challengeId, script);
-        const output: string = response.output || "";
+        const output: string = response.output || response.stdout || "";
+        const error: string = response.error || response.stderr || "";
+
+        // If there's an error, include it in the result
+        if (error && !output.includes("__TEST_RESULT__")) {
+          results.push({
+            testId: testCase.id,
+            testName: testCase.name,
+            passed: false,
+            operations: [],
+            error: `Python execution error: ${error}\n\nOutput: ${output.substring(0, 500)}`,
+          });
+          continue;
+        }
 
         const marker = "__TEST_RESULT__";
         const line = (output || "")
@@ -824,12 +837,18 @@ if __name__ == "__main__":
           .find((l: string) => l.includes(marker));
 
         if (!line) {
+          // Try to extract Python error from output
+          const pythonErrorMatch = output.match(/Traceback.*?Error:.*/s);
+          const errorMessage = pythonErrorMatch 
+            ? `Python error: ${pythonErrorMatch[0].substring(0, 300)}`
+            : "No test result produced by Python execution. Check your code syntax.";
+          
           results.push({
             testId: testCase.id,
             testName: testCase.name,
             passed: false,
             operations: [],
-            error: "No test result produced by Python execution",
+            error: errorMessage + (output ? `\n\nOutput:\n${output.substring(0, 500)}` : ""),
           });
           continue;
         }
@@ -846,7 +865,7 @@ if __name__ == "__main__":
             testName: testCase.name,
             passed: false,
             operations: [],
-            error: "Failed to parse Python test result",
+            error: `Failed to parse Python test result: ${e instanceof Error ? e.message : String(e)}\n\nRaw output: ${output.substring(0, 500)}`,
           });
         }
       }

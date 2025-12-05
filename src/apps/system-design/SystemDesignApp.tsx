@@ -16,7 +16,11 @@ import { ProgressiveAllChallengesPage } from './progressive/pages/ProgressiveAll
 
 // Component to handle dynamic challenge routes
 // All challenges now use the tiered system (658 challenges with tier support)
-function ChallengeRoute() {
+function ChallengeRoute({
+  guidedOverride = "classic",
+}: {
+  guidedOverride?: "auto" | "guided" | "classic";
+}) {
   const { challengeId } = useParams<{ challengeId: string }>();
 
   // Redirect to catalog if no challengeId provided
@@ -24,7 +28,12 @@ function ChallengeRoute() {
     return <Navigate to="/system-design" replace />;
   }
 
-  return <TieredSystemDesignBuilder challengeId={challengeId} />;
+  return (
+    <TieredSystemDesignBuilder
+      challengeId={challengeId}
+      guidedOverride={guidedOverride}
+    />
+  );
 }
 
 export default function SystemDesignApp() {
@@ -53,7 +62,14 @@ export default function SystemDesignApp() {
 
       {/* Individual challenge routes - all use tiered system now */}
       {/* Only match if challengeId is not empty and not one of the reserved paths */}
-      <Route path="/:challengeId" element={<ChallengeRoute />} />
+      <Route
+        path="/:challengeId/guided"
+        element={<ChallengeRoute guidedOverride="guided" />}
+      />
+      <Route
+        path="/:challengeId"
+        element={<ChallengeRoute guidedOverride="classic" />}
+      />
 
       {/* Fallback to catalog */}
       <Route path="*" element={<Navigate to="/system-design" replace />} />

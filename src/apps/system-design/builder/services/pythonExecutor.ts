@@ -110,6 +110,16 @@ export class MockDatabase {
     }
     return null;
   }
+
+  // Alias for findByValue - returns just the key if value exists
+  findByValue(value: any): string | null {
+    for (const [key, val] of this.storage.entries()) {
+      if (val === value) {
+        return key;
+      }
+    }
+    return null;
+  }
 }
 
 /**
@@ -500,10 +510,21 @@ export class PythonExecutor {
   /**
    * Simulate URL shortening
    */
-  private simulateShorten(longUrl: string, context?: ExecutionContext, pythonCode?: string): string {
+  private simulateShorten(longUrl: string, context?: ExecutionContext, pythonCode?: string): string | null {
+    // FR-5: Validate empty/invalid input
+    if (!longUrl || longUrl.trim() === '') {
+      return null;
+    }
+
     if (!context) {
       // Simple random code
       return Math.random().toString(36).substring(2, 8);
+    }
+
+    // FR-4: Check if URL already exists (return same code for duplicates)
+    const existingCode = context.db.findByValue(longUrl);
+    if (existingCode) {
+      return existingCode;
     }
 
     // Check if code uses collision checking (bad pattern)

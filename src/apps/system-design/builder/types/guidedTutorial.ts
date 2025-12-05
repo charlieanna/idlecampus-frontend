@@ -13,9 +13,50 @@ import { ComponentType } from './problemDefinition';
  */
 
 /**
- * Phase within a step: Learn first, then Practice
+ * Phase within a step: Story intro → Learn → Practice → Celebrate
  */
-export type StepPhase = 'learn' | 'practice';
+export type StepPhase = 'story' | 'learn' | 'practice' | 'celebrate';
+
+/**
+ * Narrative content for story-driven tutorials
+ * Each step tells part of a story that motivates the task
+ */
+export interface StoryContent {
+  // The scenario/situation (e.g., "Your server just crashed...")
+  scenario: string;
+
+  // The emotional hook - what went wrong or what's at stake
+  hook: string;
+
+  // The challenge/question that leads to the task
+  challenge: string;
+
+  // Visual/emoji to set the mood
+  emoji?: string;
+
+  // Optional illustration description
+  illustration?: string;
+}
+
+/**
+ * Celebration content shown after completing a step
+ */
+export interface CelebrationContent {
+  // Celebration message (e.g., "Your data now survives crashes!")
+  message: string;
+
+  // What they achieved
+  achievement: string;
+
+  // Stats/metrics to show (e.g., "Latency: 50ms → 2ms")
+  metrics?: Array<{ label: string; before?: string; after: string }>;
+
+  // Teaser for next challenge (e.g., "But wait, traffic is spiking...")
+  nextTeaser?: string;
+
+  // Emoji/visual
+  emoji?: string;
+}
 
 /**
  * Key concept to highlight during teaching
@@ -110,6 +151,12 @@ export interface GuidedStep {
   stepNumber: number;
   frIndex: number;
 
+  // NEW: Narrative story that introduces this step (shown full-screen)
+  story?: StoryContent;
+
+  // NEW: Celebration shown after completing this step
+  celebration?: CelebrationContent;
+
   // Rich teaching content for the "Learn" phase
   learnPhase: TeachingContent;
 
@@ -126,6 +173,18 @@ export interface GuidedStep {
   validation: {
     requiredComponents: string[];
     requiredConnections: { fromType: string; toType: string }[];
+    // If true, requires App Server to have at least one API configured
+    requireAPIConfiguration?: boolean;
+    // If true, requires Database to have replication configured
+    requireDatabaseReplication?: boolean;
+    // If true, requires App Server to have multiple instances
+    requireMultipleAppInstances?: boolean;
+    // If true, requires Cache to have TTL and strategy configured
+    requireCacheStrategy?: boolean;
+    // If true, requires Database to have sufficient write capacity
+    requireDatabaseCapacity?: boolean;
+    // If true, requires total cost to be under budget ($500)
+    requireCostUnderBudget?: boolean;
   };
 
   // 3-tier hint system (used during practice phase)

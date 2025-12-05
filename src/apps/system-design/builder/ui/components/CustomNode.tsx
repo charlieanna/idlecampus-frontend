@@ -96,7 +96,7 @@ function CustomNode({ data, selected }: NodeProps) {
 
   return (
     <div
-      className={`px-2 py-1.5 rounded-lg border-2 shadow-sm transition-all w-[100px] max-w-[100px] ${style.bgColor
+      className={`px-1.5 py-1 rounded-lg border-2 shadow-sm transition-all w-[75px] max-w-[75px] ${style.bgColor
         } ${style.borderColor} ${selected ? 'ring-2 ring-blue-500 ring-offset-1 shadow-md' : 'hover:shadow-md'
         } ${isClient ? 'cursor-default' : ''} relative`}
       onContextMenu={handleContextMenu}
@@ -111,13 +111,13 @@ function CustomNode({ data, selected }: NodeProps) {
       )}
 
       {/* Node Content */}
-      <div className="flex flex-col gap-1">
-        <div className="flex items-center gap-1.5">
-          <span className="text-base">{style.icon}</span>
+      <div className="flex flex-col gap-0.5">
+        <div className="flex items-center gap-1">
+          <span className="text-sm">{style.icon}</span>
           <div className="flex-1 min-w-0">
-            <div className={`font-semibold text-xs ${style.color} truncate flex items-center gap-0.5`}>
+            <div className={`font-semibold text-[10px] ${style.color} truncate flex items-center gap-0.5`}>
               {displayName}
-              {isClient && <span className="text-[10px]">🔒</span>}
+              {isClient && <span className="text-[8px]">🔒</span>}
             </div>
           </div>
         </div>
@@ -126,17 +126,17 @@ function CustomNode({ data, selected }: NodeProps) {
         {isDatabase && (
           <div className="flex flex-wrap gap-0.5">
             {DATA_MODEL_BADGES[dataModel] && (
-              <span className={`text-[10px] px-1 py-0.5 rounded font-medium ${DATA_MODEL_BADGES[dataModel].color}`}>
+              <span className={`text-[8px] px-0.5 py-0 rounded font-medium ${DATA_MODEL_BADGES[dataModel].color}`}>
                 {DATA_MODEL_BADGES[dataModel].label}
               </span>
             )}
             {replicas > 1 && (
-              <span className="text-[10px] px-1 py-0.5 rounded bg-gray-100 text-gray-600">
+              <span className="text-[8px] px-0.5 py-0 rounded bg-gray-100 text-gray-600">
                 {replicas}R
               </span>
             )}
             {isSharded && (
-              <span className="text-[10px] px-1 py-0.5 rounded bg-yellow-100 text-yellow-700">
+              <span className="text-[8px] px-0.5 py-0 rounded bg-yellow-100 text-yellow-700">
                 S
               </span>
             )}
@@ -152,7 +152,7 @@ function CustomNode({ data, selected }: NodeProps) {
               return (
                 <span
                   key={index}
-                  className="text-[10px] px-1 py-0.5 rounded bg-purple-100 text-purple-700 font-medium"
+                  className="text-[8px] px-0.5 py-0 rounded bg-purple-100 text-purple-700 font-medium"
                   title={api}
                 >
                   {method.substring(0, 3)}
@@ -160,7 +160,7 @@ function CustomNode({ data, selected }: NodeProps) {
               );
             })}
             {data.config.handledAPIs.length > 2 && (
-              <span className="text-[10px] px-1 py-0.5 rounded bg-gray-100 text-gray-600">
+              <span className="text-[8px] px-0.5 py-0 rounded bg-gray-100 text-gray-600">
                 +{data.config.handledAPIs.length - 2}
               </span>
             )}

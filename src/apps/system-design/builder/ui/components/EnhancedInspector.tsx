@@ -13,6 +13,7 @@ interface InspectorProps {
   onBack?: () => void;
   isModal?: boolean;
   availableAPIs?: string[]; // List of available APIs for assignment
+  onAPIAssigned?: (serverId: string) => void; // Called when API is assigned to switch to Python tab
 }
 
 interface ConfigPreset {
@@ -30,6 +31,7 @@ export function EnhancedInspector({
   onBack,
   isModal = false,
   availableAPIs = [],
+  onAPIAssigned,
 }: InspectorProps) {
   // Support both 'node' and 'selectedNode' props for backward compatibility
   const activeNode = node || selectedNode;
@@ -149,6 +151,8 @@ export function EnhancedInspector({
             onChange={handleChange}
             onApplyPreset={applyPreset}
             availableAPIs={availableAPIs}
+            nodeId={activeNode.id}
+            onAPIAssigned={onAPIAssigned}
           />
         )}
 
@@ -229,6 +233,8 @@ interface ConfigProps {
   onChange: (key: string, value: any) => void;
   onApplyPreset?: (preset: Record<string, any>) => void;
   availableAPIs?: string[];
+  nodeId?: string;
+  onAPIAssigned?: (serverId: string) => void;
 }
 
 interface DatabaseConfigProps extends ConfigProps {
@@ -236,7 +242,7 @@ interface DatabaseConfigProps extends ConfigProps {
   defaultDbCategory: DatabaseCategory;
 }
 
-function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [] }: ConfigProps) {
+function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [], nodeId, onAPIAssigned }: ConfigProps) {
   const instances = config.instances || 1;
   const capacity = instances * 1000; // Fixed: 1000 RPS per commodity instance
   const cost = instances * 110; // Fixed: $110/mo per commodity instance
@@ -253,6 +259,18 @@ function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [] }
       ? currentAPIs.filter((a: string) => a !== api)
       : [...currentAPIs, api];
     onChange('handledAPIs', newAPIs);
+  };
+
+  // Handle adding an API and trigger tab switch
+  const handleAddAPIAndSwitch = (api: string) => {
+    const currentAPIs = config.handledAPIs || [];
+    if (!currentAPIs.includes(api)) {
+      onChange('handledAPIs', [...currentAPIs, api]);
+      // Trigger auto-switch to Python tab after a brief delay
+      if (nodeId && onAPIAssigned) {
+        setTimeout(() => onAPIAssigned(nodeId), 300);
+      }
+    }
   };
 
   const handleAddAPI = () => {
@@ -435,20 +453,33 @@ function AppServerConfig({ config, onChange, onApplyPreset, availableAPIs = [] }
           <p className="text-xs text-red-500 mb-2">{apiError}</p>
         )}
 
-        {/* Quick Patterns */}
-        <div className="mb-3">
-          <p className="text-xs text-gray-500 mb-2">Quick patterns:</p>
-          <div className="flex flex-wrap gap-2">
-            <button onClick={() => setNewAPIPattern('GET /api/v1/*')} className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200">All GETs</button>
-            <button onClick={() => setNewAPIPattern('POST /api/v1/*')} className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200">All POSTs</button>
-            <button onClick={() => setNewAPIPattern('* /api/v1/urls/*')} className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200">URL Service</button>
-            <button onClick={() => setNewAPIPattern('* /api/v1/users/*')} className="px-3 py-1 text-xs bg-gray-100 rounded-lg hover:bg-gray-200">User Service</button>
+        {/* Available APIs from Challenge FRs */}
+        {availableAPIs.length > 0 && (
+          <div className="mb-3">
+            <p className="text-xs text-gray-500 mb-2">Available APIs (click to assign):</p>
+            <div className="flex flex-wrap gap-2">
+              {availableAPIs.map((api) => (
+                <button
+                  key={api}
+                  onClick={() => handleAddAPIAndSwitch(api)}
+                  disabled={handledAPIs.includes(api)}
+                  className={`px-3 py-1 text-xs rounded-lg transition-colors ${
+                    handledAPIs.includes(api)
+                      ? 'bg-blue-100 text-blue-700 cursor-default'
+                      : 'bg-gray-100 hover:bg-blue-50 hover:text-blue-700'
+                  }`}
+                >
+                  {api}
+                  {handledAPIs.includes(api) && ' ✓'}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Help Text */}
         <p className="text-xs text-gray-400 italic">
-          Leave empty for this server to handle all requests. Use patterns like "GET /api/v1/*" or "* /api/v1/urls/*".
+          Select APIs above to assign them to this server. You can also type custom patterns.
         </p>
 
         {/* Status */}

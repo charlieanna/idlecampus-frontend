@@ -99,19 +99,23 @@ export const useGuidedStore = create<GuidedState>()(
       setTutorial: (tutorial) => set({ tutorial }),
 
       initializeProgress: (problemId) => {
-        const { completedTutorials } = get();
+        const { completedTutorials, tutorial } = get();
         const isCompleted = completedTutorials[problemId]?.isCompleted;
 
         // If already completed, allow solve-on-own mode
         // Otherwise, force guided mode for new users
         const mode: BuilderMode = isCompleted ? 'solve-on-own' : 'guided-tutorial';
 
+        // Check if first step has story content - start with story phase
+        const firstStep = tutorial?.steps[0];
+        const initialPhase: StepPhase = firstStep?.story ? 'story' : 'learn';
+
         set({
           mode,
           progress: {
             problemId,
             currentStepIndex: 0,
-            currentPhase: 'learn', // Always start with learn phase
+            currentPhase: initialPhase, // Start with story phase if available
             completedStepIds: [],
             attemptCounts: {},
             hintLevel: 'none',
@@ -210,12 +214,15 @@ export const useGuidedStore = create<GuidedState>()(
             },
           }));
         } else {
-          // Move to next step - start with learn phase
+          // Move to next step - start with story phase if available
+          const nextStep = tutorial.steps[nextIndex];
+          const nextPhase: StepPhase = nextStep?.story ? 'story' : 'learn';
+
           set({
             progress: {
               ...progress,
               currentStepIndex: nextIndex,
-              currentPhase: 'learn', // Reset to learn phase for new step
+              currentPhase: nextPhase, // Start with story phase for new step
               completedStepIds,
               hintLevel: 'none',
               attemptCounts: {
@@ -234,15 +241,24 @@ export const useGuidedStore = create<GuidedState>()(
         if (stepIndex < 0 || stepIndex >= tutorial.totalSteps) return;
 
         // Check if this step was already completed
-        const stepId = tutorial.steps[stepIndex].id;
-        const isCompleted = progress.completedStepIds.includes(stepId);
+        const step = tutorial.steps[stepIndex];
+        const isCompleted = progress.completedStepIds.includes(step.id);
+
+        // Determine which phase to show
+        let phase: StepPhase;
+        if (isCompleted) {
+          phase = 'practice';
+        } else if (step.story) {
+          phase = 'story';
+        } else {
+          phase = 'learn';
+        }
 
         set({
           progress: {
             ...progress,
             currentStepIndex: stepIndex,
-            // If step is completed, go to practice; otherwise start with learn
-            currentPhase: isCompleted ? 'practice' : 'learn',
+            currentPhase: phase,
             hintLevel: 'none',
             lastAccessedAt: new Date().toISOString(),
           },
@@ -347,14 +363,18 @@ export const useGuidedStore = create<GuidedState>()(
 
       // Reset
       resetProgress: () => {
-        const { progress } = get();
+        const { progress, tutorial } = get();
         if (!progress) return;
+
+        // Check if first step has story - start with story phase
+        const firstStep = tutorial?.steps[0];
+        const initialPhase: StepPhase = firstStep?.story ? 'story' : 'learn';
 
         set({
           progress: {
             ...progress,
             currentStepIndex: 0,
-            currentPhase: 'learn', // Reset to learn phase
+            currentPhase: initialPhase, // Reset to story phase if available
             completedStepIds: [],
             attemptCounts: {},
             hintLevel: 'none',

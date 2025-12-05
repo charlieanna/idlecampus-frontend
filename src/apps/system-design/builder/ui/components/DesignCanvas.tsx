@@ -70,7 +70,8 @@ export function DesignCanvas({
   }, []);
 
   // Counter for default positioning of new components (no auto-layout)
-  const nextPositionRef = useRef({ x: 150, y: 100 });
+  // Compact spacing for guided mode - fits 5 components horizontally
+  const nextPositionRef = useRef({ x: 100, y: 80 });
 
   // Sync nodes with systemGraph components
   useEffect(() => {
@@ -79,13 +80,14 @@ export function DesignCanvas({
       const componentIds = new Set(systemGraph.components.map((c) => c.id));
 
       // Simple positioning - just place new components in a grid, no auto-layout
+      // Compact layout: 100px spacing fits 5+ components in a row
       const getNextPosition = (): { x: number; y: number } => {
         const pos = { ...nextPositionRef.current };
-        // Move to next position (simple grid)
-        nextPositionRef.current.x += 150;
-        if (nextPositionRef.current.x > 600) {
-          nextPositionRef.current.x = 150;
-          nextPositionRef.current.y += 120;
+        // Move to next position (compact grid)
+        nextPositionRef.current.x += 100;
+        if (nextPositionRef.current.x > 550) {
+          nextPositionRef.current.x = 100;
+          nextPositionRef.current.y += 90;
         }
         return pos;
       };
@@ -254,7 +256,18 @@ export function DesignCanvas({
 
       const componentType = event.dataTransfer.getData('application/reactflow');
 
+      console.log('[DesignCanvas] onDrop called', {
+        componentType,
+        hasWrapper: !!reactFlowWrapper.current,
+        hasInstance: !!reactFlowInstanceRef.current,
+      });
+
       if (!componentType || !reactFlowWrapper.current || !reactFlowInstanceRef.current) {
+        console.log('[DesignCanvas] Drop aborted - missing:', {
+          componentType: !componentType,
+          wrapper: !reactFlowWrapper.current,
+          instance: !reactFlowInstanceRef.current,
+        });
         return;
       }
 

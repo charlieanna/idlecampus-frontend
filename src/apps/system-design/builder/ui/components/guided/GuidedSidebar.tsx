@@ -8,42 +8,15 @@ interface GuidedSidebarProps {
 
 /**
  * Component definitions with metadata
+ * Uses generic DDIA terminology, not specific technologies
  */
 const COMPONENTS = [
   {
-    type: 'app_server',
-    name: 'App Server',
-    icon: '🖥️',
-    description: 'Process API requests and business logic',
-    category: 'compute',
-  },
-  {
-    type: 'postgresql',
-    name: 'PostgreSQL',
-    icon: '💾',
-    description: 'Relational database for structured data',
-    category: 'storage',
-  },
-  {
-    type: 'redis',
-    name: 'Redis',
-    icon: '💨',
-    description: 'In-memory cache for fast reads',
-    category: 'cache',
-  },
-  {
-    type: 's3',
-    name: 'S3 Storage',
-    icon: '📦',
-    description: 'Object storage for files and media',
-    category: 'object_storage',
-  },
-  {
-    type: 'cdn',
-    name: 'CDN',
-    icon: '🌐',
-    description: 'Content delivery network for static assets',
-    category: 'cdn',
+    type: 'client',
+    name: 'Client',
+    icon: '👤',
+    description: 'End users making requests to the system',
+    category: 'client',
   },
   {
     type: 'load_balancer',
@@ -53,11 +26,46 @@ const COMPONENTS = [
     category: 'load_balancer',
   },
   {
+    type: 'app_server',
+    name: 'App Server',
+    icon: '🖥️',
+    description: 'Process API requests and business logic',
+    category: 'compute',
+  },
+  {
+    type: 'postgresql',
+    name: 'Database',
+    icon: '💾',
+    description: 'Persistent storage for structured data',
+    category: 'storage',
+  },
+  {
+    type: 'redis',
+    name: 'Cache',
+    icon: '💨',
+    description: 'In-memory store for fast reads',
+    category: 'cache',
+  },
+  {
     type: 'message_queue',
     name: 'Message Queue',
     icon: '📬',
     description: 'Async messaging between services',
     category: 'message_queue',
+  },
+  {
+    type: 's3',
+    name: 'Object Storage',
+    icon: '📦',
+    description: 'Blob storage for files and media',
+    category: 'object_storage',
+  },
+  {
+    type: 'cdn',
+    name: 'CDN',
+    icon: '🌐',
+    description: 'Edge caching for static assets',
+    category: 'cdn',
   },
 ];
 
@@ -66,10 +74,14 @@ const COMPONENTS = [
  */
 function normalizeType(type: string): string {
   const normalizations: Record<string, string[]> = {
+    'client': ['client'],
     'compute': ['compute', 'app_server'],
     'storage': ['storage', 'postgresql', 'database'],
     'cache': ['cache', 'redis'],
     'object_storage': ['object_storage', 's3'],
+    'cdn': ['cdn'],
+    'load_balancer': ['load_balancer'],
+    'message_queue': ['message_queue'],
   };
 
   for (const [normalized, types] of Object.entries(normalizations)) {
@@ -100,7 +112,7 @@ export function GuidedSidebar({ currentStep, onDragStart }: GuidedSidebarProps) 
     : COMPONENTS;
 
   return (
-    <div className="w-64 bg-white border-l border-gray-200 flex flex-col h-full">
+    <div className="w-64 bg-white border-l border-gray-200 flex flex-col h-full min-h-0">
       {/* Header */}
       <div className="p-4 border-b border-gray-200">
         <h3 className="text-sm font-semibold text-gray-900">Components</h3>
@@ -177,8 +189,9 @@ function DraggableComponent({
   highlighted = false,
 }: DraggableComponentProps) {
   const handleDragStart = (e: React.DragEvent) => {
-    e.dataTransfer.setData('componentType', component.type);
-    e.dataTransfer.effectAllowed = 'copy';
+    // Use 'application/reactflow' key to match what DesignCanvas expects
+    e.dataTransfer.setData('application/reactflow', component.type);
+    e.dataTransfer.effectAllowed = 'move';
     onDragStart(component.type);
   };
 

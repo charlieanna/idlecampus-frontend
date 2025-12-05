@@ -37,7 +37,7 @@ export const TabLayout: React.FC<TabLayoutProps> = ({
       )}
 
       {/* Tab Content */}
-      <div className="flex-1 overflow-hidden">
+      <div className="flex-1 min-h-0 flex flex-col">
         {children}
       </div>
     </div>
