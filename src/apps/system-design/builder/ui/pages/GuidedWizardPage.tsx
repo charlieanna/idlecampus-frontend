@@ -4,7 +4,7 @@ import { ReactFlowProvider } from 'reactflow';
 import { useNavigate } from 'react-router-dom';
 import { DesignCanvas } from '../components/DesignCanvas';
 import { InspectorModal } from '../components/InspectorModal';
-import { StoryPanel, CelebrationPanel, FullScreenLearnPanel, RequirementsGatheringPanel, ProgressRoadmapCollapsible, CostSummaryWidget } from '../components/guided';
+import { StoryPanel, CelebrationPanel, FullScreenLearnPanel, RequirementsGatheringPanel, ProgressRoadmapCollapsible, CostSummaryWidget, FriendlyFeedbackPanel, SandboxModeToggle, SandboxModeBanner, SolutionComparisonModal } from '../components/guided';
 import { useCanvasStore, useGuidedStore } from '../store';
 import { Challenge } from '../../types/testCase';
 import { validateStep } from '../../guided/validateStep';
@@ -48,6 +48,7 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
     incrementAttempt,
     setHintLevel,
     markTutorialComplete,
+    isTutorialCompleted,
     askQuestion,
     completeRequirementsPhase,
   } = useGuidedStore();
@@ -58,6 +59,8 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
   const [showHint, setShowHint] = useState(false);
   const [showInspector, setShowInspector] = useState(false);
   const [inspectorNodeId, setInspectorNodeId] = useState<string | null>(null);
+  const [isSandboxEnabled, setIsSandboxEnabled] = useState(false);
+  const [showComparisonModal, setShowComparisonModal] = useState(false);
 
   // Initialize tutorial - only reset if no existing progress for this challenge
   useEffect(() => {
@@ -348,6 +351,30 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
     console.log('[GuidedWizard] Tutorial restarted');
   }, [challenge, setTutorial, setSystemGraph]);
 
+  // Handle sandbox mode toggle
+  const handleToggleSandbox = useCallback((enabled: boolean) => {
+    setIsSandboxEnabled(enabled);
+    console.log('[GuidedWizard] Sandbox mode:', enabled ? 'enabled' : 'disabled');
+  }, []);
+
+  // Handle comparison modal
+  const handleShowComparison = useCallback(() => {
+    setShowComparisonModal(true);
+  }, []);
+
+  const handleCloseComparison = useCallback(() => {
+    setShowComparisonModal(false);
+  }, []);
+
+  // Check if tutorial is complete - use the persisted completion flag
+  const isTutorialComplete = challenge?.id ? isTutorialCompleted(challenge.id) : false;
+
+  // Get optimal solution from the last step's hints
+  const optimalSolution = tutorial?.steps?.[tutorial.totalSteps - 1]?.hints || {
+    solutionComponents: [],
+    solutionConnections: [],
+  };
+
   // Loading state
   if (!tutorial || !progress) {
     return (
@@ -418,6 +445,7 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
             validationResult={validationResult}
             isValidating={isValidating}
             showHint={showHint}
+            attemptCount={progress?.attemptCounts?.[currentStep.id] || 0}
             onCheckDesign={handleCheckDesign}
             onStepComplete={handleStepComplete}
             onToggleHint={handleToggleHint}
@@ -460,6 +488,41 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
           ]}
         />
       )}
+
+      {/* Sandbox Mode Banner - shown when sandbox is enabled */}
+      {isSandboxEnabled && (
+        <SandboxModeBanner onExitSandbox={() => handleToggleSandbox(false)} />
+      )}
+
+      {/* Sandbox Mode Toggle - shown after tutorial completion */}
+      <SandboxModeToggle
+        isTutorialComplete={isTutorialComplete}
+        isSandboxEnabled={isSandboxEnabled}
+        onToggleSandbox={handleToggleSandbox}
+      />
+
+      {/* Compare Solution Button - shown after tutorial completion */}
+      {isTutorialComplete && (
+        <button
+          onClick={handleShowComparison}
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg transition-colors"
+        >
+          <span className="text-xl">📊</span>
+          <span className="font-medium">Compare Solutions</span>
+        </button>
+      )}
+
+      {/* Solution Comparison Modal */}
+      <SolutionComparisonModal
+        isOpen={showComparisonModal}
+        onClose={handleCloseComparison}
+        userGraph={systemGraph}
+        optimalSolution={{
+          components: optimalSolution.solutionComponents || [],
+          connections: optimalSolution.solutionConnections || [],
+        }}
+        problemTitle={tutorial?.problemTitle || 'System Design'}
+      />
     </div>
   );
 };
@@ -478,6 +541,7 @@ interface PracticeWizardProps {
   validationResult: StepValidationResult | null;
   isValidating: boolean;
   showHint: boolean;
+  attemptCount: number;
   onCheckDesign: () => void;
   onStepComplete: () => void;
   onToggleHint: () => void;
@@ -495,6 +559,7 @@ function PracticeWizard({
   validationResult,
   isValidating,
   showHint,
+  attemptCount,
   onCheckDesign,
   onStepComplete,
   onToggleHint,
@@ -666,43 +731,23 @@ function PracticeWizard({
             )}
           </AnimatePresence>
 
-          {/* Validation Feedback */}
+          {/* Validation Feedback - Enhanced Friendly Feedback */}
           <AnimatePresence>
-            {validationResult && (
+            {(validationResult || isValidating) && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className={`rounded-xl p-4 mb-6 ${
-                  validationResult.passed
-                    ? 'bg-green-50 border border-green-200'
-                    : 'bg-red-50 border border-red-200'
-                }`}
+                className="mb-6"
               >
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">
-                    {validationResult.passed ? '✅' : '❌'}
-                  </span>
-                  <div>
-                    <p className={`font-medium mb-1 ${
-                      validationResult.passed ? 'text-green-900' : 'text-red-900'
-                    }`}>
-                      {validationResult.passed ? 'Great job!' : 'Not quite right'}
-                    </p>
-                    <p className={validationResult.passed ? 'text-green-800' : 'text-red-800'}>
-                      {validationResult.feedback}
-                    </p>
-                    {validationResult.suggestions && validationResult.suggestions.length > 0 && (
-                      <ul className="mt-2 space-y-1">
-                        {validationResult.suggestions.map((suggestion, i) => (
-                          <li key={i} className="text-sm text-red-700">
-                            • {suggestion}
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                </div>
+                <FriendlyFeedbackPanel
+                  result={validationResult}
+                  isValidating={isValidating}
+                  step={step}
+                  attemptCount={attemptCount}
+                  onShowHint={onToggleHint}
+                  onDismiss={() => {}}
+                />
               </motion.div>
             )}
           </AnimatePresence>

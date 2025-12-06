@@ -27,3 +27,9 @@ export { FullScreenLearnPanel } from './FullScreenLearnPanel';
 export { RequirementsGatheringPanel } from './RequirementsGatheringPanel';
 // Cost Summary Widget for practice phase
 export { CostSummaryWidget, CostIndicatorCompact } from './CostSummaryWidget';
+// Friendly Feedback Panel for contextual hints
+export { FriendlyFeedbackPanel } from './FriendlyFeedbackPanel';
+// Sandbox Mode Toggle for free exploration after tutorial completion
+export { SandboxModeToggle, SandboxModeBanner } from './SandboxModeToggle';
+// Solution Comparison Modal for comparing user solution vs optimal
+export { SolutionComparisonModal } from './SolutionComparisonModal';

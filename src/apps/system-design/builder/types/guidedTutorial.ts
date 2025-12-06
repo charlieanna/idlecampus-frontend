@@ -111,6 +111,16 @@ export interface TeachingContent {
     howTheyDoIt: string;
   };
 
+  // Famous incident/outage that teaches what can go wrong
+  famousIncident?: {
+    title: string;
+    company: string;
+    year: string;
+    whatHappened: string;
+    lessonLearned: string;
+    icon?: string;
+  };
+
   // Key points to remember (3-5 bullet points)
   keyPoints: string[];
 

@@ -184,6 +184,51 @@ export function FullScreenLearnPanel({
           </div>
         )}
 
+        {/* Famous Incident - What Can Go Wrong */}
+        {content.famousIncident && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-gradient-to-br from-red-50 to-orange-50 border border-red-200 rounded-xl p-6 mb-8"
+          >
+            <div className="flex items-start gap-4">
+              <div className="text-3xl flex-shrink-0">
+                {content.famousIncident.icon || '⚠️'}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs bg-red-100 text-red-700 px-2 py-0.5 rounded-full font-medium">
+                    INCIDENT
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {content.famousIncident.company} • {content.famousIncident.year}
+                  </span>
+                </div>
+                <h3 className="font-bold text-red-900 text-lg mb-2">
+                  {content.famousIncident.title}
+                </h3>
+                <p className="text-red-800 mb-3 text-sm leading-relaxed">
+                  {content.famousIncident.whatHappened}
+                </p>
+                <div className="bg-white/60 rounded-lg p-3 border border-red-100">
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">💡</span>
+                    <div>
+                      <p className="text-xs font-semibold text-red-700 uppercase tracking-wide mb-1">
+                        Lesson Learned
+                      </p>
+                      <p className="text-sm text-red-800">
+                        {content.famousIncident.lessonLearned}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Quick quiz */}
         {content.quickCheck && (
           <div className="bg-slate-100 rounded-xl p-6 mb-8">
