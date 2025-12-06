@@ -6,16 +6,30 @@ import { ComponentType } from './problemDefinition';
  * These types support a step-by-step teaching mode where users learn
  * the system design framework by implementing one FR at a time.
  *
- * The pedagogy follows: TEACH → SOLVE → TEACH → SOLVE
- * Each step has two phases:
- * 1. Learn Phase: User reads concept explanation, sees diagrams, understands "why"
- * 2. Practice Phase: User implements what they learned on the canvas
+ * The pedagogy follows:
+ * 1. FR-First: Gather FRs → Build Brute Force → Make it work
+ * 2. NFR-Later: Gather NFRs → Optimize → Make it scale
+ *
+ * Each step has phases:
+ * - Story → Learn → Practice → Celebrate
+ *
+ * Step 0 (Requirements Gathering) has special phases:
+ * - requirements-intro → requirements-questions → requirements-summary
  */
 
 /**
  * Phase within a step: Story intro → Learn → Practice → Celebrate
+ * Step 0 has special phases for requirements gathering
  */
-export type StepPhase = 'story' | 'learn' | 'practice' | 'celebrate';
+export type StepPhase =
+  | 'story'
+  | 'learn'
+  | 'practice'
+  | 'celebrate'
+  // Special phases for Step 0 (Requirements Gathering)
+  | 'requirements-intro'      // Story intro explaining the interview context
+  | 'requirements-questions'  // Interactive Q&A with interviewer
+  | 'requirements-summary';   // Confirm FRs before building
 
 /**
  * Narrative content for story-driven tutorials
@@ -204,12 +218,138 @@ export interface GuidedStep {
   };
 }
 
+// =============================================================================
+// REQUIREMENTS GATHERING TYPES (Step 0)
+// =============================================================================
+
+/**
+ * A question the candidate can ask the interviewer about requirements
+ *
+ * Categories follow the interview discovery order:
+ * 1. functional/clarification/scope - Core FR questions
+ * 2. throughput - RPS, read/write ratio
+ * 3. payload - Request/response size, storage
+ * 4. burst - Peak traffic, spikes
+ * 5. latency - Response time SLAs (request/response and processing)
+ */
+export interface InterviewQuestion {
+  id: string;
+  category:
+    | 'functional'      // Core functionality questions
+    | 'clarification'   // Scope clarifications
+    | 'scope'           // What's in/out of scope
+    | 'throughput'      // RPS, read/write ratio
+    | 'payload'         // Request/response size, storage
+    | 'burst'           // Peak traffic, spikes
+    | 'latency';        // Response time SLAs
+  question: string;
+  answer: string;
+  importance: 'critical' | 'important' | 'nice-to-have';
+  // What FR this question reveals
+  revealsRequirement?: string;
+  // Learning point from asking this question
+  learningPoint?: string;
+  // Follow-up insight shown after asking
+  insight?: string;
+  // For scale questions, include the math calculation
+  calculation?: {
+    formula: string;
+    result: string;
+  };
+}
+
+/**
+ * A functional requirement confirmed through the interview
+ */
+export interface ConfirmedFR {
+  id: string;
+  text: string;
+  description: string;
+  emoji?: string;
+}
+
+/**
+ * Scale metrics summary for the system
+ */
+export interface ScaleMetrics {
+  dailyActiveUsers: string;
+  writesPerDay: string;
+  readsPerDay: string;
+  peakMultiplier: number;
+  readWriteRatio: string;
+  calculatedWriteRPS: { average: number; peak: number };
+  calculatedReadRPS: { average: number; peak: number };
+  // Optional payload metrics
+  maxPayloadSize?: string;
+  storagePerRecord?: string;
+  storageGrowthPerYear?: string;
+  // Optional latency metrics
+  redirectLatencySLA?: string;
+  createLatencySLA?: string;
+}
+
+/**
+ * Content for the requirements gathering phase (Step 0)
+ * Now includes both FR and NFR (scale) questions
+ */
+export interface RequirementsGatheringContent {
+  // Initial problem statement from interviewer
+  problemStatement: string;
+  
+  // Interviewer persona
+  interviewer: {
+    name: string;
+    role: string;
+    avatar: string; // emoji
+  };
+  
+  // Available questions to ask (FR + NFR combined)
+  questions: InterviewQuestion[];
+  
+  // Minimum questions required before proceeding
+  minimumQuestionsRequired: number;
+  
+  // Critical question IDs that must be asked
+  criticalQuestionIds: string[];
+  
+  // NEW: Separate critical IDs by category for UI grouping
+  criticalFRQuestionIds?: string[];
+  criticalScaleQuestionIds?: string[];
+  
+  // FRs that will be confirmed at the end
+  confirmedFRs: ConfirmedFR[];
+  
+  // NEW: Scale metrics summary (calculated from throughput questions)
+  scaleMetrics?: ScaleMetrics;
+  
+  // NEW: Architectural implications derived from scale
+  architecturalImplications?: string[];
+  
+  // Items explicitly out of scope
+  outOfScope: string[];
+  
+  // Key insight to show at the end (e.g., "Focus on functionality first!")
+  keyInsight: string;
+}
+
+/**
+ * Story content specifically for requirements intro
+ */
+export interface RequirementsIntroContent extends StoryContent {
+  // The interview context
+  interviewContext: string;
+}
+
 /**
  * Complete guided tutorial for a problem
  */
 export interface GuidedTutorial {
   problemId: string;
   problemTitle: string;
+  
+  // NEW: Requirements gathering phase (Step 0) - optional for backwards compatibility
+  requirementsPhase?: RequirementsGatheringContent;
+  
   totalSteps: number;
   steps: GuidedStep[];
 }
@@ -220,7 +360,7 @@ export interface GuidedTutorial {
 export interface GuidedTutorialProgress {
   problemId: string;
   currentStepIndex: number;
-  currentPhase: StepPhase; // 'learn' or 'practice'
+  currentPhase: StepPhase; // 'learn' or 'practice' or requirements phases
   completedStepIds: string[];
   attemptCounts: Record<string, number>;
   hintLevel: HintLevel;
@@ -229,6 +369,10 @@ export interface GuidedTutorialProgress {
   completedAt?: string;
   // Track quiz answers for analytics
   quizAnswers?: Record<string, { selectedIndex: number; correct: boolean }>;
+  // NEW: Track which interview questions have been asked (for Step 0)
+  askedQuestionIds?: string[];
+  // NEW: Whether requirements phase (Step 0) is complete
+  requirementsPhaseComplete?: boolean;
 }
 
 /**

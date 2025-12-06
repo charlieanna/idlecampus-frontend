@@ -52,6 +52,7 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
     inspectorModalNodeId,
     setInspectorModalNodeId,
     removeNode,
+    clearCanvas,
   } = useCanvasStore();
   const {
     mode,
@@ -134,6 +135,10 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
   // Initialize tutorial when challenge loads
   useEffect(() => {
     if (challenge?.problemDefinition) {
+      // Clear canvas when starting/restarting tutorial
+      // Each step should start fresh for better learning
+      clearCanvas();
+
       // Use pre-defined rich tutorial if available, otherwise generate basic one
       const loadedTutorial = challenge.problemDefinition.guidedTutorial
         ? challenge.problemDefinition.guidedTutorial
@@ -146,7 +151,7 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
       const completed = isTutorialCompleted(challenge.id);
       setTutorialComplete(completed);
     }
-  }, [challenge?.id]);
+  }, [challenge?.id, clearCanvas]);
 
   // Open inspector modal when a node is selected
   useEffect(() => {
@@ -203,8 +208,10 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
   // Handle going to a specific step
   const handleGoToStep = useCallback((stepIndex: number) => {
     setValidationResult(null);
+    // Clear canvas so user starts fresh on each step
+    clearCanvas();
     goToStep(stepIndex);
-  }, [goToStep]);
+  }, [goToStep, clearCanvas]);
 
   // Handle hint request
   const handleRequestHint = useCallback(() => {
@@ -289,11 +296,14 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
       setShowCompleteModal(true);
       markTutorialComplete(challenge.id);
     } else {
+      // Clear canvas so user starts fresh on each step
+      // This reinforces learning by requiring full implementation each time
+      clearCanvas();
       // Advance to next step and show story
       advanceToNextStep();
       // The new step will start with 'story' phase
     }
-  }, [tutorial, progress, advanceToNextStep, markTutorialComplete, challenge?.id]);
+  }, [tutorial, progress, advanceToNextStep, markTutorialComplete, challenge?.id, clearCanvas]);
 
   // Modified: When step is validated successfully, show celebration instead of advancing
   const handleStepComplete = useCallback(() => {

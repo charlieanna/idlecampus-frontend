@@ -82,11 +82,11 @@ export const comprehensiveSocialMediaPlatformDefinition: ProblemDefinition = {
     'Users can like, comment, and share posts',
     'Users can delete their own posts',
     
-    // Fan-out Pattern (Twitter Timeline Problem)
-    'When a user with <10K followers posts, system writes to all follower timelines immediately (write fan-out)',
-    'When a celebrity with >10K followers posts, system stores post in their timeline only (read fan-out)',
-    'When reading timeline, system merges posts from followed users + celebrity posts (hybrid approach)',
-    'System handles users with 1M+ followers efficiently without blocking',
+    // Feed Experience
+    'When regular users post, their followers see the post immediately in their feed',
+    'When popular users with many followers post, their posts appear in followers\' feeds when they check their timeline',
+    'Users see posts from all users they follow in their timeline, sorted by recency',
+    'Popular users can post without delays, even with millions of followers',
     
     // Real-time Features
     'Users see new posts appear in their feed in real-time (no refresh needed)',

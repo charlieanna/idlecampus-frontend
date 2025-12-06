@@ -4,7 +4,7 @@ import { ReactFlowProvider } from 'reactflow';
 import { useNavigate } from 'react-router-dom';
 import { DesignCanvas } from '../components/DesignCanvas';
 import { InspectorModal } from '../components/InspectorModal';
-import { StoryPanel, CelebrationPanel, FullScreenLearnPanel } from '../components/guided';
+import { StoryPanel, CelebrationPanel, FullScreenLearnPanel, RequirementsGatheringPanel } from '../components/guided';
 import { useCanvasStore, useGuidedStore } from '../store';
 import { Challenge } from '../../types/testCase';
 import { validateStep } from '../../guided/validateStep';
@@ -48,6 +48,8 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
     incrementAttempt,
     setHintLevel,
     markTutorialComplete,
+    askQuestion,
+    completeRequirementsPhase,
   } = useGuidedStore();
 
   // Local state
@@ -85,37 +87,29 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
       setShowHint(false);
       setIsValidating(false);
 
-      // Ensure canvas has Client (it might have been cleared)
-      const currentGraph = useCanvasStore.getState().systemGraph;
-      const hasClient = currentGraph?.components?.some(c => c.type === 'client');
-      if (!hasClient) {
-        console.log('[GuidedWizard] Canvas missing Client, adding it');
-        setSystemGraph({
-          components: [
-            {
-              id: 'client-1',
-              type: 'client' as any,
-              config: {
-                displayName: 'Client',
-                requestsPerSecond: 100,
-                position: { x: 100, y: 150 },
-              },
-            },
-            ...(currentGraph?.components || []),
-          ],
-          connections: currentGraph?.connections || [],
-        });
-      }
+      // Don't pre-load any components - user should add everything themselves
       return;
     }
 
     console.log('[GuidedWizard] No existing progress, initializing fresh');
 
     // Reset EVERYTHING for new challenge
+    // Check if tutorial has requirements phase - start there if so
+    const hasRequirements = !!loadedTutorial.requirementsPhase;
     const firstStep = loadedTutorial.steps[0];
-    const initialPhase: StepPhase = firstStep?.story ? 'story' : 'learn';
+    
+    // Determine initial phase:
+    // 1. If has requirements phase -> 'requirements-questions'
+    // 2. Else if first step has story -> 'story'
+    // 3. Else -> 'learn'
+    let initialPhase: StepPhase;
+    if (hasRequirements) {
+      initialPhase = 'requirements-questions';
+    } else {
+      initialPhase = firstStep?.story ? 'story' : 'learn';
+    }
 
-    console.log('[GuidedWizard] Starting at step 0, phase:', initialPhase);
+    console.log('[GuidedWizard] Starting at step 0, phase:', initialPhase, 'hasRequirements:', hasRequirements);
 
     // Set all state at once
     setTutorial(loadedTutorial);
@@ -137,22 +131,14 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
         startedAt: new Date().toISOString(),
         lastAccessedAt: new Date().toISOString(),
         quizAnswers: {},
+        askedQuestionIds: [],
+        requirementsPhaseComplete: false,
       },
     });
 
-    // Reset canvas with only Client
+    // Start with empty canvas - user adds all components themselves
     setSystemGraph({
-      components: [
-        {
-          id: 'client-1',
-          type: 'client' as any,
-          config: {
-            displayName: 'Client',
-            requestsPerSecond: 100,
-            position: { x: 100, y: 150 },
-          },
-        },
-      ],
+      components: [],
       connections: [],
     });
 
@@ -165,8 +151,14 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
   const currentStep = tutorial?.steps[progress?.currentStepIndex || 0] || null;
   const currentPhase = progress?.currentPhase || 'story';
 
+  // Check if we're in requirements gathering phase
+  const isInRequirementsPhase = currentPhase === 'requirements-questions' ||
+                                 currentPhase === 'requirements-intro' ||
+                                 currentPhase === 'requirements-summary';
+  const requirementsPhase = tutorial?.requirementsPhase;
+
   // Debug logging
-  console.log('[GuidedWizard] Render - stepIndex:', progress?.currentStepIndex, 'phase:', currentPhase, 'step:', currentStep?.story?.scenario?.substring(0, 30));
+  console.log('[GuidedWizard] Render - stepIndex:', progress?.currentStepIndex, 'phase:', currentPhase, 'step:', currentStep?.story?.scenario?.substring(0, 30), 'inRequirementsPhase:', isInRequirementsPhase);
 
   // Handle story continue → go to learn
   const handleStoryContinue = useCallback(() => {
@@ -292,6 +284,18 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
     setInspectorNodeId(null);
   }, []);
 
+  // Handle asking an interview question (requirements phase)
+  const handleAskQuestion = useCallback((questionId: string) => {
+    console.log('[GuidedWizard] Question asked:', questionId);
+    askQuestion(questionId);
+  }, [askQuestion]);
+
+  // Handle completing requirements phase
+  const handleCompleteRequirementsPhase = useCallback(() => {
+    console.log('[GuidedWizard] Requirements phase complete');
+    completeRequirementsPhase();
+  }, [completeRequirementsPhase]);
+
   // Handle restart tutorial
   const handleRestartTutorial = useCallback(() => {
     if (!challenge?.problemDefinition) return;
@@ -300,8 +304,16 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
       ? challenge.problemDefinition.guidedTutorial
       : generateGuidedTutorial(challenge.problemDefinition);
 
+    // Check if tutorial has requirements phase - start there if so
+    const hasRequirements = !!loadedTutorial.requirementsPhase;
     const firstStep = loadedTutorial.steps[0];
-    const initialPhase: StepPhase = firstStep?.story ? 'story' : 'learn';
+    
+    let initialPhase: StepPhase;
+    if (hasRequirements) {
+      initialPhase = 'requirements-questions';
+    } else {
+      initialPhase = firstStep?.story ? 'story' : 'learn';
+    }
 
     // Reset everything
     setTutorial(loadedTutorial);
@@ -322,22 +334,14 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
         startedAt: new Date().toISOString(),
         lastAccessedAt: new Date().toISOString(),
         quizAnswers: {},
+        askedQuestionIds: [],
+        requirementsPhaseComplete: false,
       },
     });
 
-    // Reset canvas with only Client
+    // Start with empty canvas - user adds all components themselves
     setSystemGraph({
-      components: [
-        {
-          id: 'client-1',
-          type: 'client' as any,
-          config: {
-            displayName: 'Client',
-            requestsPerSecond: 100,
-            position: { x: 100, y: 150 },
-          },
-        },
-      ],
+      components: [],
       connections: [],
     });
 
@@ -368,8 +372,19 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
       </button>
 
       <AnimatePresence mode="wait">
+        {/* Requirements Gathering Phase (Step 0) */}
+        {isInRequirementsPhase && requirementsPhase && (
+          <RequirementsGatheringPanel
+            key="requirements"
+            content={requirementsPhase}
+            askedQuestionIds={progress.askedQuestionIds || []}
+            onAskQuestion={handleAskQuestion}
+            onComplete={handleCompleteRequirementsPhase}
+          />
+        )}
+
         {/* Story Phase */}
-        {currentPhase === 'story' && currentStep?.story && (
+        {!isInRequirementsPhase && currentPhase === 'story' && currentStep?.story && (
           <StoryPanel
             key="story"
             story={currentStep.story}
@@ -380,7 +395,7 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
         )}
 
         {/* Learn Phase */}
-        {currentPhase === 'learn' && currentStep?.learnPhase && (
+        {!isInRequirementsPhase && currentPhase === 'learn' && currentStep?.learnPhase && (
           <FullScreenLearnPanel
             key="learn"
             content={currentStep.learnPhase}
@@ -391,7 +406,7 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
         )}
 
         {/* Practice Phase - Wizard Style */}
-        {currentPhase === 'practice' && currentStep && (
+        {!isInRequirementsPhase && currentPhase === 'practice' && currentStep && (
           <PracticeWizard
             key="practice"
             step={currentStep}
@@ -412,7 +427,7 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
         )}
 
         {/* Celebration Phase */}
-        {currentPhase === 'celebrate' && currentStep?.celebration && (
+        {!isInRequirementsPhase && currentPhase === 'celebrate' && currentStep?.celebration && (
           <CelebrationPanel
             key="celebrate"
             celebration={currentStep.celebration}

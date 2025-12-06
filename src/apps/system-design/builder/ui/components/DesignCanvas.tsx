@@ -75,6 +75,11 @@ export function DesignCanvas({
 
   // Sync nodes with systemGraph components
   useEffect(() => {
+    // Reset position counter when canvas is cleared
+    if (systemGraph.components.length === 0) {
+      nextPositionRef.current = { x: 100, y: 80 };
+    }
+
     setNodes((currentNodes) => {
       const existingNodeIds = new Set(currentNodes.map((n) => n.id));
       const componentIds = new Set(systemGraph.components.map((c) => c.id));

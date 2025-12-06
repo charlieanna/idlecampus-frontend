@@ -275,18 +275,18 @@ Requirements:
 • Accept bounded staleness for location updates (under 10 seconds)
 • Exactly-once semantics for ride assignments`,
 
+  // User-facing functional requirements (from rider/driver experience)
   userFacingFRs: [
-    '**POST /api/riders/:id/request** - Rider requests ride (pickup + dropoff location)',
-    '**GET /api/riders/:id/nearby-drivers** - Find available drivers within radius (geospatial query)',
-    '**POST /api/rides** - Create ride and assign driver (with double-allocation prevention)',
-    '**POST /api/drivers/:id/accept** - Driver accepts ride request',
-    '**POST /api/drivers/:id/location** - Driver updates GPS location (real-time streaming)',
-    '**GET /api/rides/:id** - Get current ride status and driver location',
-    '**POST /api/rides/:id/complete** - Complete ride and trigger payment',
-    '**POST /api/payments** - Process payment for ride (with idempotency)',
-    '**GET /api/drivers/:id/status** - Check driver availability (online/offline/on-ride)',
-    'Real-time location updates streamed via WebSocket to rider during ride',
-    'Ride matching uses stream processing (join rider requests with driver locations)',
+    'Riders can request a ride by entering pickup and dropoff locations',
+    'Riders can see nearby available drivers on a live map before requesting',
+    'Platform matches each rider to a single available driver (no double-allocation)',
+    'Drivers can go online/offline and receive ride requests when available',
+    'Drivers can accept or reject incoming ride requests',
+    'App tracks driver GPS location in real-time during and between rides',
+    'Riders can see current ride status, driver ETA, and live driver location',
+    'Rides can be completed and fares calculated at the end of the trip',
+    'Riders can pay securely for rides, with safe retries if payment systems are flaky',
+    'Riders can view their past trips and receipts; drivers can see their trip history',
   ],
 
   // DDIA/SDP Non-Functional Requirements

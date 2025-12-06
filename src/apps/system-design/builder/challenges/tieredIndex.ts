@@ -12,6 +12,7 @@ import { tiktokChallenge } from './tiered/tiktok';
 import { pinterestChallenge } from './tiered/pinterest';
 import { snapchatChallenge } from './tiered/snapchat';
 import { discordChallenge } from './tiered/discord';
+import { tinderChallenge } from './tiered/tinder';
 import { mediumChallenge } from './tiered/medium';
 import { amazonChallenge } from './tiered/amazon';
 import { shopifyChallenge } from './tiered/shopify';
@@ -77,6 +78,7 @@ export const allTieredChallenges: Challenge[] = [
   tiktokChallenge,
   pinterestChallenge,
   snapchatChallenge,
+  tinderChallenge,
   discordChallenge,
   mediumChallenge,
   amazonChallenge,
@@ -142,6 +144,7 @@ export { tiktokChallenge };
 export { pinterestChallenge };
 export { snapchatChallenge };
 export { discordChallenge };
+export { tinderChallenge };
 export { mediumChallenge };
 export { amazonChallenge };
 export { shopifyChallenge };
@@ -196,6 +199,6 @@ export { l6DistributedConsensus2Challenge };
 export { l6PrivacyZkpInternetChallenge };
 
 // Export challenge count
-export const tieredChallengeCount = 61;
+export const tieredChallengeCount = 62;
 
 console.log(`📊 Generated ${tieredChallengeCount} tiered challenges from problem definitions`);

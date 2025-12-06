@@ -65,6 +65,12 @@ interface GuidedState {
   // Quiz actions
   recordQuizAnswer: (stepId: string, selectedIndex: number, correct: boolean) => void;
 
+  // Requirements gathering actions (Step 0)
+  askQuestion: (questionId: string) => void;
+  completeRequirementsPhase: () => void;
+  isRequirementsPhaseComplete: () => boolean;
+  hasRequirementsPhase: () => boolean;
+
   // Completion actions
   markTutorialComplete: (problemId: string) => void;
   isTutorialCompleted: (problemId: string) => boolean;
@@ -106,22 +112,36 @@ export const useGuidedStore = create<GuidedState>()(
         // Otherwise, force guided mode for new users
         const mode: BuilderMode = isCompleted ? 'solve-on-own' : 'guided-tutorial';
 
-        // Check if first step has story content - start with story phase
-        const firstStep = tutorial?.steps[0];
-        const initialPhase: StepPhase = firstStep?.story ? 'story' : 'learn';
+        // Check if tutorial has requirements phase - start with requirements gathering
+        const hasRequirements = !!tutorial?.requirementsPhase;
+        
+        // Determine initial phase:
+        // 1. If has requirements phase -> 'requirements-questions'
+        // 2. Else if first step has story -> 'story'
+        // 3. Else -> 'learn'
+        let initialPhase: StepPhase;
+        if (hasRequirements) {
+          initialPhase = 'requirements-questions';
+        } else {
+          const firstStep = tutorial?.steps[0];
+          initialPhase = firstStep?.story ? 'story' : 'learn';
+        }
 
         set({
           mode,
           progress: {
             problemId,
             currentStepIndex: 0,
-            currentPhase: initialPhase, // Start with story phase if available
+            currentPhase: initialPhase,
             completedStepIds: [],
             attemptCounts: {},
             hintLevel: 'none',
             startedAt: new Date().toISOString(),
             lastAccessedAt: new Date().toISOString(),
             quizAnswers: {},
+            // Initialize requirements phase tracking
+            askedQuestionIds: [],
+            requirementsPhaseComplete: false,
           },
         });
       },
@@ -173,6 +193,51 @@ export const useGuidedStore = create<GuidedState>()(
             lastAccessedAt: new Date().toISOString(),
           },
         });
+      },
+
+      // Requirements gathering actions (Step 0)
+      askQuestion: (questionId) => {
+        const { progress } = get();
+        if (!progress) return;
+
+        const askedQuestionIds = progress.askedQuestionIds || [];
+        if (askedQuestionIds.includes(questionId)) return;
+
+        set({
+          progress: {
+            ...progress,
+            askedQuestionIds: [...askedQuestionIds, questionId],
+            lastAccessedAt: new Date().toISOString(),
+          },
+        });
+      },
+
+      completeRequirementsPhase: () => {
+        const { progress, tutorial } = get();
+        if (!progress) return;
+
+        // Determine next phase after requirements
+        const firstStep = tutorial?.steps[0];
+        const nextPhase: StepPhase = firstStep?.story ? 'story' : 'learn';
+
+        set({
+          progress: {
+            ...progress,
+            requirementsPhaseComplete: true,
+            currentPhase: nextPhase,
+            lastAccessedAt: new Date().toISOString(),
+          },
+        });
+      },
+
+      isRequirementsPhaseComplete: () => {
+        const { progress } = get();
+        return progress?.requirementsPhaseComplete || false;
+      },
+
+      hasRequirementsPhase: () => {
+        const { tutorial } = get();
+        return !!tutorial?.requirementsPhase;
       },
 
       // Progress actions
@@ -366,20 +431,30 @@ export const useGuidedStore = create<GuidedState>()(
         const { progress, tutorial } = get();
         if (!progress) return;
 
-        // Check if first step has story - start with story phase
-        const firstStep = tutorial?.steps[0];
-        const initialPhase: StepPhase = firstStep?.story ? 'story' : 'learn';
+        // Check if tutorial has requirements phase
+        const hasRequirements = !!tutorial?.requirementsPhase;
+        
+        // Determine initial phase on reset
+        let initialPhase: StepPhase;
+        if (hasRequirements) {
+          initialPhase = 'requirements-questions';
+        } else {
+          const firstStep = tutorial?.steps[0];
+          initialPhase = firstStep?.story ? 'story' : 'learn';
+        }
 
         set({
           progress: {
             ...progress,
             currentStepIndex: 0,
-            currentPhase: initialPhase, // Reset to story phase if available
+            currentPhase: initialPhase,
             completedStepIds: [],
             attemptCounts: {},
             hintLevel: 'none',
             completedAt: undefined,
             quizAnswers: {},
+            askedQuestionIds: [],
+            requirementsPhaseComplete: false,
             lastAccessedAt: new Date().toISOString(),
           },
         });

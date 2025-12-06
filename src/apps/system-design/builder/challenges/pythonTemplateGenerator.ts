@@ -1,7 +1,7 @@
 /**
  * Python Template Generator for All Challenges
  *
- * Generates Python starter code for all 658 challenges using pattern matching
+ * Generates Python starter code for all 659+ challenges using pattern matching
  */
 
 import { Challenge } from '../types/testCase';

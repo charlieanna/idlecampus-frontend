@@ -45,6 +45,7 @@ function extractCompany(challenge: Challenge): string | null {
 
   if (text.includes('netflix')) return 'Netflix';
   if (text.includes('twitter')) return 'Twitter';
+  if (text.includes('tinder')) return 'Tinder';
   if (text.includes('uber')) return 'Uber';
   if (text.includes('spotify')) return 'Spotify';
   if (text.includes('airbnb')) return 'Airbnb';

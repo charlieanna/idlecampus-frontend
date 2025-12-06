@@ -32,7 +32,7 @@
 
 import { problemWhitelist } from '../problemWhitelist';
 
-// Social Media (10)
+// Social Media & Dating (11)
 export { instagramProblemDefinition } from './instagram';
 export { twitterProblemDefinition } from './twitter';
 export { redditProblemDefinition } from './reddit';
@@ -41,6 +41,7 @@ export { facebookProblemDefinition } from './facebook';
 export { tiktokProblemDefinition } from './tiktok';
 export { pinterestProblemDefinition } from './pinterest';
 export { snapchatProblemDefinition } from './snapchat';
+export { tinderProblemDefinition } from './tinder';
 export { discordProblemDefinition } from './discord';
 export { mediumProblemDefinition } from './medium';
 
@@ -197,6 +198,7 @@ import { tiktokProblemDefinition } from './tiktok';
 import { pinterestProblemDefinition } from './pinterest';
 import { snapchatProblemDefinition } from './snapchat';
 import { discordProblemDefinition } from './discord';
+import { tinderProblemDefinition } from './tinder';
 import { mediumProblemDefinition } from './medium';
 import { amazonProblemDefinition } from './amazon';
 import { shopifyProblemDefinition } from './shopify';
@@ -320,6 +322,7 @@ export const allProblemDefinitions: ProblemDefinition[] = [
   tiktokProblemDefinition,
   pinterestProblemDefinition,
   snapchatProblemDefinition,
+  tinderProblemDefinition,
   discordProblemDefinition,
   mediumProblemDefinition,
   amazonProblemDefinition,

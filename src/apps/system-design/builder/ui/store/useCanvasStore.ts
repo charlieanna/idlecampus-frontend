@@ -6,11 +6,11 @@ interface CanvasState {
   systemGraph: SystemGraph;
   selectedNode: any | null;
   canvasCollapsed: boolean;
-  
+
   // Inspector modal
   showInspectorModal: boolean;
   inspectorModalNodeId: string | null;
-  
+
   // Actions
   setSystemGraph: (graph: SystemGraph) => void;
   updateSystemGraph: (updater: (graph: SystemGraph) => SystemGraph) => void;
@@ -23,6 +23,7 @@ interface CanvasState {
   updateNode: (nodeId: string, updates: any) => void;
   addEdge: (edge: any) => void;
   removeEdge: (edgeId: string) => void;
+  clearCanvas: () => void;
 }
 
 export const useCanvasStore = create<CanvasState>((set, get) => ({
@@ -92,5 +93,13 @@ export const useCanvasStore = create<CanvasState>((set, get) => ({
       ),
     },
   })),
+
+  clearCanvas: () => set({
+    systemGraph: {
+      components: [],
+      connections: [],
+    },
+    selectedNode: null,
+  }),
 }));
 

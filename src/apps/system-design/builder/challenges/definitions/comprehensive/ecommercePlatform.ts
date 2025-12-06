@@ -83,9 +83,8 @@ export const comprehensiveEcommercePlatformDefinition: ProblemDefinition = {
     'Users can view detailed product information (images, description, price, reviews)',
     'Users can add products to shopping cart',
     'Users can checkout and place orders',
-    'Checkout is atomic - both order creation and payment processing succeed or both fail (ACID transactions)',
-    'System prevents overselling using serializable isolation (no two users can buy the last item)',
-    'Inventory updates use optimistic locking to handle concurrent purchases',
+    'When users checkout, their order and payment are processed together - if payment fails, the order is not created and they are not charged',
+    'Users cannot purchase items that are out of stock - if two users try to buy the last item, only one succeeds',
     
     // User Account Management
     'Users can create accounts and login',
@@ -96,8 +95,7 @@ export const comprehensiveEcommercePlatformDefinition: ProblemDefinition = {
     'Sellers can list products with descriptions and images',
     'Sellers can manage inventory and pricing',
     'Sellers can view sales analytics dashboard',
-    'Analytics dashboard shows real-time metrics (stream processing) and historical reports (batch processing)',
-    'Sales reports are generated using batch processing (Map/Reduce) for accuracy',
+    'Sellers can see real-time sales metrics and historical reports on their dashboard',
     
     // Personalization
     'Users see personalized product recommendations',
@@ -107,7 +105,7 @@ export const comprehensiveEcommercePlatformDefinition: ProblemDefinition = {
     // Global Access
     'Users worldwide can access the platform from their nearest region',
     'Products remain available even during regional failures',
-    'Inventory is synchronized across all regions',
+    'Sellers see consistent inventory counts regardless of which region they access the platform from',
   ],
 
   userFacingNFRs: [

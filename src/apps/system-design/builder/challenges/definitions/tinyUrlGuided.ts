@@ -1,20 +1,272 @@
-import { GuidedTutorial, GuidedStep, TeachingContent, StoryContent, CelebrationContent } from '../../types/guidedTutorial';
+import {
+  GuidedTutorial,
+  GuidedStep,
+  TeachingContent,
+  StoryContent,
+  CelebrationContent,
+  RequirementsGatheringContent,
+} from '../../types/guidedTutorial';
 
 /**
- * TinyURL Guided Tutorial - NARRATIVE EDITION
+ * TinyURL Guided Tutorial - FR-FIRST EDITION
  *
  * A story-driven step-by-step tutorial that teaches system design concepts
  * while building a URL shortener. Each step tells a story that motivates the task.
  *
- * Flow: Story → Learn → Practice → Celebrate → Next Story
+ * Flow:
+ * Step 0: Gather FRs (Requirements Interview)
+ * Steps 1-2: Build brute force solution (in-memory) - FRs satisfied!
+ * Step 3: Add persistence (database)
+ * Steps 4+: Apply NFRs (cache, load balancer, replication, etc.)
  *
- * The narrative follows a startup journey:
- * 1. "Let's build TinyURL!" - Connect basic pieces
- * 2. "Configure the server" - Write Python code
- * 3. "Oops, we lost all data!" - Add database
- * 4. "Redirects are slow..." - Add cache
- * 5. "We're going viral!" - Add load balancer
+ * Key Pedagogy: First make it WORK, then make it SURVIVE, then make it SCALE
  */
+
+// =============================================================================
+// STEP 0: Requirements Gathering - The Interview
+// =============================================================================
+
+const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
+  problemStatement: "Design a URL shortener like bit.ly or TinyURL",
+  
+  interviewer: {
+    name: 'Sarah Chen',
+    role: 'Engineering Manager',
+    avatar: '👩‍💼',
+  },
+  
+  questions: [
+    // =============================================================================
+    // PART 1: FUNCTIONAL REQUIREMENTS
+    // =============================================================================
+    
+    // CRITICAL - Core Functionality (from user's experience)
+    {
+      id: 'core-operations',
+      category: 'functional',
+      question: "What can users do with this system? What's the main user experience?",
+      answer: "Users have two main experiences:\n1. **Shorten a URL**: A user pastes a long URL, clicks 'Shorten', and gets back a short URL (like bit.ly/abc123)\n2. **Click a short URL**: A user clicks a short URL and gets redirected to the original long URL",
+      importance: 'critical',
+      revealsRequirement: 'FR-1 and FR-2',
+      learningPoint: "Always start by understanding the user's experience - what they see and do",
+    },
+    {
+      id: 'uniqueness',
+      category: 'functional',
+      question: "What happens if two users shorten different URLs and get the same short code?",
+      answer: "That would be a disaster! If someone clicks 'bit.ly/abc123', they need to go to the correct URL. Each short code must map to exactly one URL. Two different long URLs should never get the same short code - each needs a unique code.",
+      importance: 'critical',
+      revealsRequirement: 'FR-3',
+      learningPoint: "Uniqueness is critical for user experience - wrong redirects break trust",
+    },
+    
+    // IMPORTANT - Clarifications (from user's experience)
+    {
+      id: 'url-lifecycle',
+      category: 'clarification',
+      question: "Can users delete or edit their shortened URLs? Do they expire?",
+      answer: "No, once a user creates a short URL, it should work forever. They're permanent. Users can't delete or edit them. We might add expiration as a v2 feature, but for now, once created, they last forever.",
+      importance: 'important',
+      insight: "This simplifies our design - no TTL or cleanup needed initially",
+    },
+    {
+      id: 'custom-codes',
+      category: 'clarification',
+      question: "Can users choose their own short code? Like 'bit.ly/myshop' instead of 'bit.ly/abc123'?",
+      answer: "Not for the MVP. Users will get auto-generated codes like 'abc123'. Custom codes like 'myshop' could be a v2 feature, but for now, we'll just generate random unique codes.",
+      importance: 'nice-to-have',
+      insight: "Custom codes add collision handling complexity - good to defer",
+    },
+    {
+      id: 'analytics',
+      category: 'clarification',
+      question: "Do users see analytics like how many times their link was clicked?",
+      answer: "Not for this interview. We're focusing on the core URL shortening functionality. Analytics could be a separate feature later, but it's not part of the MVP.",
+      importance: 'nice-to-have',
+      insight: "Analytics is a separate system - mentioning it shows breadth, but don't design it now",
+    },
+    
+    // SCOPE
+    {
+      id: 'scope-single-region',
+      category: 'scope',
+      question: "Is this for a single region or global?",
+      answer: "Let's start with a single region for now. We can discuss multi-region as an extension if time permits.",
+      importance: 'nice-to-have',
+      insight: "Starting simple with single region is the right approach",
+    },
+    
+    // =============================================================================
+    // PART 2: SCALE & NFRs (Interview Discovery Order)
+    // =============================================================================
+    
+    // 1. THROUGHPUT (First - tells you the scale)
+    {
+      id: 'throughput-dau',
+      category: 'throughput',
+      question: "How many daily active users (DAU) should we design for?",
+      answer: "100 million DAU",
+      importance: 'critical',
+      learningPoint: "DAU gives you the scale context for all calculations",
+    },
+    {
+      id: 'throughput-writes',
+      category: 'throughput',
+      question: "How many URLs are shortened per day?",
+      answer: "About 10 million new URLs per day",
+      importance: 'critical',
+      calculation: {
+        formula: "10M ÷ 86,400 sec = 115 writes/sec average",
+        result: "~115 writes/sec (345 at peak)",
+      },
+      learningPoint: "This tells you write load on the database",
+    },
+    {
+      id: 'throughput-reads',
+      category: 'throughput',
+      question: "How many redirects (reads) per day?",
+      answer: "About 1 billion redirects per day",
+      importance: 'critical',
+      calculation: {
+        formula: "1B ÷ 86,400 sec = 11,574 reads/sec average",
+        result: "~11,500 reads/sec (35K at peak)",
+      },
+      learningPoint: "This tells you read load - and it's MUCH higher than writes!",
+    },
+    
+    // 2. PAYLOAD (Second - affects bandwidth and storage)
+    {
+      id: 'payload-url-size',
+      category: 'payload',
+      question: "What's the maximum URL length we need to support?",
+      answer: "Standard URLs up to 2000 characters",
+      importance: 'important',
+      calculation: {
+        formula: "2000 chars × 1 byte = ~2KB max per URL",
+        result: "~2KB max request size",
+      },
+      learningPoint: "Affects bandwidth calculations and storage planning",
+    },
+    {
+      id: 'payload-storage',
+      category: 'payload',
+      question: "What metadata do we store with each URL?",
+      answer: "Just the URL, short code, and creation timestamp. About 500 bytes per record.",
+      importance: 'important',
+      calculation: {
+        formula: "10M URLs/day × 500 bytes = 5GB/day",
+        result: "~1.8TB/year of storage growth",
+      },
+      learningPoint: "Storage grows linearly with URL creation rate",
+    },
+    
+    // 3. BURSTS (Third - capacity planning)
+    {
+      id: 'burst-peak',
+      category: 'burst',
+      question: "What's the peak-to-average traffic ratio?",
+      answer: "Peak traffic is about 3x the average",
+      importance: 'critical',
+      calculation: {
+        formula: "11,574 avg × 3 = 34,722 peak",
+        result: "~35K reads/sec at peak",
+      },
+      insight: "You MUST design for peak, not average. 3x is typical for consumer apps.",
+    },
+    {
+      id: 'burst-viral',
+      category: 'burst',
+      question: "Are there sudden traffic spikes we should handle?",
+      answer: "Yes, when a shortened URL goes viral on social media, it can get millions of clicks in minutes.",
+      importance: 'important',
+      insight: "Need auto-scaling and rate limiting for protection",
+    },
+    
+    // 4. LATENCY (Fourth - response time requirements)
+    {
+      id: 'latency-redirect',
+      category: 'latency',
+      question: "What's the acceptable latency for redirects?",
+      answer: "p99 should be under 100ms - users expect instant redirects",
+      importance: 'critical',
+      learningPoint: "This is Request/Response latency - the user is waiting",
+    },
+    {
+      id: 'latency-create',
+      category: 'latency',
+      question: "What about latency for creating short URLs?",
+      answer: "p99 under 500ms is acceptable - users can wait a moment for URL creation",
+      importance: 'important',
+      learningPoint: "Create is less latency-sensitive than redirect",
+    },
+    {
+      id: 'latency-async',
+      category: 'latency',
+      question: "Is there any async processing or background jobs?",
+      answer: "Not for the core flow. Everything is synchronous request/response.",
+      importance: 'nice-to-have',
+      insight: "No data processing latency concerns for TinyURL",
+    },
+  ],
+  
+  minimumQuestionsRequired: 2,
+  criticalQuestionIds: ['core-operations', 'uniqueness'],
+  criticalFRQuestionIds: ['core-operations', 'uniqueness'],
+  criticalScaleQuestionIds: ['throughput-writes', 'throughput-reads', 'burst-peak', 'latency-redirect'], // Used in later steps
+  
+  confirmedFRs: [
+    {
+      id: 'fr-1',
+      text: 'FR-1: Users can shorten URLs',
+      description: 'A user can paste a long URL and get back a short URL (e.g., bit.ly/abc123)',
+      emoji: '✂️',
+    },
+    {
+      id: 'fr-2',
+      text: 'FR-2: Users can click short URLs',
+      description: 'When a user clicks a short URL, they get redirected to the original long URL',
+      emoji: '↪️',
+    },
+    {
+      id: 'fr-3',
+      text: 'FR-3: Each short code is unique',
+      description: 'Each short code maps to exactly one URL - no collisions, users always get the right redirect',
+      emoji: '🔑',
+    },
+  ],
+  
+  scaleMetrics: {
+    dailyActiveUsers: '100 million',
+    writesPerDay: '10 million',
+    readsPerDay: '1 billion',
+    peakMultiplier: 3,
+    readWriteRatio: '100:1',
+    calculatedWriteRPS: { average: 115, peak: 345 },
+    calculatedReadRPS: { average: 11574, peak: 34722 },
+    maxPayloadSize: '~2KB',
+    storagePerRecord: '~500 bytes',
+    storageGrowthPerYear: '~1.8TB',
+    redirectLatencySLA: 'p99 < 100ms',
+    createLatencySLA: 'p99 < 500ms',
+  },
+  
+  architecturalImplications: [
+    '✅ Read-heavy (100:1) → Caching is CRITICAL',
+    '✅ 35K reads/sec peak → Need multiple app servers + load balancer',
+    '✅ Only 345 writes/sec peak → Single DB primary might work',
+    '✅ p99 < 100ms redirect → Cache is essential (DB too slow)',
+    '✅ 1.8TB/year growth → Plan for partitioning eventually',
+  ],
+  
+  outOfScope: [
+    'Custom short codes (v2)',
+    'Click analytics',
+    'URL expiration',
+    'Multi-region deployment',
+  ],
+  
+  keyInsight: "First, let's make it WORK. We'll build a simple Client → App Server solution that satisfies our functional requirements. Once it works, we'll optimize for scale and performance in later steps. This is the right way to approach system design: functionality first, then optimization.",
+};
 
 // =============================================================================
 // STEP 1: The Beginning - Connect Client to App Server
@@ -90,23 +342,24 @@ const step1: GuidedStep = {
   learnPhase: step1LearnPhase,
   practicePhase: {
     frText: 'Users can submit requests to the system',
-    taskDescription: 'Connect the Client to the App Server',
+    taskDescription: 'Add Client and App Server, then connect them',
     componentsNeeded: [
+      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
       { type: 'app_server', reason: 'Processes requests', displayName: 'App Server' },
     ],
     connectionsNeeded: [
       { from: 'Client', to: 'App Server', reason: 'Users send requests' },
     ],
-    successCriteria: ['Add App Server', 'Connect Client → App Server'],
+    successCriteria: ['Add Client', 'Add App Server', 'Connect Client → App Server'],
   },
   validation: {
-    requiredComponents: ['app_server'],
+    requiredComponents: ['client', 'app_server'],
     requiredConnections: [{ fromType: 'client', toType: 'app_server' }],
   },
   hints: {
-    level1: 'Click "+ Add" to add an App Server, then draw a connection from Client to it',
-    level2: 'Add the App Server component, then click and drag from Client to App Server to connect them',
-    solutionComponents: [{ type: 'app_server' }],
+    level1: 'First add Client, then add App Server, then connect them',
+    level2: 'Drag Client and App Server from the sidebar, then drag from Client to App Server to connect',
+    solutionComponents: [{ type: 'client' }, { type: 'app_server' }],
     solutionConnections: [{ from: 'client', to: 'app_server' }],
   },
 };
@@ -194,25 +447,30 @@ const step2: GuidedStep = {
   learnPhase: step2LearnPhase,
   practicePhase: {
     frText: 'App Server must handle URL shortening and redirects',
-    taskDescription: 'Configure the App Server: assign APIs and write Python code',
-    componentsNeeded: [],
-    connectionsNeeded: [],
+    taskDescription: 'Build Client → App Server, then configure APIs and Python code',
+    componentsNeeded: [
+      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
+      { type: 'app_server', reason: 'Processes API requests', displayName: 'App Server' },
+    ],
+    connectionsNeeded: [
+      { from: 'Client', to: 'App Server', reason: 'Users send requests' },
+    ],
     successCriteria: [
+      'Add Client and App Server, connect them',
       'Click on App Server to open inspector',
       'Assign POST /api/v1/urls and GET /api/v1/urls/* APIs',
-      'Write Python code for the endpoints',
     ],
   },
   validation: {
-    requiredComponents: ['app_server'],
+    requiredComponents: ['client', 'app_server'],
     requiredConnections: [{ fromType: 'client', toType: 'app_server' }],
     requireAPIConfiguration: true, // Step 2 requires APIs to be assigned
   },
   hints: {
-    level1: 'Click on the App Server node to open the configuration panel',
-    level2: 'In the inspector, assign the POST and GET APIs, then switch to the Python tab to write code',
-    solutionComponents: [],
-    solutionConnections: [],
+    level1: 'First build Client → App Server, then click App Server to configure APIs',
+    level2: 'Add components, connect them, then assign APIs in the inspector',
+    solutionComponents: [{ type: 'client' }, { type: 'app_server' }],
+    solutionConnections: [{ from: 'client', to: 'app_server' }],
   },
 };
 
@@ -297,27 +555,30 @@ const step3: GuidedStep = {
   learnPhase: step3LearnPhase,
   practicePhase: {
     frText: 'URL mappings must persist durably',
-    taskDescription: 'Add a Database and connect it to the App Server',
+    taskDescription: 'Build Client → App Server → Database',
     componentsNeeded: [
+      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
+      { type: 'app_server', reason: 'Processes API requests', displayName: 'App Server' },
       { type: 'database', reason: 'Stores URLs persistently', displayName: 'Database' },
     ],
     connectionsNeeded: [
+      { from: 'Client', to: 'App Server', reason: 'Users send requests' },
       { from: 'App Server', to: 'Database', reason: 'Server reads/writes URL mappings' },
     ],
-    successCriteria: ['Add Database', 'Connect App Server → Database'],
+    successCriteria: ['Add Client, App Server, Database', 'Connect Client → App Server → Database'],
   },
   validation: {
-    requiredComponents: ['app_server', 'database'],
+    requiredComponents: ['client', 'app_server', 'database'],
     requiredConnections: [
       { fromType: 'client', toType: 'app_server' },
       { fromType: 'app_server', toType: 'database' },
     ],
   },
   hints: {
-    level1: 'What component stores data permanently?',
-    level2: 'Add a Database and connect App Server to it',
-    solutionComponents: [{ type: 'database' }],
-    solutionConnections: [{ from: 'app_server', to: 'database' }],
+    level1: 'Build the full path: Client → App Server → Database',
+    level2: 'Add all three components and connect them in sequence',
+    solutionComponents: [{ type: 'client' }, { type: 'app_server' }, { type: 'database' }],
+    solutionConnections: [{ from: 'client', to: 'app_server' }, { from: 'app_server', to: 'database' }],
   },
 };
 
@@ -409,17 +670,22 @@ const step4: GuidedStep = {
   learnPhase: step4LearnPhase,
   practicePhase: {
     frText: 'Redirects must be fast (< 10ms p99)',
-    taskDescription: 'Add a Cache (Redis) and connect it to the App Server',
+    taskDescription: 'Build Client → App Server → Database + Cache',
     componentsNeeded: [
+      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
+      { type: 'app_server', reason: 'Processes API requests', displayName: 'App Server' },
+      { type: 'database', reason: 'Stores URLs persistently', displayName: 'Database' },
       { type: 'cache', reason: 'Caches hot URLs for fast lookups', displayName: 'Cache (Redis)' },
     ],
     connectionsNeeded: [
+      { from: 'Client', to: 'App Server', reason: 'Users send requests' },
+      { from: 'App Server', to: 'Database', reason: 'Server reads/writes URLs' },
       { from: 'App Server', to: 'Cache', reason: 'Server checks cache before database' },
     ],
-    successCriteria: ['Add Cache', 'Connect App Server → Cache'],
+    successCriteria: ['Build full architecture with Cache', 'Connect App Server to both Database and Cache'],
   },
   validation: {
-    requiredComponents: ['app_server', 'database', 'cache'],
+    requiredComponents: ['client', 'app_server', 'database', 'cache'],
     requiredConnections: [
       { fromType: 'client', toType: 'app_server' },
       { fromType: 'app_server', toType: 'database' },
@@ -427,10 +693,10 @@ const step4: GuidedStep = {
     ],
   },
   hints: {
-    level1: 'What stores data in memory for ultra-fast access?',
-    level2: 'Add a Cache and connect your App Server to it',
-    solutionComponents: [{ type: 'cache' }],
-    solutionConnections: [{ from: 'app_server', to: 'cache' }],
+    level1: 'Build the full system with a Cache for fast lookups',
+    level2: 'Add Client, App Server, Database, and Cache - connect App Server to both storage components',
+    solutionComponents: [{ type: 'client' }, { type: 'app_server' }, { type: 'database' }, { type: 'cache' }],
+    solutionConnections: [{ from: 'client', to: 'app_server' }, { from: 'app_server', to: 'database' }, { from: 'app_server', to: 'cache' }],
   },
 };
 
@@ -521,22 +787,27 @@ const step5: GuidedStep = {
   learnPhase: step5LearnPhase,
   practicePhase: {
     frText: 'System must handle 100K requests/second',
-    taskDescription: 'Add a Load Balancer in front of the App Server',
+    taskDescription: 'Build Client → Load Balancer → App Server → Database + Cache',
     componentsNeeded: [
+      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
       { type: 'load_balancer', reason: 'Distributes traffic', displayName: 'Load Balancer' },
+      { type: 'app_server', reason: 'Processes API requests', displayName: 'App Server' },
+      { type: 'database', reason: 'Stores URLs persistently', displayName: 'Database' },
+      { type: 'cache', reason: 'Caches hot URLs', displayName: 'Cache' },
     ],
     connectionsNeeded: [
       { from: 'Client', to: 'Load Balancer', reason: 'All traffic enters through LB' },
       { from: 'Load Balancer', to: 'App Server', reason: 'LB forwards to servers' },
+      { from: 'App Server', to: 'Database', reason: 'Server reads/writes URLs' },
+      { from: 'App Server', to: 'Cache', reason: 'Server caches hot URLs' },
     ],
     successCriteria: [
-      'Add Load Balancer',
-      'Connect Client → Load Balancer',
-      'Connect Load Balancer → App Server',
+      'Build full architecture with Load Balancer',
+      'Client → LB → App Server → Database + Cache',
     ],
   },
   validation: {
-    requiredComponents: ['app_server', 'database', 'cache', 'load_balancer'],
+    requiredComponents: ['client', 'load_balancer', 'app_server', 'database', 'cache'],
     requiredConnections: [
       { fromType: 'client', toType: 'load_balancer' },
       { fromType: 'load_balancer', toType: 'app_server' },
@@ -545,12 +816,14 @@ const step5: GuidedStep = {
     ],
   },
   hints: {
-    level1: 'What distributes traffic across multiple servers?',
-    level2: 'Add a Load Balancer. Connect Client → LB → App Server',
-    solutionComponents: [{ type: 'load_balancer' }],
+    level1: 'Build the full system with Load Balancer in front',
+    level2: 'Client → Load Balancer → App Server, then App Server connects to Database and Cache',
+    solutionComponents: [{ type: 'client' }, { type: 'load_balancer' }, { type: 'app_server' }, { type: 'database' }, { type: 'cache' }],
     solutionConnections: [
       { from: 'client', to: 'load_balancer' },
       { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 'database' },
+      { from: 'app_server', to: 'cache' },
     ],
   },
 };
@@ -662,18 +935,27 @@ const step6: GuidedStep = {
   learnPhase: step6LearnPhase,
   practicePhase: {
     frText: 'System must survive database failures (99.9% availability)',
-    taskDescription: 'Configure database replication for high availability',
-    componentsNeeded: [],
-    connectionsNeeded: [],
+    taskDescription: 'Build full system and configure database replication',
+    componentsNeeded: [
+      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
+      { type: 'load_balancer', reason: 'Distributes traffic', displayName: 'Load Balancer' },
+      { type: 'app_server', reason: 'Processes API requests', displayName: 'App Server' },
+      { type: 'database', reason: 'Stores URLs with replication', displayName: 'Database' },
+      { type: 'cache', reason: 'Caches hot URLs', displayName: 'Cache' },
+    ],
+    connectionsNeeded: [
+      { from: 'Client', to: 'Load Balancer', reason: 'Traffic enters through LB' },
+      { from: 'Load Balancer', to: 'App Server', reason: 'LB forwards to servers' },
+      { from: 'App Server', to: 'Database', reason: 'Server reads/writes URLs' },
+      { from: 'App Server', to: 'Cache', reason: 'Server caches hot URLs' },
+    ],
     successCriteria: [
-      'Click on the Database component',
-      'Go to "Replication & Scaling" tab',
-      'Select "Single Leader (Master-Slave)" strategy',
-      'Set at least 2 replicas',
+      'Build full architecture',
+      'Click Database → Enable replication with 2+ replicas',
     ],
   },
   validation: {
-    requiredComponents: ['app_server', 'database', 'cache', 'load_balancer'],
+    requiredComponents: ['client', 'load_balancer', 'app_server', 'database', 'cache'],
     requiredConnections: [
       { fromType: 'client', toType: 'load_balancer' },
       { fromType: 'load_balancer', toType: 'app_server' },
@@ -683,10 +965,15 @@ const step6: GuidedStep = {
     requireDatabaseReplication: true,
   },
   hints: {
-    level1: 'Your database needs backup copies (replicas)',
-    level2: 'Click Database → Replication & Scaling → Enable replication with 2+ replicas',
-    solutionComponents: [],
-    solutionConnections: [],
+    level1: 'Build the full system, then configure database replication',
+    level2: 'Add all components, connect them, then click Database → Replication with 2+ replicas',
+    solutionComponents: [{ type: 'client' }, { type: 'load_balancer' }, { type: 'app_server' }, { type: 'database' }, { type: 'cache' }],
+    solutionConnections: [
+      { from: 'client', to: 'load_balancer' },
+      { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 'database' },
+      { from: 'app_server', to: 'cache' },
+    ],
   },
 };
 
@@ -799,17 +1086,28 @@ const step7: GuidedStep = {
   learnPhase: step7LearnPhase,
   practicePhase: {
     frText: 'System must handle 10K+ requests/second',
-    taskDescription: 'Scale App Servers horizontally',
-    componentsNeeded: [],
-    connectionsNeeded: [],
+    taskDescription: 'Build full system with multiple App Server instances',
+    componentsNeeded: [
+      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
+      { type: 'load_balancer', reason: 'Distributes traffic', displayName: 'Load Balancer' },
+      { type: 'app_server', reason: 'Multiple instances for scale', displayName: 'App Server' },
+      { type: 'database', reason: 'Replicated for HA', displayName: 'Database' },
+      { type: 'cache', reason: 'Caches hot URLs', displayName: 'Cache' },
+    ],
+    connectionsNeeded: [
+      { from: 'Client', to: 'Load Balancer', reason: 'Traffic enters through LB' },
+      { from: 'Load Balancer', to: 'App Server', reason: 'LB distributes to multiple servers' },
+      { from: 'App Server', to: 'Database', reason: 'Server reads/writes URLs' },
+      { from: 'App Server', to: 'Cache', reason: 'Server caches hot URLs' },
+    ],
     successCriteria: [
-      'Click on the App Server component',
-      'Increase "Instances" to 3 or more',
-      'This gives you 3x the capacity!',
+      'Build full architecture',
+      'Configure Database replication',
+      'Set App Server instances to 2+',
     ],
   },
   validation: {
-    requiredComponents: ['app_server', 'database', 'cache', 'load_balancer'],
+    requiredComponents: ['client', 'load_balancer', 'app_server', 'database', 'cache'],
     requiredConnections: [
       { fromType: 'client', toType: 'load_balancer' },
       { fromType: 'load_balancer', toType: 'app_server' },
@@ -820,10 +1118,15 @@ const step7: GuidedStep = {
     requireMultipleAppInstances: true,
   },
   hints: {
-    level1: 'You need more than one App Server',
-    level2: 'Click App Server → Set Instances to 3 or more',
-    solutionComponents: [],
-    solutionConnections: [],
+    level1: 'Build the full system with multiple App Server instances',
+    level2: 'Add all components, configure DB replication, then set App Server instances to 2+',
+    solutionComponents: [{ type: 'client' }, { type: 'load_balancer' }, { type: 'app_server' }, { type: 'database' }, { type: 'cache' }],
+    solutionConnections: [
+      { from: 'client', to: 'load_balancer' },
+      { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 'database' },
+      { from: 'app_server', to: 'cache' },
+    ],
   },
 };
 
@@ -951,18 +1254,27 @@ const step8: GuidedStep = {
   learnPhase: step8LearnPhase,
   practicePhase: {
     frText: 'System must serve consistent data with high cache hit rate',
-    taskDescription: 'Configure cache strategy and TTL',
-    componentsNeeded: [],
-    connectionsNeeded: [],
+    taskDescription: 'Build full system and configure cache strategy',
+    componentsNeeded: [
+      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
+      { type: 'load_balancer', reason: 'Distributes traffic', displayName: 'Load Balancer' },
+      { type: 'app_server', reason: 'Multiple instances', displayName: 'App Server' },
+      { type: 'database', reason: 'Replicated storage', displayName: 'Database' },
+      { type: 'cache', reason: 'Configure strategy and TTL', displayName: 'Cache' },
+    ],
+    connectionsNeeded: [
+      { from: 'Client', to: 'Load Balancer', reason: 'Traffic enters through LB' },
+      { from: 'Load Balancer', to: 'App Server', reason: 'LB distributes to servers' },
+      { from: 'App Server', to: 'Database', reason: 'Server reads/writes URLs' },
+      { from: 'App Server', to: 'Cache', reason: 'Server uses cache-aside' },
+    ],
     successCriteria: [
-      'Click on the Cache component',
-      'Set Strategy to "Cache-Aside"',
-      'Set TTL to 3600 seconds (1 hour)',
-      'Enable "Invalidate on Write"',
+      'Build full architecture with all configurations',
+      'Click Cache → Set strategy to cache-aside with TTL',
     ],
   },
   validation: {
-    requiredComponents: ['app_server', 'database', 'cache', 'load_balancer'],
+    requiredComponents: ['client', 'load_balancer', 'app_server', 'database', 'cache'],
     requiredConnections: [
       { fromType: 'client', toType: 'load_balancer' },
       { fromType: 'load_balancer', toType: 'app_server' },
@@ -974,10 +1286,15 @@ const step8: GuidedStep = {
     requireCacheStrategy: true,
   },
   hints: {
-    level1: 'Your cache needs a proper strategy configured',
-    level2: 'Click Cache → Set strategy to cache-aside with TTL',
-    solutionComponents: [],
-    solutionConnections: [],
+    level1: 'Build full system and configure cache strategy',
+    level2: 'Add all components, configure everything, then set Cache strategy and TTL',
+    solutionComponents: [{ type: 'client' }, { type: 'load_balancer' }, { type: 'app_server' }, { type: 'database' }, { type: 'cache' }],
+    solutionConnections: [
+      { from: 'client', to: 'load_balancer' },
+      { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 'database' },
+      { from: 'app_server', to: 'cache' },
+    ],
   },
 };
 
@@ -1109,17 +1426,27 @@ const step9: GuidedStep = {
   learnPhase: step9LearnPhase,
   practicePhase: {
     frText: 'System must handle 1000 RPS with headroom',
-    taskDescription: 'Configure component capacities',
-    componentsNeeded: [],
-    connectionsNeeded: [],
+    taskDescription: 'Build full system with proper capacity planning',
+    componentsNeeded: [
+      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
+      { type: 'load_balancer', reason: 'Distributes traffic', displayName: 'Load Balancer' },
+      { type: 'app_server', reason: 'Multiple instances', displayName: 'App Server' },
+      { type: 'database', reason: 'Configure write capacity', displayName: 'Database' },
+      { type: 'cache', reason: 'Configured cache', displayName: 'Cache' },
+    ],
+    connectionsNeeded: [
+      { from: 'Client', to: 'Load Balancer', reason: 'Traffic enters through LB' },
+      { from: 'Load Balancer', to: 'App Server', reason: 'LB distributes to servers' },
+      { from: 'App Server', to: 'Database', reason: 'Server reads/writes URLs' },
+      { from: 'App Server', to: 'Cache', reason: 'Server caches hot URLs' },
+    ],
     successCriteria: [
-      'Click on the Database component',
-      'Set Write Capacity to at least 200',
-      'This gives headroom for traffic spikes',
+      'Build full architecture with all configurations',
+      'Set Database write capacity to 200+',
     ],
   },
   validation: {
-    requiredComponents: ['app_server', 'database', 'cache', 'load_balancer'],
+    requiredComponents: ['client', 'load_balancer', 'app_server', 'database', 'cache'],
     requiredConnections: [
       { fromType: 'client', toType: 'load_balancer' },
       { fromType: 'load_balancer', toType: 'app_server' },
@@ -1132,10 +1459,15 @@ const step9: GuidedStep = {
     requireDatabaseCapacity: true,
   },
   hints: {
-    level1: 'Your database needs enough write capacity',
-    level2: 'Click Database → Set write capacity to 200+',
-    solutionComponents: [],
-    solutionConnections: [],
+    level1: 'Build full system and configure database capacity',
+    level2: 'Add all components, configure all settings, then set DB write capacity to 200+',
+    solutionComponents: [{ type: 'client' }, { type: 'load_balancer' }, { type: 'app_server' }, { type: 'database' }, { type: 'cache' }],
+    solutionConnections: [
+      { from: 'client', to: 'load_balancer' },
+      { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 'database' },
+      { from: 'app_server', to: 'cache' },
+    ],
   },
 };
 
@@ -1257,17 +1589,27 @@ const step10: GuidedStep = {
   learnPhase: step10LearnPhase,
   practicePhase: {
     frText: 'System must cost less than $500/month',
-    taskDescription: 'Review and optimize costs',
-    componentsNeeded: [],
-    connectionsNeeded: [],
+    taskDescription: 'Build optimized full system under budget',
+    componentsNeeded: [
+      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
+      { type: 'load_balancer', reason: 'Distributes traffic', displayName: 'Load Balancer' },
+      { type: 'app_server', reason: 'Right-sized instances', displayName: 'App Server' },
+      { type: 'database', reason: 'Optimized capacity', displayName: 'Database' },
+      { type: 'cache', reason: 'Right-sized cache', displayName: 'Cache' },
+    ],
+    connectionsNeeded: [
+      { from: 'Client', to: 'Load Balancer', reason: 'Traffic enters through LB' },
+      { from: 'Load Balancer', to: 'App Server', reason: 'LB distributes to servers' },
+      { from: 'App Server', to: 'Database', reason: 'Server reads/writes URLs' },
+      { from: 'App Server', to: 'Cache', reason: 'Server caches hot URLs' },
+    ],
     successCriteria: [
-      'Review your component configurations',
-      'Ensure you\'re not over-provisioned',
-      'Total monthly cost should be under $500',
+      'Build full architecture with all requirements',
+      'Keep total cost under $500/month',
     ],
   },
   validation: {
-    requiredComponents: ['app_server', 'database', 'cache', 'load_balancer'],
+    requiredComponents: ['client', 'load_balancer', 'app_server', 'database', 'cache'],
     requiredConnections: [
       { fromType: 'client', toType: 'load_balancer' },
       { fromType: 'load_balancer', toType: 'app_server' },
@@ -1281,10 +1623,15 @@ const step10: GuidedStep = {
     requireCostUnderBudget: true,
   },
   hints: {
-    level1: 'Check your total monthly cost',
-    level2: 'Review component sizes - don\'t over-provision',
-    solutionComponents: [],
-    solutionConnections: [],
+    level1: 'Build complete system and keep costs under budget',
+    level2: 'Configure everything but don\'t over-provision - stay under $500/month',
+    solutionComponents: [{ type: 'client' }, { type: 'load_balancer' }, { type: 'app_server' }, { type: 'database' }, { type: 'cache' }],
+    solutionConnections: [
+      { from: 'client', to: 'load_balancer' },
+      { from: 'load_balancer', to: 'app_server' },
+      { from: 'app_server', to: 'database' },
+      { from: 'app_server', to: 'cache' },
+    ],
   },
 };
 
@@ -1295,10 +1642,24 @@ const step10: GuidedStep = {
 export const tinyUrlGuidedTutorial: GuidedTutorial = {
   problemId: 'tiny-url-guided',
   problemTitle: 'Build TinyURL - A System Design Journey',
+  
+  // NEW: Requirements gathering phase (Step 0)
+  requirementsPhase: tinyUrlRequirementsPhase,
+  
   totalSteps: 10,
   steps: [step1, step2, step3, step4, step5, step6, step7, step8, step9, step10],
 };
 
 export function getTinyUrlGuidedTutorial(): GuidedTutorial {
   return tinyUrlGuidedTutorial;
+}
+
+/**
+ * Helper to check if requirements phase is complete
+ */
+export function isRequirementsPhaseComplete(askedQuestionIds: string[]): boolean {
+  const criticalIds = tinyUrlRequirementsPhase.criticalQuestionIds;
+  const hasAllCritical = criticalIds.every(id => askedQuestionIds.includes(id));
+  const hasEnoughQuestions = askedQuestionIds.length >= tinyUrlRequirementsPhase.minimumQuestionsRequired;
+  return hasAllCritical && hasEnoughQuestions;
 }

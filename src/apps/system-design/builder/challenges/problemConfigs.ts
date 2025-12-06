@@ -103,6 +103,17 @@ export const problemConfigs: { [key: string]: ProblemConfig } = {
     hasObjectStorage: true,
   },
 
+  tinder: {
+    baseRps: 2000,
+    readRatio: 0.9, // 90% reads (swipe feed, viewing profiles, chats)
+    maxLatency: 200,
+    availability: 0.99,
+    avgFileSize: 2, // Profile photos
+    hasCdn: true,
+    hasCache: true,
+    hasObjectStorage: true,
+  },
+
   discord: {
     baseRps: 1200,
     readRatio: 0.8, // 80% reads (message viewing)

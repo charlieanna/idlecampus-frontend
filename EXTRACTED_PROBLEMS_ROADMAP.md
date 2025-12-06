@@ -270,9 +270,9 @@ For select problems:
 
 ## Summary
 
-**Current:** 47 total problems (40 original + 7 extracted)
-**Goal:** 658 total problems (40 original + 618 extracted)
-**Progress:** 1.1% of extracted problems added
+**Current:** 48 total problems (41 original + 7 extracted)
+**Goal:** 659 total problems (41 original + 618 extracted)
+**Progress:** ~1.1% of extracted problems added
 
 **Recommended Path:**
 1. ✅ Add 10 representative problems manually (DONE)

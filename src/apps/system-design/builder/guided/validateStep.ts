@@ -160,7 +160,11 @@ export function validateStep(
         (typeof replicationConfig === 'object' && replicationConfig?.enabled) ||
         (typeof replicationConfig === 'string' && replicationConfig !== 'none');
 
-      const replicas = database.config?.replicas || 0;
+      // Check replicas in multiple possible locations
+      const replicas =
+        database.config?.replication?.replicas ||  // nested in replication object
+        database.config?.replicas ||                // direct on config
+        0;
 
       if (!replicationEnabled || replicas < 2) {
         replicationPassed = false;

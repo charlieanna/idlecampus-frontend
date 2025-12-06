@@ -1,7 +1,7 @@
 /**
  * All Challenges with Python Templates
  *
- * All 658 challenges with auto-generated Python templates
+ * All 659 challenges with auto-generated Python templates
  * Every challenge = Tier 1 (Write Python code using context API)
  *
  * Challenges are automatically enhanced with Python templates using challengeMigration.ts
@@ -12,7 +12,7 @@ import { challenges } from './index';
 import { migrateAllChallenges } from './challengeMigration';
 
 /**
- * All available challenges with Python templates (658 total)
+ * All available challenges with Python templates (659+ total)
  * Automatically migrated from legacy challenges
  */
 export const tieredChallenges: Challenge[] = migrateAllChallenges(challenges);

@@ -32,10 +32,10 @@
  */
 
 /**
- * L1: Original Problems - KEEP ALL 40
+ * L1: Original Problems - KEEP ALL 40 (plus new Tinder dating problem)
  */
 export const originalProblems = [
-  // Social Media (10)
+  // Social & Dating (11)
   'instagram',
   'twitter',
   'reddit',
@@ -44,6 +44,7 @@ export const originalProblems = [
   'tiktok',
   'pinterest',
   'snapchat',
+  'tinder',
   'discord',
   'medium',
 

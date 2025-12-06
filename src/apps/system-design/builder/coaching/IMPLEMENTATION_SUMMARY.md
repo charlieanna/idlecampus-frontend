@@ -415,7 +415,7 @@ Built with:
 Designed for:
 - Idle Campus System Design Builder
 - 40+ curated problems
-- 658 total problems (with generated content)
+- 659 total problems (with generated content)
 
 ---
 
