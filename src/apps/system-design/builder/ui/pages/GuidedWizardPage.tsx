@@ -4,7 +4,7 @@ import { ReactFlowProvider } from 'reactflow';
 import { useNavigate } from 'react-router-dom';
 import { DesignCanvas } from '../components/DesignCanvas';
 import { InspectorModal } from '../components/InspectorModal';
-import { StoryPanel, CelebrationPanel, FullScreenLearnPanel, RequirementsGatheringPanel } from '../components/guided';
+import { StoryPanel, CelebrationPanel, FullScreenLearnPanel, RequirementsGatheringPanel, ProgressRoadmapCollapsible, CostSummaryWidget } from '../components/guided';
 import { useCanvasStore, useGuidedStore } from '../store';
 import { Challenge } from '../../types/testCase';
 import { validateStep } from '../../guided/validateStep';
@@ -439,6 +439,14 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
         )}
       </AnimatePresence>
 
+      {/* Progress Roadmap - shown during practice phase */}
+      {!isInRequirementsPhase && currentPhase === 'practice' && tutorial && progress && (
+        <ProgressRoadmapCollapsible
+          tutorial={tutorial}
+          progress={progress}
+        />
+      )}
+
       {/* Inspector Modal - shown when user clicks a component */}
       {showInspector && inspectorNodeId && systemGraph && (
         <InspectorModal
@@ -608,6 +616,14 @@ function PracticeWizard({
               )}
             </div>
           </motion.div>
+
+          {/* Cost Summary Widget */}
+          <div className="mb-6">
+            <CostSummaryWidget
+              systemGraph={systemGraph}
+              budgetTarget={2500}
+            />
+          </div>
 
           {/* Canvas Area */}
           <motion.div

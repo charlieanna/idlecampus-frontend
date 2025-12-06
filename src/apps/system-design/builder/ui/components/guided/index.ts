@@ -18,9 +18,12 @@ export { GuidedSidebar, DraggableComponent } from './GuidedSidebar';
 export { HintSystem, HintIndicator } from './HintSystem';
 export { ModeSwitcher, ModeIndicator } from './ModeSwitcher';
 export { StepProgressIndicator, StepProgressIndicatorCompact } from './StepProgressIndicator';
+export { ProgressRoadmapPanel, ProgressRoadmapCollapsible, ProgressRoadmapInline } from './ProgressRoadmapPanel';
 export { StepValidationFeedback, ValidationIndicator } from './StepValidationFeedback';
 export { StoryPanel } from './StoryPanel';
 export { CelebrationPanel } from './CelebrationPanel';
 export { FullScreenLearnPanel } from './FullScreenLearnPanel';
 // NEW: Requirements Gathering (Step 0)
 export { RequirementsGatheringPanel } from './RequirementsGatheringPanel';
+// Cost Summary Widget for practice phase
+export { CostSummaryWidget, CostIndicatorCompact } from './CostSummaryWidget';
