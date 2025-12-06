@@ -1094,5 +1094,4 @@ Else:
       ],
     }
   ],
-  nextLessons: ['basic-components', 'nfr-fundamentals'],
 };
