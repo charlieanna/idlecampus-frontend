@@ -6,6 +6,7 @@ import {
   CelebrationContent,
   RequirementsGatheringContent,
 } from '../../types/guidedTutorial';
+import { TestCase } from '../../types/testCase';
 
 /**
  * TinyURL Guided Tutorial - FR-FIRST EDITION
@@ -1477,22 +1478,22 @@ const step9: GuidedStep = {
 
 const step10Story: StoryContent = {
   emoji: '💰',
-  scenario: "End of month. The cloud bill arrives. Your CFO is NOT happy.",
-  hook: "You're spending $2,000/month on infrastructure for a service that makes $500/month. That's not sustainable! Time to optimize.",
-  challenge: "We need to meet all our requirements (latency, availability, capacity) while staying within budget. Every dollar counts!",
+  scenario: "Final Exam! It's time to prove your system works in production.",
+  hook: "Your architecture will be tested against 7 real-world test cases: 3 functional requirements and 4 non-functional requirements including traffic spikes, database failover, and cost constraints.",
+  challenge: "Build a complete system that passes ALL 7 test cases while staying under the $2,500/month budget. This is exactly what you'd face in a real interview!",
   illustration: 'cost-optimization',
 };
 
 const step10Celebration: CelebrationContent = {
   emoji: '🎉',
-  message: "Congratulations! You've built a production-ready TinyURL!",
-  achievement: "Complete system design with cost optimization",
+  message: "Final Exam - 7 Test Cases Passed!",
+  achievement: "Complete system design validated against production test cases",
   metrics: [
-    { label: 'Monthly Cost', before: '$2,000', after: '$400' },
-    { label: 'Cost per 1M requests', before: '$0.80', after: '$0.16' },
+    { label: 'Monthly Cost', before: '$2,000', after: 'Under $2,500' },
+    { label: 'Test Cases Passed', after: '7/7 ✓' },
     { label: 'All Requirements', after: 'Met ✓' },
   ],
-  nextTeaser: "You've completed the TinyURL system design journey! Try the 'Solve on Your Own' mode to test your skills.",
+  nextTeaser: "Congratulations! You've mastered the TinyURL system design. Try 'Solve on Your Own' mode or tackle a new challenge!",
 };
 
 const step10LearnPhase: TeachingContent = {
@@ -1556,9 +1557,9 @@ const step10LearnPhase: TeachingContent = {
 │  ─────────────────────────────────────────────     │
 │  TOTAL                                 $310/mo    │
 │                                                     │
-│  ✅ Under $500 budget                              │
+│  ✅ Under $2,500 budget                            │
 │  ✅ Meets 99.9% availability                       │
-│  ✅ Handles 1000 RPS                               │
+│  ✅ Handles 2000 RPS (viral spike)                 │
 │                                                     │
 └─────────────────────────────────────────────────────┘`,
   keyConcepts: [
@@ -1588,14 +1589,14 @@ const step10: GuidedStep = {
   celebration: step10Celebration,
   learnPhase: step10LearnPhase,
   practicePhase: {
-    frText: 'System must cost less than $500/month',
-    taskDescription: 'Build optimized full system under budget',
+    frText: 'Final Exam: Pass all 7 production test cases',
+    taskDescription: 'Build a complete system that passes all functional and non-functional requirements',
     componentsNeeded: [
       { type: 'client', reason: 'Represents end users', displayName: 'Client' },
       { type: 'load_balancer', reason: 'Distributes traffic', displayName: 'Load Balancer' },
       { type: 'app_server', reason: 'Right-sized instances', displayName: 'App Server' },
-      { type: 'database', reason: 'Optimized capacity', displayName: 'Database' },
-      { type: 'cache', reason: 'Right-sized cache', displayName: 'Cache' },
+      { type: 'database', reason: 'Optimized capacity with replication', displayName: 'Database' },
+      { type: 'cache', reason: 'Right-sized cache for hot URLs', displayName: 'Cache' },
     ],
     connectionsNeeded: [
       { from: 'Client', to: 'Load Balancer', reason: 'Traffic enters through LB' },
@@ -1604,8 +1605,13 @@ const step10: GuidedStep = {
       { from: 'App Server', to: 'Cache', reason: 'Server caches hot URLs' },
     ],
     successCriteria: [
-      'Build full architecture with all requirements',
-      'Keep total cost under $500/month',
+      'Pass FR-1: Basic Connectivity (10 RPS)',
+      'Pass FR-2: Fast Redirects (500 RPS, p99 < 100ms)',
+      'Pass FR-3: Unique Short Codes (50 RPS)',
+      'Pass NFR-P1: Redirect Latency Budget (1000 RPS)',
+      'Pass NFR-S1: Viral Traffic Spike (2000 RPS)',
+      'Pass NFR-R1: Database Failover (99% availability)',
+      'Pass NFR-C1: Cost Guardrail ($2,500/month)',
     ],
   },
   validation: {
@@ -1623,8 +1629,8 @@ const step10: GuidedStep = {
     requireCostUnderBudget: true,
   },
   hints: {
-    level1: 'Build complete system and keep costs under budget',
-    level2: 'Configure everything but don\'t over-provision - stay under $500/month',
+    level1: 'Build complete system that passes all 7 test cases',
+    level2: 'Configure for high availability and throughput while staying under $2,500/month - you need replication, caching, and proper capacity',
     solutionComponents: [{ type: 'client' }, { type: 'load_balancer' }, { type: 'app_server' }, { type: 'database' }, { type: 'cache' }],
     solutionConnections: [
       { from: 'client', to: 'load_balancer' },
@@ -1648,6 +1654,76 @@ export const tinyUrlGuidedTutorial: GuidedTutorial = {
   
   totalSteps: 10,
   steps: [step1, step2, step3, step4, step5, step6, step7, step8, step9, step10],
+  
+  // Final exam test cases - same 7 test cases as the regular TinyURL challenge
+  // Users must pass all 7 to complete the guided tutorial
+  // Note: Defined inline to avoid circular dependency with tinyUrl.ts
+  finalExamTestCases: [
+    {
+      name: 'Basic Connectivity',
+      type: 'functional',
+      requirement: 'FR-1',
+      description: 'Users can create short URLs and access them for redirects.',
+      traffic: { type: 'mixed', rps: 10, readRps: 5, writeRps: 5 },
+      duration: 10,
+      passCriteria: { maxErrorRate: 0 },
+    },
+    {
+      name: 'Fast Redirects',
+      type: 'functional',
+      requirement: 'FR-2',
+      description: 'Redirect short codes to the original URL within the latency target.',
+      traffic: { type: 'read', rps: 500, readRps: 500 },
+      duration: 30,
+      passCriteria: { maxP99Latency: 100, maxErrorRate: 0.01 },
+    },
+    {
+      name: 'Unique Short Codes',
+      type: 'functional',
+      requirement: 'FR-3',
+      description: 'Ensure duplicate URLs map to a single code while distinct URLs remain unique.',
+      traffic: { type: 'mixed', rps: 50, readRps: 25, writeRps: 25 },
+      duration: 30,
+      passCriteria: { maxErrorRate: 0 },
+    },
+    {
+      name: 'NFR-P1: Redirect Latency Budget',
+      type: 'performance',
+      requirement: 'NFR-P1',
+      description: 'Handle 1,000 redirect RPS while keeping p99 latency under 100ms.',
+      traffic: { type: 'read', rps: 1000, readRps: 1000 },
+      duration: 60,
+      passCriteria: { maxP99Latency: 100, maxErrorRate: 0.01 },
+    },
+    {
+      name: 'NFR-S1: Viral Traffic Spike',
+      type: 'scalability',
+      requirement: 'NFR-S1',
+      description: 'Absorb a sudden viral spike of 2,000 RPS (90% reads, 10% writes).',
+      traffic: { type: 'mixed', rps: 2000, readRps: 1800, writeRps: 200 },
+      duration: 60,
+      passCriteria: { maxP99Latency: 150, maxErrorRate: 0.05 },
+    },
+    {
+      name: 'NFR-R1: Database Failover',
+      type: 'reliability',
+      requirement: 'NFR-R1',
+      description: 'Primary database fails mid-test. Architecture must maintain availability.',
+      traffic: { type: 'mixed', rps: 1100, readRps: 1000, writeRps: 100 },
+      duration: 90,
+      failureInjection: { type: 'db_crash', atSecond: 45, recoverySecond: 65 },
+      passCriteria: { minAvailability: 0.99, maxDowntime: 10, maxErrorRate: 0.1 },
+    },
+    {
+      name: 'NFR-C1: Cost Guardrail',
+      type: 'cost',
+      requirement: 'NFR-C1',
+      description: 'Meet the $2,500/month budget target while sustaining production traffic.',
+      traffic: { type: 'mixed', rps: 1100, readRps: 1000, writeRps: 100 },
+      duration: 60,
+      passCriteria: { maxMonthlyCost: 2500, maxErrorRate: 0.05 },
+    },
+  ] as TestCase[],
 };
 
 export function getTinyUrlGuidedTutorial(): GuidedTutorial {

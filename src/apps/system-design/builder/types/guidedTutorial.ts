@@ -1,4 +1,5 @@
 import { ComponentType } from './problemDefinition';
+import { TestCase } from './testCase';
 
 /**
  * Guided Tutorial Mode Types
@@ -352,6 +353,10 @@ export interface GuidedTutorial {
   
   totalSteps: number;
   steps: GuidedStep[];
+  
+  // Final exam test cases - the same test cases as the regular challenge page
+  // When users complete the final step, they are validated against these test cases
+  finalExamTestCases?: TestCase[];
 }
 
 /**
