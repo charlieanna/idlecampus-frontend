@@ -4,8 +4,8 @@ import { ReactFlowProvider } from 'reactflow';
 import { useNavigate } from 'react-router-dom';
 import { DesignCanvas } from '../components/DesignCanvas';
 import { InspectorModal } from '../components/InspectorModal';
-import { StoryPanel, CelebrationPanel, FullScreenLearnPanel, RequirementsGatheringPanel, ProgressRoadmapCollapsible, CostSummaryWidget, FriendlyFeedbackPanel, SandboxModeToggle, SandboxModeBanner, SolutionComparisonModal } from '../components/guided';
-import { useCanvasStore, useGuidedStore } from '../store';
+import { StoryPanel, CelebrationPanel, FullScreenLearnPanel, RequirementsGatheringPanel, ProgressRoadmapCollapsible, CostSummaryWidget, FriendlyFeedbackPanel, SandboxModeToggle, SandboxModeBanner, SolutionComparisonModal, InlineCodeEditor } from '../components/guided';
+import { useCanvasStore, useGuidedStore, useCodeStore } from '../store';
 import { Challenge } from '../../types/testCase';
 import { validateStep } from '../../guided/validateStep';
 import { generateGuidedTutorial } from '../../guided/generateGuidedTutorial';
@@ -37,6 +37,9 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
     selectedNode,
     setSelectedNode,
   } = useCanvasStore();
+
+  // Code store (for validation)
+  const { pythonCodeByServer } = useCodeStore();
 
   // Guided store
   const {
@@ -189,7 +192,7 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
     setValidationResult(null);
 
     setTimeout(() => {
-      const result = validateStep(currentStep, systemGraph);
+      const result = validateStep(currentStep, systemGraph, pythonCodeByServer);
       console.log('[GuidedWizard] Validation result:', JSON.stringify(result, null, 2));
       setValidationResult(result);
       setIsValidating(false);
@@ -588,6 +591,17 @@ function PracticeWizard({
   onAddComponent,
   onUpdateConfig,
 }: PracticeWizardProps) {
+  const { pythonCodeByServer } = useCodeStore();
+  
+  // Check if this step requires code implementation
+  const requiresCode = step.validation.requireCodeImplementation;
+  
+  // Find the app server that needs code (first one with APIs configured)
+  const appServer = systemGraph?.components.find(c => 
+    (c.type === 'app_server' || c.type === 'compute') && 
+    c.config?.handledAPIs?.length > 0
+  );
+  
   // Click to add component (simpler than drag-drop for embedded canvas)
   const handleAddClick = (componentType: string) => {
     console.log('[PracticeWizard] Adding component:', componentType);
@@ -691,18 +705,37 @@ function PracticeWizard({
                       </div>
                     ))}
                   </div>
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
-                    <div className="flex items-start gap-3">
-                      <span className="text-xl">👆</span>
-                      <div className="text-sm text-amber-800">
-                        <strong>Tip:</strong> Click on the <span className="font-semibold">App Server</span> node in the canvas below to open the configuration panel. Then configure the APIs and write your Python code.
+                  {!requiresCode && (
+                    <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mt-4">
+                      <div className="flex items-start gap-3">
+                        <span className="text-xl">👆</span>
+                        <div className="text-sm text-amber-800">
+                          <strong>Tip:</strong> Click on the <span className="font-semibold">App Server</span> node in the canvas below to open the configuration panel. Then configure the APIs and write your Python code.
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
           </motion.div>
+
+          {/* CODE EDITOR SECTION - Show when step requires code */}
+          {requiresCode && appServer && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="bg-white rounded-xl shadow-sm border-2 border-blue-300 mb-6 overflow-hidden"
+            >
+              <div className="h-[450px]">
+                <InlineCodeEditor
+                  appServer={appServer}
+                  challenge={undefined}
+                />
+              </div>
+            </motion.div>
+          )}
 
           {/* Cost Summary Widget */}
           <div className="mb-6">

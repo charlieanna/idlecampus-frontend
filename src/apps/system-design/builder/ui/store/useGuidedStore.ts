@@ -216,9 +216,10 @@ export const useGuidedStore = create<GuidedState>()(
         const { progress, tutorial } = get();
         if (!progress) return;
 
-        // Determine next phase after requirements
+        // After requirements phase, skip story (already shown in requirements-intro) and go to learn
         const firstStep = tutorial?.steps[0];
-        const nextPhase: StepPhase = firstStep?.story ? 'story' : 'learn';
+        // Skip story phase since welcome was already shown in requirements-intro
+        const nextPhase: StepPhase = 'learn';
 
         set({
           progress: {
@@ -247,6 +248,8 @@ export const useGuidedStore = create<GuidedState>()(
 
         const currentStep = tutorial.steps[progress.currentStepIndex];
         const nextIndex = progress.currentStepIndex + 1;
+
+        console.log('[GuidedStore] advanceToNextStep - currentIndex:', progress.currentStepIndex, 'nextIndex:', nextIndex, 'currentStep:', currentStep?.id, 'nextStep:', tutorial.steps[nextIndex]?.id);
 
         // Mark current step as complete
         const completedStepIds = [...progress.completedStepIds];
@@ -282,6 +285,8 @@ export const useGuidedStore = create<GuidedState>()(
           // Move to next step - start with story phase if available
           const nextStep = tutorial.steps[nextIndex];
           const nextPhase: StepPhase = nextStep?.story ? 'story' : 'learn';
+
+          console.log('[GuidedStore] Moving to step', nextIndex, 'phase:', nextPhase, 'stepId:', nextStep?.id);
 
           set({
             progress: {

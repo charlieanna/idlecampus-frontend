@@ -94,10 +94,14 @@ function connectionExists(
 
 /**
  * Validate the current step against the user's canvas
+ * @param step - The step to validate
+ * @param graph - The current system graph
+ * @param codeByServer - Optional: Code store to check if code has been written
  */
 export function validateStep(
   step: GuidedStep,
-  graph: SystemGraph
+  graph: SystemGraph,
+  codeByServer?: Record<string, { code: string; apis: string[] }>
 ): StepValidationResult {
   const missingComponents: string[] = [];
   const missingConnections: Array<{ from: string; to: string }> = [];
@@ -141,6 +145,64 @@ export function validateStep(
     } else {
       apiConfigPassed = false;
       apiConfigMessage = 'No App Server found to configure';
+    }
+  }
+
+  // Check for Python code implementation requirement (Step 2)
+  let codeImplementationPassed = true;
+  let codeImplementationMessage = '';
+
+  if (step.validation.requireCodeImplementation) {
+    // Find app server with APIs configured
+    const appServer = graph.components.find(c =>
+      (typeMatches(c.type, 'app_server') || typeMatches(c.type, 'compute')) &&
+      c.config?.handledAPIs?.length > 0
+    );
+    
+    if (!appServer) {
+      codeImplementationPassed = false;
+      codeImplementationMessage = 'App Server needs APIs configured first';
+      suggestions.push('Click on the App Server and assign APIs (e.g., POST /api/v1/urls, GET /api/v1/urls/*)');
+    } else {
+      // Check if code exists in code store
+      const serverId = appServer.id;
+      const serverCode = codeByServer?.[serverId];
+      const codeContent = serverCode?.code || '';
+      
+      // Check if code has been edited beyond just the template
+      // Code is considered "implemented" if:
+      // 1. It has content beyond just comments
+      // 2. It has at least one return statement or assignment (actual implementation)
+      // 3. It's not just the template with TODOs
+      const hasCode = codeContent.trim().length > 0 &&
+        // Has actual code (not just comments/TODOs)
+        (codeContent.includes('return') || 
+         codeContent.includes('=') ||
+         codeContent.includes('url_mappings[') ||
+         codeContent.includes('short_code =') ||
+         codeContent.includes('context[')) &&
+        // Not just the template (has some implementation beyond TODOs)
+        !(codeContent.split('\n').filter(line => 
+          line.trim().startsWith('#') || 
+          line.trim().startsWith('"""') ||
+          line.trim() === '' ||
+          line.trim().includes('TODO')
+        ).length / codeContent.split('\n').length > 0.7); // Less than 70% comments/TODOs
+      
+      // Also check graph metadata flag (for backward compatibility)
+      const hasCodeEdits = graph.metadata?.hasUserCodeEdits === true;
+      
+      // Also check component config (for backward compatibility)
+      const hasPythonCodeInConfig = appServer.config?.pythonCode && 
+        typeof appServer.config.pythonCode === 'string' &&
+        appServer.config.pythonCode.trim().length > 0;
+      
+      if (!hasCode && !hasCodeEdits && !hasPythonCodeInConfig) {
+        codeImplementationPassed = false;
+        codeImplementationMessage = 'Python handlers need to be implemented';
+        const apiList = appServer.config?.handledAPIs?.join(', ') || 'the configured APIs';
+        suggestions.push(`Write the Python code in the code editor above. Fill in the TODO sections to implement handlers for ${apiList}`);
+      }
     }
   }
 
@@ -297,6 +359,7 @@ export function validateStep(
   const passed = missingComponents.length === 0 &&
                  missingConnections.length === 0 &&
                  apiConfigPassed &&
+                 codeImplementationPassed &&
                  replicationPassed &&
                  multiInstancePassed &&
                  cacheStrategyPassed &&
@@ -325,6 +388,10 @@ export function validateStep(
 
     if (!apiConfigPassed && apiConfigMessage) {
       issues.push(apiConfigMessage);
+    }
+
+    if (!codeImplementationPassed && codeImplementationMessage) {
+      issues.push(codeImplementationMessage);
     }
 
     if (!replicationPassed && replicationMessage) {

@@ -33,3 +33,5 @@ export { FriendlyFeedbackPanel } from './FriendlyFeedbackPanel';
 export { SandboxModeToggle, SandboxModeBanner } from './SandboxModeToggle';
 // Solution Comparison Modal for comparing user solution vs optimal
 export { SolutionComparisonModal } from './SolutionComparisonModal';
+// Inline Code Editor for guided tutorial practice phase
+export { InlineCodeEditor } from './InlineCodeEditor';

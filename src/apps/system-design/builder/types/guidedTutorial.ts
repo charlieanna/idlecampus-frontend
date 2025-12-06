@@ -200,6 +200,8 @@ export interface GuidedStep {
     requiredConnections: { fromType: string; toType: string }[];
     // If true, requires App Server to have at least one API configured
     requireAPIConfiguration?: boolean;
+    // If true, requires user to have written/edited Python code (basic presence check)
+    requireCodeImplementation?: boolean;
     // If true, requires Database to have replication configured
     requireDatabaseReplication?: boolean;
     // If true, requires App Server to have multiple instances

@@ -71,8 +71,8 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
     markTutorialComplete,
   } = useGuidedStore();
 
-  // Code store for Python tabs (used by PythonCodePage internally)
-  useCodeStore();
+  // Code store for Python tabs (used by PythonCodePage internally and for validation)
+  const { pythonCodeByServer } = useCodeStore();
 
   // UI store for active tab
   const { activeTab, setActiveTab } = useUIStore();
@@ -180,7 +180,7 @@ export const GuidedCanvasPage: React.FC<GuidedCanvasPageProps> = ({
 
     // Simulate a short delay for UX
     setTimeout(() => {
-      const result = validateStep(currentStep, systemGraph);
+      const result = validateStep(currentStep, systemGraph, pythonCodeByServer);
       setValidationResult(result);
       setIsValidating(false);
 

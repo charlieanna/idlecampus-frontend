@@ -372,8 +372,8 @@ const step1: GuidedStep = {
 const step2Story: StoryContent = {
   emoji: '⚙️',
   scenario: "Your App Server is connected, but it's just an empty box right now.",
-  hook: "It doesn't know HOW to shorten URLs or redirect users. We need to teach it!",
-  challenge: "Configure the App Server with APIs and write the Python code to handle URL shortening.",
+  hook: "It doesn't know HOW to shorten URLs or redirect users. We need to teach it by writing actual Python code!",
+  challenge: "Configure the App Server with APIs and implement the Python handlers for URL shortening and redirects.",
   illustration: 'configure-server',
 };
 
@@ -389,26 +389,29 @@ const step2Celebration: CelebrationContent = {
 };
 
 const step2LearnPhase: TeachingContent = {
-  conceptTitle: 'API Design & Implementation',
-  conceptExplanation: `Your App Server needs to handle two main operations:
+  conceptTitle: 'API Design & Python Implementation',
+  conceptExplanation: `Your App Server needs to handle two main operations. You'll implement these in Python!
 
-**1. Create Short URL (POST /api/v1/urls)**
+**1. Create Short URL (POST /api/v1/urls)** — You'll implement this in Python
 - Receives: Original long URL
 - Returns: Shortened URL code
-- Logic: Generate unique code, store mapping
+- Your code: Generate unique code, store mapping in memory (for now)
 
-**2. Redirect (GET /api/v1/urls/:code)**
+**2. Redirect (GET /api/v1/urls/:code)** — You'll implement this in Python
 - Receives: Short code
 - Returns: Redirect to original URL
-- Logic: Look up code, return original URL
+- Your code: Look up code, return original URL
 
-The code you write here is the "brain" of your URL shortener!`,
-  whyItMatters: 'Without the code, your server is just an empty shell. The Python handlers define what actually happens when users interact with your system.',
+**By the end of this step you should have:**
+1. ✅ APIs assigned to the App Server
+2. ✅ Python handlers implemented for both endpoints`,
+  whyItMatters: 'Without the code, your server is just an empty shell. The Python handlers define what actually happens when users interact with your system. This is where your system design becomes real!',
   keyPoints: [
-    'POST endpoint creates new short URLs',
-    'GET endpoint redirects users to original URLs',
+    'POST endpoint creates new short URLs (you\'ll write the Python code)',
+    'GET endpoint redirects users to original URLs (you\'ll write the Python code)',
     'Each endpoint needs proper error handling',
     'Short codes should be unique and URL-safe',
+    'Open the Python tab to see and edit your handler code',
   ],
   diagram: `
 POST /api/v1/urls
@@ -425,6 +428,7 @@ GET /api/v1/urls/abc123
   keyConcepts: [
     { title: 'REST API', explanation: 'POST to create, GET to read/redirect', icon: '🔌' },
     { title: 'Short Code', explanation: 'Unique identifier like "abc123" for each URL', icon: '🔑' },
+    { title: 'Python Handlers', explanation: 'The actual code that processes each request', icon: '🐍' },
   ],
   quickCheck: {
     question: 'Which HTTP method should be used to CREATE a new short URL?',
@@ -447,29 +451,30 @@ const step2: GuidedStep = {
   celebration: step2Celebration,
   learnPhase: step2LearnPhase,
   practicePhase: {
-    frText: 'App Server must handle URL shortening and redirects',
-    taskDescription: 'Build Client → App Server, then configure APIs and Python code',
+    frText: 'App Server must handle URL shortening and redirects with Python code',
+    taskDescription: 'Re-use your Client → App Server from Step 1, then configure APIs and implement the Python handlers',
     componentsNeeded: [
-      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
-      { type: 'app_server', reason: 'Processes API requests', displayName: 'App Server' },
+      { type: 'client', reason: 'Already added in Step 1', displayName: 'Client' },
+      { type: 'app_server', reason: 'Configure APIs and write Python code', displayName: 'App Server' },
     ],
     connectionsNeeded: [
-      { from: 'Client', to: 'App Server', reason: 'Users send requests' },
+      { from: 'Client', to: 'App Server', reason: 'Already connected in Step 1' },
     ],
     successCriteria: [
-      'Add Client and App Server, connect them',
       'Click on App Server to open inspector',
       'Assign POST /api/v1/urls and GET /api/v1/urls/* APIs',
+      'Open the Python tab and implement the handlers for both endpoints',
     ],
   },
   validation: {
     requiredComponents: ['client', 'app_server'],
     requiredConnections: [{ fromType: 'client', toType: 'app_server' }],
     requireAPIConfiguration: true, // Step 2 requires APIs to be assigned
+    requireCodeImplementation: true, // Step 2 requires Python code to be written
   },
   hints: {
-    level1: 'First build Client → App Server, then click App Server to configure APIs',
-    level2: 'Add components, connect them, then assign APIs in the inspector',
+    level1: 'Click App Server to configure APIs, then switch to the Python tab to write your handlers',
+    level2: 'After assigning APIs in the inspector, switch to the Python editor tab and fill in the TODOs in the template. Implement shorten_url() and redirect().',
     solutionComponents: [{ type: 'client' }, { type: 'app_server' }],
     solutionConnections: [{ from: 'client', to: 'app_server' }],
   },
@@ -1011,47 +1016,49 @@ const step6: GuidedStep = {
 };
 
 // =============================================================================
-// STEP 7: The Scale - Multiple App Servers
+// STEP 7: The Scale - Multiple App Servers (Building on Step 5 & 6)
 // =============================================================================
 
 const step7Story: StoryContent = {
-  emoji: '📈',
-  scenario: "Your Load Balancer is ready, but it's only balancing to ONE server!",
-  hook: "That single App Server can handle 1,000 requests/second. But you're getting 10,000! Users see timeout errors. The server CPU is at 100%.",
-  challenge: "One server isn't enough. We need to scale horizontally - run multiple copies of our App Server!",
+  emoji: '🔥',
+  scenario: "Your architecture from Steps 5 & 6 is solid: Load Balancer, Cache, and Replicated Database. But there's one problem...",
+  hook: "You only have ONE App Server! The Load Balancer is ready to distribute traffic, but it's sending everything to a single server. That server is at 100% CPU and dropping requests!",
+  challenge: "Time to scale OUT. In Step 5, you added the Load Balancer. In Step 6, you replicated the Database. Now complete the picture: run multiple App Server instances so the LB actually has something to balance!",
   illustration: 'horizontal-scaling',
 };
 
 const step7Celebration: CelebrationContent = {
   emoji: '🚀',
-  message: "You've built a production-ready system!",
-  achievement: "Horizontally scalable architecture complete",
+  message: "Your system is now horizontally scalable!",
+  achievement: "No more single points of failure - true High Availability achieved",
   metrics: [
+    { label: 'App Server Instances', before: '1', after: '2+' },
     { label: 'Capacity', before: '1K RPS', after: '10K+ RPS' },
-    { label: 'Single Points of Failure', before: '3', after: '0' },
     { label: 'Availability', before: '99%', after: '99.99%' },
   ],
-  nextTeaser: "Congratulations! You've completed the TinyURL system design journey!",
+  nextTeaser: "Now let's make sure your cache strategy is optimized...",
 };
 
 const step7LearnPhase: TeachingContent = {
-  conceptTitle: 'Horizontal Scaling',
-  conceptExplanation: `**Vertical Scaling** = Bigger server (more CPU, RAM)
-- Limited: can't add infinite CPU to one machine
-- Expensive: 2x CPU often costs 4x price
-- Single point of failure
+  conceptTitle: 'Scaling Out: Multiple App Server Instances',
+  conceptExplanation: `**Recap: What you've built so far:**
+- Step 5: Added Load Balancer to distribute traffic
+- Step 6: Replicated Database for data durability
 
-**Horizontal Scaling** = More servers
-- Unlimited: add as many servers as needed
-- Cost-effective: use commodity hardware
-- Redundant: if one fails, others continue
+**What's missing?** Multiple App Server instances!
 
-**For TinyURL:**
-- App Servers are **stateless** (no data stored locally)
-- Load Balancer distributes requests evenly
+Your Load Balancer can distribute traffic, but with only 1 server, there's nothing to balance. You need **2+ instances** for:
+
+1. **Higher Throughput**: 2 servers = 2x capacity
+2. **High Availability**: If one server crashes, the other handles traffic
+3. **Zero-Downtime Deploys**: Update one server while the other serves traffic
+
+**Why this works for TinyURL:**
+- App Servers are **stateless** - they don't store data locally
+- All state lives in the Database and Cache
 - Any server can handle any request
-- Add/remove servers based on traffic`,
-  whyItMatters: 'Horizontal scaling is how tech giants handle billions of requests. Google, Netflix, and Amazon all run thousands of servers behind load balancers.',
+- Load Balancer health checks remove failed servers automatically`,
+  whyItMatters: 'A single server is a single point of failure. With 2+ instances behind a load balancer, your system survives server crashes, handles traffic spikes, and allows maintenance without downtime.',
   realWorldExample: {
     company: 'Netflix',
     scenario: 'When a popular show drops, traffic spikes 10x in minutes.',
@@ -1066,15 +1073,15 @@ const step7LearnPhase: TeachingContent = {
     icon: '🤖',
   },
   keyPoints: [
-    'Stateless servers = easy horizontal scaling',
-    'Load Balancer distributes traffic evenly',
-    'Multiple instances = no single point of failure',
-    'Auto-scaling adjusts capacity to traffic',
-    'Start with 2-3 instances minimum for high availability',
+    'Stateless App Servers = easy horizontal scaling',
+    'Load Balancer distributes traffic across all instances',
+    '2+ instances = no single point of failure for compute',
+    'Combined with DB replication = full High Availability',
+    'Health checks automatically remove failed servers',
   ],
   diagram: `
 ┌─────────────────────────────────────────────────────┐
-│              HORIZONTAL SCALING                     │
+│         COMPLETE HIGH-AVAILABILITY SETUP            │
 ├─────────────────────────────────────────────────────┤
 │                                                     │
 │              ┌──────────────┐                       │
@@ -1083,38 +1090,40 @@ const step7LearnPhase: TeachingContent = {
 │                     │                               │
 │                     ▼                               │
 │            ┌────────────────┐                       │
-│            │ Load Balancer  │                       │
+│            │ Load Balancer  │  ← Step 5             │
 │            └───────┬────────┘                       │
-│           ┌────────┼────────┐                       │
-│           │        │        │                       │
-│           ▼        ▼        ▼                       │
-│     ┌─────────┐ ┌─────────┐ ┌─────────┐            │
-│     │  App 1  │ │  App 2  │ │  App 3  │            │
-│     │ Server  │ │ Server  │ │ Server  │            │
-│     └────┬────┘ └────┬────┘ └────┬────┘            │
-│          └───────────┼───────────┘                 │
-│                      ▼                              │
-│            ┌────────────────┐                       │
-│            │   Database     │                       │
-│            │  (replicated)  │                       │
-│            └────────────────┘                       │
+│           ┌────────┴────────┐                       │
+│           │                 │                       │
+│           ▼                 ▼                       │
+│     ┌─────────┐       ┌─────────┐                  │
+│     │  App 1  │       │  App 2  │  ← Step 7 (NOW!) │
+│     │ Server  │       │ Server  │                  │
+│     └────┬────┘       └────┬────┘                  │
+│          └────────┬────────┘                       │
+│                   │                                 │
+│          ┌────────┴────────┐                       │
+│          ▼                 ▼                       │
+│    ┌──────────┐     ┌──────────────┐              │
+│    │  Cache   │     │   Database   │  ← Step 6    │
+│    │ (Redis)  │     │ (Replicated) │              │
+│    └──────────┘     └──────────────┘              │
 └─────────────────────────────────────────────────────┘`,
   keyConcepts: [
     { title: 'Stateless', explanation: 'Server stores no user data - any server can handle any request', icon: '🔄' },
-    { title: 'Auto-Scaling', explanation: 'Automatically add/remove servers based on load', icon: '📊' },
-    { title: 'Health Checks', explanation: 'LB removes unhealthy servers from rotation', icon: '💓' },
-    { title: 'Session Affinity', explanation: 'Optional: route same user to same server (not needed for stateless)', icon: '🎯' },
+    { title: 'Instance Count', explanation: 'Number of copies of your App Server running', icon: '🔢' },
+    { title: 'Health Checks', explanation: 'LB pings servers, removes unhealthy ones from rotation', icon: '💓' },
+    { title: 'High Availability', explanation: 'System stays up even when components fail', icon: '🛡️' },
   ],
   quickCheck: {
-    question: 'Why can TinyURL App Servers scale horizontally?',
+    question: 'Why do you need multiple App Server instances behind the Load Balancer?',
     options: [
-      'They use special scaling software',
-      'They are stateless - no local data',
-      'They have lots of RAM',
-      'They run on special hardware',
+      'The Load Balancer requires at least 2 servers to work',
+      'For higher capacity AND to survive server failures',
+      'To store more data in memory',
+      'To make the database faster',
     ],
     correctIndex: 1,
-    explanation: 'TinyURL App Servers are stateless - they just process requests and query the database. Since they don\'t store data locally, any server can handle any request.',
+    explanation: 'Multiple instances give you both higher throughput (more capacity) and high availability (survive failures). The LB distributes traffic and removes failed servers.',
   },
 };
 
@@ -1126,25 +1135,21 @@ const step7: GuidedStep = {
   celebration: step7Celebration,
   learnPhase: step7LearnPhase,
   practicePhase: {
-    frText: 'System must handle 10K+ requests/second',
-    taskDescription: 'Build full system with multiple App Server instances',
+    frText: 'System must handle 10K+ RPS with no single points of failure',
+    taskDescription: 'Scale out: Configure your App Server to run 2+ instances (the architecture from Steps 5-6 should already be in place)',
     componentsNeeded: [
-      { type: 'client', reason: 'Represents end users', displayName: 'Client' },
-      { type: 'load_balancer', reason: 'Distributes traffic', displayName: 'Load Balancer' },
-      { type: 'app_server', reason: 'Multiple instances for scale', displayName: 'App Server' },
-      { type: 'database', reason: 'Replicated for HA', displayName: 'Database' },
-      { type: 'cache', reason: 'Caches hot URLs', displayName: 'Cache' },
+      { type: 'load_balancer', reason: 'Already added in Step 5', displayName: 'Load Balancer' },
+      { type: 'app_server', reason: 'Configure for 2+ instances', displayName: 'App Server' },
+      { type: 'database', reason: 'Already replicated in Step 6', displayName: 'Database' },
+      { type: 'cache', reason: 'Already added in Step 4', displayName: 'Cache' },
     ],
     connectionsNeeded: [
-      { from: 'Client', to: 'Load Balancer', reason: 'Traffic enters through LB' },
-      { from: 'Load Balancer', to: 'App Server', reason: 'LB distributes to multiple servers' },
-      { from: 'App Server', to: 'Database', reason: 'Server reads/writes URLs' },
-      { from: 'App Server', to: 'Cache', reason: 'Server caches hot URLs' },
+      { from: 'Load Balancer', to: 'App Server', reason: 'LB distributes to multiple instances' },
     ],
     successCriteria: [
-      'Build full architecture',
-      'Configure Database replication',
-      'Set App Server instances to 2+',
+      'Click on App Server → Set Instances to 2 or more',
+      'Verify Database replication is still enabled (from Step 6)',
+      'Your system now has no single points of failure!',
     ],
   },
   validation: {
@@ -1159,8 +1164,8 @@ const step7: GuidedStep = {
     requireMultipleAppInstances: true,
   },
   hints: {
-    level1: 'Build the full system with multiple App Server instances',
-    level2: 'Add all components, configure DB replication, then set App Server instances to 2+',
+    level1: 'Click on the App Server and increase the instance count to 2 or more',
+    level2: 'Your architecture should already have LB, DB with replication, and Cache from previous steps. Just configure App Server instances: Click App Server → Set Instances to 2+',
     solutionComponents: [{ type: 'client' }, { type: 'load_balancer' }, { type: 'app_server' }, { type: 'database' }, { type: 'cache' }],
     solutionConnections: [
       { from: 'client', to: 'load_balancer' },
