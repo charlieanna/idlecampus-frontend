@@ -102,12 +102,12 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
     const firstStep = loadedTutorial.steps[0];
     
     // Determine initial phase:
-    // 1. If has requirements phase -> 'requirements-questions'
+    // 1. If has requirements phase -> start with 'requirements-intro' (welcome story)
     // 2. Else if first step has story -> 'story'
     // 3. Else -> 'learn'
     let initialPhase: StepPhase;
     if (hasRequirements) {
-      initialPhase = 'requirements-questions';
+      initialPhase = 'requirements-intro'; // Show welcome story first, then requirements
     } else {
       initialPhase = firstStep?.story ? 'story' : 'learn';
     }
@@ -293,6 +293,12 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
     askQuestion(questionId);
   }, [askQuestion]);
 
+  // Handle requirements intro continue → go to requirements questions
+  const handleRequirementsIntroContinue = useCallback(() => {
+    console.log('[GuidedWizard] Requirements intro complete, moving to questions');
+    setPhase('requirements-questions');
+  }, [setPhase]);
+
   // Handle completing requirements phase
   const handleCompleteRequirementsPhase = useCallback(() => {
     console.log('[GuidedWizard] Requirements phase complete');
@@ -313,7 +319,7 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
     
     let initialPhase: StepPhase;
     if (hasRequirements) {
-      initialPhase = 'requirements-questions';
+      initialPhase = 'requirements-intro'; // Show welcome story first, then requirements
     } else {
       initialPhase = firstStep?.story ? 'story' : 'learn';
     }
@@ -399,8 +405,24 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
       </button>
 
       <AnimatePresence mode="wait">
+        {/* Requirements Intro Phase - Welcome Story */}
+        {currentPhase === 'requirements-intro' && requirementsPhase && (
+          <StoryPanel
+            key="requirements-intro"
+            story={{
+              emoji: '🎤',
+              scenario: "Welcome, engineer! You've been hired to build TinyURL - a URL shortening service.",
+              hook: "Before you start designing, you need to understand what you're building. In a real interview, you'd ask clarifying questions first.",
+              challenge: "Let's gather the functional requirements by asking the right questions.",
+            }}
+            stepNumber={0}
+            totalSteps={tutorial.totalSteps}
+            onContinue={handleRequirementsIntroContinue}
+          />
+        )}
+
         {/* Requirements Gathering Phase (Step 0) */}
-        {isInRequirementsPhase && requirementsPhase && (
+        {currentPhase === 'requirements-questions' && requirementsPhase && (
           <RequirementsGatheringPanel
             key="requirements"
             content={requirementsPhase}
