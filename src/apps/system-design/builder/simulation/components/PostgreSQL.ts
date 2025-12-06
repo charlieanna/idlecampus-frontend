@@ -45,18 +45,14 @@ export class PostgreSQL extends Component {
       : { enabled: false, shards: 1, shardKey: '' };
     
     super(id, 'postgresql', {
-      replication: false,
       replicationMode: 'single-leader',
-      sharding: { enabled: false, shards: 1, shardKey: '' },
       engine: 'postgresql',
       isolationLevel: 'read-committed',
       storageType: 'gp3',
       storageSizeGB: 100,
       ...config,
-      // Override with properly merged nested objects
       replication: mergedReplication,
       sharding: mergedSharding,
-      // Override instanceType to always be commodity-db
       instanceType: 'commodity-db',
     });
     

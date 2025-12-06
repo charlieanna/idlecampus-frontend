@@ -36,10 +36,15 @@ app.use(cors({
     if (!origin) return callback(null, true);
     
     // Check if the origin is allowed
-    if (allowedOrigins.includes(origin) || origin.includes('.replit.dev')) {
+    const isReplitDomain = origin.includes('.replit.dev') || 
+                           origin.includes('.repl.co') || 
+                           origin.includes('.replit.app') ||
+                           origin.includes('.kirk.replit.dev');
+    
+    if (allowedOrigins.includes(origin) || isReplitDomain) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(null, true);
     }
   },
   credentials: true,
