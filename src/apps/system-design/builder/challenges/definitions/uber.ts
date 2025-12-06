@@ -9,6 +9,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { uberGuidedTutorial } from './uberGuided';
 
 /**
  * Uber - Ride Sharing Platform
@@ -477,6 +478,7 @@ def get_ride_history(rider_id: str) -> List[Dict]:
     rider_rides.sort(key=lambda x: x['created_at'], reverse=True)
     return rider_rides
 `,
+  guidedTutorial: uberGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements
