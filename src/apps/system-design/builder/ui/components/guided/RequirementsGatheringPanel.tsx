@@ -1,5 +1,6 @@
 import { motion } from 'framer-motion';
 import { RequirementsGatheringContent, InterviewQuestion, ConfirmedFR } from '../../../types/guidedTutorial';
+import { MarkdownContent } from '../MarkdownContent';
 
 // =============================================================================
 // TYPES
@@ -55,7 +56,9 @@ function QuestionAnswerCard({ question }: { question: InterviewQuestion }) {
           <span className="text-gray-600 text-lg mt-0.5">👩‍💼</span>
           <div className="flex-1">
             <span className="text-xs text-gray-500 font-medium">Interviewer responds:</span>
-            <p className="text-gray-700 mt-1 whitespace-pre-line">{question.answer}</p>
+            <div className="text-gray-700 mt-1">
+              <MarkdownContent content={question.answer} />
+            </div>
             
             {/* Show calculation if present */}
             {question.calculation && (
