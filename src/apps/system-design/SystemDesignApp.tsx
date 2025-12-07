@@ -3,6 +3,8 @@ import { ProblemCatalog } from './builder/ui/components/ProblemCatalog';
 import { TieredSystemDesignBuilder } from './builder/ui/TieredSystemDesignBuilderRefactored';
 import { LessonsPage } from './builder/ui/pages/LessonsPage';
 import { LessonViewer } from './builder/ui/pages/LessonViewer';
+import { GuidedTutorialHub } from './builder/ui/pages/GuidedTutorialHub';
+import { GuidedCategoryPage } from './builder/ui/pages/GuidedCategoryPage';
 import { ProgressiveDashboard } from './progressive/pages/ProgressiveDashboard';
 import { AssessmentPage } from './progressive/pages/AssessmentPage';
 import { TrackDetailPage } from './progressive/pages/TrackDetailPage';
@@ -59,6 +61,10 @@ export default function SystemDesignApp() {
       {/* Lessons routes */}
       <Route path="/lessons" element={<LessonsPage />} />
       <Route path="/lessons/:lessonId" element={<LessonViewer />} />
+
+      {/* Guided Tutorial routes */}
+      <Route path="/guided" element={<GuidedTutorialHub />} />
+      <Route path="/guided/:categoryId" element={<GuidedCategoryPage />} />
 
       {/* Individual challenge routes - all use tiered system now */}
       {/* Only match if challengeId is not empty and not one of the reserved paths */}

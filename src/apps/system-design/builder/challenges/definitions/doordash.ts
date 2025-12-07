@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../validation/validators/common
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { doordashGuidedTutorial } from './doordashGuided';
 
 /**
  * DoorDash - Food Delivery Platform
@@ -189,6 +190,8 @@ def get_order_status(order_id: str) -> Dict:
         'driver_location': driver_location
     }
 `,
+
+  guidedTutorial: doordashGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

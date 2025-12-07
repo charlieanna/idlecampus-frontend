@@ -8,6 +8,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { amazonGuidedTutorial } from './amazonGuided';
 
 /**
  * Amazon - E-commerce Marketplace
@@ -355,6 +356,9 @@ def get_order_history(user_id: str) -> List[Dict]:
     user_orders.sort(key=lambda x: x['created_at'], reverse=True)
     return user_orders
 `,
+
+  // Guided Tutorial
+  guidedTutorial: amazonGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

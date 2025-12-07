@@ -59,11 +59,8 @@ import { l5SecurityAppleEncryptionChallenge } from './tiered/l5_security_apple_e
 import { l5ObservabilityDatadogChallenge } from './tiered/l5_observability_datadog';
 import { l5InfraKubernetesPlatformChallenge } from './tiered/l5_infra_kubernetes_platform';
 import { l5MlPlatformMetaChallenge } from './tiered/l5_ml_platform_meta';
-import { l6Protocol6gArchitectureChallenge } from './tiered/l6_protocol_6g_architecture';
 import { l6ProtocolTcpReplacementChallenge } from './tiered/l6_protocol_tcp_replacement';
 import { l6DbCapTheoremBreakerChallenge } from './tiered/l6_db_cap_theorem_breaker';
-import { l6DistributedConsensus1Challenge } from './tiered/l6_distributed_consensus_1';
-import { l6DistributedConsensus2Challenge } from './tiered/l6_distributed_consensus_2';
 import { l6PrivacyZkpInternetChallenge } from './tiered/l6_privacy_zkp_internet';
 
 import { Challenge } from '../types/testCase';
@@ -126,11 +123,8 @@ export const allTieredChallenges: Challenge[] = [
   l5ObservabilityDatadogChallenge,
   l5InfraKubernetesPlatformChallenge,
   l5MlPlatformMetaChallenge,
-  l6Protocol6gArchitectureChallenge,
   l6ProtocolTcpReplacementChallenge,
   l6DbCapTheoremBreakerChallenge,
-  l6DistributedConsensus1Challenge,
-  l6DistributedConsensus2Challenge,
   l6PrivacyZkpInternetChallenge,
 ];
 
@@ -191,14 +185,11 @@ export { l5SecurityAppleEncryptionChallenge };
 export { l5ObservabilityDatadogChallenge };
 export { l5InfraKubernetesPlatformChallenge };
 export { l5MlPlatformMetaChallenge };
-export { l6Protocol6gArchitectureChallenge };
 export { l6ProtocolTcpReplacementChallenge };
 export { l6DbCapTheoremBreakerChallenge };
-export { l6DistributedConsensus1Challenge };
-export { l6DistributedConsensus2Challenge };
 export { l6PrivacyZkpInternetChallenge };
 
 // Export challenge count
-export const tieredChallengeCount = 62;
+export const tieredChallengeCount = 59;
 
 console.log(`📊 Generated ${tieredChallengeCount} tiered challenges from problem definitions`);

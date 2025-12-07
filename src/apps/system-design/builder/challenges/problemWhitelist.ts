@@ -203,30 +203,23 @@ export const platformProblems = [
 ];
 
 /**
- * L6: Next-Generation - KEEP 5 (only practical/interview-relevant)
+ * L6: Next-Generation - KEEP 3 (only practical/interview-relevant)
  * Removed all speculative problems (quantum, DNA, interplanetary, biological, energy, economic)
  */
 export const nextGenProblems = [
-  // Next-gen Protocols (2 of 22) - Only practical ones
-  'l6-protocol-6g-architecture',      // 5G/6G networking
+  // Next-gen Protocols (1 of 22) - Only practical ones
   'l6-protocol-tcp-replacement',       // QUIC/HTTP3
 
   // Novel Databases (1 of 22) - Practical distributed systems only
   'l6-db-cap-theorem-breaker',         // NewSQL/Spanner-like
-  // 'l6-novel-databases-1' - Removed (actually "DNA Storage Infrastructure" - speculative, not CRDTs as comment said)
-
-  // AI Infrastructure (0) - Removed (all 21 problems are speculative: AGI, consciousness, quantum, biological computing)
-  // Practical ML problems are covered by l5-ml-platform-* problems (Meta, OpenAI, MLflow, SageMaker, etc.)
-  // 'l6-ai-infrastructure-1' - Removed (was labeled "LLM serving" but actually "AGI Training Infrastructure")
-  // 'l6-ai-infrastructure-2' - Removed (was labeled "Vector databases" but actually "Consciousness Simulation Infrastructure")
-  // 'l6-ai-infrastructure-3' - Removed (was labeled "Model fine-tuning" but actually "Swarm Intelligence Infrastructure")
-
-  // Distributed Consensus (2 of 19) - Core algorithms
-  'l6-distributed-consensus-1',        // Paxos/Raft
-  'l6-distributed-consensus-2',        // Byzantine fault tolerance
 
   // Privacy Innovation (1 of 19) - Practical cryptography
   'l6-privacy-zkp-internet',           // Zero-knowledge proofs (blockchain)
+
+  // REMOVED:
+  // 'l6-protocol-6g-architecture' - Removed (speculative 6G content, not practical)
+  // 'l6-distributed-consensus-1' - Removed (was "Quantum Consensus" nonsense, not Paxos/Raft)
+  // 'l6-distributed-consensus-2' - Removed (was "Relativistic Consensus" nonsense, not BFT)
 ];
 
 /**

@@ -412,9 +412,9 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
         {currentPhase === 'requirements-intro' && requirementsPhase && (
           <StoryPanel
             key="requirements-intro"
-            story={{
+            story={tutorial.welcomeStory || {
               emoji: '🎤',
-              scenario: "Welcome, engineer! You've been hired to build TinyURL - a URL shortening service.",
+              scenario: `Welcome, engineer! You've been hired to build ${challenge.title || 'this system'}.`,
               hook: "Before you start designing, you need to understand what you're building. In a real interview, you'd ask clarifying questions first.",
               challenge: "Let's gather the functional requirements by asking the right questions.",
             }}

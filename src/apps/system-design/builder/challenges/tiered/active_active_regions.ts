@@ -24,38 +24,38 @@ Key Learning Objectives:
 - Conflict resolution for simultaneous edits (vector clocks, CRDTs)
 - Eventual consistency across regions
 - Network partition handling`,
-  
+
   requirements: {
-  functional: [
-    "Users can create, edit, and share documents",
-    "Multiple users can edit the same document simultaneously",
-    "Users worldwide can access and edit documents from any location",
-    "Users can edit documents even if one region fails (documents available from other regions)",
-    "Conflicts from simultaneous edits by different users in different regions are automatically resolved",
-    "Edits made in one region eventually sync to all regions"
-  ],
-  traffic: "50 RPS (30% reads, 70% writes)",
-  latency: "p99 < 5s",
-  availability: "Best effort availability",
-  budget: "Optimize for cost efficiency",
-  nfrs: [
-    "Latency: P95 < 50ms for local writes",
-    "Request Rate: 5k writes/sec per region",
-    "Availability: 99.9% per region"
-  ]
-},
-  
+    functional: [
+      "Users can create, edit, and share documents",
+      "Multiple users can edit the same document simultaneously",
+      "Users worldwide can access and edit documents from any location",
+      "Users can edit documents even if one region fails (documents available from other regions)",
+      "Conflicts from simultaneous edits by different users in different regions are automatically resolved",
+      "Edits made in one region eventually sync to all regions"
+    ],
+    traffic: "50 RPS (30% reads, 70% writes)",
+    latency: "p99 < 5s",
+    availability: "Best effort availability",
+    budget: "Optimize for cost efficiency",
+    nfrs: [
+      "Latency: P95 < 50ms for local writes",
+      "Request Rate: 5k writes/sec per region",
+      "Availability: 99.9% per region"
+    ]
+  },
+
   availableComponents: [
-  "client",
-  "load_balancer",
-  "app_server",
-  "database",
-  "redis",
-  "message_queue",
-  "cdn",
-  "s3"
-],
-  
+    "client",
+    "load_balancer",
+    "app_server",
+    "database",
+    "redis",
+    "message_queue",
+    "cdn",
+    "s3"
+  ],
+
   testCases: [
     {
       "name": "Accept writes in both regions",
@@ -277,356 +277,350 @@ Key Learning Objectives:
       }
     }
   ],
-  
+
   learningObjectives: [
-  "Understand client-server architecture",
-  "Learn database connectivity and data persistence",
-  "Learn horizontal scaling with load balancers",
-  "Understand asynchronous processing patterns",
-  "Design appropriate data models"
-],
-  
+    "Understand client-server architecture",
+    "Learn database connectivity and data persistence",
+    "Learn horizontal scaling with load balancers",
+    "Understand asynchronous processing patterns",
+    "Design appropriate data models"
+  ],
+
   referenceLinks: [],
-  
+
   pythonTemplate: `from datetime import datetime
 from typing import List, Dict, Optional, Any
+import json
 
-# In-memory storage (naive implementation)
-events = {}
-both = {}
-items = {}
-memory = {}
+# In-memory storage for documents
+documents = {}
 
-def create_item(item_id: str, **kwargs) -> Dict:
+def create_document(doc_id: str, title: str, content: str, owner_id: str) -> Dict:
     """
-    FR-1: Accept writes in both regions
-    Naive implementation - stores item in memory
+    Create a new document.
     """
-    items[item_id] = {
-        'id': item_id,
-        'created_at': datetime.now(),
-        **kwargs
+    timestamp = datetime.now().isoformat()
+    doc = {
+        'id': doc_id,
+        'title': title,
+        'content': content,
+        'owner_id': owner_id,
+        'created_at': timestamp,
+        'updated_at': timestamp,
+        'version': 1
     }
-    return items[item_id]
+    
+    # Simple in-memory save
+    documents[doc_id] = doc
+    
+    return doc
 
-def create_item(item_id: str, **kwargs) -> Dict:
+def get_document(doc_id: str) -> Optional[Dict]:
     """
-    FR-2: Resolve write conflicts
-    Naive implementation - stores item in memory
+    Retrieve a document by ID.
+    Returns None if not found.
     """
-    items[item_id] = {
-        'id': item_id,
-        'created_at': datetime.now(),
-        **kwargs
-    }
-    return items[item_id]
+    return documents.get(doc_id)
 
-def maintain_eventual_consistency(**kwargs) -> Dict:
+def update_document(doc_id: str, content: str, user_id: str) -> Optional[Dict]:
     """
-    FR-3: Maintain eventual consistency
-    Naive implementation - placeholder function
+    Update an existing document.
     """
-    return {'status': 'success', 'data': kwargs}
+    if doc_id not in documents:
+        return None
+        
+    doc = documents[doc_id]
+    doc['content'] = content
+    doc['updated_at'] = datetime.now().isoformat()
+    doc['version'] += 1
+    
+    return doc`,
 
-def handle_network_partitions(**kwargs) -> Dict:
-    """
-    FR-4: Handle network partitions
-    Naive implementation - placeholder function
-    """
-    return {'status': 'success', 'data': kwargs}
-
-def support_regional_preferences(**kwargs) -> Dict:
-    """
-    FR-5: Support regional preferences
-    Naive implementation - placeholder function
-    """
-    return {'status': 'success', 'data': kwargs}`,
-  
   codeChallenges,
-  
+
   solution: {
-  components: [
-    {
-      type: "client",
-      config: {
-        id: "client_1",
-        displayName: "Users (Global)",
-        subtitle: "GeoDNS routes to nearest region"
-      }
-    },
-    {
-      type: "load_balancer",
-      config: {
-        id: "load_balancer_1",
-        algorithm: "least_connections",
-        displayName: "Load Balancers (US-East + EU-West)",
-        subtitle: "GeoDNS routes to nearest region"
-      }
-    },
-    {
-      type: "app_server",
-      config: {
-        id: "app_server_1",
-        instances: 24,
-        displayName: "App Servers",
-        subtitle: "12 per region (24 total)",
-        autoscaling: {
-          enabled: true,
-          min: 24,
-          max: 48,
-          policy: "cpu_70_target"
-        },
-        regions: [
-          "us-east",
-          "eu-west"
-        ]
-      }
-    },
-    {
-      type: "database",
-      config: {
-        id: "database_1",
-        instanceType: "commodity-db",
-        dataModel: "relational",
-        displayName: "Multi-Leader PostgreSQL",
-        subtitle: "26 shards × 11 leaders",
-        replicationMode: "multi-leader",
-        replication: {
-          enabled: true,
-          replicas: 10,
-          mode: "async"
-        },
-        sharding: {
-          enabled: true,
-          shards: 26,
-          shardKey: "document_id"
-        },
-        storageType: "gp3",
-        storageSizeGB: 3000,
-        isolationLevel: "serializable",
-        schema: [
-          {
-            name: "documents",
-            columns: [
-              {
-                name: "document_id",
-                type: "string",
-                primaryKey: true,
-                nullable: false
-              },
-              {
-                name: "title",
-                type: "string",
-                nullable: false
-              },
-              {
-                name: "content",
-                type: "text",
-                nullable: true
-              },
-              {
-                name: "owner_id",
-                type: "string",
-                nullable: false
-              },
-              {
-                name: "created_at",
-                type: "timestamp",
-                nullable: false
-              },
-              {
-                name: "updated_at",
-                type: "timestamp",
-                nullable: false
-              },
-              {
-                name: "version",
-                type: "integer",
-                nullable: false
-              }
-            ]
+    components: [
+      {
+        type: "client",
+        config: {
+          id: "client_1",
+          displayName: "Users (Global)",
+          subtitle: "GeoDNS routes to nearest region"
+        }
+      },
+      {
+        type: "load_balancer",
+        config: {
+          id: "load_balancer_1",
+          algorithm: "least_connections",
+          displayName: "Load Balancers (US-East + EU-West)",
+          subtitle: "GeoDNS routes to nearest region"
+        }
+      },
+      {
+        type: "app_server",
+        config: {
+          id: "app_server_1",
+          instances: 24,
+          displayName: "App Servers",
+          subtitle: "12 per region (24 total)",
+          autoscaling: {
+            enabled: true,
+            min: 24,
+            max: 48,
+            policy: "cpu_70_target"
           },
-          {
-            name: "vector_clocks",
-            columns: [
-              {
-                name: "document_id",
-                type: "string",
-                primaryKey: true,
-                nullable: false
-              },
-              {
-                name: "region_a_version",
-                type: "integer",
-                nullable: false
-              },
-              {
-                name: "region_b_version",
-                type: "integer",
-                nullable: false
-              },
-              {
-                name: "last_updated",
-                type: "timestamp",
-                nullable: false
-              }
-            ]
+          regions: [
+            "us-east",
+            "eu-west"
+          ]
+        }
+      },
+      {
+        type: "database",
+        config: {
+          id: "database_1",
+          instanceType: "commodity-db",
+          dataModel: "relational",
+          displayName: "Multi-Leader PostgreSQL",
+          subtitle: "26 shards × 11 leaders",
+          replicationMode: "multi-leader",
+          replication: {
+            enabled: true,
+            replicas: 10,
+            mode: "async"
           },
-          {
-            name: "operations",
-            columns: [
-              {
-                name: "operation_id",
-                type: "string",
-                primaryKey: true,
-                nullable: false
-              },
-              {
-                name: "document_id",
-                type: "string",
-                nullable: false
-              },
-              {
-                name: "operation_type",
-                type: "string",
-                nullable: false
-              },
-              {
-                name: "position",
-                type: "integer",
-                nullable: false
-              },
-              {
-                name: "content",
-                type: "text",
-                nullable: true
-              },
-              {
-                name: "user_id",
-                type: "string",
-                nullable: false
-              },
-              {
-                name: "region",
-                type: "string",
-                nullable: false
-              },
-              {
-                name: "timestamp",
-                type: "timestamp",
-                nullable: false
-              },
-              {
-                name: "vector_clock",
-                type: "json",
-                nullable: false
-              }
-            ]
+          sharding: {
+            enabled: true,
+            shards: 26,
+            shardKey: "document_id"
+          },
+          storageType: "gp3",
+          storageSizeGB: 3000,
+          isolationLevel: "serializable",
+          schema: [
+            {
+              name: "documents",
+              columns: [
+                {
+                  name: "document_id",
+                  type: "string",
+                  primaryKey: true,
+                  nullable: false
+                },
+                {
+                  name: "title",
+                  type: "string",
+                  nullable: false
+                },
+                {
+                  name: "content",
+                  type: "text",
+                  nullable: true
+                },
+                {
+                  name: "owner_id",
+                  type: "string",
+                  nullable: false
+                },
+                {
+                  name: "created_at",
+                  type: "timestamp",
+                  nullable: false
+                },
+                {
+                  name: "updated_at",
+                  type: "timestamp",
+                  nullable: false
+                },
+                {
+                  name: "version",
+                  type: "integer",
+                  nullable: false
+                }
+              ]
+            },
+            {
+              name: "vector_clocks",
+              columns: [
+                {
+                  name: "document_id",
+                  type: "string",
+                  primaryKey: true,
+                  nullable: false
+                },
+                {
+                  name: "region_a_version",
+                  type: "integer",
+                  nullable: false
+                },
+                {
+                  name: "region_b_version",
+                  type: "integer",
+                  nullable: false
+                },
+                {
+                  name: "last_updated",
+                  type: "timestamp",
+                  nullable: false
+                }
+              ]
+            },
+            {
+              name: "operations",
+              columns: [
+                {
+                  name: "operation_id",
+                  type: "string",
+                  primaryKey: true,
+                  nullable: false
+                },
+                {
+                  name: "document_id",
+                  type: "string",
+                  nullable: false
+                },
+                {
+                  name: "operation_type",
+                  type: "string",
+                  nullable: false
+                },
+                {
+                  name: "position",
+                  type: "integer",
+                  nullable: false
+                },
+                {
+                  name: "content",
+                  type: "text",
+                  nullable: true
+                },
+                {
+                  name: "user_id",
+                  type: "string",
+                  nullable: false
+                },
+                {
+                  name: "region",
+                  type: "string",
+                  nullable: false
+                },
+                {
+                  name: "timestamp",
+                  type: "timestamp",
+                  nullable: false
+                },
+                {
+                  name: "vector_clock",
+                  type: "json",
+                  nullable: false
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        type: "cache",
+        config: {
+          id: "cache_1",
+          cacheType: "key-value",
+          sizeGB: 48,
+          memorySizeGB: 48,
+          evictionPolicy: "LRU",
+          ttl: 300,
+          hitRatio: 0.95,
+          strategy: "cache_aside",
+          instanceType: "cache.r5.large",
+          engine: "redis",
+          persistence: "rdb",
+          nodes: 3,
+          displayName: "Redis Cache Cluster",
+          subtitle: "3-node cluster (~48GB)"
+        }
+      },
+      {
+        type: "message_queue",
+        config: {
+          id: "message_queue_1",
+          numBrokers: 3,
+          numPartitions: 24,
+          replicationFactor: 3,
+          retentionHours: 24,
+          semantics: "at_least_once",
+          orderingGuarantee: "partition",
+          consumerGroups: 2,
+          batchingEnabled: true,
+          compressionEnabled: true,
+          displayName: "Kafka Replication Stream",
+          subtitle: "3 brokers · 24 partitions"
+        }
+      },
+      {
+        type: "app_server",
+        config: {
+          id: "app_server_3",
+          instances: 225,
+          serviceName: "conflict-resolver",
+          displayName: "Conflict Resolver",
+          subtitle: "225 workers (CRDT/Vector Clocks)",
+          regions: [
+            "us-east",
+            "eu-west"
+          ],
+          autoscaling: {
+            enabled: true,
+            min: 225,
+            max: 450,
+            policy: "queue_lag"
           }
-        ]
-      }
-    },
-    {
-      type: "cache",
-      config: {
-        id: "cache_1",
-        cacheType: "key-value",
-        sizeGB: 48,
-        memorySizeGB: 48,
-        evictionPolicy: "LRU",
-        ttl: 300,
-        hitRatio: 0.95,
-        strategy: "cache_aside",
-        instanceType: "cache.r5.large",
-        engine: "redis",
-        persistence: "rdb",
-        nodes: 3,
-        displayName: "Redis Cache Cluster",
-        subtitle: "3-node cluster (~48GB)"
-      }
-    },
-    {
-      type: "message_queue",
-      config: {
-        id: "message_queue_1",
-        numBrokers: 3,
-        numPartitions: 24,
-        replicationFactor: 3,
-        retentionHours: 24,
-        semantics: "at_least_once",
-        orderingGuarantee: "partition",
-        consumerGroups: 2,
-        batchingEnabled: true,
-        compressionEnabled: true,
-        displayName: "Kafka Replication Stream",
-        subtitle: "3 brokers · 24 partitions"
-      }
-    },
-    {
-      type: "app_server",
-      config: {
-        id: "app_server_3",
-        instances: 225,
-        serviceName: "conflict-resolver",
-        displayName: "Conflict Resolver",
-        subtitle: "225 workers (CRDT/Vector Clocks)",
-        regions: [
-          "us-east",
-          "eu-west"
-        ],
-        autoscaling: {
-          enabled: true,
-          min: 225,
-          max: 450,
-          policy: "queue_lag"
         }
       }
-    }
-  ],
-  connections: [
-    {
-      from: "client",
-      to: "load_balancer",
-      type: "read_write",
-      label: "Users → Regional LBs (GeoDNS)"
-    },
-    {
-      from: "load_balancer",
-      to: "app_server",
-      type: "read_write",
-      label: "LB → App (regional)"
-    },
-    {
-      from: "app_server",
-      to: "cache",
-      type: "read",
-      label: "Read from cache"
-    },
-    {
-      from: "cache",
-      to: "database",
-      type: "read",
-      label: "Cache → DB (on miss)"
-    },
-    {
-      from: "app_server",
-      to: "database",
-      type: "read_write",
-      label: "App → DB"
-    },
-    {
-      from: "database",
-      to: "message_queue",
-      type: "write",
-      label: "DB → Replication Stream"
-    },
-    {
-      from: "message_queue",
-      to: "app_server",
-      type: "read",
-      label: "Conflict Resolver → Stream"
-    }
-  ],
-  explanation: "Reference Solution for Collaborative Document Editor (Active-Active Multi-Region):\n\n📊 Infrastructure Components:\n- **Client**: Users accessing the system (GeoDNS routes to nearest region)\n- **Load Balancers**: Distribute traffic across app servers (US-East + EU-West)\n- **App Servers**: 24 instances total (12 per region) - sized for 15,000 RPS globally\n- **Cache**: 3-node Redis cluster (~48GB) for low-latency reads\n- **Database**: Multi-leader PostgreSQL (26 shards × 11 leaders) with async replication between regions\n- **Message Queue**: Kafka replication stream (3 brokers, 24 partitions) for cross-region sync\n\n🔄 Active-Active Architecture:\n✅ **Dual Write**: Both regions accept writes with local latency (< 50ms)\n✅ **Replication**: Database publishes changes → Message Queue → Conflict Resolver\n✅ **Conflict Resolution**: Worker consumes from stream, resolves conflicts using vector clocks/CRDTs\n✅ **Eventual Consistency**: Changes propagate between regions within 5 seconds\n✅ **Regional Independence**: Each region operates independently if cross-region link fails\n\n🔄 How It Works:\n1. **Local Write Path**: Client → LB (nearest region) → App → Multi-Leader DB (< 50ms p99)\n2. **Local Read Path**: Client → LB → App → Redis cache (hit) → Response (< 10ms p99)\n3. **Replication Path**: Database → Kafka → Conflict Resolver workers → Remote shards\n4. **Cache Miss**: App → Shard (local) → Cache update → Response\n\n💡 Key Design Decisions:\n- **Active-Active**: Both regions handle writes with multi-leader replication\n- **Sharded Storage**: 26 logical shards keep per-leader write throughput low\n- **Replication Stream**: Database publishes all changes to Kafka for bidirectional sync\n- **Conflict Resolution**: Dedicated workers consume replication stream and reconcile updates\n- **Low Latency**: Regional cache tier keeps read latency <10ms, writes stay local\n- **High Availability**: Each region independent, operates during cross-region failures\n\n⚠️ Trade-offs:\n- **Conflict Resolution**: Need vector clocks/CRDTs for simultaneous writes\n- **Eventual Consistency**: Replication lag (up to 5s) between regions\n- **Complexity**: More complex than active-passive setup\n- **Network Costs**: Bidirectional replication increases cross-region bandwidth\n\nThis solution provides an active-active multi-region architecture for handling writes in both regions!"
-},
+    ],
+    connections: [
+      {
+        from: "client",
+        to: "load_balancer",
+        type: "read_write",
+        label: "Users → Regional LBs (GeoDNS)"
+      },
+      {
+        from: "load_balancer",
+        to: "app_server",
+        type: "read_write",
+        label: "LB → App (regional)"
+      },
+      {
+        from: "app_server",
+        to: "cache",
+        type: "read",
+        label: "Read from cache"
+      },
+      {
+        from: "cache",
+        to: "database",
+        type: "read",
+        label: "Cache → DB (on miss)"
+      },
+      {
+        from: "app_server",
+        to: "database",
+        type: "read_write",
+        label: "App → DB"
+      },
+      {
+        from: "database",
+        to: "message_queue",
+        type: "write",
+        label: "DB → Replication Stream"
+      },
+      {
+        from: "message_queue",
+        to: "app_server",
+        type: "read",
+        label: "Conflict Resolver → Stream"
+      }
+    ],
+    explanation: "Reference Solution for Collaborative Document Editor (Active-Active Multi-Region):\n\n📊 Infrastructure Components:\n- **Client**: Users accessing the system (GeoDNS routes to nearest region)\n- **Load Balancers**: Distribute traffic across app servers (US-East + EU-West)\n- **App Servers**: 24 instances total (12 per region) - sized for 15,000 RPS globally\n- **Cache**: 3-node Redis cluster (~48GB) for low-latency reads\n- **Database**: Multi-leader PostgreSQL (26 shards × 11 leaders) with async replication between regions\n- **Message Queue**: Kafka replication stream (3 brokers, 24 partitions) for cross-region sync\n\n🔄 Active-Active Architecture:\n✅ **Dual Write**: Both regions accept writes with local latency (< 50ms)\n✅ **Replication**: Database publishes changes → Message Queue → Conflict Resolver\n✅ **Conflict Resolution**: Worker consumes from stream, resolves conflicts using vector clocks/CRDTs\n✅ **Eventual Consistency**: Changes propagate between regions within 5 seconds\n✅ **Regional Independence**: Each region operates independently if cross-region link fails\n\n🔄 How It Works:\n1. **Local Write Path**: Client → LB (nearest region) → App → Multi-Leader DB (< 50ms p99)\n2. **Local Read Path**: Client → LB → App → Redis cache (hit) → Response (< 10ms p99)\n3. **Replication Path**: Database → Kafka → Conflict Resolver workers → Remote shards\n4. **Cache Miss**: App → Shard (local) → Cache update → Response\n\n💡 Key Design Decisions:\n- **Active-Active**: Both regions handle writes with multi-leader replication\n- **Sharded Storage**: 26 logical shards keep per-leader write throughput low\n- **Replication Stream**: Database publishes all changes to Kafka for bidirectional sync\n- **Conflict Resolution**: Dedicated workers consume replication stream and reconcile updates\n- **Low Latency**: Regional cache tier keeps read latency <10ms, writes stay local\n- **High Availability**: Each region independent, operates during cross-region failures\n\n⚠️ Trade-offs:\n- **Conflict Resolution**: Need vector clocks/CRDTs for simultaneous writes\n- **Eventual Consistency**: Replication lag (up to 5s) between regions\n- **Complexity**: More complex than active-passive setup\n- **Network Costs**: Bidirectional replication increases cross-region bandwidth\n\nThis solution provides an active-active multi-region architecture for handling writes in both regions!"
+  },
 };

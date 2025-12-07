@@ -7,6 +7,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { redditGuidedTutorial } from './redditGuided';
 
 /**
  * Reddit - Discussion Forum Platform
@@ -681,6 +682,9 @@ def get_subreddit_feed(subreddit_id: str, sort_by: str = "hot") -> List[Dict]:
 
     return subreddit_posts
 `,
+
+  // Guided Tutorial
+  guidedTutorial: redditGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

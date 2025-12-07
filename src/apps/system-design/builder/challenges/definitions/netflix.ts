@@ -12,6 +12,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { netflixGuidedTutorial } from './netflixGuided';
 
 /**
  * Netflix - Video Streaming Platform
@@ -543,6 +544,9 @@ def get_recommendations(user_id: str, limit: int = 10) -> List[Dict]:
     """
     return list(videos.values())[:limit]
 `,
+
+  // Guided Tutorial
+  guidedTutorial: netflixGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

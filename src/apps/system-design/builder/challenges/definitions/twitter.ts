@@ -13,6 +13,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { twitterGuidedTutorial } from './twitterGuided';
 
 /**
  * Twitter - Microblogging Platform
@@ -350,6 +351,9 @@ def search_users(query: str) -> List[Dict]:
             results.append(user)
     return results
 `,
+
+  // Guided Tutorial
+  guidedTutorial: twitterGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

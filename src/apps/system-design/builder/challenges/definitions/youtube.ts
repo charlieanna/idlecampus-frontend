@@ -12,6 +12,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { youtubeGuidedTutorial } from './youtubeGuided';
 
 /**
  * YouTube - Video Sharing Platform
@@ -576,6 +577,9 @@ def get_subscribed_videos(user_id: str, limit: int = 20) -> List[Dict]:
     feed.sort(key=lambda x: x['created_at'], reverse=True)
     return feed[:limit]
 `,
+
+  // Guided Tutorial
+  guidedTutorial: youtubeGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

@@ -7,6 +7,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { slackGuidedTutorial } from './slackGuided';
 
 /**
  * Slack - Team Collaboration Platform
@@ -441,6 +442,9 @@ def get_channel_messages(channel_id: str, limit: int = 50) -> List[Dict]:
     channel_messages.sort(key=lambda x: x['created_at'])
     return channel_messages[-limit:]  # Return most recent N messages
 `,
+
+  // Guided Tutorial
+  guidedTutorial: slackGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

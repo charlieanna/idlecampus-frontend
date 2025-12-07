@@ -7,6 +7,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { dropboxGuidedTutorial } from './dropboxGuided';
 
 /**
  * Dropbox - File Storage and Sync
@@ -208,6 +209,8 @@ def get_user_files(user_id: str, folder_id: str = None) -> List[Dict]:
             user_files.append(file)
     return user_files
 `,
+
+  guidedTutorial: dropboxGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

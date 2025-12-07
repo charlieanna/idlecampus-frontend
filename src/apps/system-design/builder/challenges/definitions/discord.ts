@@ -7,6 +7,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { discordGuidedTutorial } from './discordGuided';
 
 /**
  * Discord - Gaming Chat Platform
@@ -251,6 +252,9 @@ def get_channel_messages(channel_id: str, limit: int = 50) -> List[Dict]:
     channel_messages.sort(key=lambda x: x['created_at'])
     return channel_messages[-limit:]  # Return most recent N messages
 `,
+
+  // Guided Tutorial
+  guidedTutorial: discordGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

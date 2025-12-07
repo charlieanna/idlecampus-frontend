@@ -2,7 +2,8 @@ import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { tieredChallenges } from '../../challenges/tieredChallenges';
 import { Challenge } from '../../types/testCase';
-import { isCoreProblem, getCoreStage } from '../../challenges/coreTrack';
+import { isCoreProblem, getCoreStage, CoreStage } from '../../challenges/coreTrack';
+import { hasGuidedTutorial } from '../../utils/guidedTutorialUtils';
 
 // Extract category from problem ID
 function extractCategory(id: string): string {
@@ -75,30 +76,6 @@ function extractCompany(challenge: Challenge): string | null {
   return null;
 }
 
-// Difficulty badge component
-function DifficultyBadge({ difficulty }: { difficulty: string }) {
-  const colors = {
-    beginner: 'bg-green-100 text-green-800',
-    intermediate: 'bg-yellow-100 text-yellow-800',
-    advanced: 'bg-red-100 text-red-800',
-  };
-
-  return (
-    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${colors[difficulty as keyof typeof colors] || 'bg-gray-100 text-gray-800'}`}>
-      {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-    </span>
-  );
-}
-
-// Category badge component
-function CategoryBadge({ category }: { category: string }) {
-  return (
-    <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full">
-      {category}
-    </span>
-  );
-}
-
 // Company badge component
 function CompanyBadge({ company }: { company: string }) {
   return (
@@ -108,12 +85,34 @@ function CompanyBadge({ company }: { company: string }) {
   );
 }
 
+// Guided tutorial badge component
+function GuidedBadge() {
+  return (
+    <span className="px-2 py-1 text-xs font-semibold bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-full shadow-sm">
+      📚 Guided
+    </span>
+  );
+}
+
+// Extended challenge type with computed properties
+interface EnrichedChallenge extends Challenge {
+  category: string;
+  company: string | null;
+  isCore: boolean;
+  coreStage: CoreStage | null;
+  hasGuided: boolean;
+}
+
 // Problem card component
-function ProblemCard({ challenge, onClick }: { challenge: Challenge; onClick: () => void }) {
+function ProblemCard({ challenge, onClick }: { challenge: EnrichedChallenge; onClick: () => void }) {
   return (
     <div
       onClick={onClick}
-      className="bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer p-4 border border-gray-200 hover:border-blue-400 mb-3"
+      className={`bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow cursor-pointer p-4 border mb-3 ${
+        challenge.hasGuided
+          ? 'border-indigo-300 hover:border-indigo-500 ring-1 ring-indigo-100'
+          : 'border-gray-200 hover:border-blue-400'
+      }`}
     >
       {/* Title */}
       <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">
@@ -139,6 +138,7 @@ function ProblemCard({ challenge, onClick }: { challenge: Challenge; onClick: ()
 
       {/* Badges */}
       <div className="flex flex-wrap gap-2">
+        {challenge.hasGuided && <GuidedBadge />}
         {challenge.company && <CompanyBadge company={challenge.company} />}
         {challenge.isCore && (
           <span className="px-2 py-1 text-[10px] font-semibold rounded-full bg-purple-100 text-purple-800">
@@ -155,6 +155,7 @@ export function ProblemCatalog() {
   const [searchTerm, setSearchTerm] = useState('');
   const [viewMode, setViewMode] = useState<'difficulty' | 'category'>('difficulty');
   const [trackFilter, setTrackFilter] = useState<'all' | 'core'>('all');
+  const [showGuidedOnly, setShowGuidedOnly] = useState(false);
 
   // Enrich challenges with metadata and filter out tutorials
   const enrichedChallenges = useMemo(() => {
@@ -166,8 +167,14 @@ export function ProblemCatalog() {
         company: extractCompany(challenge),
         isCore: isCoreProblem(challenge),
         coreStage: getCoreStage(challenge),
+        hasGuided: hasGuidedTutorial(challenge.id),
       }));
   }, []);
+
+  // Count guided tutorials
+  const guidedCount = useMemo(() => {
+    return enrichedChallenges.filter(c => c.hasGuided).length;
+  }, [enrichedChallenges]);
 
   // Get unique values for categories
   const categories = useMemo(() => {
@@ -183,6 +190,10 @@ export function ProblemCatalog() {
       list = list.filter(c => c.isCore);
     }
 
+    if (showGuidedOnly) {
+      list = list.filter(c => c.hasGuided);
+    }
+
     if (!searchTerm) return list;
 
     const term = searchTerm.toLowerCase();
@@ -191,7 +202,7 @@ export function ProblemCatalog() {
       c.description.toLowerCase().includes(term) ||
       c.category.toLowerCase().includes(term)
     );
-  }, [enrichedChallenges, searchTerm, trackFilter]);
+  }, [enrichedChallenges, searchTerm, trackFilter, showGuidedOnly]);
 
   // Group by difficulty
   const byDifficulty = useMemo(() => {
@@ -233,6 +244,12 @@ export function ProblemCatalog() {
                 📚 Study Lessons
               </button>
               <button
+                onClick={() => navigate('/system-design/guided')}
+                className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-colors font-medium flex items-center gap-2"
+              >
+                🎓 Guided Tutorials ({guidedCount})
+              </button>
+              <button
                 onClick={() => navigate('/system-design/progressive')}
                 className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors font-medium flex items-center gap-2"
               >
@@ -271,6 +288,18 @@ export function ProblemCatalog() {
                   Core Track
                 </button>
               </div>
+
+              {/* Guided Filter Toggle */}
+              <button
+                onClick={() => setShowGuidedOnly(!showGuidedOnly)}
+                className={`px-3 py-1 text-xs font-medium rounded-lg transition-colors flex items-center gap-1 ${
+                  showGuidedOnly
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                📚 {showGuidedOnly ? 'Showing Guided Only' : 'Show Guided Only'}
+              </button>
 
               {/* View Mode Toggle */}
               <div className="flex items-center gap-2">

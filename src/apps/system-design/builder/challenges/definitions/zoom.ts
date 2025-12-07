@@ -3,6 +3,7 @@ import { validConnectionFlowValidator } from '../../validation/validators/common
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { zoomGuidedTutorial } from './zoomGuided';
 
 /**
  * Zoom - Video Conferencing Platform
@@ -340,6 +341,8 @@ def get_meeting_chat(meeting_id: str) -> List[Dict]:
     meeting_chat.sort(key=lambda x: x['created_at'])
     return meeting_chat
 `,
+
+  guidedTutorial: zoomGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

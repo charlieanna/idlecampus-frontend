@@ -7,6 +7,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { spotifyGuidedTutorial } from './spotifyGuided';
 
 /**
  * Spotify - Music Streaming Platform
@@ -442,6 +443,9 @@ def follow_user(follower_id: str, following_id: str) -> Dict:
     }
     return follows[follow_key]
 `,
+
+  // Guided Tutorial
+  guidedTutorial: spotifyGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

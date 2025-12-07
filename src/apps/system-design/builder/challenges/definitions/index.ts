@@ -34,8 +34,11 @@ import { problemWhitelist } from '../problemWhitelist';
 
 // Social Media & Dating (11)
 export { instagramProblemDefinition } from './instagram';
+export { instagramGuidedTutorial } from './instagramGuided';
 export { twitterProblemDefinition } from './twitter';
+export { twitterGuidedTutorial } from './twitterGuided';
 export { redditProblemDefinition } from './reddit';
+export { redditGuidedTutorial } from './redditGuided';
 export { linkedinProblemDefinition } from './linkedin';
 export { facebookProblemDefinition } from './facebook';
 export { tiktokProblemDefinition } from './tiktok';
@@ -43,37 +46,48 @@ export { pinterestProblemDefinition } from './pinterest';
 export { snapchatProblemDefinition } from './snapchat';
 export { tinderProblemDefinition } from './tinder';
 export { discordProblemDefinition } from './discord';
+export { discordGuidedTutorial } from './discordGuided';
 export { mediumProblemDefinition } from './medium';
 
 // E-commerce & Services (5)
 export { amazonProblemDefinition } from './amazon';
+export { amazonGuidedTutorial } from './amazonGuided';
 export { shopifyProblemDefinition } from './shopify';
 export { stripeProblemDefinition } from './stripe';
+export { stripeGuidedTutorial } from './stripeGuided';
 export { uberProblemDefinition } from './uber';
 export { airbnbProblemDefinition } from './airbnb';
+export { airbnbGuidedTutorial } from './airbnbGuided';
 
 // Streaming & Media (5)
 export { netflixProblemDefinition } from './netflix';
+export { netflixGuidedTutorial } from './netflixGuided';
 export { spotifyProblemDefinition } from './spotify';
+export { spotifyGuidedTutorial } from './spotifyGuided';
 export { youtubeProblemDefinition } from './youtube';
+export { youtubeGuidedTutorial } from './youtubeGuided';
 export { twitchProblemDefinition } from './twitch';
 export { huluProblemDefinition } from './hulu';
 
 // Messaging (4)
 export { whatsappProblemDefinition } from './whatsapp';
 export { slackProblemDefinition } from './slack';
+export { slackGuidedTutorial } from './slackGuided';
 export { telegramProblemDefinition } from './telegram';
 export { messengerProblemDefinition } from './messenger';
 
 // Infrastructure (5)
 export { pastebinProblemDefinition } from './pastebin';
 export { dropboxProblemDefinition } from './dropbox';
+export { dropboxGuidedTutorial } from './dropboxGuided';
 export { googledriveProblemDefinition } from './googledrive';
 export { githubProblemDefinition } from './github';
+export { githubGuidedTutorial } from './githubGuided';
 export { stackoverflowProblemDefinition } from './stackoverflow';
 
 // Food & Delivery (3)
 export { doordashProblemDefinition } from './doordash';
+export { doordashGuidedTutorial } from './doordashGuided';
 export { instacartProblemDefinition } from './instacart';
 export { yelpProblemDefinition } from './yelp';
 
@@ -82,12 +96,19 @@ export { notionProblemDefinition } from './notion';
 export { trelloProblemDefinition } from './trello';
 export { googlecalendarProblemDefinition } from './googlecalendar';
 export { zoomProblemDefinition } from './zoom';
+export { zoomGuidedTutorial } from './zoomGuided';
 
 // Gaming & Other (4)
 export { steamProblemDefinition } from './steam';
 export { ticketmasterProblemDefinition } from './ticketmaster';
 export { bookingcomProblemDefinition } from './bookingcom';
 export { weatherapiProblemDefinition } from './weatherapi';
+
+// Guided Tutorials - Gaming
+export { gamingLeaderboardCacheGuidedTutorial } from './gamingLeaderboardCacheGuided';
+
+// Guided Tutorials - Analytics
+export { analyticsDashboardCacheGuidedTutorial } from './analyticsDashboardCacheGuided';
 
 // Generated Problems - All 618 from ALL_PROBLEMS.md
 // Tutorial Problems - Removed (tutorials are filtered out from problem catalog)

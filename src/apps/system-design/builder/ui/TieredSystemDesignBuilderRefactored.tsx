@@ -50,6 +50,10 @@ import { challenges as challengesFromIndex } from "../challenges/index";
 // Import solution generator
 import { generateSolutionForChallenge } from "../challenges/problemDefinitionConverter";
 
+// Import guided tutorial loader
+import { loadGuidedTutorial, isGuidedTutorialAvailable } from "../guided/loadGuidedTutorial";
+import { GuidedTutorial } from "../types/guidedTutorial";
+
 /**
  * Props for TieredSystemDesignBuilder
  */
@@ -138,6 +142,10 @@ export function TieredSystemDesignBuilder({
     isTutorialCompleted,
   } = useGuidedStore();
 
+  // State for dynamically loaded guided tutorial
+  const [loadedGuidedTutorial, setLoadedGuidedTutorial] = useState<GuidedTutorial | null>(null);
+  const [isLoadingTutorial, setIsLoadingTutorial] = useState(false);
+
   useEffect(() => {
     if (guidedOverride === "guided") {
       setGuidedMode("guided-tutorial");
@@ -145,6 +153,34 @@ export function TieredSystemDesignBuilder({
       setGuidedMode("solve-on-own");
     }
   }, [guidedOverride, setGuidedMode]);
+
+  // Load guided tutorial when challenge changes
+  useEffect(() => {
+    if (!selectedChallenge?.id) {
+      setLoadedGuidedTutorial(null);
+      return;
+    }
+
+    // Check if tutorial is available
+    if (!isGuidedTutorialAvailable(selectedChallenge.id)) {
+      setLoadedGuidedTutorial(null);
+      return;
+    }
+
+    // Load the tutorial
+    setIsLoadingTutorial(true);
+    loadGuidedTutorial(selectedChallenge.id)
+      .then((tutorial) => {
+        setLoadedGuidedTutorial(tutorial);
+      })
+      .catch((err) => {
+        console.warn('Failed to load guided tutorial:', err);
+        setLoadedGuidedTutorial(null);
+      })
+      .finally(() => {
+        setIsLoadingTutorial(false);
+      });
+  }, [selectedChallenge?.id]);
 
   // Helper flags for challenge-specific behavior
   const isTinyUrl = selectedChallenge?.id === "tiny_url";
@@ -161,10 +197,32 @@ export function TieredSystemDesignBuilder({
   const wantsGuidedExperience =
     guidedOverride === "guided" ||
     (guidedOverride !== "classic" && guidedMode === "guided-tutorial");
+
+  // Check if guided tutorial is available (either from problemDefinition or loaded dynamically)
+  const hasGuidedTutorial = Boolean(selectedChallenge?.problemDefinition?.guidedTutorial) || Boolean(loadedGuidedTutorial);
   const shouldShowGuidedWizard =
-    Boolean(selectedChallenge?.problemDefinition) &&
+    hasGuidedTutorial &&
     wantsGuidedExperience &&
+    !isLoadingTutorial &&
     (guidedOverride === "guided" || !tutorialCompleted);
+
+  // Create enhanced challenge with loaded tutorial if needed
+  const enhancedChallenge = selectedChallenge && loadedGuidedTutorial
+    ? {
+        ...selectedChallenge,
+        problemDefinition: {
+          ...(selectedChallenge.problemDefinition || {
+            id: selectedChallenge.id,
+            title: selectedChallenge.title,
+            description: selectedChallenge.description,
+            functionalRequirements: { mustHave: [], mustConnect: [] },
+            scenarios: [],
+            validators: [],
+          }),
+          guidedTutorial: loadedGuidedTutorial,
+        },
+      }
+    : selectedChallenge;
 
   // Check if any app server has APIs configured
   const hasAppServerWithAPIs = systemGraph.components?.some(
@@ -615,7 +673,7 @@ export function TieredSystemDesignBuilder({
         {/* Canvas Tab - Show Wizard for new users, Canvas for completed users */}
         {activeTab === "canvas" && (
           shouldShowGuidedWizard ? (
-            <GuidedWizardPage challenge={selectedChallenge as any} />
+            <GuidedWizardPage challenge={enhancedChallenge as any} />
           ) : (
             <CanvasPage
               challenge={selectedChallenge}

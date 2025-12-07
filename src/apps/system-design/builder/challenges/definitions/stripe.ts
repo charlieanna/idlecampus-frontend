@@ -8,6 +8,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { stripeGuidedTutorial } from './stripeGuided';
 
 /**
  * Stripe - Payment Processing Platform
@@ -504,6 +505,8 @@ def check_payment_status(payment_id: str) -> str:
         raise ValueError("Payment not found")
     return payment['status']
 `,
+
+  guidedTutorial: stripeGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

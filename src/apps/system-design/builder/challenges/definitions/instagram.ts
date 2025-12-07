@@ -14,6 +14,7 @@ import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
 import { generateSolution } from '../solutionGenerator';
+import { instagramGuidedTutorial } from './instagramGuided';
 
 /**
  * Instagram - Photo Sharing Platform
@@ -620,6 +621,9 @@ def search_content(query: str) -> List[Dict]:
       'Users can search for other users and content'
     ]
   ),
+
+  // Guided Tutorial
+  guidedTutorial: instagramGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

@@ -7,6 +7,7 @@ import {
 import { generateScenarios } from '../scenarioGenerator';
 import { problemConfigs } from '../problemConfigs';
 import { generateCodeChallengesFromFRs } from '../../utils/codeChallengeGenerator';
+import { githubGuidedTutorial } from './githubGuided';
 
 /**
  * GitHub - Code Hosting Platform
@@ -436,6 +437,8 @@ def get_repository_pull_requests(repo_id: str, status: str = "open") -> List[Dic
             repo_prs.append(pr)
     return repo_prs
 `,
+
+  guidedTutorial: githubGuidedTutorial,
 };
 
 // Auto-generate code challenges from functional requirements

@@ -174,7 +174,8 @@ export interface ConnectionHint {
 export interface GuidedStep {
   id: string;
   stepNumber: number;
-  frIndex: number;
+  frIndex?: number;  // Optional - not all steps map to a specific FR
+  title?: string;    // Optional step title
 
   // NEW: Narrative story that introduces this step (shown full-screen)
   story?: StoryContent;
@@ -189,15 +190,15 @@ export interface GuidedStep {
   practicePhase: {
     frText: string;
     taskDescription: string;
-    componentsNeeded: ComponentHint[];
-    connectionsNeeded: ConnectionHint[];
+    componentsNeeded?: ComponentHint[];  // Optional - some steps don't add new components
+    connectionsNeeded?: ConnectionHint[];  // Optional - some steps don't add new connections
     successCriteria: string[];
   };
 
   // Validation criteria for this step (cumulative)
   validation: {
     requiredComponents: string[];
-    requiredConnections: { fromType: string; toType: string }[];
+    requiredConnections?: { fromType: string; toType: string }[];  // Optional - some steps don't need specific connections
     // If true, requires App Server to have at least one API configured
     requireAPIConfiguration?: boolean;
     // If true, requires user to have written/edited Python code (basic presence check)
@@ -254,7 +255,13 @@ export interface InterviewQuestion {
     | 'throughput'      // RPS, read/write ratio
     | 'payload'         // Request/response size, storage
     | 'burst'           // Peak traffic, spikes
-    | 'latency';        // Response time SLAs
+    | 'latency'         // Response time SLAs
+    | 'availability'    // Uptime, fault tolerance
+    | 'cdn'             // CDN strategy, edge caching
+    | 'consistency'     // Consistency vs availability trade-offs
+    | 'reliability'     // Fault tolerance, recovery
+    | 'quality'         // Media quality, encoding
+    | 'security';       // Security, compliance, encryption
   question: string;
   answer: string;
   importance: 'critical' | 'important' | 'nice-to-have';
@@ -354,21 +361,43 @@ export interface RequirementsIntroContent extends StoryContent {
 }
 
 /**
+ * Welcome story shown at the start of the tutorial
+ */
+export interface WelcomeStory {
+  emoji: string;
+  hook: string;
+  scenario: string;
+  challenge: string;
+}
+
+/**
  * Complete guided tutorial for a problem
  */
 export interface GuidedTutorial {
   problemId: string;
-  problemTitle: string;
-  
+  problemTitle?: string;  // Optional - can use title instead
+  title?: string;         // Alternative to problemTitle
+  description?: string;   // Brief description of the tutorial
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  estimatedMinutes?: number;  // Estimated time to complete
+
+  // Welcome story shown before the tutorial starts
+  welcomeStory?: WelcomeStory;
+
   // NEW: Requirements gathering phase (Step 0) - optional for backwards compatibility
   requirementsPhase?: RequirementsGatheringContent;
-  
-  totalSteps: number;
+
+  totalSteps?: number;  // Optional - can be derived from steps.length
   steps: GuidedStep[];
-  
+
   // Final exam test cases - the same test cases as the regular challenge page
   // When users complete the final step, they are validated against these test cases
   finalExamTestCases?: TestCase[];
+
+  // Meta information for the tutorial
+  concepts?: string[];           // Key concepts covered in the tutorial
+  ddiaReferences?: string[];     // DDIA chapter references
+  prerequisites?: string[];      // Prerequisites for the tutorial
 }
 
 /**
