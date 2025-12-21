@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { CheckCircle2, Lock, Terminal as TerminalIcon } from 'lucide-react';
+import { CheckCircle2, Lock, Terminal as TerminalIcon, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Card } from '../ui/card';
 import { Badge } from '../ui/badge';
@@ -71,6 +71,9 @@ export interface LessonViewerProps {
   previousLessonTitle?: string;
   moduleAccessible?: boolean;
   previousModuleTitle?: string;
+  showInlineExercises?: boolean; // If false, hide MCQ exercises (for terminal-based courses)
+  onNextLesson?: () => void;
+  nextLessonTitle?: string;
 }
 
 export function LessonViewer({
@@ -86,7 +89,10 @@ export function LessonViewer({
   isAccessible = true,
   previousLessonTitle,
   moduleAccessible = true,
-  previousModuleTitle
+  previousModuleTitle,
+  showInlineExercises = true, // Default to showing exercises, but LinuxApp will set to false
+  onNextLesson,
+  nextLessonTitle
 }: LessonViewerProps) {
   const [progressiveItems, setProgressiveItems] = useState<LessonItem[] | null>(null);
   const [loading, setLoading] = useState(false);
@@ -194,13 +200,23 @@ export function LessonViewer({
 
   // Use progressive items if available, otherwise use regular lesson items
   // If lesson.items exists, use it (it may already include exercises from microlessons)
+  console.log('📖 [V2] LessonViewer received lesson:', {
+    id: lesson.id,
+    title: lesson.title,
+    hasItems: !!lesson.items,
+    itemsLength: lesson.items?.length,
+    hasCommands: !!lesson.commands,
+    commandsLength: lesson.commands?.length,
+    itemTypes: lesson.items?.map(i => i.type)
+  });
+
   let items: LessonItem[] = progressiveItems || lesson.items || [
     { type: 'content', markdown: lesson.content || '' },
     ...(lesson.commands || []).map(cmd => ({ type: 'command' as const, command: cmd }))
   ];
-  
+
   // Debug: Log items to see if exercises are included
-  console.log('📚 LessonViewer items:', items.length, 'types:', items.map(i => i.type));
+  console.log('📚 [V2] LessonViewer items:', items.length, 'types:', items.map(i => i.type));
   const exerciseItems = items.filter(i => i.type === 'exercise');
   if (exerciseItems.length > 0) {
     console.log('✅ Found exercises:', exerciseItems.length, exerciseItems.map(e => (e as any).exercise?.exercise_type));
@@ -248,22 +264,23 @@ export function LessonViewer({
   const currentCommandIndex = getCurrentCommandIndex();
 
   const getVisibleItems = (): LessonItem[] => {
-    // Filter out exercises - they're now shown in the ExercisePanel on the right
-    const itemsWithoutExercises = items.filter(item => item.type !== 'exercise');
-    
-    // If no commands or all commands completed, show all items (content, but not exercises)
+    // Filter out exercises if showInlineExercises is false (for terminal-based courses)
+    const filteredItems = showInlineExercises
+      ? items
+      : items.filter(item => item.type !== 'exercise');
+
+    // If no commands or all commands completed, show all items
     if (currentCommandIndex === -1 || totalCommands === 0) {
-      // For lessons with no commands (like microlessons), show all items except exercises
-      return itemsWithoutExercises;
+      return filteredItems;
     }
 
-    // For lessons with commands, show progressive content (but not exercises)
+    // For lessons with commands, show progressive content
     const visibleItems: LessonItem[] = [];
     let commandIndex = 0;
 
-    for (const item of itemsWithoutExercises) {
-      if (item.type === 'content' || item.type === 'review') {
-        // Content and reviews are always visible (they come after content)
+    for (const item of filteredItems) {
+      if (item.type === 'content' || item.type === 'review' || item.type === 'exercise') {
+        // Content, reviews, and exercises are always visible
         visibleItems.push(item);
       } else if (item.type === 'command') {
         // Only show commands up to the current unlocked command
@@ -308,12 +325,14 @@ export function LessonViewer({
   }, [visibleItems.length]);
 
   const renderContent = (content: string) => {
+    if (!content) return null;
     const lines = content.split('\n');
     const elements: JSX.Element[] = [];
     let currentList: string[] = [];
     let inCodeBlock = false;
     let codeBlockLines: string[] = [];
     let codeLanguage = '';
+    let skippedFirstH1 = false; // Track if we've already skipped a duplicate h1
 
     const flushList = () => {
       if (currentList.length > 0) {
@@ -371,7 +390,15 @@ export function LessonViewer({
 
       // Handle headings
       if (line.startsWith('# ')) {
-        elements.push(<h1 key={i} className="text-2xl font-bold text-slate-900 mt-6 mb-3">{line.substring(2)}</h1>);
+        const headingText = line.substring(2).trim();
+        // Skip the first h1 if it matches or is similar to the lesson title (avoid duplicate headings)
+        // Normalize by removing non-alphanumeric chars (including emojis), collapsing spaces, and comparing lowercase
+        const normalizeForCompare = (s: string) => s.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+        if (!skippedFirstH1 && (headingText === lesson.title.trim() || normalizeForCompare(headingText) === normalizeForCompare(lesson.title))) {
+          skippedFirstH1 = true;
+          return; // Skip this duplicate heading
+        }
+        elements.push(<h1 key={i} className="text-2xl font-bold text-slate-900 mt-6 mb-3">{headingText}</h1>);
       } else if (line.startsWith('## ')) {
         elements.push(<h2 key={i} className="text-xl font-bold text-slate-900 mt-5 mb-2">{line.substring(3)}</h2>);
       } else if (line.startsWith('### ')) {
@@ -851,6 +878,32 @@ export function LessonViewer({
                   </div>
                   <Button onClick={onGoToLab} className="bg-blue-600 hover:bg-blue-700">
                     Go to Lab →
+                  </Button>
+                </div>
+              </Card>
+            </motion.div>
+          )}
+
+          {isCompleted && onNextLesson && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="mt-6"
+            >
+              <Card className="p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-green-900 mb-1">Lesson Complete!</h3>
+                    <p className="text-green-700 text-sm">
+                      {nextLessonTitle
+                        ? `Continue to: ${nextLessonTitle}`
+                        : 'Ready for the next lesson'}
+                    </p>
+                  </div>
+                  <Button onClick={onNextLesson} className="bg-green-600 hover:bg-green-700">
+                    Next Lesson
+                    <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 </div>
               </Card>

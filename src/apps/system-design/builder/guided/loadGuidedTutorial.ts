@@ -24,6 +24,19 @@ function toCamelCase(str: string): string {
 }
 
 /**
+ * Clear the tutorial cache (useful for development or when switching challenges)
+ */
+export function clearTutorialCache(challengeId?: string): void {
+  if (challengeId) {
+    const normalizedId = challengeId.replace(/_/g, '-').toLowerCase();
+    delete tutorialCache[normalizedId];
+  } else {
+    // Clear all cache
+    Object.keys(tutorialCache).forEach(key => delete tutorialCache[key]);
+  }
+}
+
+/**
  * Load a guided tutorial for a challenge ID
  * Returns null if no tutorial exists
  */
@@ -32,8 +45,16 @@ export async function loadGuidedTutorial(challengeId: string): Promise<GuidedTut
   const normalizedId = challengeId.replace(/_/g, '-').toLowerCase();
 
   // Check cache first
-  if (tutorialCache[normalizedId]) {
-    return tutorialCache[normalizedId];
+  const cached = tutorialCache[normalizedId];
+  if (cached) {
+    // Verify the cached tutorial matches the requested challenge ID
+    if (cached.problemId === normalizedId || cached.problemId === challengeId) {
+      return cached;
+    } else {
+      // Cache mismatch - clear it and reload
+      console.warn(`Cache mismatch for ${challengeId}: cached tutorial has problemId ${cached.problemId}, clearing cache`);
+      delete tutorialCache[normalizedId];
+    }
   }
 
   // Check if tutorial exists in our ID list
@@ -59,6 +80,14 @@ export async function loadGuidedTutorial(challengeId: string): Promise<GuidedTut
     const tutorial = module.default;
 
     if (tutorial) {
+      // Verify the tutorial's problemId matches the requested challenge
+      const tutorialProblemId = tutorial.problemId?.replace(/_/g, '-').toLowerCase();
+      if (tutorialProblemId !== normalizedId && tutorialProblemId !== challengeId.replace(/_/g, '-').toLowerCase()) {
+        console.warn(`Tutorial problemId mismatch: expected ${normalizedId}, got ${tutorial.problemId}`);
+        // Don't cache mismatched tutorials
+        return tutorial; // Still return it, but don't cache
+      }
+      
       tutorialCache[normalizedId] = tutorial;
       return tutorial;
     }

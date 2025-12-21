@@ -29,18 +29,18 @@ import { TestCase } from '../../types/testCase';
 
 const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
   problemStatement: "Design a URL shortener like bit.ly or TinyURL",
-  
+
   interviewer: {
     name: 'Sarah Chen',
     role: 'Engineering Manager',
     avatar: '👩‍💼',
   },
-  
+
   questions: [
     // =============================================================================
     // PART 1: FUNCTIONAL REQUIREMENTS
     // =============================================================================
-    
+
     // CRITICAL - Core Functionality (from user's experience)
     {
       id: 'core-operations',
@@ -60,7 +60,7 @@ const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
       revealsRequirement: 'FR-3',
       learningPoint: "Uniqueness is critical for user experience - wrong redirects break trust",
     },
-    
+
     // IMPORTANT - Clarifications (from user's experience)
     {
       id: 'url-lifecycle',
@@ -86,7 +86,7 @@ const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
       importance: 'nice-to-have',
       insight: "Analytics is a separate system - mentioning it shows breadth, but don't design it now",
     },
-    
+
     // SCOPE
     {
       id: 'scope-single-region',
@@ -96,11 +96,11 @@ const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
       importance: 'nice-to-have',
       insight: "Starting simple with single region is the right approach",
     },
-    
+
     // =============================================================================
     // PART 2: SCALE & NFRs (Interview Discovery Order)
     // =============================================================================
-    
+
     // 1. THROUGHPUT (First - tells you the scale)
     {
       id: 'throughput-dau',
@@ -134,7 +134,7 @@ const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
       },
       learningPoint: "This tells you read load - and it's MUCH higher than writes!",
     },
-    
+
     // 2. PAYLOAD (Second - affects bandwidth and storage)
     {
       id: 'payload-url-size',
@@ -160,7 +160,7 @@ const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
       },
       learningPoint: "Storage grows linearly with URL creation rate",
     },
-    
+
     // 3. BURSTS (Third - capacity planning)
     {
       id: 'burst-peak',
@@ -182,7 +182,7 @@ const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
       importance: 'important',
       insight: "Need auto-scaling and rate limiting for protection",
     },
-    
+
     // 4. LATENCY (Fourth - response time requirements)
     {
       id: 'latency-redirect',
@@ -209,12 +209,12 @@ const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
       insight: "No data processing latency concerns for TinyURL",
     },
   ],
-  
+
   minimumQuestionsRequired: 2,
   criticalQuestionIds: ['core-operations', 'uniqueness'],
   criticalFRQuestionIds: ['core-operations', 'uniqueness'],
   criticalScaleQuestionIds: ['throughput-writes', 'throughput-reads', 'burst-peak', 'latency-redirect'], // Used in later steps
-  
+
   confirmedFRs: [
     {
       id: 'fr-1',
@@ -235,7 +235,7 @@ const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
       emoji: '🔑',
     },
   ],
-  
+
   scaleMetrics: {
     dailyActiveUsers: '100 million',
     writesPerDay: '10 million',
@@ -250,7 +250,7 @@ const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
     redirectLatencySLA: 'p99 < 100ms',
     createLatencySLA: 'p99 < 500ms',
   },
-  
+
   architecturalImplications: [
     '✅ Read-heavy (100:1) → Caching is CRITICAL',
     '✅ 35K reads/sec peak → Need multiple app servers + load balancer',
@@ -258,15 +258,100 @@ const tinyUrlRequirementsPhase: RequirementsGatheringContent = {
     '✅ p99 < 100ms redirect → Cache is essential (DB too slow)',
     '✅ 1.8TB/year growth → Plan for partitioning eventually',
   ],
-  
+
   outOfScope: [
     'Custom short codes (v2)',
     'Click analytics',
     'URL expiration',
     'Multi-region deployment',
   ],
-  
+
   keyInsight: "First, let's make it WORK. We'll build a simple Client → App Server solution that satisfies our functional requirements. Once it works, we'll optimize for scale and performance in later steps. This is the right way to approach system design: functionality first, then optimization.",
+
+  // Expert thinking framework for Step 0
+  // Focus: Given these simple FRs, how do I design a BRUTE FORCE solution?
+  thinkingFramework: {
+    title: "From FRs to Brute Force Architecture",
+    intro: "We have 3 simple functional requirements. Let's design the SIMPLEST system that satisfies them. No optimization yet - just make it work.",
+
+    steps: [
+      {
+        id: 'identify-apis',
+        title: 'Step 1: What APIs Do We Need?',
+        alwaysAsk: "What operations must the system support?",
+        whyItMatters: "From the FRs, we can directly derive the API endpoints we need to build.",
+        expertBreakdown: {
+          intro: "From our 3 FRs:",
+          points: [
+            "FR-1 (Shorten URL) → POST /urls with long_url, returns short_code",
+            "FR-2 (Redirect) → GET /:short_code, returns 301 redirect to long_url",
+            "FR-3 (Unique codes) → Just a constraint on how we generate codes",
+            "That's it! Just 2 API endpoints to build."
+          ]
+        },
+        icon: '🔌',
+        category: 'functional'
+      },
+      {
+        id: 'identify-data',
+        title: 'Step 2: What Data Do We Store?',
+        alwaysAsk: "What's the minimum data we need to make this work?",
+        whyItMatters: "To map short codes to long URLs, we need to store that mapping somewhere.",
+        expertBreakdown: {
+          intro: "The core data model is simple:",
+          points: [
+            "short_code (string) → The generated code like 'abc123'",
+            "long_url (string) → The original URL to redirect to",
+            "Brute force: Store in memory (a dictionary/hashmap)",
+            "That's literally it. { 'abc123': 'https://example.com/long/url' }"
+          ]
+        },
+        icon: '💾',
+        category: 'data-flow'
+      },
+      {
+        id: 'generate-codes',
+        title: 'Step 3: How Do We Generate Unique Codes?',
+        alwaysAsk: "How do we satisfy the uniqueness constraint?",
+        whyItMatters: "FR-3 says each code must be unique. We need a strategy to generate them.",
+        expertBreakdown: {
+          intro: "Brute force approach for uniqueness:",
+          points: [
+            "Option A: Random string (check if exists, retry if collision)",
+            "Option B: Hash the URL (deterministic but can collide)",
+            "Option C: Auto-increment counter (simple, guaranteed unique)",
+            "For brute force, let's use random string with collision check"
+          ]
+        },
+        icon: '🔑',
+        category: 'functional'
+      },
+      {
+        id: 'sketch-flow',
+        title: 'Step 4: Sketch the Data Flow',
+        alwaysAsk: "What's the request flow from start to finish?",
+        whyItMatters: "Connect the dots to visualize the complete system.",
+        expertBreakdown: {
+          intro: "Two simple flows:",
+          points: [
+            "CREATE: Client → App Server → Generate code → Store in memory → Return code",
+            "REDIRECT: Client → App Server → Lookup code → Return redirect",
+            "Architecture: Client → App Server (that's it!)",
+            "No database yet - everything in memory. Simple!"
+          ]
+        },
+        icon: '🔀',
+        category: 'functional'
+      }
+    ],
+
+    startSimple: {
+      title: "Our Brute Force Architecture",
+      description: "Client → App Server with an in-memory hashmap. POST creates entries, GET looks them up and redirects.",
+      whySimple: "This satisfies ALL 3 FRs! It won't survive a restart and won't scale, but it WORKS. We'll add a database for persistence in Step 3.",
+      nextStepPreview: "Step 1: Connect Client to App Server. Step 2: Write the code. Then we'll see what breaks..."
+    }
+  },
 };
 
 // =============================================================================
@@ -475,7 +560,10 @@ const step2: GuidedStep = {
   hints: {
     level1: 'Click App Server to configure APIs, then switch to the Python tab to write your handlers',
     level2: 'After assigning APIs in the inspector, switch to the Python editor tab and fill in the TODOs in the template. Implement shorten_url() and redirect().',
-    solutionComponents: [{ type: 'client' }, { type: 'app_server' }],
+    solutionComponents: [
+      { type: 'client' },
+      { type: 'app_server', config: { handledAPIs: ['POST /api/v1/urls', 'GET /api/v1/urls/*'] } }
+    ],
     solutionConnections: [{ from: 'client', to: 'app_server' }],
   },
 };
@@ -1701,13 +1789,13 @@ const step10: GuidedStep = {
 export const tinyUrlGuidedTutorial: GuidedTutorial = {
   problemId: 'tiny-url-guided',
   problemTitle: 'Build TinyURL - A System Design Journey',
-  
+
   // NEW: Requirements gathering phase (Step 0)
   requirementsPhase: tinyUrlRequirementsPhase,
-  
+
   totalSteps: 10,
   steps: [step1, step2, step3, step4, step5, step6, step7, step8, step9, step10],
-  
+
   // Final exam test cases - same 7 test cases as the regular TinyURL challenge
   // Users must pass all 7 to complete the guided tutorial
   // Note: Defined inline to avoid circular dependency with tinyUrl.ts

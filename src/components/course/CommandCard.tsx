@@ -60,9 +60,18 @@ export function CommandCard({ command, state, commandIndex, onCopy }: CommandCar
       >
         <div className="flex items-start justify-between gap-4">
           <div className="flex-1">
-            {/* Command Name with Icon */}
+            {/* Description - Show what the command does FIRST */}
+            <p className={`text-base font-medium mb-3 ${
+              state === 'current' ? 'text-blue-900' :
+              state === 'completed' ? 'text-green-900' :
+              'text-slate-700'
+            }`}>
+              {command.description}
+            </p>
+
+            {/* Command Name with Status */}
             <div className="flex items-center gap-2 mb-2">
-              <code className={`px-2 py-1 rounded ${
+              <code className={`px-2 py-1 rounded font-mono ${
                 state === 'current' ? 'text-blue-700 bg-blue-100' :
                 state === 'completed' ? 'text-green-700 bg-green-100' :
                 'text-slate-600 bg-slate-100'
@@ -78,15 +87,6 @@ export function CommandCard({ command, state, commandIndex, onCopy }: CommandCar
                 <Badge className="bg-blue-600 animate-pulse">Practice this</Badge>
               )}
             </div>
-
-            {/* Description */}
-            <p className={`text-sm mb-3 ${
-              state === 'current' ? 'text-blue-800' :
-              state === 'completed' ? 'text-green-800' :
-              'text-slate-600'
-            }`}>
-              {command.description}
-            </p>
 
             {/* Code Example with Copy Button */}
             <div className="bg-slate-900 text-green-400 p-3 rounded flex items-center justify-between group">

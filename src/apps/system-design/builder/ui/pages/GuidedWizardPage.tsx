@@ -5,11 +5,13 @@ import { useNavigate } from 'react-router-dom';
 import { DesignCanvas } from '../components/DesignCanvas';
 import { InspectorModal } from '../components/InspectorModal';
 import { StoryPanel, CelebrationPanel, FullScreenLearnPanel, RequirementsGatheringPanel, ProgressRoadmapCollapsible, CostSummaryWidget, FriendlyFeedbackPanel, SandboxModeToggle, SandboxModeBanner, SolutionComparisonModal, InlineCodeEditor } from '../components/guided';
+import { ScaleFrameworkPanel } from '../components/guided/ScaleFrameworkPanel';
 import { useCanvasStore, useGuidedStore, useCodeStore } from '../store';
 import { Challenge } from '../../types/testCase';
 import { validateStep } from '../../guided/validateStep';
 import { generateGuidedTutorial } from '../../guided/generateGuidedTutorial';
-import { StepValidationResult, GuidedStep, StepPhase } from '../../types/guidedTutorial';
+import { loadGuidedTutorial, clearTutorialCache } from '../../guided/loadGuidedTutorial';
+import { StepValidationResult, GuidedStep, StepPhase, GuidedTutorial } from '../../types/guidedTutorial';
 import { ProblemDefinition } from '../../types/problemDefinition';
 
 interface ChallengeWithProblemDefinition extends Challenge {
@@ -75,83 +77,144 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
       return;
     }
 
-    const loadedTutorial = challenge.problemDefinition.guidedTutorial
-      ? challenge.problemDefinition.guidedTutorial
-      : generateGuidedTutorial(challenge.problemDefinition);
+    // Async function to load tutorial
+    const loadTutorial = async () => {
+      // Always load from the dynamic loader to ensure we get the correct tutorial
+      // This avoids stale data from problemDefinition.guidedTutorial
+      const normalizedChallengeId = challenge.id.replace(/_/g, '-').toLowerCase();
 
-    console.log('[GuidedWizard] Tutorial loaded:', loadedTutorial.steps.length, 'steps');
+      // Get existing tutorial from store
+      const existingProgress = useGuidedStore.getState().progress;
+      const existingTutorial = useGuidedStore.getState().tutorial;
+      const existingTutorialId = existingTutorial?.problemId?.replace(/_/g, '-').toLowerCase();
 
-    // Check if we already have progress for this challenge
-    const existingProgress = useGuidedStore.getState().progress;
-    const existingTutorial = useGuidedStore.getState().tutorial;
+      // Clear cache if we're switching challenges to avoid stale data
+      if (existingTutorialId && existingTutorialId !== normalizedChallengeId) {
+        console.log('[GuidedWizard] Clearing cache for challenge switch from', existingTutorialId, 'to', normalizedChallengeId);
+        clearTutorialCache();
+      }
 
-    if (existingProgress?.problemId === challenge.id && existingTutorial) {
-      console.log('[GuidedWizard] Resuming existing progress - step:', existingProgress.currentStepIndex, 'phase:', existingProgress.currentPhase);
-      // Just sync local state with store, don't reset
-      setTutorial(existingTutorial);
+      let loadedTutorial: GuidedTutorial | null = null;
+
+      // Try loading from dynamic loader first (for separate tutorial files)
+      loadedTutorial = await loadGuidedTutorial(challenge.id);
+
+      // Fallback to problemDefinition.guidedTutorial if dynamic loader doesn't have it
+      if (!loadedTutorial && challenge.problemDefinition?.guidedTutorial) {
+        loadedTutorial = challenge.problemDefinition.guidedTutorial;
+      }
+
+      // Final fallback: generate from problem definition
+      if (!loadedTutorial && challenge.problemDefinition) {
+        loadedTutorial = generateGuidedTutorial(challenge.problemDefinition);
+      }
+
+      if (!loadedTutorial) {
+        return;
+      }
+      const tutorialProblemId = loadedTutorial.problemId?.replace(/_/g, '-').toLowerCase();
+      if (tutorialProblemId && tutorialProblemId !== normalizedChallengeId && tutorialProblemId !== challenge.id) {
+        console.error(`[GuidedWizard] Tutorial mismatch! Challenge: ${challenge.id}, Tutorial problemId: ${loadedTutorial.problemId}`);
+        // Clear cache and try again
+        clearTutorialCache(challenge.id);
+        // Don't proceed with mismatched tutorial
+        return;
+      }
+
+      console.log('[GuidedWizard] Tutorial loaded:', loadedTutorial.steps.length, 'steps, problemId:', loadedTutorial.problemId);
+
+      // Verify the existing tutorial matches the current challenge
+      const tutorialMatches = existingTutorial && (
+        existingTutorial.problemId === challenge.id ||
+        existingTutorial.problemId === challenge.id.replace(/_/g, '-').toLowerCase()
+      );
+
+      if (existingProgress?.problemId === challenge.id && existingTutorial && tutorialMatches) {
+        console.log('[GuidedWizard] Resuming existing progress - step:', existingProgress.currentStepIndex, 'phase:', existingProgress.currentPhase);
+        // Just sync local state with store, don't reset
+        setTutorial(existingTutorial);
+        setValidationResult(null);
+        setShowHint(false);
+        setIsValidating(false);
+
+        // Don't pre-load any components - user should add everything themselves
+        return;
+      }
+
+      // If tutorial doesn't match, clear it and use the loaded one
+      if (existingTutorial && !tutorialMatches) {
+        console.log('[GuidedWizard] Tutorial mismatch - clearing stale tutorial. Expected:', challenge.id, 'Got:', existingTutorial.problemId);
+        // Reset all progress and tutorial state for this challenge
+        const { resetProgress } = useGuidedStore.getState();
+        resetProgress();
+        setTutorial(null);
+        // Also clear the cache for this challenge to force reload
+        clearTutorialCache(challenge.id);
+        // Clear existing progress reference
+        const clearedProgress = useGuidedStore.getState().progress;
+        const clearedTutorial = useGuidedStore.getState().tutorial;
+        console.log('[GuidedWizard] After reset - progress:', clearedProgress, 'tutorial:', clearedTutorial);
+      }
+
+      console.log('[GuidedWizard] No existing progress, initializing fresh');
+
+      // Reset EVERYTHING for new challenge
+      // Check if tutorial has requirements phase - start there if so
+      const hasRequirements = !!loadedTutorial.requirementsPhase;
+      const firstStep = loadedTutorial.steps[0];
+
+      // Determine initial phase:
+      // 1. If has requirements phase -> start with 'requirements-intro' (welcome story)
+      // 2. Else if first step has story -> 'story'
+      // 3. Else -> 'learn'
+      let initialPhase: StepPhase;
+      if (hasRequirements) {
+        initialPhase = 'requirements-intro'; // Show welcome story first, then requirements
+      } else {
+        initialPhase = firstStep?.story ? 'story' : 'learn';
+      }
+
+      console.log('[GuidedWizard] Starting at step 0, phase:', initialPhase, 'hasRequirements:', hasRequirements);
+
+      // Set all state at once
+      setTutorial(loadedTutorial);
       setValidationResult(null);
       setShowHint(false);
       setIsValidating(false);
 
-      // Don't pre-load any components - user should add everything themselves
-      return;
-    }
+      // Force the store state directly
+      useGuidedStore.setState({
+        mode: 'guided-tutorial',
+        tutorial: loadedTutorial,
+        progress: {
+          problemId: challenge.id,
+          currentStepIndex: 0,
+          currentPhase: initialPhase,
+          completedStepIds: [],
+          attemptCounts: {},
+          hintLevel: 'none',
+          startedAt: new Date().toISOString(),
+          lastAccessedAt: new Date().toISOString(),
+          quizAnswers: {},
+          askedQuestionIds: [],
+          requirementsPhaseComplete: false,
+        },
+      });
 
-    console.log('[GuidedWizard] No existing progress, initializing fresh');
+      // Start with empty canvas - user adds all components themselves
+      setSystemGraph({
+        components: [],
+        connections: [],
+      });
 
-    // Reset EVERYTHING for new challenge
-    // Check if tutorial has requirements phase - start there if so
-    const hasRequirements = !!loadedTutorial.requirementsPhase;
-    const firstStep = loadedTutorial.steps[0];
-    
-    // Determine initial phase:
-    // 1. If has requirements phase -> start with 'requirements-intro' (welcome story)
-    // 2. Else if first step has story -> 'story'
-    // 3. Else -> 'learn'
-    let initialPhase: StepPhase;
-    if (hasRequirements) {
-      initialPhase = 'requirements-intro'; // Show welcome story first, then requirements
-    } else {
-      initialPhase = firstStep?.story ? 'story' : 'learn';
-    }
+      console.log('[GuidedWizard] === INITIALIZATION COMPLETE ===');
+    };
 
-    console.log('[GuidedWizard] Starting at step 0, phase:', initialPhase, 'hasRequirements:', hasRequirements);
-
-    // Set all state at once
-    setTutorial(loadedTutorial);
-    setValidationResult(null);
-    setShowHint(false);
-    setIsValidating(false);
-
-    // Force the store state directly
-    useGuidedStore.setState({
-      mode: 'guided-tutorial',
-      tutorial: loadedTutorial,
-      progress: {
-        problemId: challenge.id,
-        currentStepIndex: 0,
-        currentPhase: initialPhase,
-        completedStepIds: [],
-        attemptCounts: {},
-        hintLevel: 'none',
-        startedAt: new Date().toISOString(),
-        lastAccessedAt: new Date().toISOString(),
-        quizAnswers: {},
-        askedQuestionIds: [],
-        requirementsPhaseComplete: false,
-      },
-    });
-
-    // Start with empty canvas - user adds all components themselves
-    setSystemGraph({
-      components: [],
-      connections: [],
-    });
-
-    console.log('[GuidedWizard] === INITIALIZATION COMPLETE ===');
-
+    // Call the async function
+    loadTutorial();
+    // Only depend on challenge.id to prevent infinite loops when challenge object reference changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Only run on mount!
+  }, [challenge?.id]);
 
   // Get current step
   const currentStep = tutorial?.steps[progress?.currentStepIndex || 0] || null;
@@ -159,9 +222,13 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
 
   // Check if we're in requirements gathering phase
   const isInRequirementsPhase = currentPhase === 'requirements-questions' ||
-                                 currentPhase === 'requirements-intro' ||
-                                 currentPhase === 'requirements-summary';
+    currentPhase === 'requirements-intro' ||
+    currentPhase === 'requirements-summary';
   const requirementsPhase = tutorial?.requirementsPhase;
+
+  // Check if we're showing the scale framework intro (after Step 3)
+  const isInScaleFrameworkPhase = currentPhase === 'scale-framework-intro';
+  const scaleFramework = requirementsPhase?.scaleFramework;
 
   // Debug logging
   console.log('[GuidedWizard] Render - stepIndex:', progress?.currentStepIndex, 'phase:', currentPhase, 'step:', currentStep?.story?.scenario?.substring(0, 30), 'inRequirementsPhase:', isInRequirementsPhase);
@@ -215,18 +282,26 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
   }, [setPhase, validationResult]);
 
   // Handle celebration continue → next step or finish
+  // Special case: After Step 3 (index 2), show Scale Framework intro if available
   const handleCelebrationContinue = useCallback(() => {
     setValidationResult(null);
     setShowHint(false);
 
-    if (tutorial && progress && progress.currentStepIndex === tutorial.totalSteps - 1) {
+    if (tutorial && progress && progress.currentStepIndex === (tutorial.totalSteps ?? tutorial.steps.length) - 1) {
       // Tutorial complete - go to solve on your own
       markTutorialComplete(challenge.id);
       navigate(`/system-design/${challenge.id}`);
+    } else if (
+      // After Step 3 (index 2), show scale framework if available
+      progress?.currentStepIndex === 2 &&
+      tutorial?.requirementsPhase?.scaleFramework
+    ) {
+      console.log('[GuidedWizard] After Step 3, showing Scale Framework intro');
+      setPhase('scale-framework-intro');
     } else {
       advanceToNextStep();
     }
-  }, [tutorial, progress, advanceToNextStep, markTutorialComplete, challenge?.id, navigate]);
+  }, [tutorial, progress, advanceToNextStep, markTutorialComplete, challenge?.id, navigate, setPhase]);
 
   // Handle hint toggle
   const handleToggleHint = useCallback(() => {
@@ -237,8 +312,9 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
   }, [showHint, setHintLevel]);
 
   // Handle adding a component from the task panel
-  const handleAddComponent = useCallback((type: string) => {
-    console.log('[GuidedWizard] handleAddComponent called:', type, 'current graph:', systemGraph);
+  // Accepts optional displayName from tutorial for context-specific naming
+  const handleAddComponent = useCallback((type: string, customDisplayName?: string) => {
+    console.log('[GuidedWizard] handleAddComponent called:', type, 'displayName:', customDisplayName, 'current graph:', systemGraph);
     if (!systemGraph) {
       console.log('[GuidedWizard] No systemGraph!');
       return;
@@ -249,7 +325,7 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
       id: `${type}-${Date.now()}`,
       type: type as any,
       config: {
-        displayName: getDisplayName(type),
+        displayName: customDisplayName || getDisplayName(type),
         position,
       },
     };
@@ -308,6 +384,14 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
     completeRequirementsPhase();
   }, [completeRequirementsPhase]);
 
+  // Handle scale framework continue → go to next step (Step 4)
+  const handleScaleFrameworkContinue = useCallback(() => {
+    console.log('[GuidedWizard] Scale framework complete, advancing to next step');
+    setValidationResult(null);
+    setShowHint(false);
+    advanceToNextStep();
+  }, [advanceToNextStep]);
+
   // Handle restart tutorial
   const handleRestartTutorial = useCallback(() => {
     if (!challenge?.problemDefinition) return;
@@ -319,7 +403,7 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
     // Check if tutorial has requirements phase - start there if so
     const hasRequirements = !!loadedTutorial.requirementsPhase;
     const firstStep = loadedTutorial.steps[0];
-    
+
     let initialPhase: StepPhase;
     if (hasRequirements) {
       initialPhase = 'requirements-intro'; // Show welcome story first, then requirements
@@ -419,7 +503,7 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
               challenge: "Let's gather the functional requirements by asking the right questions.",
             }}
             stepNumber={0}
-            totalSteps={tutorial.totalSteps}
+            totalSteps={tutorial.totalSteps || tutorial.steps.length}
             onContinue={handleRequirementsIntroContinue}
           />
         )}
@@ -435,34 +519,43 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
           />
         )}
 
+        {/* Scale Framework Intro Phase (after Step 3) */}
+        {isInScaleFrameworkPhase && scaleFramework && (
+          <ScaleFrameworkPanel
+            key="scale-framework"
+            scaleFramework={scaleFramework}
+            onContinue={handleScaleFrameworkContinue}
+          />
+        )}
+
         {/* Story Phase */}
-        {!isInRequirementsPhase && currentPhase === 'story' && currentStep?.story && (
+        {!isInRequirementsPhase && !isInScaleFrameworkPhase && currentPhase === 'story' && currentStep?.story && (
           <StoryPanel
             key="story"
             story={currentStep.story}
             stepNumber={currentStep.stepNumber}
-            totalSteps={tutorial.totalSteps}
+            totalSteps={tutorial.totalSteps || tutorial.steps.length}
             onContinue={handleStoryContinue}
           />
         )}
 
         {/* Learn Phase */}
-        {!isInRequirementsPhase && currentPhase === 'learn' && currentStep?.learnPhase && (
+        {!isInRequirementsPhase && !isInScaleFrameworkPhase && currentPhase === 'learn' && currentStep?.learnPhase && (
           <FullScreenLearnPanel
             key="learn"
             content={currentStep.learnPhase}
             stepNumber={currentStep.stepNumber}
-            totalSteps={tutorial.totalSteps}
+            totalSteps={tutorial.totalSteps || tutorial.steps.length}
             onStartPractice={handleStartPractice}
           />
         )}
 
         {/* Practice Phase - Wizard Style */}
-        {!isInRequirementsPhase && currentPhase === 'practice' && currentStep && (
+        {!isInRequirementsPhase && !isInScaleFrameworkPhase && currentPhase === 'practice' && currentStep && (
           <PracticeWizard
             key="practice"
             step={currentStep}
-            totalSteps={tutorial.totalSteps}
+            totalSteps={tutorial.totalSteps || tutorial.steps.length}
             systemGraph={systemGraph}
             setSystemGraph={setSystemGraph}
             selectedNode={selectedNode}
@@ -480,20 +573,20 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
         )}
 
         {/* Celebration Phase */}
-        {!isInRequirementsPhase && currentPhase === 'celebrate' && currentStep?.celebration && (
+        {!isInRequirementsPhase && !isInScaleFrameworkPhase && currentPhase === 'celebrate' && currentStep?.celebration && (
           <CelebrationPanel
             key="celebrate"
             celebration={currentStep.celebration}
             stepNumber={currentStep.stepNumber}
-            totalSteps={tutorial.totalSteps}
-            isLastStep={progress.currentStepIndex === tutorial.totalSteps - 1}
+            totalSteps={tutorial.totalSteps || tutorial.steps.length}
+            isLastStep={progress.currentStepIndex === (tutorial.totalSteps || tutorial.steps.length) - 1}
             onContinue={handleCelebrationContinue}
           />
         )}
       </AnimatePresence>
 
       {/* Progress Roadmap - shown during practice phase */}
-      {!isInRequirementsPhase && currentPhase === 'practice' && tutorial && progress && (
+      {!isInRequirementsPhase && !isInScaleFrameworkPhase && currentPhase === 'practice' && tutorial && progress && (
         <ProgressRoadmapCollapsible
           tutorial={tutorial}
           progress={progress}
@@ -507,10 +600,14 @@ export const GuidedWizardPage: React.FC<GuidedWizardPageProps> = ({ challenge })
           systemGraph={systemGraph}
           onUpdateConfig={handleUpdateConfig}
           onClose={handleCloseInspector}
-          availableAPIs={[
-            'POST /api/v1/urls',
-            'GET /api/v1/urls/:code',
-          ]}
+          availableAPIs={
+            tutorial?.steps.reduce((acc: string[], step: GuidedStep) => {
+              const apis = (step.hints.solutionComponents || [])
+                .filter(c => c.config && (c.config as any).handledAPIs)
+                .flatMap(c => (c.config as any).handledAPIs as string[]);
+              return Array.from(new Set([...acc, ...apis]));
+            }, [] as string[]) || []
+          }
         />
       )}
 
@@ -570,7 +667,7 @@ interface PracticeWizardProps {
   onCheckDesign: () => void;
   onStepComplete: () => void;
   onToggleHint: () => void;
-  onAddComponent: (type: string) => void;
+  onAddComponent: (type: string, displayName?: string) => void;
   onUpdateConfig: (nodeId: string, config: Record<string, any>) => void;
 }
 
@@ -592,20 +689,21 @@ function PracticeWizard({
   onUpdateConfig,
 }: PracticeWizardProps) {
   const { pythonCodeByServer } = useCodeStore();
-  
+
   // Check if this step requires code implementation
   const requiresCode = step.validation.requireCodeImplementation;
-  
+
   // Find the app server that needs code (first one with APIs configured)
-  const appServer = systemGraph?.components.find(c => 
-    (c.type === 'app_server' || c.type === 'compute') && 
+  const appServer = systemGraph?.components.find((c: any) =>
+    (c.type === 'app_server' || c.type === 'compute') &&
     c.config?.handledAPIs?.length > 0
   );
-  
+
   // Click to add component (simpler than drag-drop for embedded canvas)
-  const handleAddClick = (componentType: string) => {
-    console.log('[PracticeWizard] Adding component:', componentType);
-    onAddComponent(componentType);
+  // Pass the tutorial's displayName for context-specific naming
+  const handleAddClick = (componentType: string, displayName?: string) => {
+    console.log('[PracticeWizard] Adding component:', componentType, 'displayName:', displayName);
+    onAddComponent(componentType, displayName);
   };
 
   return (
@@ -630,13 +728,12 @@ function PracticeWizard({
             {Array.from({ length: totalSteps }).map((_, i) => (
               <div
                 key={i}
-                className={`h-2 flex-1 rounded-full transition-colors ${
-                  i < step.stepNumber
-                    ? 'bg-blue-500'
-                    : i === step.stepNumber - 1
+                className={`h-2 flex-1 rounded-full transition-colors ${i < step.stepNumber
+                  ? 'bg-blue-500'
+                  : i === step.stepNumber - 1
                     ? 'bg-blue-300'
                     : 'bg-gray-200'
-                }`}
+                  }`}
               />
             ))}
           </div>
@@ -663,17 +760,17 @@ function PracticeWizard({
 
             {/* Task Content - varies by step type */}
             <div className="p-6 bg-gray-50">
-              {step.practicePhase.componentsNeeded.length > 0 ? (
+              {(step.practicePhase.componentsNeeded?.length ?? 0) > 0 ? (
                 /* "Add Component" type step */
                 <>
                   <p className="text-sm font-medium text-gray-700 mb-3">
                     Click to add this component to the canvas:
                   </p>
                   <div className="flex flex-wrap gap-3">
-                    {step.practicePhase.componentsNeeded.map((comp) => (
+                    {step.practicePhase.componentsNeeded?.map((comp) => (
                       <button
                         key={comp.type}
-                        onClick={() => handleAddClick(comp.type)}
+                        onClick={() => handleAddClick(comp.type, comp.displayName)}
                         className="flex items-center gap-3 bg-blue-50 border-2 border-blue-300 hover:border-blue-500 hover:bg-blue-100 rounded-lg px-4 py-3 cursor-pointer transition-all group"
                       >
                         <span className="text-2xl group-hover:scale-110 transition-transform">{getComponentIcon(comp.type)}</span>
@@ -801,7 +898,7 @@ function PracticeWizard({
                   step={step}
                   attemptCount={attemptCount}
                   onShowHint={onToggleHint}
-                  onDismiss={() => {}}
+                  onDismiss={() => { }}
                 />
               </motion.div>
             )}
@@ -811,11 +908,10 @@ function PracticeWizard({
           <div className="flex items-center justify-between">
             <button
               onClick={onToggleHint}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
-                showHint
-                  ? 'bg-amber-100 text-amber-800'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${showHint
+                ? 'bg-amber-100 text-amber-800'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
             >
               <span>💡</span>
               {showHint ? 'Hide Hint' : 'Need a Hint?'}

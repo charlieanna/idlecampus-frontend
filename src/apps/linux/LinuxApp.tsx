@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Terminal as TerminalIcon, GripVertical } from 'lucide-react';
 import * as ResizablePrimitive from 'react-resizable-panels';
-import { Terminal } from '../../components/course/Terminal';
+import { XTerminal } from '../../components/course/XTerminal';
 import { CourseNavigation, Module } from '../../components/course/CourseNavigation';
 import { LessonViewer } from '../../components/course/LessonViewer';
 import { LabExercise } from '../../components/course/LabExercise';
@@ -66,6 +66,9 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
   const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
   const [completedCommands, setCompletedCommands] = useState<Set<string>>(new Set());
 
+  // Stable session ID for the terminal - only created once per component mount
+  const terminalSessionId = useMemo(() => `linux-${Date.now()}`, []);
+
   // Select first module and first lesson on mount
   useEffect(() => {
     if (courseModules && courseModules.length > 0 && !selectedModule) {
@@ -85,11 +88,40 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
 
   const handleSelectLesson = (moduleId: string, lessonId: string) => {
     setSelectedModule(moduleId);
-    setSelectedItemId(lessonId);
+    // Combine moduleId and lessonId to match the format used in matching logic
+    setSelectedItemId(`${moduleId}-${lessonId}`);
   };
 
   const handleCommandComplete = (commandId: string) => {
-    setCompletedCommands(prev => new Set(prev).add(commandId));
+    setCompletedCommands(prev => {
+      const newCompleted = new Set(prev).add(commandId);
+
+      // Check if all commands in current lesson are now complete
+      const lesson = currentModule?.lessons?.find(l => `${currentModule.id}-${l.id}` === selectedItemId);
+      if (lesson?.items) {
+        const commandItems = lesson.items.filter((item: any) => item.type === 'command');
+        const totalCommands = commandItems.length;
+
+        // Count completed commands for this lesson
+        let completedCount = 0;
+        for (let i = 0; i < totalCommands; i++) {
+          const key = `${selectedItemId}-${i}`;
+          if (newCompleted.has(key)) {
+            completedCount++;
+          }
+        }
+
+        console.log(`📊 Command progress: ${completedCount}/${totalCommands} for lesson ${selectedItemId}`);
+
+        // If all commands complete, mark lesson as complete
+        if (completedCount === totalCommands && totalCommands > 0) {
+          console.log('🎉 All commands complete! Marking lesson as done:', selectedItemId);
+          setCompletedLessons(prevLessons => new Set(prevLessons).add(selectedItemId));
+        }
+      }
+
+      return newCompleted;
+    });
   };
 
   const handleCommandCopy = (command: string) => {
@@ -105,22 +137,30 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
   const handleTerminalCommand = (typedCommand: string): string | null => {
     // Get the current lesson and its items
     const lesson = currentModule?.lessons?.find(l => `${currentModule.id}-${l.id}` === selectedItemId);
-    if (!lesson || !lesson.items) return null;
+    if (!lesson || !lesson.items) {
+      console.log('⚠️ No lesson or items found for command check');
+      return null;
+    }
+
+    // Use selectedItemId as the lesson ID (same as LessonViewer uses)
+    const lessonIdForKey = selectedItemId;
 
     // Find current command index
     let commandIndex = 0;
     for (const item of lesson.items) {
       if (item.type === 'command') {
-        // Use lesson.id (not selectedItemId) to match LessonViewer's key format
-        const commandKey = `${lesson.id}-${commandIndex}`;
+        // Use selectedItemId to match LessonViewer's key format
+        const commandKey = `${lessonIdForKey}-${commandIndex}`;
         if (!completedCommands.has(commandKey)) {
           // This is the current expected command
           const expectedCmd = item.command.command;
 
+          console.log('🔍 Checking command:', { typed: typedCommand.trim(), expected: expectedCmd.trim(), commandKey });
+
           // Check if typed command matches expected
           if (typedCommand.trim() === expectedCmd.trim()) {
-            // Success! Mark as complete silently
-            console.log('✅ Command matched:', expectedCmd);
+            // Success! Mark as complete
+            console.log('✅ Command matched:', expectedCmd, commandKey);
             handleCommandComplete(commandKey);
           }
 
@@ -144,6 +184,15 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
     // Check lessons
     const lesson = currentModule.lessons?.find(l => `${currentModule.id}-${l.id}` === selectedItemId);
     if (lesson) {
+      console.log('🎯 [V2] LinuxApp found lesson:', {
+        id: lesson.id,
+        title: lesson.title,
+        hasItems: !!lesson.items,
+        itemsLength: lesson.items?.length,
+        hasCommands: !!lesson.commands,
+        commandsLength: lesson.commands?.length,
+        itemTypes: lesson.items?.map((i: any) => i.type)
+      });
       // Ensure the lesson has the correct ID format for the LessonViewer component
       selectedContent = { ...lesson, id: selectedItemId };
       contentType = 'lesson';
@@ -189,6 +238,39 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
   const { isAccessible: isCurrentLessonAccessible, previousLessonTitle } = selectedContent
     ? getLessonAccessInfo(selectedItemId)
     : { isAccessible: true, previousLessonTitle: undefined };
+
+  // Find next lesson for navigation
+  const getNextLesson = (): { moduleId: string; lessonId: string; title: string } | null => {
+    if (!currentModule || !selectedItemId) return null;
+
+    // Build flat list of all lessons across all modules
+    const allLessons: { moduleId: string; lessonId: string; fullId: string; title: string }[] = [];
+    for (const module of courseModules) {
+      for (const lesson of module.lessons || []) {
+        allLessons.push({
+          moduleId: module.id,
+          lessonId: lesson.id,
+          fullId: `${module.id}-${lesson.id}`,
+          title: lesson.title
+        });
+      }
+    }
+
+    // Find current lesson index
+    const currentIndex = allLessons.findIndex(l => l.fullId === selectedItemId);
+    if (currentIndex === -1 || currentIndex >= allLessons.length - 1) return null;
+
+    // Return next lesson
+    return allLessons[currentIndex + 1];
+  };
+
+  const nextLesson = getNextLesson();
+
+  const handleNextLesson = () => {
+    if (nextLesson) {
+      handleSelectLesson(nextLesson.moduleId, nextLesson.lessonId);
+    }
+  };
 
   return (
     <div className="h-screen flex flex-col bg-slate-50">
@@ -246,6 +328,9 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
                     onCommandComplete={handleCommandComplete}
                     isAccessible={isCurrentLessonAccessible}
                     previousLessonTitle={previousLessonTitle}
+                    showInlineExercises={false}
+                    onNextLesson={nextLesson ? handleNextLesson : undefined}
+                    nextLessonTitle={nextLesson?.title}
                   />
                 </>
               )}
@@ -275,9 +360,11 @@ export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
           {/* Right: Terminal */}
           <ResizablePanel defaultSize={30} minSize={20}>
             {console.log('🔧 Terminal expected command:', expectedCommand)}
-            <Terminal
+            <XTerminal
               onCommand={handleTerminalCommand}
               expectedCommand={expectedCommand}
+              sessionId={terminalSessionId}
+              containerImage="ubuntu:22.04"
             />
           </ResizablePanel>
         </ResizablePanelGroup>

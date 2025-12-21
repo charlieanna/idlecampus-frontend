@@ -62,6 +62,7 @@ export function DesignCanvas({
   });
   const reactFlowInstanceRef = useRef<ReactFlowInstance | null>(null);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
+  const shouldAutoFitRef = useRef(false);
 
   // Handle dismissing canvas tips
   const dismissCanvasTips = useCallback(() => {
@@ -155,6 +156,11 @@ export function DesignCanvas({
       // Return updated nodes if there are changes
       const allNodes = [...updatedNodes, ...newNodes];
 
+      // If we just added a bunch of nodes at once (e.g., loaded a reference solution), auto-fit the viewport
+      if (newNodes.length >= 4) {
+        shouldAutoFitRef.current = true;
+      }
+
       if (newNodes.length > 0 || updatedNodes.length !== currentNodes.length) {
         return allNodes;
       }
@@ -162,6 +168,22 @@ export function DesignCanvas({
       return updatedNodes;
     });
   }, [systemGraph.components, setNodes, onUpdateConfig]);
+
+  // Auto-fit after bulk node insertions (e.g., loading solutions)
+  useEffect(() => {
+    if (!shouldAutoFitRef.current) return;
+    if (!reactFlowInstanceRef.current) return;
+    if (nodes.length === 0) return;
+
+    shouldAutoFitRef.current = false;
+
+    // Wait for ReactFlow to commit nodes before fitting
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        reactFlowInstanceRef.current?.fitView({ padding: 0.2, duration: 450, maxZoom: 1.1 });
+      });
+    });
+  }, [nodes.length]);
 
   // Sync edges with systemGraph connections
   useEffect(() => {

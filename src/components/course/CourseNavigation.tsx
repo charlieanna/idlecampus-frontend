@@ -138,11 +138,12 @@ export function CourseNavigation({
   const [showDiscoveryAnimation, setShowDiscoveryAnimation] = useState(false);
 
   // Get visibility and progress info
-  const visibleModuleIds = getVisibleModules ? getVisibleModules() : [];
+  // If getVisibleModules is not provided, show ALL modules (don't filter)
+  const visibleModuleIds = getVisibleModules ? getVisibleModules() : null;
   const progressInfo = getProgressInfo ? getProgressInfo() : null;
 
-  // Filter modules to only show visible ones
-  const visibleModules = modules.filter(m => visibleModuleIds.includes(m.id));
+  // Filter modules to only show visible ones - if visibleModuleIds is null, show all modules
+  const visibleModules = visibleModuleIds ? modules.filter(m => visibleModuleIds.includes(m.id)) : modules;
 
   // Detect when a new module becomes visible
   useEffect(() => {
@@ -281,7 +282,9 @@ export function CourseNavigation({
                     <div className="space-y-1 ml-6">
                       {module.lessons.map((lesson: Lesson, index: number) => {
                         const isCompleted = completedLessons.has(lesson.id);
-                        const isSelected = selectedModule === module.id && selectedLesson === lesson.id;
+                        // selectedLesson can be either just lessonId or combined moduleId-lessonId format
+                        const lessonFullId = `${module.id}-${lesson.id}`;
+                        const isSelected = selectedModule === module.id && (selectedLesson === lesson.id || selectedLesson === lessonFullId);
 
                         // Check if lesson is accessible (considering both module and lesson level)
                         const allLessonsInModule = module.lessons.map((l, idx) => ({
@@ -299,15 +302,16 @@ export function CourseNavigation({
                         const commands = items.filter(item => item.type === 'command').map(item => item.command);
                         const hasCommands = commands.length > 0;
 
+                        // Use lessonFullId for command keys to match LinuxApp format
                         const lessonCompletedCount = hasCommands ? commands.filter((_, i) =>
-                          completedCommands.has(`${lesson.id}-${i}`)
+                          completedCommands.has(`${lessonFullId}-${i}`)
                         ).length : 0;
                         const lessonTotalCommands = commands.length;
 
                         let lessonCurrentCommandIndex = -1;
                         if (hasCommands && isSelected) {
                           for (let i = 0; i < commands.length; i++) {
-                            const commandKey = `${lesson.id}-${i}`;
+                            const commandKey = `${lessonFullId}-${i}`;
                             if (!completedCommands.has(commandKey)) {
                               lessonCurrentCommandIndex = i;
                               break;
@@ -345,7 +349,7 @@ export function CourseNavigation({
                             {isSelected && hasCommands && isAccessible && (
                               <div className="ml-6 mt-2 space-y-1.5 pb-2">
                                 {commands.map((cmd: Command, cmdIndex: number) => {
-                                  const commandKey = `${lesson.id}-${cmdIndex}`;
+                                  const commandKey = `${lessonFullId}-${cmdIndex}`;
                                   const isCommandCompleted = completedCommands.has(commandKey);
                                   const isCurrentCommand = cmdIndex === lessonCurrentCommandIndex;
                                   const isLocked = cmdIndex > lessonCurrentCommandIndex && lessonCurrentCommandIndex !== -1;

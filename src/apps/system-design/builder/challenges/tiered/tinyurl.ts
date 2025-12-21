@@ -288,7 +288,7 @@ export const tinyurlChallenge: Challenge = {
         "rps": 1000,
         "readRatio": 0.9
       },
-      "duration": 10,
+      "duration": 90,
       "passCriteria": {
         "maxErrorRate": 0.1,
         "minAvailability": 0.95,
@@ -298,6 +298,22 @@ export const tinyurlChallenge: Challenge = {
         "type": "db_crash",
         "atSecond": 30,
         "recoverySecond": 90
+      }
+    },
+    {
+      "name": "NFR-C1: Cost Guardrail",
+      "type": "cost",
+      "requirement": "NFR-C1",
+      "description": "Meet the $2,500/month budget target while sustaining normal production traffic. Encourages right-sizing of cache, DB replicas, and CDN usage.",
+      "traffic": {
+        "type": "mixed",
+        "rps": 1100,
+        "readRatio": 0.9
+      },
+      "duration": 60,
+      "passCriteria": {
+        "maxMonthlyCost": 2500,
+        "maxErrorRate": 0.05
       }
     }
   ],
@@ -386,19 +402,19 @@ def expand(code: str) -> Optional[str]:
     {
       type: "app_server",
       config: {
-        instances: 6,
+        instances: 3,
         serviceName: "read-api",
         handledAPIs: [
           "GET /api/*"
         ],
         displayName: "Read API",
-        subtitle: "6 instance(s)"
+        subtitle: "3 instance(s)"
       }
     },
     {
       type: "app_server",
       config: {
-        instances: 24,
+        instances: 2,
         serviceName: "write-api",
         handledAPIs: [
           "POST /api/*",
@@ -407,15 +423,15 @@ def expand(code: str) -> Optional[str]:
           "PATCH /api/*"
         ],
         displayName: "Write API",
-        subtitle: "24 instance(s)"
+        subtitle: "2 instance(s)"
       }
     },
     {
       type: "redis",
       config: {
-        sizeGB: 540,
+        instanceType: "cache.t3.small",
         strategy: "cache_aside",
-        hitRatio: 0.9995,
+        hitRatio: 0.95,
         replication: "master-slave",
         persistence: "rdb"
       }
@@ -427,16 +443,16 @@ def expand(code: str) -> Optional[str]:
         replicationMode: "multi-leader",
         replication: {
           enabled: true,
-          replicas: 10,
+          replicas: 3,
           mode: "async"
         },
         sharding: {
           enabled: true,
-          shards: 30,
+          shards: 3,
           shardKey: "data_id"
         },
         displayName: "PostgreSQL Master",
-        subtitle: "Writes + 10 replicas (reads)"
+        subtitle: "Writes + 3 replicas, 3 shards"
       }
     },
     {
@@ -526,6 +542,6 @@ def expand(code: str) -> Optional[str]:
       type: "write"
     }
   ],
-  explanation: "Reference Solution for TinyURL – URL Shortener (CQRS):\n\n📊 Infrastructure Components:\n- **Read API**: 4 instances handling 2700 read RPS (GET requests)\n- **Write API**: 1 instance handling 300 write RPS (POST/PUT/DELETE).\n- **Load Balancer**: Distributes traffic using least-connections algorithm. Routes requests to least-busy app server, ideal for long-lived connections (DDIA Ch. 1 - Scalability).\n- **540GB Redis Cache**: In-memory key-value store for hot data. Cache-aside pattern: ~2430 RPS served from cache (~90% hit ratio assumed). Reduces database load and improves p99 latency (SDP - Caching).\n- **PostgreSQL Database**: multi leader configuration with 10 read replicas and 30 shards (sharded by data_id).\n  • Read Capacity: 2700 RPS across 11 database instance(s)\n  • Write Capacity: 300 RPS distributed across leaders\n  • Replication: Asynchronous (eventual consistency, < 1s lag typical)\n- **CDN**: Content delivery network with 150+ global edge locations. Serves static content (images, videos, CSS, JS) from nearest location. Typical latency: < 50ms globally (SDP - CDN).\n- **S3 Object Storage**: Unlimited scalable storage for large files. 99.999999999% durability (eleven nines). Pay-per-use pricing: $0.023/GB/month + transfer costs.\n- **Message Queue**: Asynchronous processing queue for background jobs and event fan-out. Decouples services and provides buffering during traffic spikes (DDIA Ch. 11).\n\n🔄 CQRS (Command Query Responsibility Segregation):\n- **Justification**: Traffic pattern justifies read/write split (Read: 90.0%, Write: 10.0%, Total: 3000 RPS)\n- **Read API (4 instances)**: Handles GET requests. Optimized for low latency with:\n  • Direct connection to cache (check cache first, DB on miss)\n  • Routes to read replicas (not master) to avoid write contention\n  • Can use eventual consistency (stale data acceptable for reads)\n  • Horizontally scalable: Add instances to handle more read traffic\n- **Write API (1 instance)**: Handles POST/PUT/DELETE requests. Optimized for consistency with:\n  • Routes writes to database master (ensures strong consistency)\n  • Invalidates cache entries on writes (maintains cache freshness)\n  • Fewer instances needed (writes are 10.0% of traffic)\n  • Can use database transactions for atomicity\n- **Benefits** (validated by NFR tests):\n  • Reads don't get blocked by writes (see NFR-P5 test)\n  • Independent scaling: Add read instances without affecting writes\n  • Different optimization strategies (read: cache + replicas, write: transactions + master)\n  • Failure isolation: Read API failure doesn't affect writes (and vice versa)\n- **Trade-offs**: Increased complexity (2 services instead of 1), eventual consistency between read/write paths (DDIA Ch. 7 - Transactions)\n\n💡 Key Design Decisions:\n- **Capacity Planning**: Components sized with 20% headroom for traffic spikes without performance degradation.\n- **Caching Strategy**: Cache reduces database load by ~90%. Hot data (frequently accessed) stays in cache, cold data fetched from database on cache miss.\n- **Replication Mode**: Multi-leader chosen for write scalability (> 100 writes/s). Trade-off: Conflict resolution needed for concurrent writes to same record (DDIA Ch. 5).\n- **Horizontal Scaling**: 30 database shards enable linear scaling. Each shard is independent, can be scaled separately. Query routing based on data_id hash (DDIA Ch. 6 - Partitioning).\n\n⚠️ Important Note:\nThis is ONE valid solution that meets the requirements. The traffic simulator validates ANY architecture that:\n✅ Has all required components (from functionalRequirements.mustHave)\n✅ Has all required connections (from functionalRequirements.mustConnect)\n✅ Meets performance targets (latency, cost, error rate)\n\nYour solution may use different components (e.g., MongoDB instead of PostgreSQL, Memcached instead of Redis) and still pass all tests!"
+  explanation: "Reference Solution for TinyURL – URL Shortener (CQRS + Cost Optimized):\n\n📊 Infrastructure Components:\n- **Read API**: 3 instances handling ~1000 read RPS (GET requests). Optimized for cost while maintaining performance.\n- **Write API**: 2 instances handling ~100 write RPS (POST/PUT/DELETE). Right-sized for write traffic patterns.\n- **Load Balancer**: Distributes traffic using least-connections algorithm. Routes requests to least-busy app server, ideal for long-lived connections (DDIA Ch. 1 - Scalability).\n- **Redis Cache (cache.t3.small)**: Cost-optimized in-memory key-value store for hot data. Cache-aside pattern with ~95% hit ratio. Provides 1.4GB RAM and handles 25K RPS, reducing database load significantly while staying within budget (SDP - Caching).\n- **PostgreSQL Database**: Multi-leader configuration with 3 replicas and 3 shards. Provides both read and write scalability.\n  • Read Capacity: ~12,000 RPS across 12 database instances (4 leaders × 3 shards)\n  • Write Capacity: ~1,200 RPS distributed across shards (100 RPS × 4 leaders × 3 shards)\n  • Replication: Asynchronous (eventual consistency, < 1s lag typical)\n- **CDN**: Content delivery network with 150+ global edge locations. Serves static content from nearest location. Typical latency: < 50ms globally (SDP - CDN).\n- **S3 Object Storage**: Unlimited scalable storage for large files. 99.999999999% durability (eleven nines). Pay-per-use pricing.\n- **Message Queue**: Asynchronous processing queue for background jobs and event fan-out. Decouples services and provides buffering during traffic spikes (DDIA Ch. 11).\n\n💰 Cost Optimization (Under $2,500/month):\n- **Right-sized Redis**: Using cache.t3.small ($25/month) provides sufficient capacity for the traffic while maintaining high cache hit ratio\n- **Minimal App Instances**: 4 read + 2 write instances provide sufficient capacity for 1100 RPS with headroom\n- **Efficient Database Setup**: Multi-leader with 3 replicas and 3 shards balances performance and cost\n- **Total Estimated Cost**: ~$2,300/month (under $2,500 budget)\n\n🔄 CQRS (Command Query Responsibility Segregation):\n- **Justification**: Traffic pattern justifies read/write split (Read: ~90%, Write: ~10%)\n- **Read API (3 instances)**: Handles GET requests. Optimized for low latency:\n  • Cache-first strategy (95% hit ratio)\n  • Routes to read replicas to avoid write contention\n  • Horizontally scalable: Add instances to handle more read traffic\n- **Write API (2 instances)**: Handles POST/PUT/DELETE requests. Optimized for consistency:\n  • Routes writes to database shard leaders (ensures strong consistency)\n  • Invalidates cache entries on writes (maintains cache freshness)\n- **Benefits** (validated by NFR tests):\n  • Reads don't get blocked by writes (see NFR-P5 test)\n  • Independent scaling: Add read instances without affecting writes\n  • Cost-efficient while meeting performance targets\n\n💡 Key Design Decisions:\n- **Capacity Planning**: Components sized to handle traffic with 20% headroom without over-provisioning.\n- **Caching Strategy**: Redis cache with 95% hit ratio effectively reduces database load by ~90%.\n- **Replication Mode**: Multi-leader with 3 replicas (4 leaders total) and 3 shards provides both read and write scalability. Write capacity scales to 1,200 RPS (4 leaders × 100 RPS × 3 shards), sufficient for write-heavy test scenarios while maintaining cost efficiency.\n\n⚠️ Important Note:\nThis solution balances performance, availability, and cost. The traffic simulator validates ANY architecture that:\n✅ Has all required components (from functionalRequirements.mustHave)\n✅ Has all required connections (from functionalRequirements.mustConnect)\n✅ Meets performance targets (latency, cost, error rate)\n\nYour solution may use different components or configurations and still pass all tests!"
 },
 };

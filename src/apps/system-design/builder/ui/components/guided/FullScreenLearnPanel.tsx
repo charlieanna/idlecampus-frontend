@@ -119,6 +119,25 @@ export function FullScreenLearnPanel({
           </div>
         )}
 
+        {/* Framework Reminder - connects back to scale framework questions */}
+        {content.frameworkReminder && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-indigo-50 border-l-4 border-indigo-500 p-6 mb-8"
+          >
+            <h3 className="font-semibold text-indigo-900 mb-2 flex items-center gap-2">
+              <span>🧠</span> Scale Framework Connection
+            </h3>
+            <p className="text-indigo-800 mb-2">
+              <strong>The expert question:</strong> "{content.frameworkReminder.question}"
+            </p>
+            <p className="text-indigo-700">
+              {content.frameworkReminder.connection}
+            </p>
+          </motion.div>
+        )}
+
         {/* Why it matters */}
         {content.whyItMatters && (
           <div className="bg-amber-50 border-l-4 border-amber-500 p-6 mb-8">

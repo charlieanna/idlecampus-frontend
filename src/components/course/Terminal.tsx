@@ -167,6 +167,10 @@ export function Terminal({
   };
 
   const executeDockerCommand = async (cmd: string): Promise<string> => {
+    const trimmed = cmd.trim();
+    const parts = trimmed.split(/\s+/);
+    const baseCmd = parts[0];
+
     // Mock output for common Linux commands
     const linuxCommands: Record<string, string> = {
       'whoami': 'user',
@@ -175,12 +179,68 @@ export function Terminal({
       'ls': 'Desktop  Documents  Downloads  Pictures  Videos',
       'hostname': 'linux-training',
       'uname': 'Linux',
+      'uname -a': 'Linux linux-training 5.15.0-generic #1 SMP x86_64 GNU/Linux',
       'echo hello': 'hello',
       'cat /etc/os-release': 'NAME="Ubuntu"\nVERSION="20.04 LTS"',
     };
 
+    // Handle ls with flags
+    if (baseCmd === 'ls') {
+      const flags = parts.slice(1).filter(p => p.startsWith('-')).join('');
+      if (flags.includes('l') && flags.includes('a')) {
+        return `total 40
+drwxr-xr-x  8 user user 4096 Dec 20 10:00 .
+drwxr-xr-x  3 root root 4096 Dec 15 09:00 ..
+-rw-------  1 user user  256 Dec 20 09:45 .bash_history
+-rw-r--r--  1 user user  220 Dec 15 09:00 .bash_logout
+-rw-r--r--  1 user user 3771 Dec 15 09:00 .bashrc
+drwxr-xr-x  2 user user 4096 Dec 18 14:30 Desktop
+drwxr-xr-x  2 user user 4096 Dec 19 11:20 Documents
+drwxr-xr-x  2 user user 4096 Dec 17 16:45 Downloads
+drwxr-xr-x  2 user user 4096 Dec 16 10:15 Pictures
+drwxr-xr-x  2 user user 4096 Dec 15 09:30 Videos`;
+      } else if (flags.includes('l')) {
+        return `total 20
+drwxr-xr-x  2 user user 4096 Dec 18 14:30 Desktop
+drwxr-xr-x  2 user user 4096 Dec 19 11:20 Documents
+drwxr-xr-x  2 user user 4096 Dec 17 16:45 Downloads
+drwxr-xr-x  2 user user 4096 Dec 16 10:15 Pictures
+drwxr-xr-x  2 user user 4096 Dec 15 09:30 Videos`;
+      } else if (flags.includes('a')) {
+        return `.  ..  .bash_history  .bash_logout  .bashrc  Desktop  Documents  Downloads  Pictures  Videos`;
+      } else if (flags.includes('h')) {
+        return `total 20K
+drwxr-xr-x  2 user user 4.0K Dec 18 14:30 Desktop
+drwxr-xr-x  2 user user 4.0K Dec 19 11:20 Documents
+drwxr-xr-x  2 user user 4.0K Dec 17 16:45 Downloads
+drwxr-xr-x  2 user user 4.0K Dec 16 10:15 Pictures
+drwxr-xr-x  2 user user 4.0K Dec 15 09:30 Videos`;
+      }
+      return 'Desktop  Documents  Downloads  Pictures  Videos';
+    }
+
+    // Handle cd command
+    if (baseCmd === 'cd') {
+      const target = parts[1] || '~';
+      if (target === '~' || target === '') {
+        return ''; // cd to home - silent success
+      } else if (target === '..') {
+        return ''; // cd to parent - silent success
+      } else if (target === '-') {
+        return '/home/user'; // cd to previous directory
+      } else if (target.startsWith('/')) {
+        return ''; // absolute path - silent success
+      }
+      return ''; // relative path - silent success
+    }
+
+    // Handle echo with any argument
+    if (baseCmd === 'echo') {
+      return parts.slice(1).join(' ') || '';
+    }
+
     // Check if it's a known Linux command
-    const mockOutput = linuxCommands[cmd.trim()];
+    const mockOutput = linuxCommands[trimmed];
     if (mockOutput) {
       return mockOutput;
     }
@@ -213,9 +273,8 @@ export function Terminal({
     }
 
     // Command not found - check for typos and suggest corrections
-    const trimmedCmd = cmd.trim();
-    const commandName = trimmedCmd.split(' ')[0];
-    const knownCommands = Object.keys(linuxCommands).map(c => c.split(' ')[0]);
+    const commandName = parts[0];
+    const knownCommands = ['ls', 'cd', 'pwd', 'whoami', 'date', 'echo', 'cat', 'hostname', 'uname', 'mkdir', 'rm', 'cp', 'mv', 'touch', 'head', 'tail', 'grep', 'find'];
 
     // Find similar commands using simple string distance
     const suggestions = knownCommands.filter(known => {

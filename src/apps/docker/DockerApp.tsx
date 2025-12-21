@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Box, Layers, Network, FileKey, GripVertical, BookOpen, Check, Lock, ChevronRight } from 'lucide-react';
 import * as ResizablePrimitive from 'react-resizable-panels';
-import { Terminal } from '../../components/course/Terminal';
+import { XTerminal } from '../../components/course/XTerminal';
 import { CourseNavigation, Module } from '../../components/course/CourseNavigation';
 import { CourseSidebar } from '../../components/course/CourseSidebar';
 import { LessonViewer } from '../../components/course/LessonViewer';
@@ -505,6 +505,9 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
   const [completedTasks, setCompletedTasks] = useState<Set<string>>(new Set());
   const [completedCommands, setCompletedCommands] = useState<Set<string>>(new Set());
 
+  // Stable session ID for the terminal - only created once per component mount
+  const terminalSessionId = useMemo(() => `docker-${Date.now()}`, []);
+
   const onSelectLesson = (moduleId: string, lessonId: string) => {
     setSelectedModule(moduleId);
     setSelectedLesson(lessonId);
@@ -813,13 +816,16 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
           <ResizableHandle withHandle />
 
           <ResizablePanel defaultSize={40} minSize={25}>
-            <Terminal
+            <XTerminal
               expectedCommand={isQuiz ? null : expectedCommand}
               onCommand={
                 isQuiz
                   ? handleQuizCommand
                   : handleTerminalCommand
               }
+              sessionId={terminalSessionId}
+              containerImage="docker:cli"
+              enableDocker={true}
             />
           </ResizablePanel>
         </ResizablePanelGroup>

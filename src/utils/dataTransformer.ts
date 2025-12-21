@@ -91,6 +91,79 @@ export interface Module {
   quizzes?: Quiz[];
 }
 
+// Extract bash commands from markdown and create interleaved content/command items
+// Returns items in order: content -> command -> command -> content -> command...
+function extractInterleavedItemsFromMarkdown(content: string): { items: LessonItem[], commands: Command[] } {
+  const items: LessonItem[] = [];
+  const commands: Command[] = [];
+
+  // Split content at ```bash blocks
+  const bashBlockRegex = /```bash\n([\s\S]*?)```/g;
+  let lastIndex = 0;
+  let match;
+
+  while ((match = bashBlockRegex.exec(content)) !== null) {
+    // Add content before this bash block (if any)
+    const contentBefore = content.slice(lastIndex, match.index).trim();
+    if (contentBefore) {
+      items.push({
+        type: 'content',
+        markdown: contentBefore
+      });
+    }
+
+    // Parse commands from bash block and add each as a command item
+    const codeBlock = match[1];
+    const lines = codeBlock.split('\n');
+    let currentDescription = '';
+
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (!trimmedLine) continue;
+
+      if (trimmedLine.startsWith('#')) {
+        currentDescription = trimmedLine.substring(1).trim();
+        continue;
+      }
+
+      // Create command object
+      const cmd: Command = {
+        command: trimmedLine,
+        description: currentDescription || `Run: ${trimmedLine}`,
+        example: trimmedLine
+      };
+      commands.push(cmd);
+
+      // Add command item immediately after its description
+      items.push({
+        type: 'command',
+        command: cmd
+      });
+
+      currentDescription = '';
+    }
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  // Add remaining content after last bash block
+  const remainingContent = content.slice(lastIndex).trim();
+  if (remainingContent) {
+    items.push({
+      type: 'content',
+      markdown: remainingContent
+    });
+  }
+
+  return { items, commands };
+}
+
+// Simple extraction for backward compatibility
+function extractBashCommandsFromMarkdown(content: string): Command[] {
+  const { commands } = extractInterleavedItemsFromMarkdown(content);
+  return commands;
+}
+
 // Extract commands from markdown content
 function extractCommandsFromContent(content: string, keyCommands?: string[]): { items: LessonItem[], commands: Command[] } {
   const items: LessonItem[] = [];
@@ -170,10 +243,11 @@ function getModuleIcon(title: string, slug: string): string {
 // Transform API lesson to App lesson
 function transformLesson(apiLesson: APILesson): Lesson {
   // Use the lesson ID as-is if it's already a string (like "yaml-network-commands")
-  // Otherwise prefix with "lesson-"
-  const lessonId = typeof apiLesson.id === 'string' && apiLesson.id.startsWith('yaml-')
-    ? apiLesson.id
-    : `lesson-${apiLesson.id}`;
+  // Otherwise use slug if available, or prefix with "lesson-"
+  const rawId = (apiLesson as any).slug || apiLesson.id;
+  const lessonId = typeof rawId === 'string' && (rawId.startsWith('yaml-') || !rawId.match(/^\d+$/))
+    ? rawId
+    : `lesson-${rawId}`;
 
   const { items, commands } = extractCommandsFromContent(
     apiLesson.content || '',
@@ -372,10 +446,72 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
     });
   } else if (apiModule.lessons && apiModule.lessons.length > 0) {
     // Fallback: check if lessons array contains mixed content with contentType field (Docker API format)
-    console.log(`🔍 Processing Docker-style module: ${apiModule.title}, lessons: ${apiModule.lessons.length}`);
+    // Also handles YAML-based lessons which have 'type' instead of 'contentType' and 'slug' instead of 'id'
+    console.log(`🔍 Processing module: ${apiModule.title}, lessons: ${apiModule.lessons.length}`);
     apiModule.lessons.forEach((item: any, index: number) => {
-      console.log(`  [${index}] Processing item: ${item.title}, contentType: ${item.contentType}`);
-      if (item.contentType === 'HandsOnLab' || item.contentType === 'lab') {
+      const itemType = item.contentType || item.type || 'lesson';
+      console.log(`  [${index}] Processing item: ${item.title}, type: ${itemType}`);
+
+      // Handle YAML-based lessons - extract commands from markdown for terminal practice
+      if (itemType === 'lesson' && item.content) {
+        console.log(`  📝 [V3] Processing YAML lesson: ${item.title}, content length: ${item.content.length}`);
+
+        // Extract interleaved content and commands (content -> command -> content -> command...)
+        const { items: interleavedItems, commands: extractedCommands } = extractInterleavedItemsFromMarkdown(item.content);
+        console.log(`    🔧 [V3] Created ${interleavedItems.length} interleaved items (${extractedCommands.length} commands):`, extractedCommands.map(c => c.command));
+
+        // Start with interleaved items
+        const lessonItemsList: LessonItem[] = [...interleavedItems];
+
+        // Add exercises at the end if they exist (MCQs - hidden by default in terminal courses)
+        if (item.exercises && item.exercises.length > 0) {
+          item.exercises.forEach((exercise: any, exIdx: number) => {
+            const exerciseData: any = {
+              question: exercise.question,
+              options: exercise.options || [],
+              correct_answer: exercise.correct_answer,
+              explanation: exercise.explanation,
+              require_pass: exercise.require_pass || false
+            };
+
+            if (exercise.options && exercise.correct_answer) {
+              exerciseData.correct_answer_index = exercise.options.findIndex(
+                (opt: string) => opt === exercise.correct_answer
+              );
+            }
+
+            lessonItemsList.push({
+              type: 'exercise',
+              exercise: {
+                id: `exercise-${item.slug}-${exIdx}`,
+                exercise_type: exercise.type || 'mcq',
+                sequence_order: exercise.sequence_order || exIdx + 1,
+                exercise_data: exerciseData
+              }
+            });
+          });
+        }
+
+        const lessonId = item.slug || `lesson-${index}`;
+        console.log(`    ✅ [V3] Created lesson "${item.title}" with ${lessonItemsList.length} items (${extractedCommands.length} commands)`);
+        lessonItems.push({
+          id: lessonId,
+          title: item.title,
+          items: lessonItemsList,
+          content: item.content,
+          commands: extractedCommands
+        });
+      } else if (itemType === 'lesson' && !item.content) {
+        // YAML lesson without content - placeholder
+        console.log(`  📄 Processing YAML lesson (no content)`);
+        lessonItems.push({
+          id: item.slug || `lesson-${index}`,
+          title: item.title,
+          items: [{ type: 'content', markdown: item.content }],
+          content: item.content,
+          commands: []
+        });
+      } else if (item.contentType === 'HandsOnLab' || item.contentType === 'lab') {
         // Convert lab structure from API to Lab type
         const tasks: Task[] = [];
 
@@ -436,8 +572,10 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
     return aOrder - bOrder;
   });
 
+  // Use slug when id is not available (YAML-based modules don't have numeric IDs)
+  const moduleId = apiModule.id || apiModule.slug;
   const result = {
-    id: `module-${apiModule.id}`,
+    id: `module-${moduleId}`,
     title: apiModule.title,
     icon: getModuleIcon(apiModule.title, apiModule.slug),
     lessons: lessonItems,
@@ -455,6 +593,14 @@ export function transformModule(apiModule: APIModule, labs: APILab[], includeAll
 
 // Transform full course data
 export function transformCourseData(_course: Course, modules: APIModule[], labs: APILab[]): Module[] {
+  console.log('🔄 transformCourseData called with:', {
+    modulesCount: modules.length,
+    labsCount: labs.length,
+    firstModuleTitle: modules[0]?.title,
+    firstModuleLessonsCount: modules[0]?.lessons?.length,
+    firstLessonHasContent: !!(modules[0]?.lessons?.[0] as any)?.content
+  });
+
   // Transform modules - labs are already included in each module's lessons array by the backend
   const transformedModules = modules.map(mod => transformModule(mod, labs, false));
 

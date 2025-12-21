@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import "reactflow/dist/style.css";
 
@@ -51,7 +51,7 @@ import { challenges as challengesFromIndex } from "../challenges/index";
 import { generateSolutionForChallenge } from "../challenges/problemDefinitionConverter";
 
 // Import guided tutorial loader
-import { loadGuidedTutorial, isGuidedTutorialAvailable } from "../guided/loadGuidedTutorial";
+import { loadGuidedTutorial, isGuidedTutorialAvailable, clearTutorialCache } from "../guided/loadGuidedTutorial";
 import { GuidedTutorial } from "../types/guidedTutorial";
 
 /**
@@ -75,12 +75,16 @@ export function TieredSystemDesignBuilder({
   const navigate = useNavigate();
 
   // Ensure challenges is populated (fallback chain: props -> tieredChallenges -> challengesFromIndex)
-  const effectiveChallenges = 
-    challenges && challenges.length > 0 
-      ? challenges 
-      : (tieredChallenges && tieredChallenges.length > 0 
-          ? tieredChallenges 
-          : challengesFromIndex || []);
+  // Memoize to prevent unnecessary re-renders
+  const effectiveChallenges = useMemo(() => {
+    if (challenges && challenges.length > 0) {
+      return challenges;
+    }
+    if (tieredChallenges && tieredChallenges.length > 0) {
+      return tieredChallenges;
+    }
+    return challengesFromIndex || [];
+  }, [challenges]);
   
   // Store hooks
   const {
@@ -171,7 +175,19 @@ export function TieredSystemDesignBuilder({
     setIsLoadingTutorial(true);
     loadGuidedTutorial(selectedChallenge.id)
       .then((tutorial) => {
-        setLoadedGuidedTutorial(tutorial);
+        // Double-check the tutorial matches this challenge
+        if (tutorial && tutorial.problemId) {
+          const normalizedChallengeId = selectedChallenge.id.replace(/_/g, '-').toLowerCase();
+          const tutorialProblemId = tutorial.problemId.replace(/_/g, '-').toLowerCase();
+          if (tutorialProblemId === normalizedChallengeId || tutorialProblemId === selectedChallenge.id) {
+            setLoadedGuidedTutorial(tutorial);
+          } else {
+            console.error(`Tutorial mismatch: challenge ${selectedChallenge.id}, tutorial ${tutorial.problemId}`);
+            setLoadedGuidedTutorial(null);
+          }
+        } else {
+          setLoadedGuidedTutorial(tutorial);
+        }
       })
       .catch((err) => {
         console.warn('Failed to load guided tutorial:', err);
@@ -207,8 +223,10 @@ export function TieredSystemDesignBuilder({
     (guidedOverride === "guided" || !tutorialCompleted);
 
   // Create enhanced challenge with loaded tutorial if needed
-  const enhancedChallenge = selectedChallenge && loadedGuidedTutorial
-    ? {
+  // Memoize to prevent infinite re-renders in GuidedWizardPage
+  const enhancedChallenge = useMemo(() => {
+    if (selectedChallenge && loadedGuidedTutorial) {
+      return {
         ...selectedChallenge,
         problemDefinition: {
           ...(selectedChallenge.problemDefinition || {
@@ -221,8 +239,10 @@ export function TieredSystemDesignBuilder({
           }),
           guidedTutorial: loadedGuidedTutorial,
         },
-      }
-    : selectedChallenge;
+      };
+    }
+    return selectedChallenge;
+  }, [selectedChallenge, loadedGuidedTutorial]);
 
   // Check if any app server has APIs configured
   const hasAppServerWithAPIs = systemGraph.components?.some(
@@ -357,6 +377,63 @@ export function TieredSystemDesignBuilder({
     }
   }, [selectedChallenge, setPythonCode, setPythonCodeByServer, setSystemGraph, clearTestResults, setHasSubmitted, setSelectedNode, testRunner]);
 
+  // Auto-layout for reference solutions (keeps the generated solution readable)
+  const applyAutoLayoutToSolutionComponents = useCallback((components: any[]) => {
+    const xStart = 100;
+    const yStart = 80;
+    const xSpacing = 260;
+    const ySpacing = 160;
+
+    // Rough left-to-right mental model: client → edge/CDN → LB → app → cache/queue → DB → storage
+    const columnByType: Record<string, number> = {
+      client: 0,
+      cdn: 1,
+      load_balancer: 2,
+      app_server: 3,
+      cache: 4,
+      redis: 4,
+      memcached: 4,
+      message_queue: 4,
+      kafka: 4,
+      rabbitmq: 4,
+      sqs: 4,
+      database: 5,
+      postgresql: 5,
+      mongodb: 5,
+      dynamodb: 5,
+      cassandra: 5,
+      s3: 6,
+      object_storage: 6,
+    };
+
+    const grouped: Map<number, any[]> = new Map();
+    for (const comp of components) {
+      const col = columnByType[comp.type] ?? 3;
+      const arr = grouped.get(col) ?? [];
+      arr.push(comp);
+      grouped.set(col, arr);
+    }
+
+    const sortKey = (c: any) =>
+      (c?.config?.serviceName || c?.config?.displayName || c?.config?.id || c?.id || '').toString();
+
+    for (const [col, arr] of grouped.entries()) {
+      arr.sort((a, b) => sortKey(a).localeCompare(sortKey(b)));
+      arr.forEach((comp, row) => {
+        const existingPos = comp?.config?.position;
+        if (existingPos && typeof existingPos.x === 'number' && typeof existingPos.y === 'number') {
+          return;
+        }
+        comp.config = {
+          ...comp.config,
+          position: { x: xStart + col * xSpacing, y: yStart + row * ySpacing },
+        };
+      });
+    }
+
+    return components;
+  }, []);
+
   // Load solution to canvas
   const loadSolutionToCanvas = useCallback(
     (solutionOverride?: Solution) => {
@@ -404,12 +481,17 @@ export function TieredSystemDesignBuilder({
         };
       });
 
+      // Apply a deterministic auto-layout so reference solutions are readable on first render
+      const componentsWithLayout = applyAutoLayoutToSolutionComponents(
+        components.map((c) => ({ ...c, config: { ...(c.config || {}) } }))
+      );
+
       // Convert solution connections to use actual component IDs (not types)
       const connections = solution.connections
         .map((conn) => {
           // Find the component IDs by type
-          const fromCandidates = components.filter((c) => c.type === conn.from);
-          const toCandidates = components.filter((c) => c.type === conn.to);
+          const fromCandidates = componentsWithLayout.filter((c) => c.type === conn.from);
+          const toCandidates = componentsWithLayout.filter((c) => c.type === conn.to);
 
           let fromComp: any | undefined;
           let toComp: any | undefined;
@@ -453,7 +535,7 @@ export function TieredSystemDesignBuilder({
       // Update the system graph
 
       setSystemGraph({
-        components,
+        components: componentsWithLayout,
         connections,
       });
 

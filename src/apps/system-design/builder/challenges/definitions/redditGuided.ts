@@ -214,6 +214,72 @@ const redditRequirementsPhase: RequirementsGatheringContent = {
   ],
 
   keyInsight: "First, let's make it WORK. We'll build a simple system where users can create subreddits, post, comment, and vote. The complex hot ranking algorithm and vote aggregation challenges will come in later steps. Functionality first, then optimization!",
+
+  thinkingFramework: {
+    title: "From FRs to Brute Force Architecture",
+    intro: "We have 5 core functional requirements. Let's design the SIMPLEST system that satisfies them before we worry about the 694K peak reads/sec.",
+
+    steps: [
+      {
+        id: 'identify-apis',
+        title: 'Step 1: What APIs Do We Need?',
+        alwaysAsk: "What operations must the system support?",
+        whyItMatters: "The APIs translate user actions (posting, voting) into system commands.",
+        expertBreakdown: {
+          intro: "To satisfy our core FRs, we need:",
+          points: [
+            "FR-2 (Post Content) → POST /api/v1/posts",
+            "FR-3 (Voting) → POST /api/v1/vote",
+            "FR-4 (Comments) → POST /api/v1/comments",
+            "FR-5 (View Feeds) → GET /api/v1/feed",
+          ]
+        },
+        icon: '🔌',
+        category: 'functional'
+      },
+      {
+        id: 'identify-data',
+        title: 'Step 2: What Data Do We Store?',
+        alwaysAsk: "What's the minimum data we need to make this work?",
+        whyItMatters: "System state must be stored. For Reddit, we need posts, subreddits, votes, and comments.",
+        expertBreakdown: {
+          intro: "Even in a brute-force version, we need:",
+          points: [
+            "Posts table: { id, subreddit_id, title, content, author_id, created_at }",
+            "Votes table: { user_id, target_id (post/comment), vote_type }",
+            "Comments table: { id, post_id, parent_id (for nesting), content }",
+            "Subreddits table: { id, name, description }",
+          ]
+        },
+        icon: '💾',
+        category: 'data-flow'
+      },
+      {
+        id: 'sketch-flow',
+        title: 'Step 3: Sketch the Brute Force Flow',
+        alwaysAsk: "How do we get from a user request to a result?",
+        whyItMatters: "Visualize the path the data takes through your system.",
+        expertBreakdown: {
+          intro: "The simplest flow for a new post:",
+          points: [
+            "1. Client → App Server: 'Here is my cute cat post for r/aww'",
+            "2. App Server: Validates the request and stores it in memory",
+            "3. App Server → Client: 'Success! Post ID: 567'",
+            "No CDNs, no Load Balancers, no Caches yet. Just one server doing all the work.",
+          ]
+        },
+        icon: '🔀',
+        category: 'functional'
+      }
+    ],
+
+    startSimple: {
+      title: "Our Brute Force Architecture",
+      description: "A single Client connected to a single App Server using an in-memory database (Python dictionaries).",
+      whySimple: "This handles all 5 FRs! It won't handle 20B page views, but it's the perfect starting point to verify the core logic works.",
+      nextStepPreview: "Step 1: Connect Client to App Server. Step 2: Write the Python code for posts and votes."
+    }
+  },
 };
 
 // =============================================================================

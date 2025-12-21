@@ -30,7 +30,9 @@ export type StepPhase =
   // Special phases for Step 0 (Requirements Gathering)
   | 'requirements-intro'      // Story intro explaining the interview context
   | 'requirements-questions'  // Interactive Q&A with interviewer
-  | 'requirements-summary';   // Confirm FRs before building
+  | 'requirements-summary'    // Confirm FRs before building
+  // Special phase for Scale Framework reveal (after Step 3)
+  | 'scale-framework-intro';  // Introduces scale thinking after basic system works
 
 /**
  * Narrative content for story-driven tutorials
@@ -143,6 +145,76 @@ export interface TeachingContent {
     correctIndex: number;
     explanation: string;
   };
+
+  // NEW: Framework reminder for scale steps (Steps 4+)
+  // Connects the current step back to the scale framework questions
+  frameworkReminder?: {
+    question: string;      // "What if consumers can't keep up?"
+    connection: string;    // "This is why we're adding Kafka..."
+  };
+}
+
+// =============================================================================
+// EXPERT THINKING FRAMEWORK TYPES
+// =============================================================================
+
+/**
+ * A single step in the expert thinking framework
+ * Each step represents a category of questions experts ask
+ */
+export interface FrameworkStep {
+  id: string;
+  title: string;              // "Understand the Core Problem"
+  alwaysAsk: string;          // "What's the core problem we're solving?"
+  whyItMatters: string;       // "Before designing anything, you need to..."
+  expertBreakdown: {
+    intro?: string;           // "For this streaming pipeline..."
+    points: string[];         // ["Capture database changes", ...]
+  };
+  icon: string;               // "🎯"
+  category: 'functional' | 'data-flow' | 'consumers' | 'edge-cases' | 'scale';
+}
+
+/**
+ * The functional framework shown in Step 0 (Requirements Phase)
+ * Teaches users what questions to ask about WHAT to build
+ */
+export interface ThinkingFramework {
+  title: string;              // "How Experts Approach This Problem"
+  intro: string;              // "Before jumping into design..."
+  steps: FrameworkStep[];
+  startSimple: {
+    title: string;            // "Start Simple (Brute Force)"
+    description: string;      // "Client → App Server first"
+    whySimple: string;        // "A working simple solution beats..."
+    nextStepPreview: string;  // "In Step 1, we'll connect..."
+  };
+}
+
+/**
+ * A single step in the scale framework
+ * Shown after Step 3 when basic system works
+ */
+export interface ScaleFrameworkStep {
+  id: string;
+  title: string;              // "Throughput"
+  question: string;           // "How many operations per second?"
+  whyItMatters: string;       // "Determines if you need horizontal scaling..."
+  example: string;            // "100K events/sec → Need multiple consumers..."
+  icon: string;               // "📊"
+}
+
+/**
+ * The scale framework shown after Step 3
+ * Teaches users what questions to ask about HOW to scale
+ */
+export interface ScaleFramework {
+  title: string;              // "Part 2: The Scale Framework"
+  intro: string;              // "Now that it works, experts ask..."
+  celebrationMessage: string; // "Your system works!"
+  hookMessage: string;        // "But can it scale?"
+  steps: ScaleFrameworkStep[];
+  nextStepsPreview: string;   // "We'll add Kafka for buffering..."
 }
 
 /**
@@ -347,9 +419,17 @@ export interface RequirementsGatheringContent {
   
   // Items explicitly out of scope
   outOfScope: string[];
-  
+
   // Key insight to show at the end (e.g., "Focus on functionality first!")
   keyInsight: string;
+
+  // NEW: Expert thinking framework (functional questions for Step 0)
+  // When present, replaces the Q&A card display with framework teaching
+  thinkingFramework?: ThinkingFramework;
+
+  // NEW: Scale framework (shown after Step 3)
+  // Teaches scale questions after basic system works
+  scaleFramework?: ScaleFramework;
 }
 
 /**

@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { RequirementsGatheringContent, InterviewQuestion, ConfirmedFR } from '../../../types/guidedTutorial';
 import { MarkdownContent } from '../MarkdownContent';
+import { ThinkingFrameworkCard } from './ThinkingFrameworkCard';
 
 // =============================================================================
 // TYPES
@@ -49,7 +50,7 @@ function QuestionAnswerCard({ question }: { question: InterviewQuestion }) {
           </div>
         </div>
       </div>
-      
+
       {/* Answer */}
       <div className="p-4">
         <div className="flex items-start gap-3">
@@ -59,7 +60,7 @@ function QuestionAnswerCard({ question }: { question: InterviewQuestion }) {
             <div className="text-gray-700 mt-1">
               <MarkdownContent content={question.answer} />
             </div>
-            
+
             {/* Show calculation if present */}
             {question.calculation && (
               <div className="mt-3 bg-purple-50 border border-purple-200 rounded-lg p-3">
@@ -70,13 +71,13 @@ function QuestionAnswerCard({ question }: { question: InterviewQuestion }) {
                 <div className="text-sm text-purple-900 font-medium mt-1">→ {question.calculation.result}</div>
               </div>
             )}
-            
+
             {question.insight && (
               <p className="mt-2 text-sm text-green-700 bg-green-50 px-3 py-2 rounded-lg border border-green-100">
                 💡 <strong>Insight:</strong> {question.insight}
               </p>
             )}
-            
+
             {question.learningPoint && (
               <p className="mt-2 text-sm text-blue-700 bg-blue-50 px-3 py-2 rounded-lg border border-blue-100">
                 📚 <strong>Learning:</strong> {question.learningPoint}
@@ -148,14 +149,14 @@ function OutOfScopeList({ items }: { items: string[] }) {
 // SECTION HEADER COMPONENT
 // =============================================================================
 
-function SectionHeader({ 
-  number, 
-  title, 
+function SectionHeader({
+  number,
+  title,
   subtitle,
-  color = 'indigo' 
-}: { 
-  number: number; 
-  title: string; 
+  color = 'indigo'
+}: {
+  number: number;
+  title: string;
   subtitle: string;
   color?: 'indigo' | 'purple' | 'blue' | 'green';
 }) {
@@ -165,7 +166,7 @@ function SectionHeader({
     blue: 'bg-blue-100 text-blue-700 border-blue-200',
     green: 'bg-green-100 text-green-700 border-green-200',
   };
-  
+
   return (
     <div className="flex items-center gap-4 mb-6">
       <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${colorClasses[color]}`}>
@@ -180,16 +181,121 @@ function SectionHeader({
 }
 
 // =============================================================================
-// MAIN COMPONENT - Comprehensive Requirements Teaching Panel
+// FRAMEWORK-BASED VIEW (New - when thinkingFramework is present)
 // =============================================================================
 
-export function RequirementsGatheringPanel({
+function FrameworkBasedView({
   content,
   onComplete,
-}: RequirementsGatheringPanelProps) {
+}: {
+  content: RequirementsGatheringContent;
+  onComplete: () => void;
+}) {
+  const framework = content.thinkingFramework!;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      className="absolute inset-0 bg-white z-50 overflow-y-auto"
+    >
+      <div className="max-w-4xl mx-auto px-8 py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <span className="text-sm text-indigo-600 font-medium">
+            Step 0 • Requirements Gathering
+          </span>
+          <h1 className="text-3xl font-bold text-gray-900 mt-2">
+            🧠 {framework.title}
+          </h1>
+          <p className="text-lg text-gray-600 mt-2">
+            {framework.intro}
+          </p>
+        </div>
+
+        {/* Problem Statement */}
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-6 mb-8">
+          <div className="flex items-start gap-4">
+            <span className="text-4xl">{content.interviewer.avatar}</span>
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="font-semibold text-indigo-900">{content.interviewer.name}</span>
+                <span className="text-sm text-indigo-600">• {content.interviewer.role}</span>
+              </div>
+              <p className="text-lg text-indigo-900 font-medium">
+                "{content.problemStatement}"
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Framework Steps */}
+        <div className="mb-8">
+          {framework.steps.map((step, index) => (
+            <ThinkingFrameworkCard key={step.id} step={step} index={index} />
+          ))}
+        </div>
+
+        {/* Start Simple Section */}
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-6 mb-8 border border-blue-200">
+          <h2 className="text-xl font-bold text-blue-900 mb-2 flex items-center gap-2">
+            <span>🚀</span> {framework.startSimple.title}
+          </h2>
+          <p className="text-blue-800 mb-4">{framework.startSimple.description}</p>
+
+          <div className="bg-white/60 rounded-lg p-4 mb-4 border border-blue-100">
+            <div className="text-sm text-blue-600 font-medium mb-1">Why start simple?</div>
+            <p className="text-blue-900">{framework.startSimple.whySimple}</p>
+          </div>
+
+          <p className="text-blue-700 text-sm italic">{framework.startSimple.nextStepPreview}</p>
+        </div>
+
+        {/* Confirmed FRs (if available) */}
+        {content.confirmedFRs && content.confirmedFRs.length > 0 && (
+          <div className="mb-8">
+            <ConfirmedFRsList frs={content.confirmedFRs} />
+          </div>
+        )}
+
+        {/* Out of Scope (if available) */}
+        {content.outOfScope && content.outOfScope.length > 0 && (
+          <div className="mb-8">
+            <OutOfScopeList items={content.outOfScope} />
+          </div>
+        )}
+
+        {/* CTA Button */}
+        <div className="text-center pt-4 pb-8">
+          <motion.button
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            onClick={onComplete}
+            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold px-10 py-4 rounded-xl text-lg shadow-lg shadow-blue-200"
+          >
+            Got it! Let's Start Building →
+          </motion.button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+// =============================================================================
+// LEGACY Q&A VIEW (Original - fallback when no thinkingFramework)
+// =============================================================================
+
+function LegacyQAView({
+  content,
+  onComplete,
+}: {
+  content: RequirementsGatheringContent;
+  onComplete: () => void;
+}) {
   // Group questions by category - Step 0 ONLY shows FR questions
   // (NFR questions exist in data but are used in later steps)
-  const frQuestions = content.questions.filter(q => 
+  const frQuestions = content.questions.filter(q =>
     q.category === 'functional' || q.category === 'clarification' || q.category === 'scope'
   );
 
@@ -248,22 +354,22 @@ export function RequirementsGatheringPanel({
         {/* ================================================================= */}
         {/* PART 1: FUNCTIONAL REQUIREMENTS */}
         {/* ================================================================= */}
-        
+
         <div className="mb-12">
-          <SectionHeader 
-            number={1} 
-            title="Functional Requirements" 
+          <SectionHeader
+            number={1}
+            title="Functional Requirements"
             subtitle="First, understand WHAT the system does"
             color="indigo"
           />
-          
+
           {/* FR Questions */}
           <div className="space-y-4 mb-6">
             {frQuestions.filter(q => q.importance === 'critical').map((q) => (
               <QuestionAnswerCard key={q.id} question={q} />
             ))}
           </div>
-          
+
           {/* Other FR Questions (collapsible feel) */}
           {frQuestions.filter(q => q.importance !== 'critical').length > 0 && (
             <details className="mb-6">
@@ -277,7 +383,7 @@ export function RequirementsGatheringPanel({
               </div>
             </details>
           )}
-          
+
           {/* Confirmed FRs */}
           <ConfirmedFRsList frs={content.confirmedFRs} />
         </div>
@@ -285,15 +391,15 @@ export function RequirementsGatheringPanel({
         {/* ================================================================= */}
         {/* PART 2: SUMMARY */}
         {/* ================================================================= */}
-        
+
         <div className="mb-8">
-          <SectionHeader 
-            number={2} 
-            title="Summary: What We Learned" 
+          <SectionHeader
+            number={2}
+            title="Summary: What We Learned"
             subtitle="Functional requirements confirmed, ready to build"
             color="green"
           />
-          
+
           <div className="space-y-4">
             {/* Out of Scope */}
             <OutOfScopeList items={content.outOfScope} />
@@ -306,8 +412,8 @@ export function RequirementsGatheringPanel({
             <span>💡</span> Key Insight: FR-First Approach
           </h3>
           <p className="text-blue-800 text-lg">
-            First, let's make it <strong>WORK</strong>. We'll build a simple Client → App Server solution 
-            that satisfies our functional requirements. Once it works, we'll optimize for scale and performance 
+            First, let's make it <strong>WORK</strong>. We'll build a simple Client → App Server solution
+            that satisfies our functional requirements. Once it works, we'll optimize for scale and performance
             in later steps. This is the right way to approach system design: <strong>functionality first, then optimization</strong>.
           </p>
         </div>
@@ -326,11 +432,11 @@ export function RequirementsGatheringPanel({
             </li>
             <li className="flex items-start gap-2">
               <span className="bg-blue-100 text-blue-700 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">2</span>
-              <span>Write code to shorten URLs (even in-memory is fine for now!)</span>
+              <span>Implement the core business logic (in-memory storage is fine for now!)</span>
             </li>
             <li className="flex items-start gap-2">
               <span className="bg-blue-100 text-blue-700 rounded-full w-6 h-6 flex items-center justify-center text-sm font-medium">3</span>
-              <span>Once it works, we'll add database, caching, and scale optimizations based on requirements we'll gather later</span>
+              <span>Once it works, we'll add persistent storage, caching, and scale optimizations</span>
             </li>
           </ol>
         </div>
@@ -349,6 +455,23 @@ export function RequirementsGatheringPanel({
       </div>
     </motion.div>
   );
+}
+
+// =============================================================================
+// MAIN COMPONENT - Routes to Framework or Legacy view
+// =============================================================================
+
+export function RequirementsGatheringPanel({
+  content,
+  onComplete,
+}: RequirementsGatheringPanelProps) {
+  // If thinkingFramework is present, use the new framework-based view
+  if (content.thinkingFramework) {
+    return <FrameworkBasedView content={content} onComplete={onComplete} />;
+  }
+
+  // Otherwise, fall back to the legacy Q&A view
+  return <LegacyQAView content={content} onComplete={onComplete} />;
 }
 
 export default RequirementsGatheringPanel;
