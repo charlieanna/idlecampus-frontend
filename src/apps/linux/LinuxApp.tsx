@@ -59,12 +59,46 @@ interface LinuxAppProps {
   courseModules?: Module[];
 }
 
+// localStorage keys for progress persistence
+const LINUX_PROGRESS_KEY = 'linux-course-progress';
+
+// Helper to load progress from localStorage
+function loadProgress(): { completedLessons: Set<string>; completedCommands: Set<string> } {
+  try {
+    const saved = localStorage.getItem(LINUX_PROGRESS_KEY);
+    if (saved) {
+      const data = JSON.parse(saved);
+      return {
+        completedLessons: new Set(data.completedLessons || []),
+        completedCommands: new Set(data.completedCommands || [])
+      };
+    }
+  } catch (e) {
+    console.warn('Failed to load progress from localStorage:', e);
+  }
+  return { completedLessons: new Set(), completedCommands: new Set() };
+}
+
 export default function LinuxApp({ courseModules = [] }: LinuxAppProps) {
   const [selectedModule, setSelectedModule] = useState<string>('');
   const [selectedItemId, setSelectedItemId] = useState<string>('');
   const [terminalCommands, setTerminalCommands] = useState<string[]>([]);
-  const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
-  const [completedCommands, setCompletedCommands] = useState<Set<string>>(new Set());
+
+  // Load progress from localStorage on mount
+  const [completedLessons, setCompletedLessons] = useState<Set<string>>(() => loadProgress().completedLessons);
+  const [completedCommands, setCompletedCommands] = useState<Set<string>>(() => loadProgress().completedCommands);
+
+  // Save progress to localStorage whenever it changes
+  useEffect(() => {
+    try {
+      localStorage.setItem(LINUX_PROGRESS_KEY, JSON.stringify({
+        completedLessons: Array.from(completedLessons),
+        completedCommands: Array.from(completedCommands)
+      }));
+    } catch (e) {
+      console.warn('Failed to save progress to localStorage:', e);
+    }
+  }, [completedLessons, completedCommands]);
 
   // Stable session ID for the terminal - only created once per component mount
   const terminalSessionId = useMemo(() => `linux-${Date.now()}`, []);
