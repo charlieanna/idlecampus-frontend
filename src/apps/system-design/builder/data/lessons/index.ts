@@ -60,6 +60,14 @@ import { nfrDataConsistencyLesson } from './nfr/nfr-data-consistency.tsx';
 // Problem-solving lessons (Level 4)
 // Will be added in Phase 6
 
+// Foundations & Failure Handling
+import { networkingFailureLesson } from './foundations/networking-failure';
+import { cachingCdnFailureLesson } from './foundations/caching-cdn-failure';
+import { replicationFailureLesson } from './foundations/replication-failure';
+import { videoUploadFailureLesson } from './foundations/video-upload-failure';
+import { liveStreamingFailureLesson } from './foundations/live-streaming-failure';
+import { chatFailureLesson } from './foundations/chat-failure';
+
 /**
  * All system design lessons
  */
@@ -116,6 +124,14 @@ export const allLessons: SystemDesignLesson[] = [
   // NFR Thinking Lessons
   nfrFundamentalsLesson,
   nfrDataConsistencyLesson,
+
+  // Foundations & Failure Handling
+  networkingFailureLesson,
+  cachingCdnFailureLesson,
+  replicationFailureLesson,
+  videoUploadFailureLesson,
+  liveStreamingFailureLesson,
+  chatFailureLesson,
 ];
 
 /**

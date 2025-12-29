@@ -85,7 +85,7 @@ export function TieredSystemDesignBuilder({
     }
     return challengesFromIndex || [];
   }, [challenges]);
-  
+
   // Store hooks
   const {
     selectedChallenge,
@@ -172,14 +172,17 @@ export function TieredSystemDesignBuilder({
     }
 
     // Load the tutorial
+    console.log('[TieredBuilder] Loading guided tutorial for:', selectedChallenge.id);
     setIsLoadingTutorial(true);
     loadGuidedTutorial(selectedChallenge.id)
       .then((tutorial) => {
+        console.log('[TieredBuilder] Loaded tutorial result:', tutorial ? 'FOUND' : 'NULL', tutorial?.problemId);
         // Double-check the tutorial matches this challenge
         if (tutorial && tutorial.problemId) {
           const normalizedChallengeId = selectedChallenge.id.replace(/_/g, '-').toLowerCase();
           const tutorialProblemId = tutorial.problemId.replace(/_/g, '-').toLowerCase();
           if (tutorialProblemId === normalizedChallengeId || tutorialProblemId === selectedChallenge.id) {
+            console.log('[TieredBuilder] Setting loaded tutorial');
             setLoadedGuidedTutorial(tutorial);
           } else {
             console.error(`Tutorial mismatch: challenge ${selectedChallenge.id}, tutorial ${tutorial.problemId}`);
@@ -257,14 +260,14 @@ export function TieredSystemDesignBuilder({
   // Get available APIs for API assignment to app servers
   const getAvailableAPIs = useCallback((): string[] => {
     if (!selectedChallenge) return [];
-    
+
     // Check if challenge has explicit API definitions
     const problemDef = (selectedChallenge as any).problemDefinition;
     if (problemDef?.userFacingFRs) {
       // Extract APIs from functional requirements
       const apis: string[] = [];
       const frs = problemDef.userFacingFRs;
-      
+
       // Common patterns
       if (frs.some(fr => fr.toLowerCase().includes('create') || fr.toLowerCase().includes('shorten'))) {
         apis.push('POST /api/v1/urls');
@@ -275,19 +278,19 @@ export function TieredSystemDesignBuilder({
       if (frs.some(fr => fr.toLowerCase().includes('stats') || fr.toLowerCase().includes('analytics'))) {
         apis.push('GET /api/v1/stats');
       }
-      
+
       if (apis.length > 0) return apis;
     }
-    
+
     // Challenge-specific API definitions
     if (selectedChallenge.id === "tiny_url") {
       return ["POST /api/v1/urls", "GET /api/v1/urls/*", "GET /api/v1/stats"];
     }
-    
+
     // Generic fallback - extract from functional requirements
     const functionalReqs = selectedChallenge.requirements?.functional || [];
     const apis: string[] = [];
-    
+
     functionalReqs.forEach(req => {
       const lowerReq = req.toLowerCase();
       if (lowerReq.includes('create') || lowerReq.includes('post') || lowerReq.includes('add')) {
@@ -303,7 +306,7 @@ export function TieredSystemDesignBuilder({
         apis.push('DELETE /api/v1/*');
       }
     });
-    
+
     // Remove duplicates and return
     return Array.from(new Set(apis));
   }, [selectedChallenge]);
@@ -313,32 +316,32 @@ export function TieredSystemDesignBuilder({
     if (!challengeId) {
       return;
     }
-    
+
     if (!effectiveChallenges || effectiveChallenges.length === 0) {
       return;
     }
-    
-    
+
+
     // Try exact match first
     let challenge = effectiveChallenges.find((c) => c.id === challengeId);
-    
+
     // If not found, try normalizing hyphens to underscores (for URL slugs like tiny-url -> tiny_url)
     if (!challenge) {
       const normalizedId = challengeId.replace(/-/g, '_');
       challenge = effectiveChallenges.find((c) => c.id === normalizedId);
     }
-    
+
     // If still not found, try the reverse (underscores to hyphens)
     if (!challenge) {
       const reverseId = challengeId.replace(/_/g, '-');
       challenge = effectiveChallenges.find((c) => c.id === reverseId);
     }
-    
+
     // If still not found, try finding by slug pattern (e.g., tiny-url -> tiny-url-l6)
     if (!challenge) {
       challenge = effectiveChallenges.find((c) => c.id?.startsWith(challengeId));
     }
-    
+
     if (challenge) {
       setSelectedChallenge(challenge);
       setActiveTab("canvas");
@@ -351,29 +354,29 @@ export function TieredSystemDesignBuilder({
   // Initialize Python code and reset state when challenge changes
   useEffect(() => {
     if (selectedChallenge) {
-      
+
       // Initialize Python code from template
       const template = selectedChallenge.pythonTemplate || "";
       setPythonCode(template);
       setPythonCodeByServer({});
-      
+
       // Reset canvas
       setSystemGraph({
         components: [],
         connections: [],
       });
-      
+
       // Reset test state
       clearTestResults();
       setHasSubmitted(false);
       setSelectedNode(null);
-      
+
       // Set problem definition for test runner
       const problemDef = (selectedChallenge as any).problemDefinition;
       if (problemDef) {
         testRunner.setProblemDefinition(problemDef);
       }
-      
+
     }
   }, [selectedChallenge, setPythonCode, setPythonCodeByServer, setSystemGraph, clearTestResults, setHasSubmitted, setSelectedNode, testRunner]);
 
@@ -554,16 +557,16 @@ export function TieredSystemDesignBuilder({
       // Get current systemGraph from store to ensure we have latest state
       const currentGraph = useCanvasStore.getState().systemGraph;
       const componentCount = currentGraph.components?.filter((c) => c.type === type).length || 0;
-      
+
       // Generate unique ID with timestamp and random suffix to avoid collisions
       const id = `${type}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       const defaultConfig = getDefaultConfig(type);
-      
+
       // Merge any provided config override
-      const mergedConfig = configOverride 
+      const mergedConfig = configOverride
         ? { ...defaultConfig, ...configOverride }
         : defaultConfig;
-      
+
       // For app_server, initialize with empty handledAPIs array if not provided
       if (type === "app_server" && !mergedConfig.handledAPIs) {
         mergedConfig.handledAPIs = [];

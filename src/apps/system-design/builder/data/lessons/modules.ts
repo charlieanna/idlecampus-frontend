@@ -133,6 +133,25 @@ export const courseModules: CourseModule[] = [
     ],
     prerequisites: ['sd-module-5-primer'],
   },
+  {
+    id: 'sd-module-7-failure-playbooks',
+    slug: 'failure-playbooks',
+    title: 'Foundations & Failure Handling',
+    description: 'Foundational systems explained with concrete failure playbooks: networking, caching/CDN, replication, video upload, live streaming, and real-time chat. Learn how to detect, mitigate, and recover from real incidents.',
+    sequenceOrder: 7,
+    estimatedMinutes: 300,
+    lessonCount: 6,
+    difficulty: 'intermediate',
+    learningObjectives: [
+      'Understand TCP, UDP, and WebSockets trade-offs and failure behaviors',
+      'Apply caching strategies and CDN patterns with safe fallbacks',
+      'Choose replication mode (single/multi/leaderless) and handle failover/conflicts',
+      'Design resilient video upload pipelines (retries, MPU, validation, idempotency)',
+      'Run low-latency live streaming with graceful degradation',
+      'Operate resilient real-time chat: presence, ordering, backpressure, reconnection',
+    ],
+    prerequisites: ['sd-module-5-primer'],
+  },
 ];
 
 /**

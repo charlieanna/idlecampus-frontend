@@ -250,10 +250,10 @@ export function ProblemCatalog() {
                 🎓 Guided Tutorials ({guidedCount})
               </button>
               <button
-                onClick={() => navigate('/system-design/progressive')}
-                className="px-4 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-colors font-medium flex items-center gap-2"
+                onClick={() => navigate('/system-design/lessons')}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium flex items-center gap-2"
               >
-                🚀 Try Progressive Flow
+                📘 Foundations & Failure Handling
               </button>
             </div>
             <div>

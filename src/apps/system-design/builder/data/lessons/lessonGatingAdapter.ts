@@ -6,6 +6,10 @@ import type { ModuleWithLessons, LessonInfo } from '../../../../../hooks/useLess
 import { courseModules } from './modules';
 import { allLessons } from './index';
 
+// Temporary review override: unlock all lessons and modules
+// Set to false to restore normal gating behavior.
+const FORCE_UNLOCK_ALL_LESSONS = true;
+
 /**
  * Convert system design lessons to LessonInfo format
  */
@@ -40,7 +44,11 @@ export function adaptModulesForGating(): ModuleWithLessons[] {
  */
 export function getCompletedLessonIds(userProgress?: any): Set<string> {
   // TODO: Replace with actual API call
-  // For now, return empty set (all lessons locked except first)
+  // Review mode: mark all lessons as completed so everything is unlocked
+  if (FORCE_UNLOCK_ALL_LESSONS) {
+    return new Set<string>(allLessons.map(l => l.id));
+  }
+
   if (!userProgress) {
     return new Set<string>();
   }
