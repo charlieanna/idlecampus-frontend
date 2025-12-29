@@ -53,37 +53,9 @@ echo ""
 # Clean up ports if needed
 echo -e "${BLUE}🧹 Cleaning up ports...${NC}"
 kill_port 5173  # Frontend (Vite)
-kill_port 3001  # Backend (Rails)
+kill_port 3000  # Backend (Rails)
 echo -e "${GREEN}✓ Ports cleaned${NC}"
 echo ""
-
-# Backend setup
-echo -e "${BLUE}🔧 Setting up Rails backend...${NC}"
-cd backend
-
-# Check if database exists
-if ! rails db:version &> /dev/null; then
-    echo "📦 Creating database..."
-    rails db:create
-fi
-
-# Run pending migrations
-echo "📊 Running migrations..."
-rails db:migrate
-
-# Check if progressive flow data exists
-if [ "$(rails runner 'puts ProgressiveChallenge.count')" = "0" ]; then
-    echo "🌱 Loading Progressive Flow seed data..."
-    rails db:seed:progressive_flow
-else
-    echo "✓ Progressive Flow data already seeded ($(rails runner 'puts ProgressiveChallenge.count') challenges)"
-fi
-
-echo -e "${GREEN}✓ Backend setup complete${NC}"
-echo ""
-
-# Return to root
-cd ..
 
 # Frontend setup
 echo -e "${BLUE}📦 Installing frontend dependencies (if needed)...${NC}"
@@ -98,7 +70,7 @@ echo ""
 echo -e "${GREEN}🎬 Starting development servers...${NC}"
 echo ""
 echo "  Frontend: http://localhost:5173"
-echo "  Backend:  http://localhost:3001"
+echo "  Backend:  http://localhost:3000"
 echo ""
 echo -e "${YELLOW}Press Ctrl+C to stop all servers${NC}"
 echo ""
@@ -106,18 +78,21 @@ echo ""
 # Create log directory
 mkdir -p logs
 
+# Save frontend directory path
+FRONTEND_DIR="$(pwd)"
+
 # Start backend in background
-cd backend
-rails server -p 3001 > ../logs/backend.log 2>&1 &
+cd ../backend
+rails server -p 3000 > "$FRONTEND_DIR/logs/backend.log" 2>&1 &
 BACKEND_PID=$!
-cd ..
+cd "$FRONTEND_DIR"
 
 # Wait for backend to start
 echo "⏳ Waiting for backend to start..."
 sleep 3
 
 # Check if backend started successfully
-if ! check_port 3001; then
+if ! check_port 3000; then
     echo "❌ Backend failed to start. Check logs/backend.log"
     cat logs/backend.log
     exit 1
@@ -134,5 +109,5 @@ echo ""
 echo "🛑 Shutting down servers..."
 kill $BACKEND_PID 2>/dev/null || true
 kill_port 5173
-kill_port 3001
+kill_port 3000
 echo "👋 Goodbye!"
