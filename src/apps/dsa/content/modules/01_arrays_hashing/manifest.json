@@ -1,0 +1,14 @@
+{
+  "module_id": "01_arrays_hashing",
+  "title": "Arrays & Hashing",
+  "total_challenges": 10,
+  "files": {
+    "challenges": "./challenges.json",
+    "remedials": "./remedials.json",
+    "tutorials": "./tutorials.json"
+  },
+  "passing_criteria": {
+    "min_correct": 7,
+    "max_avg_time_mins": 20
+  }
+}

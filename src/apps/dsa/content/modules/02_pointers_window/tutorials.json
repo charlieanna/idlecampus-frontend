@@ -1,0 +1,37 @@
+[
+  {
+    "id": "t_ptr_01",
+    "title": "Concept: Converging Pointers",
+    "content": "For sorted arrays or palindrome checks, start one pointer at 0 (Left) and one at N-1 (Right). Move them towards each other based on conditions."
+  },
+  {
+    "id": "t_ptr_02",
+    "title": "Concept: Fixing One Pointer",
+    "content": "In 3Sum or similar problems, efficiently iterate by fixing one pointer (i) and then running a standard Two Pointer (Left/Right) scan on the remaining subarray."
+  },
+  {
+    "id": "t_ptr_03",
+    "title": "Concept: Pre-computation vs Pointers",
+    "content": "Some problems like Trapping Rain Water can be solved with space (Prefix arrays) or Pointers. Pointers save space by maintaining state (max_left, max_right) on the fly."
+  },
+  {
+    "id": "t_win_01",
+    "title": "Concept: Fixed Sliding Window",
+    "content": "When the window size K is constant, initialize the window for the first K elements, then slide it one step at a time: add new element, remove oldest element."
+  },
+  {
+    "id": "t_win_02",
+    "title": "Concept: Dynamic Sliding Window",
+    "content": "'Expand then Shrink'. Expand the Right pointer to include valid elements. If the window becomes invalid (e.g. too many duplicates), shrink the Left pointer until it is valid again."
+  },
+  {
+    "id": "t_win_03",
+    "title": "Concept: Monotonic Deque",
+    "content": "For 'Sliding Window Maximum', a standard queue is O(K). A Monotonic Deque maintains indices of potential maximums in decreasing order, allowing O(1) access."
+  },
+  {
+    "id": "t_ptr_04",
+    "title": "Concept: Dutch National Flag",
+    "content": "Use 3 pointers (Low, Mid, High) to partition an array into 3 sections (e.g., < Pivot, = Pivot, > Pivot) in a single pass."
+  }
+]

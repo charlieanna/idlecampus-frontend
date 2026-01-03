@@ -215,6 +215,15 @@ export function LessonViewer({
     ...(lesson.commands || []).map(cmd => ({ type: 'command' as const, command: cmd }))
   ];
 
+  // Ensure lesson.content is included even when lesson.items exists
+  // Check if items already has a content item; if not and lesson.content exists, prepend it
+  if (lesson.content && !items.some(item => item.type === 'content')) {
+    items = [
+      { type: 'content', markdown: lesson.content },
+      ...items
+    ];
+  }
+
   // Debug: Log items to see if exercises are included
   console.log('📚 [V2] LessonViewer items:', items.length, 'types:', items.map(i => i.type));
   const exerciseItems = items.filter(i => i.type === 'exercise');
@@ -325,7 +334,19 @@ export function LessonViewer({
   }, [visibleItems.length]);
 
   const renderContent = (content: string) => {
-    if (!content) return null;
+    console.log('🎨 renderContent called with:', { 
+      contentLength: content?.length, 
+      contentPreview: typeof content === 'string' ? content?.substring(0, 200) : 'NOT_A_STRING',
+      contentType: typeof content,
+      isNull: content === null,
+      isUndefined: content === undefined,
+      isFalsy: !content
+    });
+    if (!content) {
+      console.log('⚠️ renderContent returning null because content is falsy');
+      return null;
+    }
+    console.log('✅ renderContent will render content of length:', content.length);
     const lines = content.split('\n');
     const elements: JSX.Element[] = [];
     let currentList: string[] = [];
@@ -360,8 +381,11 @@ export function LessonViewer({
     };
 
     lines.forEach((line, i) => {
+      // Trim the line to handle indented markdown content
+      const trimmedLine = line.trim();
+      
       // Handle code blocks
-      if (line.startsWith('```')) {
+      if (trimmedLine.startsWith('```')) {
         if (inCodeBlock) {
           // End of code block
           flushCodeBlock();
@@ -370,7 +394,7 @@ export function LessonViewer({
           // Start of code block
           flushList();
           inCodeBlock = true;
-          codeLanguage = line.substring(3).trim();
+          codeLanguage = trimmedLine.substring(3).trim();
         }
         return;
       }
@@ -380,17 +404,17 @@ export function LessonViewer({
         return;
       }
 
-      // Handle lists
-      if (line.startsWith('- ') || line.startsWith('* ')) {
-        currentList.push(line.substring(2));
+      // Handle lists (use trimmed line for detection)
+      if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('* ')) {
+        currentList.push(trimmedLine.substring(2));
         return;
       }
 
       flushList();
 
-      // Handle headings
-      if (line.startsWith('# ')) {
-        const headingText = line.substring(2).trim();
+      // Handle headings (use trimmed line for detection)
+      if (trimmedLine.startsWith('# ')) {
+        const headingText = trimmedLine.substring(2).trim();
         // Skip the first h1 if it matches or is similar to the lesson title (avoid duplicate headings)
         // Normalize by removing non-alphanumeric chars (including emojis), collapsing spaces, and comparing lowercase
         const normalizeForCompare = (s: string) => s.replace(/[^\w\s]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
@@ -399,16 +423,16 @@ export function LessonViewer({
           return; // Skip this duplicate heading
         }
         elements.push(<h1 key={i} className="text-2xl font-bold text-slate-900 mt-6 mb-3">{headingText}</h1>);
-      } else if (line.startsWith('## ')) {
-        elements.push(<h2 key={i} className="text-xl font-bold text-slate-900 mt-5 mb-2">{line.substring(3)}</h2>);
-      } else if (line.startsWith('### ')) {
-        elements.push(<h3 key={i} className="text-lg font-semibold text-slate-900 mt-4 mb-2">{line.substring(4)}</h3>);
-      } else if (line.startsWith('#### ')) {
-        elements.push(<h4 key={i} className="text-base font-semibold text-slate-900 mt-3 mb-2">{line.substring(5)}</h4>);
+      } else if (trimmedLine.startsWith('## ')) {
+        elements.push(<h2 key={i} className="text-xl font-bold text-slate-900 mt-5 mb-2">{trimmedLine.substring(3)}</h2>);
+      } else if (trimmedLine.startsWith('### ')) {
+        elements.push(<h3 key={i} className="text-lg font-semibold text-slate-900 mt-4 mb-2">{trimmedLine.substring(4)}</h3>);
+      } else if (trimmedLine.startsWith('#### ')) {
+        elements.push(<h4 key={i} className="text-base font-semibold text-slate-900 mt-3 mb-2">{trimmedLine.substring(5)}</h4>);
       } 
-      // Handle tables
-      else if (line.includes('|') && line.trim().startsWith('|')) {
-        const cells = line.split('|').map(c => c.trim()).filter(c => c);
+      // Handle tables (use trimmed line)
+      else if (trimmedLine.includes('|') && trimmedLine.startsWith('|')) {
+        const cells = trimmedLine.split('|').map(c => c.trim()).filter(c => c);
         if (cells.length > 0) {
           elements.push(
             <div key={i} className="overflow-x-auto my-2">
@@ -427,9 +451,9 @@ export function LessonViewer({
           );
         }
       }
-      // Handle numbered lists
-      else if (line.match(/^\d+\./)) {
-        const match = line.match(/^(\d+)\.\s*\*\*(.+?)\*\*:\s*(.+)$/);
+      // Handle numbered lists (use trimmed line)
+      else if (trimmedLine.match(/^\d+\./)) {
+        const match = trimmedLine.match(/^(\d+)\.\s*\*\*(.+?)\*\*:\s*(.+)$/);
         if (match) {
           elements.push(
             <div key={i} className="flex gap-2 mb-2">
@@ -438,12 +462,12 @@ export function LessonViewer({
             </div>
           );
         } else {
-          elements.push(<p key={i} className="text-slate-700 ml-4">{line}</p>);
+          elements.push(<p key={i} className="text-slate-700 ml-4">{trimmedLine}</p>);
         }
       } 
-      // Handle inline code
-      else if (line.includes('`')) {
-        const parts = line.split(/`([^`]+)`/g);
+      // Handle inline code (use trimmed line)
+      else if (trimmedLine.includes('`')) {
+        const parts = trimmedLine.split(/`([^`]+)`/g);
         const rendered = parts.map((part, idx) => {
           if (idx % 2 === 1) {
             return <code key={idx} className="bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-sm font-mono">{part}</code>;
@@ -452,9 +476,9 @@ export function LessonViewer({
         });
         elements.push(<p key={i} className="text-slate-700 mb-2">{rendered}</p>);
       }
-      // Handle bold text
-      else if (line.includes('**')) {
-        const parts = line.split(/(\*\*.*?\*\*)/g);
+      // Handle bold text (use trimmed line)
+      else if (trimmedLine.includes('**')) {
+        const parts = trimmedLine.split(/(\*\*.*?\*\*)/g);
         const rendered = parts.map((part, idx) => {
           if (part.startsWith('**') && part.endsWith('**')) {
             return <strong key={idx} className="font-semibold">{part.slice(2, -2)}</strong>;
@@ -463,9 +487,9 @@ export function LessonViewer({
         });
         elements.push(<p key={i} className="text-slate-700 mb-2">{rendered}</p>);
       } 
-      // Regular paragraph
-      else if (line.trim()) {
-        elements.push(<p key={i} className="text-slate-700 mb-2">{line}</p>);
+      // Regular paragraph (use trimmed line)
+      else if (trimmedLine) {
+        elements.push(<p key={i} className="text-slate-700 mb-2">{trimmedLine}</p>);
       } else {
         // Empty line
         elements.push(<br key={i} />);
@@ -552,6 +576,12 @@ export function LessonViewer({
                 const isLastItem = index === visibleItems.length - 1;
 
                 if (item.type === 'content') {
+                  console.log('🔍 Content item at index', index, ':', {
+                    markdown: item.markdown,
+                    markdownType: typeof item.markdown,
+                    markdownLength: item.markdown?.length,
+                    first100: typeof item.markdown === 'string' ? item.markdown.substring(0, 100) : 'NOT_A_STRING'
+                  });
                   return (
                     <motion.div
                       key={`content-${index}`}

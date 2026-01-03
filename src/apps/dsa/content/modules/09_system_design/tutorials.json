@@ -1,0 +1,7 @@
+[
+  {
+    "id": "t_sys_01",
+    "title": "Concept: Token Bucket Algorithm",
+    "content": "Used for Rate Limiting. Imagine a bucket that gets filled with tokens at a constant rate. Requests take a token to proceed. If bucket is empty, request is dropped.\n\nKey Math: tokens = min(capacity, old_tokens + (now - last_refill_time) * refill_rate)"
+  }
+]

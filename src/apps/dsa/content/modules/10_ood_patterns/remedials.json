@@ -1,0 +1,66 @@
+[
+  {
+    "id": "q_ood_r1",
+    "title": "Stack of Dictionaries",
+    "prompt": "Implement a class that maintains a stack of dictionaries. Implement push() to add a new empty dict layer, pop() to remove top layer, set(key, value) to set in top layer, and get(key) to search from top to bottom.",
+    "concept_taught": "Layered Data Structures",
+    "starterCode": "class DictStack:\n    def __init__(self):\n        pass\n    \n    def push(self) -> None:\n        \"\"\"Add new empty dict layer.\"\"\"\n        pass\n    \n    def pop(self) -> None:\n        \"\"\"Remove top layer.\"\"\"\n        pass\n    \n    def set(self, key: str, value: any) -> None:\n        \"\"\"Set key in top layer.\"\"\"\n        pass\n    \n    def get(self, key: str) -> any:\n        \"\"\"Get key, searching from top to bottom.\"\"\"\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "set('a',1), push(), set('a',2), get('a'), pop(), get('a')", "expectedOutput": "[2, 1]"}
+    ],
+    "hints": [
+      "Use list of dicts as stack.",
+      "set() modifies top dict.",
+      "get() iterates from top to bottom."
+    ],
+    "solution": "class DictStack:\n    def __init__(self):\n        self.stack = [{}]\n    \n    def push(self) -> None:\n        self.stack.append({})\n    \n    def pop(self) -> None:\n        if len(self.stack) > 1:\n            self.stack.pop()\n    \n    def set(self, key: str, value: any) -> None:\n        self.stack[-1][key] = value\n    \n    def get(self, key: str) -> any:\n        for d in reversed(self.stack):\n            if key in d:\n                return d[key]\n        return None"
+  },
+  {
+    "id": "q_ood_r2",
+    "title": "Simple Undo Stack",
+    "prompt": "Implement a simple undo system for a single integer value. Implement set(value) to set the value, get() to return current value, and undo() to restore the previous value. undo() should do nothing if no history.",
+    "concept_taught": "State History",
+    "starterCode": "class UndoableValue:\n    def __init__(self, initial: int = 0):\n        pass\n    \n    def set(self, value: int) -> None:\n        pass\n    \n    def get(self) -> int:\n        pass\n    \n    def undo(self) -> None:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "set(1), set(2), get(), undo(), get()", "expectedOutput": "[2, 1]"}
+    ],
+    "hints": [
+      "Keep stack of previous values.",
+      "set() pushes current value before changing.",
+      "undo() pops and restores."
+    ],
+    "solution": "class UndoableValue:\n    def __init__(self, initial: int = 0):\n        self.value = initial\n        self.history = []\n    \n    def set(self, value: int) -> None:\n        self.history.append(self.value)\n        self.value = value\n    \n    def get(self) -> int:\n        return self.value\n    \n    def undo(self) -> None:\n        if self.history:\n            self.value = self.history.pop()"
+  },
+  {
+    "id": "q_ood_r3",
+    "title": "Versioned Value",
+    "prompt": "Implement a class that stores a single value with version history. set(value) increments version and stores. get() returns current value. get_version(version) returns value at that version (or None if not exists).",
+    "concept_taught": "Version Tracking",
+    "starterCode": "class VersionedValue:\n    def __init__(self):\n        pass\n    \n    def set(self, value: any) -> int:\n        \"\"\"Set value and return new version number.\"\"\"\n        pass\n    \n    def get(self) -> any:\n        pass\n    \n    def get_version(self, version: int) -> any:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "set('a'), set('b'), get(), get_version(1), get_version(2)", "expectedOutput": "[1, 2, 'b', 'a', 'b']"}
+    ],
+    "hints": [
+      "Store list of (version, value) pairs.",
+      "Increment version counter on each set.",
+      "get_version searches for matching version."
+    ],
+    "solution": "class VersionedValue:\n    def __init__(self):\n        self.version = 0\n        self.history = []  # [(version, value)]\n    \n    def set(self, value: any) -> int:\n        self.version += 1\n        self.history.append((self.version, value))\n        return self.version\n    \n    def get(self) -> any:\n        if not self.history:\n            return None\n        return self.history[-1][1]\n    \n    def get_version(self, version: int) -> any:\n        for v, val in self.history:\n            if v == version:\n                return val\n        return None"
+  },
+  {
+    "id": "q_ood_r4",
+    "title": "Basic Key-Value Store",
+    "prompt": "Implement a simple key-value store with set(key, value), get(key), and delete(key) methods. get() returns None if key doesn't exist.",
+    "concept_taught": "HashMap Operations",
+    "starterCode": "class KeyValueStore:\n    def __init__(self):\n        pass\n    \n    def set(self, key: str, value: any) -> None:\n        pass\n    \n    def get(self, key: str) -> any:\n        pass\n    \n    def delete(self, key: str) -> bool:\n        \"\"\"Return True if key existed and was deleted.\"\"\"\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "set('a',1), get('a'), delete('a'), get('a')", "expectedOutput": "[None, 1, True, None]"}
+    ],
+    "hints": [
+      "Use dict for storage.",
+      "get() uses dict.get(key) for None default.",
+      "delete() checks existence before deleting."
+    ],
+    "solution": "class KeyValueStore:\n    def __init__(self):\n        self.data = {}\n    \n    def set(self, key: str, value: any) -> None:\n        self.data[key] = value\n    \n    def get(self, key: str) -> any:\n        return self.data.get(key)\n    \n    def delete(self, key: str) -> bool:\n        if key in self.data:\n            del self.data[key]\n            return True\n        return False"
+  }
+]

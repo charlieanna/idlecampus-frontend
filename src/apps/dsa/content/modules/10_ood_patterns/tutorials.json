@@ -1,0 +1,7 @@
+[
+  {
+    "id": "t_ood_01",
+    "title": "Concept: Transactional Stack",
+    "content": "To implement 'Rollback', you cannot overwrite data immediately. \n\nPattern: Use a Stack of HashMaps. \n- 'Begin': Push new empty Map to stack.\n- 'Put': Write to top Map.\n- 'Get': Check Maps from top down.\n- 'Rollback': Pop the stack."
+  }
+]

@@ -254,6 +254,59 @@ function transformLesson(apiLesson: APILesson): Lesson {
     apiLesson.key_commands
   );
 
+  // Transform exercises from API format to LessonItem format
+  const exercises = (apiLesson as any).exercises || [];
+  const exerciseItems: LessonItem[] = [];
+  
+  if (exercises.length > 0) {
+    console.log(`📝 Transforming ${exercises.length} exercises for lesson: ${apiLesson.title}`);
+    
+    exercises.forEach((ex: any, index: number) => {
+      // Map exercise type from YAML format to frontend format
+      const exerciseType = ex.type === 'multiple_choice_question' ? 'mcq' : ex.type;
+      
+      const exerciseItem: LessonItem = {
+        type: 'exercise',
+        exercise: {
+          id: `${lessonId}-exercise-${index + 1}`,
+          exercise_type: exerciseType,
+          sequence_order: ex.sequence_order || index + 1,
+          exercise_data: {
+            question: ex.question,
+            prompt: ex.prompt || ex.description,
+            options: ex.options,
+            correct_answer: ex.correct_answer,
+            correct_answer_index: ex.correct_answer_index,
+            explanation: ex.explanation,
+            description: ex.description,
+            hints: ex.hints,
+            require_pass: ex.require_pass,
+            difficulty: ex.difficulty,
+            slug: ex.slug,
+            command: ex.command,
+            timeout_sec: ex.timeout_sec,
+            language: ex.language,
+            starter_code: ex.starter_code,
+            solution_code: ex.solution_code
+          }
+        }
+      };
+      
+      exerciseItems.push(exerciseItem);
+    });
+    
+    // Sort exercises by sequence_order
+    exerciseItems.sort((a, b) => {
+      if (a.type === 'exercise' && b.type === 'exercise') {
+        return a.exercise.sequence_order - b.exercise.sequence_order;
+      }
+      return 0;
+    });
+    
+    // Add sorted exercises after the content/commands
+    items.push(...exerciseItems);
+  }
+
   return {
     id: lessonId,
     title: apiLesson.title,

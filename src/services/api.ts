@@ -77,6 +77,26 @@ export interface Lesson {
   estimated_minutes?: number;
   learning_objectives?: string[];
   key_commands?: string[];
+  exercises?: Array<{
+    type: string;
+    sequence_order: number;
+    question?: string;
+    prompt?: string;
+    options?: string[];
+    correct_answer?: string;
+    correct_answer_index?: number;
+    explanation?: string;
+    description?: string;
+    hints?: string[];
+    require_pass?: boolean;
+    difficulty?: string;
+    slug?: string;
+    command?: string;
+    timeout_sec?: number;
+    language?: string;
+    starter_code?: string;
+    solution_code?: string;
+  }>;
 }
 
 export interface Lab {
@@ -113,21 +133,113 @@ class ApiService {
   }
 
   async fetchCourses(track: string = 'kubernetes'): Promise<Course[]> {
-    const response = await fetch(`${this.baseUrl}/${track}/courses`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch courses');
+    const url = `${this.baseUrl}/${track}/courses`;
+    
+    try {
+      const response = await fetch(url);
+      
+      // Check if response is HTML (indicates redirect to Rails root or error page)
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('text/html')) {
+        throw new Error(
+          `API endpoint returned HTML instead of JSON: ${url}\n\n` +
+          `This usually means:\n` +
+          `1. The backend route doesn't exist (Rails redirected to root)\n` +
+          `2. Rails backend is running but route /api/v1/${track}/courses is missing\n\n` +
+          `Fix:\n` +
+          `- Check Rails routes: rails routes | grep ${track}\n` +
+          `- Ensure route exists: get ':track/courses', to: 'courses#index'\n` +
+          `- Verify backend is running: curl http://localhost:3000/api/v1/${track}/courses`
+        );
+      }
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(
+          `Failed to fetch courses: ${response.status} ${response.statusText}\n` +
+          `URL: ${url}\n` +
+          `Response: ${errorText.substring(0, 200)}`
+        );
+      }
+      
+      const data = await response.json();
+      
+      // Validate response structure
+      if (!data || !data.courses) {
+        throw new Error(
+          `Invalid API response format from ${url}\n` +
+          `Expected: { courses: [...] }\n` +
+          `Got: ${JSON.stringify(data).substring(0, 200)}`
+        );
+      }
+      
+      return data.courses;
+    } catch (error) {
+      // Re-throw with additional context if it's a network/CORS error
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        throw new Error(
+          `Network error fetching courses from ${url}\n\n` +
+          `Possible causes:\n` +
+          `1. Backend not running on port 3000\n` +
+          `2. CORS not configured in Rails backend\n` +
+          `3. Route doesn't exist (check Rails routes)\n\n` +
+          `Original error: ${error.message}`
+        );
+      }
+      throw error;
     }
-    const data = await response.json();
-    return data.courses;
   }
 
   async fetchCourse(slug: string, track: string = 'kubernetes'): Promise<Course> {
-    const response = await fetch(`${this.baseUrl}/${track}/courses/${slug}`);
-    if (!response.ok) {
-      throw new Error(`Failed to fetch course: ${slug}`);
+    const url = `${this.baseUrl}/${track}/courses/${slug}`;
+    
+    try {
+      const response = await fetch(url);
+      
+      // Check if response is HTML (indicates redirect to Rails root or error page)
+      const contentType = response.headers.get('content-type') || '';
+      if (contentType.includes('text/html')) {
+        throw new Error(
+          `API endpoint returned HTML instead of JSON: ${url}\n\n` +
+          `The backend route doesn't exist. Check Rails routes.`
+        );
+      }
+      
+      if (!response.ok) {
+        const errorText = await response.text().catch(() => 'Unknown error');
+        throw new Error(
+          `Failed to fetch course ${slug}: ${response.status} ${response.statusText}\n` +
+          `URL: ${url}\n` +
+          `Response: ${errorText.substring(0, 200)}`
+        );
+      }
+      
+      const data = await response.json();
+      
+      // Validate response structure
+      if (!data || !data.course) {
+        throw new Error(
+          `Invalid API response format from ${url}\n` +
+          `Expected: { course: {...} }\n` +
+          `Got: ${JSON.stringify(data).substring(0, 200)}`
+        );
+      }
+      
+      return data.course;
+    } catch (error) {
+      // Re-throw with additional context if it's a network/CORS error
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        throw new Error(
+          `Network error fetching course from ${url}\n\n` +
+          `Possible causes:\n` +
+          `1. Backend not running\n` +
+          `2. CORS not configured\n` +
+          `3. Route doesn't exist\n\n` +
+          `Original error: ${error.message}`
+        );
+      }
+      throw error;
     }
-    const data = await response.json();
-    return data.course;
   }
 
   async fetchModules(courseSlug: string, track: string = 'kubernetes'): Promise<Module[]> {
@@ -151,12 +263,18 @@ class ApiService {
   }
 
   async fetchLabs(track: string = 'kubernetes'): Promise<Lab[]> {
-    const response = await fetch(`${this.baseUrl}/${track}/labs`);
-    if (!response.ok) {
-      throw new Error('Failed to fetch labs');
+    try {
+      const response = await fetch(`${this.baseUrl}/${track}/labs`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch labs: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      console.log('📦 Labs API response:', { success: data.success, labsCount: data.labs?.length, totalCount: data.total_count });
+      return data.labs || [];
+    } catch (error) {
+      console.error('❌ Error in fetchLabs:', error);
+      throw error;
     }
-    const data = await response.json();
-    return data.labs;
   }
 
   async fetchLab(id: number, track: string = 'kubernetes'): Promise<Lab> {

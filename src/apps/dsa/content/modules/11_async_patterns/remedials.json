@@ -1,0 +1,69 @@
+[
+  {
+    "id": "q_async_r1",
+    "title": "Priority Queue Operations",
+    "prompt": "Implement a min-heap priority queue with push(value, priority) and pop() methods. pop() should return the item with the lowest priority value (highest priority). Return None if empty.",
+    "concept_taught": "Heap Basics",
+    "starterCode": "import heapq\n\nclass PriorityQueue:\n    def __init__(self):\n        pass\n    \n    def push(self, value: any, priority: int) -> None:\n        pass\n    \n    def pop(self) -> any:\n        \"\"\"Return value with lowest priority number.\"\"\"\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "push('a',3), push('b',1), push('c',2), pop(), pop()", "expectedOutput": "['b', 'c']"}
+    ],
+    "hints": [
+      "Store (priority, value) tuples in heap.",
+      "heapq is a min-heap by default.",
+      "pop() returns second element of tuple."
+    ],
+    "solution": "import heapq\n\nclass PriorityQueue:\n    def __init__(self):\n        self.heap = []\n    \n    def push(self, value: any, priority: int) -> None:\n        heapq.heappush(self.heap, (priority, value))\n    \n    def pop(self) -> any:\n        if not self.heap:\n            return None\n        return heapq.heappop(self.heap)[1]"
+  },
+  {
+    "id": "q_async_r2",
+    "title": "Simple Timer",
+    "prompt": "Implement a Timer class with set_timer(seconds) and is_expired() methods. set_timer starts a countdown. is_expired() should return True if the set time has passed since set_timer was called.",
+    "concept_taught": "Timestamp Tracking",
+    "starterCode": "import time\n\nclass Timer:\n    def __init__(self):\n        pass\n    \n    def set_timer(self, seconds: float) -> None:\n        pass\n    \n    def is_expired(self) -> bool:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "set_timer(1), is_expired(), wait 1.1s, is_expired()", "expectedOutput": "[False, True]"}
+    ],
+    "hints": [
+      "Store expiry_time = current_time + seconds.",
+      "is_expired checks current_time >= expiry_time.",
+      "Use time.time() for current time."
+    ],
+    "solution": "import time\n\nclass Timer:\n    def __init__(self):\n        self.expiry_time = None\n    \n    def set_timer(self, seconds: float) -> None:\n        self.expiry_time = time.time() + seconds\n    \n    def is_expired(self) -> bool:\n        if self.expiry_time is None:\n            return True\n        return time.time() >= self.expiry_time"
+  },
+  {
+    "id": "q_async_r3",
+    "title": "Event Ordering",
+    "prompt": "Given a list of events with timestamps [(timestamp, event_name), ...], sort them by timestamp and return the event names in order. If timestamps are equal, maintain original order.",
+    "concept_taught": "Event Sorting",
+    "starterCode": "def order_events(events: list[tuple[int, str]]) -> list[str]:\n    \"\"\"Return event names sorted by timestamp.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[(3,'c'), (1,'a'), (2,'b')]", "expectedOutput": "['a', 'b', 'c']"},
+      {"id": "test-2", "input": "[(1,'first'), (1,'second'), (2,'third')]", "expectedOutput": "['first', 'second', 'third']"}
+    ],
+    "hints": [
+      "Sort by first element of tuple (timestamp).",
+      "Python's sort is stable for equal keys.",
+      "Extract event names after sorting."
+    ],
+    "solution": "def order_events(events: list[tuple[int, str]]) -> list[str]:\n    sorted_events = sorted(events, key=lambda x: x[0])\n    return [event[1] for event in sorted_events]"
+  },
+  {
+    "id": "q_async_r4",
+    "title": "Interval Overlap Check",
+    "prompt": "Given two time intervals [start1, end1] and [start2, end2], determine if they overlap. Intervals are inclusive on both ends. Adjacent intervals (end1 == start2) are considered overlapping.",
+    "concept_taught": "Interval Logic",
+    "starterCode": "def intervals_overlap(interval1: list[int], interval2: list[int]) -> bool:\n    \"\"\"Return True if intervals overlap.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[1, 5], [3, 7]", "expectedOutput": "true"},
+      {"id": "test-2", "input": "[1, 3], [5, 7]", "expectedOutput": "false"},
+      {"id": "test-3", "input": "[1, 3], [3, 5]", "expectedOutput": "true"}
+    ],
+    "hints": [
+      "Intervals don't overlap if one ends before other starts.",
+      "overlap = not (end1 < start2 or end2 < start1).",
+      "Or: overlap = start1 <= end2 and start2 <= end1."
+    ],
+    "solution": "def intervals_overlap(interval1: list[int], interval2: list[int]) -> bool:\n    start1, end1 = interval1\n    start2, end2 = interval2\n    return start1 <= end2 and start2 <= end1"
+  }
+]

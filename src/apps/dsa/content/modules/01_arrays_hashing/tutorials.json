@@ -1,0 +1,37 @@
+[
+  {
+    "id": "t_prefix_01",
+    "title": "Concept: Prefix Sums",
+    "content": "A Prefix Sum array allows you to calculate the sum of any subarray in O(1) time. \n\nFormula: P[i] = nums[0] + ... + nums[i]. \nRange Sum(i, j) = P[j] - P[i-1]."
+  },
+  {
+    "id": "t_set_01",
+    "title": "Concept: HashSet Power",
+    "content": "A HashSet allows you to check if an item exists in O(1) time. Use this to avoid nested loops (O(N^2)) when searching for duplicates or specific values."
+  },
+  {
+    "id": "t_hash_01",
+    "title": "Concept: HashMap (Dictionary)",
+    "content": "Use a HashMap when you need to store PAIRS of data (Key -> Value). In 'Two Sum', we map 'Value -> Index' so we can look up the complement instantly."
+  },
+  {
+    "id": "t_arr_01",
+    "title": "Concept: In-Place Modification",
+    "content": "Sometimes you can use the input array itself as a storage container. By swapping elements to their correct index (e.g. putting 5 at index 4), you save O(N) space."
+  },
+  {
+    "id": "t_str_01",
+    "title": "Concept: ASCII & Char Arrays",
+    "content": "For strings with only lowercase English letters, you don't need a HashMap. You can use an integer array of size 26. \nIndex = ord(char) - ord('a')."
+  },
+  {
+    "id": "t_arr_02",
+    "title": "Concept: Matrix Traversal",
+    "content": "2D Arrays are stored as arrays of arrays. To traverse:\nfor r in range(rows):\n  for c in range(cols):\n    val = grid[r][c]"
+  },
+  {
+    "id": "t_ptr_01",
+    "title": "Concept: Two Pointers",
+    "content": "Use two pointers when operating on a sorted array or needing to swap ends. Common patterns: Start/End converging, or Fast/Slow."
+  }
+]

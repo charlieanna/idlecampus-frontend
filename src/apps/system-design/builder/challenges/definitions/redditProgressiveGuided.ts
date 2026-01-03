@@ -1247,7 +1247,7 @@ For viral posts:
 // Accumulate in Redis, flush periodically
 
 async function recordVote(postId: string, value: number) {
-  await redis.hincrby(`votes:${postId}`, 'score', value);
+  await redis.hincrby(\`votes:\${postId}\`, 'score', value);
   // Flush to DB every N votes or M seconds
 }
 \`\`\`

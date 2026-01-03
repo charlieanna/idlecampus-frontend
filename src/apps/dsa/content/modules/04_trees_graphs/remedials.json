@@ -1,0 +1,362 @@
+[
+  {
+    "id": "q_104",
+    "title": "Maximum Depth of Binary Tree",
+    "prompt": "Given the root of a binary tree, return its maximum depth. A binary tree's maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.",
+    "concept_taught": "Basic DFS/BFS Level Count",
+    "starterCode": "class TreeNode:\n    def __init__(self, val=0, left=None, right=None):\n        self.val = val\n        self.left = left\n        self.right = right\n\ndef maxDepth(root: TreeNode) -> int:\n    \"\"\"Return the maximum depth of the binary tree.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[3, 9, 20, null, null, 15, 7]",
+        "expectedOutput": "3"
+      },
+      {
+        "id": "test-2",
+        "input": "[1, null, 2]",
+        "expectedOutput": "2"
+      },
+      {
+        "id": "test-3",
+        "input": "[]",
+        "expectedOutput": "0"
+      }
+    ],
+    "hints": [
+      "Use recursion: depth = 1 + max(left_depth, right_depth).",
+      "Base case: empty tree has depth 0.",
+      "Or use BFS and count levels."
+    ],
+    "solution": "def maxDepth(root: TreeNode) -> int:\n    if not root:\n        return 0\n    return 1 + max(maxDepth(root.left), maxDepth(root.right))"
+  },
+  {
+    "id": "q_226",
+    "title": "Invert Binary Tree",
+    "prompt": "Given the root of a binary tree, invert the tree, and return its root. Inverting means swapping left and right children recursively.",
+    "concept_taught": "Recursive Tree Modification",
+    "starterCode": "def invertTree(root: TreeNode) -> TreeNode:\n    \"\"\"Invert the binary tree and return root.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[4, 2, 7, 1, 3, 6, 9]",
+        "expectedOutput": "[4, 7, 2, 9, 6, 3, 1]"
+      },
+      {
+        "id": "test-2",
+        "input": "[2, 1, 3]",
+        "expectedOutput": "[2, 3, 1]"
+      },
+      {
+        "id": "test-3",
+        "input": "[]",
+        "expectedOutput": "[]"
+      }
+    ],
+    "hints": [
+      "Swap left and right children.",
+      "Recursively invert left and right subtrees.",
+      "Base case: null node returns null."
+    ],
+    "solution": "def invertTree(root: TreeNode) -> TreeNode:\n    if not root:\n        return None\n    \n    root.left, root.right = root.right, root.left\n    invertTree(root.left)\n    invertTree(root.right)\n    \n    return root"
+  },
+  {
+    "id": "q_100",
+    "title": "Same Tree",
+    "prompt": "Given the roots of two binary trees p and q, write a function to check if they are the same or not. Two binary trees are considered the same if they are structurally identical, and the nodes have the same value.",
+    "concept_taught": "Dual Tree Traversal",
+    "starterCode": "def isSameTree(p: TreeNode, q: TreeNode) -> bool:\n    \"\"\"Return True if both trees are identical.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 2, 3], [1, 2, 3]",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "[1, 2], [1, null, 2]",
+        "expectedOutput": "false"
+      },
+      {
+        "id": "test-3",
+        "input": "[1, 2, 1], [1, 1, 2]",
+        "expectedOutput": "false"
+      }
+    ],
+    "hints": [
+      "Both null → same. One null → different.",
+      "Compare values, then recurse on children.",
+      "All conditions must be true."
+    ],
+    "solution": "def isSameTree(p: TreeNode, q: TreeNode) -> bool:\n    if not p and not q:\n        return True\n    if not p or not q:\n        return False\n    return (p.val == q.val and \n            isSameTree(p.left, q.left) and \n            isSameTree(p.right, q.right))"
+  },
+  {
+    "id": "q_572",
+    "title": "Subtree of Another Tree",
+    "prompt": "Given the roots of two binary trees root and subRoot, return true if there is a subtree of root with the same structure and node values of subRoot and false otherwise.",
+    "concept_taught": "Tree Matching",
+    "starterCode": "def isSubtree(root: TreeNode, subRoot: TreeNode) -> bool:\n    \"\"\"Return True if subRoot is a subtree of root.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[3,4,5,1,2], [4,1,2]",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "[3,4,5,1,2,null,null,null,null,0], [4,1,2]",
+        "expectedOutput": "false"
+      },
+      {
+        "id": "test-3",
+        "input": "[1,1], [1]",
+        "expectedOutput": "true"
+      }
+    ],
+    "hints": [
+      "Check if current node matches subRoot using isSameTree.",
+      "If not, check left and right subtrees.",
+      "Use helper function to compare trees."
+    ],
+    "solution": "def isSubtree(root: TreeNode, subRoot: TreeNode) -> bool:\n    def isSame(p, q):\n        if not p and not q:\n            return True\n        if not p or not q:\n            return False\n        return p.val == q.val and isSame(p.left, q.left) and isSame(p.right, q.right)\n    \n    if not root:\n        return False\n    if isSame(root, subRoot):\n        return True\n    return isSubtree(root.left, subRoot) or isSubtree(root.right, subRoot)"
+  },
+  {
+    "id": "q_543",
+    "title": "Diameter of Binary Tree",
+    "prompt": "Given the root of a binary tree, return the length of the diameter of the tree. The diameter is the length of the longest path between any two nodes. This path may or may not pass through the root.",
+    "concept_taught": "Height vs Diameter",
+    "starterCode": "def diameterOfBinaryTree(root: TreeNode) -> int:\n    \"\"\"Return the diameter of the binary tree.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1,2,3,4,5]",
+        "expectedOutput": "3"
+      },
+      {
+        "id": "test-2",
+        "input": "[1,2]",
+        "expectedOutput": "1"
+      },
+      {
+        "id": "test-3",
+        "input": "[1]",
+        "expectedOutput": "0"
+      }
+    ],
+    "hints": [
+      "Diameter through a node = left_height + right_height.",
+      "Track maximum diameter seen during traversal.",
+      "Return height for recursive calculation."
+    ],
+    "solution": "def diameterOfBinaryTree(root: TreeNode) -> int:\n    diameter = 0\n    \n    def height(node):\n        nonlocal diameter\n        if not node:\n            return 0\n        \n        left_h = height(node.left)\n        right_h = height(node.right)\n        \n        diameter = max(diameter, left_h + right_h)\n        return 1 + max(left_h, right_h)\n    \n    height(root)\n    return diameter"
+  },
+  {
+    "id": "q_110",
+    "title": "Balanced Binary Tree",
+    "prompt": "Given a binary tree, determine if it is height-balanced. A height-balanced binary tree is a binary tree in which the depth of the two subtrees of every node never differs by more than one.",
+    "concept_taught": "Bottom-up Boolean Aggregation",
+    "starterCode": "def isBalanced(root: TreeNode) -> bool:\n    \"\"\"Return True if tree is height-balanced.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[3,9,20,null,null,15,7]",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "[1,2,2,3,3,null,null,4,4]",
+        "expectedOutput": "false"
+      },
+      {
+        "id": "test-3",
+        "input": "[]",
+        "expectedOutput": "true"
+      }
+    ],
+    "hints": [
+      "Calculate height while checking balance.",
+      "Return -1 to indicate unbalanced subtree.",
+      "Balanced if |left_height - right_height| <= 1."
+    ],
+    "solution": "def isBalanced(root: TreeNode) -> bool:\n    def check(node):\n        if not node:\n            return 0\n        \n        left = check(node.left)\n        if left == -1:\n            return -1\n        \n        right = check(node.right)\n        if right == -1:\n            return -1\n        \n        if abs(left - right) > 1:\n            return -1\n        \n        return 1 + max(left, right)\n    \n    return check(root) != -1"
+  },
+  {
+    "id": "q_733",
+    "title": "Flood Fill",
+    "prompt": "An image is represented by an m x n integer grid image where image[i][j] represents the pixel value. Perform a flood fill starting from the pixel image[sr][sc]. Change all connected pixels of the same color to newColor.",
+    "concept_taught": "Matrix DFS",
+    "starterCode": "def floodFill(image: list[list[int]], sr: int, sc: int, color: int) -> list[list[int]]:\n    \"\"\"Perform flood fill and return modified image.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[1,1,1],[1,1,0],[1,0,1]], 1, 1, 2",
+        "expectedOutput": "[[2,2,2],[2,2,0],[2,0,1]]"
+      },
+      {
+        "id": "test-2",
+        "input": "[[0,0,0],[0,0,0]], 0, 0, 0",
+        "expectedOutput": "[[0,0,0],[0,0,0]]"
+      },
+      {
+        "id": "test-3",
+        "input": "[[0,0,0],[0,1,1]], 1, 1, 1",
+        "expectedOutput": "[[0,0,0],[0,1,1]]"
+      }
+    ],
+    "hints": [
+      "Use DFS/BFS from starting pixel.",
+      "Only fill pixels with the original color.",
+      "Handle case where newColor equals original color."
+    ],
+    "solution": "def floodFill(image: list[list[int]], sr: int, sc: int, color: int) -> list[list[int]]:\n    original = image[sr][sc]\n    if original == color:\n        return image\n    \n    m, n = len(image), len(image[0])\n    \n    def dfs(r, c):\n        if r < 0 or r >= m or c < 0 or c >= n:\n            return\n        if image[r][c] != original:\n            return\n        \n        image[r][c] = color\n        dfs(r + 1, c)\n        dfs(r - 1, c)\n        dfs(r, c + 1)\n        dfs(r, c - 1)\n    \n    dfs(sr, sc)\n    return image"
+  },
+  {
+    "id": "q_133",
+    "title": "Clone Graph",
+    "prompt": "Given a reference of a node in a connected undirected graph, return a deep copy (clone) of the graph. Each node contains a value and a list of neighbors.",
+    "concept_taught": "Graph Traversal with HashMap",
+    "starterCode": "class Node:\n    def __init__(self, val=0, neighbors=None):\n        self.val = val\n        self.neighbors = neighbors if neighbors else []\n\ndef cloneGraph(node: Node) -> Node:\n    \"\"\"Return a deep copy of the graph.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[2,4],[1,3],[2,4],[1,3]]",
+        "expectedOutput": "[[2,4],[1,3],[2,4],[1,3]]"
+      },
+      {
+        "id": "test-2",
+        "input": "[[]]",
+        "expectedOutput": "[[]]"
+      },
+      {
+        "id": "test-3",
+        "input": "[]",
+        "expectedOutput": "[]"
+      }
+    ],
+    "hints": [
+      "Use hashmap to track cloned nodes: original → clone.",
+      "DFS or BFS to traverse the graph.",
+      "Clone neighbors recursively, using cached clones."
+    ],
+    "solution": "def cloneGraph(node: Node) -> Node:\n    if not node:\n        return None\n    \n    cloned = {}\n    \n    def dfs(n):\n        if n in cloned:\n            return cloned[n]\n        \n        clone = Node(n.val)\n        cloned[n] = clone\n        \n        for neighbor in n.neighbors:\n            clone.neighbors.append(dfs(neighbor))\n        \n        return clone\n    \n    return dfs(node)"
+  },
+  {
+    "id": "q_200",
+    "title": "Number of Islands",
+    "prompt": "Given an m x n 2D binary grid grid which represents a map of '1's (land) and '0's (water), return the number of islands. An island is surrounded by water and is formed by connecting adjacent lands horizontally or vertically.",
+    "concept_taught": "Connected Components (Grid)",
+    "starterCode": "def numIslands(grid: list[list[str]]) -> int:\n    \"\"\"Return the number of islands.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[\"1\",\"1\",\"1\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"1\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"0\",\"0\"]]",
+        "expectedOutput": "1"
+      },
+      {
+        "id": "test-2",
+        "input": "[[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"1\",\"1\",\"0\",\"0\",\"0\"],[\"0\",\"0\",\"1\",\"0\",\"0\"],[\"0\",\"0\",\"0\",\"1\",\"1\"]]",
+        "expectedOutput": "3"
+      },
+      {
+        "id": "test-3",
+        "input": "[[\"0\"]]",
+        "expectedOutput": "0"
+      }
+    ],
+    "hints": [
+      "Iterate through grid, count unvisited '1's.",
+      "For each '1', use DFS/BFS to mark entire island.",
+      "Mark visited cells to avoid recounting."
+    ],
+    "solution": "def numIslands(grid: list[list[str]]) -> int:\n    if not grid:\n        return 0\n    \n    m, n = len(grid), len(grid[0])\n    count = 0\n    \n    def dfs(r, c):\n        if r < 0 or r >= m or c < 0 or c >= n or grid[r][c] != '1':\n            return\n        grid[r][c] = '0'  # Mark visited\n        dfs(r + 1, c)\n        dfs(r - 1, c)\n        dfs(r, c + 1)\n        dfs(r, c - 1)\n    \n    for i in range(m):\n        for j in range(n):\n            if grid[i][j] == '1':\n                count += 1\n                dfs(i, j)\n    \n    return count"
+  },
+  {
+    "id": "q_323",
+    "title": "Number of Connected Components in an Undirected Graph",
+    "prompt": "You have a graph of n nodes. You are given an integer n and an array edges where edges[i] = [ai, bi] indicates an undirected edge between ai and bi. Return the number of connected components in the graph.",
+    "concept_taught": "Union Find Basics",
+    "starterCode": "def countComponents(n: int, edges: list[list[int]]) -> int:\n    \"\"\"Return number of connected components.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "5, [[0,1],[1,2],[3,4]]",
+        "expectedOutput": "2"
+      },
+      {
+        "id": "test-2",
+        "input": "5, [[0,1],[1,2],[2,3],[3,4]]",
+        "expectedOutput": "1"
+      },
+      {
+        "id": "test-3",
+        "input": "4, [[0,1],[2,3]]",
+        "expectedOutput": "2"
+      }
+    ],
+    "hints": [
+      "Use Union-Find (Disjoint Set Union).",
+      "Initialize n separate components.",
+      "For each edge, union the two nodes."
+    ],
+    "solution": "def countComponents(n: int, edges: list[list[int]]) -> int:\n    parent = list(range(n))\n    \n    def find(x):\n        if parent[x] != x:\n            parent[x] = find(parent[x])\n        return parent[x]\n    \n    def union(x, y):\n        px, py = find(x), find(y)\n        if px != py:\n            parent[px] = py\n            return True\n        return False\n    \n    components = n\n    for a, b in edges:\n        if union(a, b):\n            components -= 1\n    \n    return components"
+  },
+  {
+    "id": "q_700",
+    "title": "Search in a Binary Search Tree",
+    "prompt": "You are given the root of a binary search tree (BST) and an integer val. Find the node in the BST that the node's value equals val and return the subtree rooted with that node. If such a node does not exist, return null.",
+    "concept_taught": "BST Logarithmic Search",
+    "starterCode": "def searchBST(root: TreeNode, val: int) -> TreeNode:\n    \"\"\"Return subtree rooted at val.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[4,2,7,1,3], 2",
+        "expectedOutput": "[2,1,3]"
+      },
+      {
+        "id": "test-2",
+        "input": "[4,2,7,1,3], 5",
+        "expectedOutput": "[]"
+      }
+    ],
+    "hints": [
+      "If root is null or root.val == val, return root.",
+      "If val < root.val, search left subtree.",
+      "If val > root.val, search right subtree."
+    ],
+    "solution": "def searchBST(root: TreeNode, val: int) -> TreeNode:\n    while root and root.val != val:\n        root = root.left if val < root.val else root.right\n    return root"
+  },
+  {
+    "id": "q_112",
+    "title": "Path Sum",
+    "prompt": "Given the root of a binary tree and an integer targetSum, return true if the tree has a root-to-leaf path such that adding up all the values along the path equals targetSum.",
+    "constraints": [
+      "O(N) Time",
+      "Recursive DFS"
+    ],
+    "family_tree": {
+      "tutorial_module_id": "t_tree_02"
+    },
+    "starterCode": "def hasPathSum(root: TreeNode, targetSum: int) -> bool:\n    \"\"\"Return True if path sum exists.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[5,4,8,11,null,13,4,7,2,null,null,null,1], 22",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "[1,2,3], 5",
+        "expectedOutput": "false"
+      },
+      {
+        "id": "test-3",
+        "input": "[], 0",
+        "expectedOutput": "false"
+      }
+    ],
+    "hints": [
+      "Recursively subtract node value from targetSum.",
+      "If leaf node and value equals remaining sum, return True."
+    ],
+    "solution": "def hasPathSum(root: TreeNode, targetSum: int) -> bool:\n    if not root:\n        return False\n    if not root.left and not root.right and root.val == targetSum:\n        return True\n    return hasPathSum(root.left, targetSum - root.val) or hasPathSum(root.right, targetSum - root.val)"
+  }
+]

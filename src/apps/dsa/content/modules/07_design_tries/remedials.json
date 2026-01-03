@@ -1,0 +1,166 @@
+[
+  {
+    "id": "q_706",
+    "title": "Design HashMap",
+    "prompt": "Design a HashMap without using any built-in hash table libraries. Implement put(key, value), get(key), and remove(key) methods.",
+    "concept_taught": "Array + Chaining",
+    "starterCode": "class MyHashMap:\n    def __init__(self):\n        pass\n    \n    def put(self, key: int, value: int) -> None:\n        pass\n    \n    def get(self, key: int) -> int:\n        \"\"\"Return -1 if key not found.\"\"\"\n        pass\n    \n    def remove(self, key: int) -> None:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"MyHashMap\",\"put\",\"put\",\"get\",\"get\",\"put\",\"get\",\"remove\",\"get\"], [[],[1,1],[2,2],[1],[3],[2,1],[2],[2],[2]]", "expectedOutput": "[null,null,null,1,-1,null,1,null,-1]"}
+    ],
+    "hints": [
+      "Use array of buckets (lists).",
+      "Hash function: key % bucket_size.",
+      "Each bucket stores (key, value) pairs."
+    ],
+    "solution": "class MyHashMap:\n    def __init__(self):\n        self.size = 1000\n        self.buckets = [[] for _ in range(self.size)]\n    \n    def put(self, key: int, value: int) -> None:\n        bucket = self.buckets[key % self.size]\n        for i, (k, v) in enumerate(bucket):\n            if k == key:\n                bucket[i] = (key, value)\n                return\n        bucket.append((key, value))\n    \n    def get(self, key: int) -> int:\n        bucket = self.buckets[key % self.size]\n        for k, v in bucket:\n            if k == key:\n                return v\n        return -1\n    \n    def remove(self, key: int) -> None:\n        bucket = self.buckets[key % self.size]\n        for i, (k, v) in enumerate(bucket):\n            if k == key:\n                bucket.pop(i)\n                return"
+  },
+  {
+    "id": "q_705",
+    "title": "Design HashSet",
+    "prompt": "Design a HashSet without using any built-in hash table libraries. Implement add(key), remove(key), and contains(key) methods.",
+    "concept_taught": "Hashing function",
+    "starterCode": "class MyHashSet:\n    def __init__(self):\n        pass\n    \n    def add(self, key: int) -> None:\n        pass\n    \n    def remove(self, key: int) -> None:\n        pass\n    \n    def contains(self, key: int) -> bool:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"MyHashSet\",\"add\",\"add\",\"contains\",\"contains\",\"add\",\"contains\",\"remove\",\"contains\"], [[],[1],[2],[1],[3],[2],[2],[2],[2]]", "expectedOutput": "[null,null,null,true,false,null,true,null,false]"}
+    ],
+    "hints": [
+      "Similar to HashMap but only stores keys.",
+      "Use buckets with chaining for collision handling.",
+      "Hash function: key % bucket_size."
+    ],
+    "solution": "class MyHashSet:\n    def __init__(self):\n        self.size = 1000\n        self.buckets = [[] for _ in range(self.size)]\n    \n    def add(self, key: int) -> None:\n        bucket = self.buckets[key % self.size]\n        if key not in bucket:\n            bucket.append(key)\n    \n    def remove(self, key: int) -> None:\n        bucket = self.buckets[key % self.size]\n        if key in bucket:\n            bucket.remove(key)\n    \n    def contains(self, key: int) -> bool:\n        bucket = self.buckets[key % self.size]\n        return key in bucket"
+  },
+  {
+    "id": "q_232",
+    "title": "Implement Queue using Stacks",
+    "prompt": "Implement a first in first out (FIFO) queue using only two stacks. Implement push(x), pop(), peek(), and empty() methods.",
+    "concept_taught": "Amortized O(1)",
+    "starterCode": "class MyQueue:\n    def __init__(self):\n        pass\n    \n    def push(self, x: int) -> None:\n        pass\n    \n    def pop(self) -> int:\n        pass\n    \n    def peek(self) -> int:\n        pass\n    \n    def empty(self) -> bool:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"MyQueue\",\"push\",\"push\",\"peek\",\"pop\",\"empty\"], [[],[1],[2],[],[],[]]", "expectedOutput": "[null,null,null,1,1,false]"}
+    ],
+    "hints": [
+      "Use two stacks: input and output.",
+      "Push to input stack.",
+      "For pop/peek: if output empty, move all from input to output."
+    ],
+    "solution": "class MyQueue:\n    def __init__(self):\n        self.input = []\n        self.output = []\n    \n    def push(self, x: int) -> None:\n        self.input.append(x)\n    \n    def pop(self) -> int:\n        self.peek()\n        return self.output.pop()\n    \n    def peek(self) -> int:\n        if not self.output:\n            while self.input:\n                self.output.append(self.input.pop())\n        return self.output[-1]\n    \n    def empty(self) -> bool:\n        return not self.input and not self.output"
+  },
+  {
+    "id": "q_225",
+    "title": "Implement Stack using Queues",
+    "prompt": "Implement a last-in-first-out (LIFO) stack using only two queues. Implement push(x), pop(), top(), and empty() methods.",
+    "concept_taught": "Data Shuffling",
+    "starterCode": "from collections import deque\n\nclass MyStack:\n    def __init__(self):\n        pass\n    \n    def push(self, x: int) -> None:\n        pass\n    \n    def pop(self) -> int:\n        pass\n    \n    def top(self) -> int:\n        pass\n    \n    def empty(self) -> bool:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"MyStack\",\"push\",\"push\",\"top\",\"pop\",\"empty\"], [[],[1],[2],[],[],[]]", "expectedOutput": "[null,null,null,2,2,false]"}
+    ],
+    "hints": [
+      "Push: add to queue, then rotate all previous elements to back.",
+      "This makes last pushed element at front.",
+      "Pop and top become O(1)."
+    ],
+    "solution": "from collections import deque\n\nclass MyStack:\n    def __init__(self):\n        self.queue = deque()\n    \n    def push(self, x: int) -> None:\n        self.queue.append(x)\n        for _ in range(len(self.queue) - 1):\n            self.queue.append(self.queue.popleft())\n    \n    def pop(self) -> int:\n        return self.queue.popleft()\n    \n    def top(self) -> int:\n        return self.queue[0]\n    \n    def empty(self) -> bool:\n        return len(self.queue) == 0"
+  },
+  {
+    "id": "q_359",
+    "title": "Logger Rate Limiter",
+    "prompt": "Design a logger system that receives a stream of messages along with their timestamps. Each unique message should only be printed at most every 10 seconds. Implement shouldPrintMessage(timestamp, message).",
+    "concept_taught": "HashMap + Time Check",
+    "starterCode": "class Logger:\n    def __init__(self):\n        pass\n    \n    def shouldPrintMessage(self, timestamp: int, message: str) -> bool:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"Logger\",\"shouldPrintMessage\",\"shouldPrintMessage\",\"shouldPrintMessage\",\"shouldPrintMessage\",\"shouldPrintMessage\",\"shouldPrintMessage\"], [[],[1,\"foo\"],[2,\"bar\"],[3,\"foo\"],[8,\"bar\"],[10,\"foo\"],[11,\"foo\"]]", "expectedOutput": "[null,true,true,false,false,false,true]"}
+    ],
+    "hints": [
+      "Store message -> last printed timestamp.",
+      "Allow if not seen or timestamp - last >= 10.",
+      "Update timestamp when allowed."
+    ],
+    "solution": "class Logger:\n    def __init__(self):\n        self.msg_time = {}\n    \n    def shouldPrintMessage(self, timestamp: int, message: str) -> bool:\n        if message not in self.msg_time or timestamp - self.msg_time[message] >= 10:\n            self.msg_time[message] = timestamp\n            return True\n        return False"
+  },
+  {
+    "id": "q_933",
+    "title": "Number of Recent Calls",
+    "prompt": "Implement RecentCounter class that counts the number of recent requests within a 3000ms time frame. ping(t) adds a new request at time t and returns the number of requests in [t-3000, t].",
+    "concept_taught": "Queue Sliding",
+    "starterCode": "from collections import deque\n\nclass RecentCounter:\n    def __init__(self):\n        pass\n    \n    def ping(self, t: int) -> int:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"RecentCounter\",\"ping\",\"ping\",\"ping\",\"ping\"], [[],[1],[100],[3001],[3002]]", "expectedOutput": "[null,1,2,3,3]"}
+    ],
+    "hints": [
+      "Use a queue to store timestamps.",
+      "Remove timestamps older than t - 3000.",
+      "Return queue length."
+    ],
+    "solution": "from collections import deque\n\nclass RecentCounter:\n    def __init__(self):\n        self.requests = deque()\n    \n    def ping(self, t: int) -> int:\n        self.requests.append(t)\n        while self.requests[0] < t - 3000:\n            self.requests.popleft()\n        return len(self.requests)"
+  },
+  {
+    "id": "q_346",
+    "title": "Moving Average from Data Stream",
+    "prompt": "Given a stream of integers and a window size, calculate the moving average of all integers in the sliding window. Implement next(val) that adds val and returns the current average.",
+    "concept_taught": "Queue/Circular Buffer",
+    "starterCode": "from collections import deque\n\nclass MovingAverage:\n    def __init__(self, size: int):\n        pass\n    \n    def next(self, val: int) -> float:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"MovingAverage\",\"next\",\"next\",\"next\",\"next\"], [[3],[1],[10],[3],[5]]", "expectedOutput": "[null,1.0,5.5,4.66667,6.0]"}
+    ],
+    "hints": [
+      "Use deque to store last 'size' elements.",
+      "Track running sum for efficiency.",
+      "When window full, subtract removed element."
+    ],
+    "solution": "from collections import deque\n\nclass MovingAverage:\n    def __init__(self, size: int):\n        self.size = size\n        self.queue = deque()\n        self.total = 0\n    \n    def next(self, val: int) -> float:\n        if len(self.queue) == self.size:\n            self.total -= self.queue.popleft()\n        self.queue.append(val)\n        self.total += val\n        return self.total / len(self.queue)"
+  },
+  {
+    "id": "q_648",
+    "title": "Replace Words",
+    "prompt": "Given a dictionary of roots and a sentence, replace all successors in the sentence with the root forming it. If a word has multiple matching roots, use the shortest one.",
+    "concept_taught": "Shortest Prefix (Trie)",
+    "starterCode": "def replaceWords(dictionary: list[str], sentence: str) -> str:\n    \"\"\"Replace words with their shortest root.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"cat\",\"bat\",\"rat\"], \"the cattle was rattled by the battery\"", "expectedOutput": "\"the cat was rat by the bat\""},
+      {"id": "test-2", "input": "[\"a\",\"b\",\"c\"], \"aadsfasf absbs bbab cadsfabd\"", "expectedOutput": "\"a]a b c\""},
+      {"id": "test-3", "input": "[\"a\",\"aa\",\"aaa\"], \"aaa\"", "expectedOutput": "\"a\""}
+    ],
+    "hints": [
+      "Build trie from dictionary roots.",
+      "For each word, find shortest prefix in trie.",
+      "If no prefix found, keep original word."
+    ],
+    "solution": "def replaceWords(dictionary: list[str], sentence: str) -> str:\n    trie = {}\n    for root in dictionary:\n        node = trie\n        for c in root:\n            node = node.setdefault(c, {})\n        node['$'] = root\n    \n    def find_root(word):\n        node = trie\n        for c in word:\n            if c not in node:\n                return word\n            node = node[c]\n            if '$' in node:\n                return node['$']\n        return word\n    \n    return ' '.join(find_root(word) for word in sentence.split())"
+  },
+  {
+    "id": "q_720",
+    "title": "Longest Word in Dictionary",
+    "prompt": "Given an array of strings words, return the longest word that can be built one character at a time by other words in words. If there are multiple, return the lexicographically smallest.",
+    "concept_taught": "Trie or HashSet",
+    "starterCode": "def longestWord(words: list[str]) -> str:\n    \"\"\"Return longest word buildable character by character.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"w\",\"wo\",\"wor\",\"worl\",\"world\"]", "expectedOutput": "\"world\""},
+      {"id": "test-2", "input": "[\"a\",\"banana\",\"app\",\"appl\",\"ap\",\"apply\",\"apple\"]", "expectedOutput": "\"apple\""},
+      {"id": "test-3", "input": "[\"yo\",\"ew\",\"fc\",\"zrc\",\"yodn\",\"fcm\",\"qm\",\"qmo\",\"fcmz\",\"z\",\"ewq\",\"yod\",\"ewqz\",\"y\"]", "expectedOutput": "\"yodn\""}
+    ],
+    "hints": [
+      "Sort words by length, then lexicographically.",
+      "A word is valid if all its prefixes exist.",
+      "Use set to track valid words."
+    ],
+    "solution": "def longestWord(words: list[str]) -> str:\n    words.sort(key=lambda w: (len(w), w))\n    valid = {''}\n    result = ''\n    \n    for word in words:\n        if word[:-1] in valid:\n            valid.add(word)\n            if len(word) > len(result):\n                result = word\n    \n    return result"
+  },
+  {
+    "id": "q_1603",
+    "title": "Design Parking System",
+    "prompt": "Design a parking system for a parking lot. The parking lot has three kinds of parking spaces: big, medium, and small, with a fixed number of slots for each size. Implement addCar(carType) that returns True if space is available.",
+    "concept_taught": "Basic Class State",
+    "starterCode": "class ParkingSystem:\n    def __init__(self, big: int, medium: int, small: int):\n        pass\n    \n    def addCar(self, carType: int) -> bool:\n        \"\"\"carType: 1=big, 2=medium, 3=small\"\"\"\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"ParkingSystem\",\"addCar\",\"addCar\",\"addCar\",\"addCar\"], [[1,1,0],[1],[2],[3],[1]]", "expectedOutput": "[null,true,true,false,false]"}
+    ],
+    "hints": [
+      "Store count for each space type.",
+      "Decrement count when car is added.",
+      "Return false if count is 0."
+    ],
+    "solution": "class ParkingSystem:\n    def __init__(self, big: int, medium: int, small: int):\n        self.spaces = {1: big, 2: medium, 3: small}\n    \n    def addCar(self, carType: int) -> bool:\n        if self.spaces[carType] > 0:\n            self.spaces[carType] -= 1\n            return True\n        return False"
+  }
+]

@@ -15,6 +15,15 @@ export interface XTerminalProps {
   enableDocker?: boolean; // Mount Docker socket for Docker commands
 }
 
+// Global cache to persist terminal state across StrictMode remounts
+const terminalCache = new Map<string, {
+  ws: WebSocket | null;
+  term: XTerm | null;
+  fitAddon: FitAddon | null;
+  connected: boolean;
+  cleanupTimer: ReturnType<typeof setTimeout> | null;
+}>();
+
 export function XTerminal({
   onCommand,
   expectedCommand,
@@ -29,6 +38,7 @@ export function XTerminal({
   const [connected, setConnected] = useState(false);
   const [connecting, setConnecting] = useState(false);
   const commandBufferRef = useRef('');
+  const mountedRef = useRef(true);
 
   // Store onCommand in ref so it doesn't trigger re-initialization
   const onCommandRef = useRef(onCommand);
@@ -74,6 +84,8 @@ export function XTerminal({
     };
 
     ws.onmessage = (event) => {
+      if (!mountedRef.current) return; // Ignore messages if unmounted
+      
       const data = JSON.parse(event.data);
 
       if (data.type === 'ping') return;
@@ -82,6 +94,11 @@ export function XTerminal({
         console.log('Subscribed to terminal channel');
         setConnected(true);
         setConnecting(false);
+        // Update cache
+        const cached = terminalCache.get(sessionId);
+        if (cached) {
+          cached.connected = true;
+        }
         xtermRef.current?.writeln('\x1b[32m✓ Connected to Linux terminal\x1b[0m');
         xtermRef.current?.writeln('');
         return;
@@ -101,17 +118,29 @@ export function XTerminal({
 
     ws.onclose = () => {
       console.log('WebSocket disconnected');
-      setConnected(false);
-      setConnecting(false);
-      xtermRef.current?.writeln('\x1b[31m✗ Disconnected\x1b[0m');
+      // Only show disconnect message if component is still mounted
+      // This prevents the message during StrictMode remount cycle
+      if (mountedRef.current) {
+        setConnected(false);
+        setConnecting(false);
+        xtermRef.current?.writeln('\x1b[31m✗ Disconnected\x1b[0m');
+      }
     };
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
-      setConnecting(false);
+      if (mountedRef.current) {
+        setConnecting(false);
+      }
     };
 
     wsRef.current = ws;
+    
+    // Update cache
+    const cached = terminalCache.get(sessionId);
+    if (cached) {
+      cached.ws = ws;
+    }
   }, [sessionId, containerImage, enableDocker]);
 
   const sendInput = useCallback((data: string) => {
@@ -131,6 +160,34 @@ export function XTerminal({
 
   useEffect(() => {
     if (!terminalRef.current) return;
+    
+    mountedRef.current = true;
+
+    // Check if we have a cached terminal session (StrictMode remount)
+    const cached = terminalCache.get(sessionId);
+    if (cached?.cleanupTimer) {
+      // Cancel pending cleanup - we're remounting
+      clearTimeout(cached.cleanupTimer);
+      cached.cleanupTimer = null;
+      console.log('Terminal remounted, cancelled cleanup');
+    }
+
+    // Reuse existing terminal if available and still valid
+    if (cached?.term && cached?.ws?.readyState === WebSocket.OPEN) {
+      console.log('Reusing cached terminal session');
+      xtermRef.current = cached.term;
+      fitAddonRef.current = cached.fitAddon;
+      wsRef.current = cached.ws;
+      setConnected(cached.connected);
+      
+      // Re-attach to DOM
+      if (terminalRef.current && cached.term.element) {
+        terminalRef.current.innerHTML = '';
+        terminalRef.current.appendChild(cached.term.element);
+        setTimeout(() => cached.fitAddon?.fit(), 100);
+      }
+      return;
+    }
 
     // Initialize xterm.js
     const term = new XTerm({
@@ -175,6 +232,15 @@ export function XTerminal({
 
     xtermRef.current = term;
     fitAddonRef.current = fitAddon;
+    
+    // Store in cache
+    terminalCache.set(sessionId, {
+      ws: null,
+      term,
+      fitAddon,
+      connected: false,
+      cleanupTimer: null
+    });
 
     // Welcome message
     term.writeln('\x1b[1;36m╔══════════════════════════════════════════════════════╗\x1b[0m');
@@ -240,9 +306,20 @@ export function XTerminal({
     connectWebSocket();
 
     return () => {
+      mountedRef.current = false;
       window.removeEventListener('resize', handleResize);
-      wsRef.current?.close();
-      term.dispose();
+      
+      // Delay cleanup to allow for StrictMode remount
+      // If component remounts within 100ms, we'll cancel this cleanup
+      const cached = terminalCache.get(sessionId);
+      if (cached) {
+        cached.cleanupTimer = setTimeout(() => {
+          console.log('Terminal cleanup executing');
+          wsRef.current?.close();
+          term.dispose();
+          terminalCache.delete(sessionId);
+        }, 100);
+      }
     };
     // Note: onCommand is accessed via ref, not as dependency, to prevent re-init on every render
   }, [connectWebSocket, sendInput, sessionId, containerImage]);

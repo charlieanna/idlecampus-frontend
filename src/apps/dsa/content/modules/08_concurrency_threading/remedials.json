@@ -1,0 +1,98 @@
+[
+  {
+    "id": "q_conc_r1",
+    "title": "Basic Thread Creation",
+    "prompt": "Create a simple program that spawns a thread, runs a function that prints 'Hello from thread!', and waits for it to complete.",
+    "concept_taught": "Thread Creation & Join",
+    "starterCode": "import threading\n\ndef run_thread():\n    \"\"\"Create and run a thread that prints a message.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "run_thread()", "expectedOutput": "Hello from thread!"}
+    ],
+    "hints": [
+      "Use threading.Thread(target=function).",
+      "Call .start() to begin execution.",
+      "Call .join() to wait for completion."
+    ],
+    "solution": "import threading\n\ndef run_thread():\n    def print_message():\n        print('Hello from thread!')\n    \n    thread = threading.Thread(target=print_message)\n    thread.start()\n    thread.join()"
+  },
+  {
+    "id": "q_conc_r2",
+    "title": "Thread Join",
+    "prompt": "Create two threads that each print their thread number (1 and 2). Ensure the main thread waits for both to complete before printing 'Done'.",
+    "concept_taught": "Thread Synchronization",
+    "starterCode": "import threading\n\ndef run_two_threads():\n    \"\"\"Run two threads and wait for both.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "run_two_threads()", "expectedOutput": "Thread 1\\nThread 2\\nDone"}
+    ],
+    "hints": [
+      "Create list to store thread objects.",
+      "Start all threads first.",
+      "Then join all threads."
+    ],
+    "solution": "import threading\n\ndef run_two_threads():\n    def print_num(n):\n        print(f'Thread {n}')\n    \n    threads = []\n    for i in [1, 2]:\n        t = threading.Thread(target=print_num, args=(i,))\n        threads.append(t)\n        t.start()\n    \n    for t in threads:\n        t.join()\n    \n    print('Done')"
+  },
+  {
+    "id": "q_conc_r3",
+    "title": "Counter with Lock",
+    "prompt": "Implement a shared counter that is incremented by multiple threads. Use a Lock to prevent race conditions. The counter should be correctly incremented even with concurrent access.",
+    "concept_taught": "Basic Lock Usage",
+    "starterCode": "import threading\n\nclass SafeCounter:\n    def __init__(self):\n        pass\n    \n    def increment(self):\n        pass\n    \n    def get_value(self):\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "10 threads each incrementing 100 times", "expectedOutput": "1000"}
+    ],
+    "hints": [
+      "Use threading.Lock().",
+      "Acquire lock before modifying counter.",
+      "Release lock after (use 'with' statement)."
+    ],
+    "solution": "import threading\n\nclass SafeCounter:\n    def __init__(self):\n        self.value = 0\n        self.lock = threading.Lock()\n    \n    def increment(self):\n        with self.lock:\n            self.value += 1\n    \n    def get_value(self):\n        with self.lock:\n            return self.value"
+  },
+  {
+    "id": "q_conc_r4",
+    "title": "Thread Event Flag",
+    "prompt": "Use an Event object to signal between two threads. Thread A should wait for a signal from Thread B before printing 'Signal received!'.",
+    "concept_taught": "Event Signaling",
+    "starterCode": "import threading\nimport time\n\ndef event_signaling():\n    \"\"\"Demonstrate event signaling between threads.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "event_signaling()", "expectedOutput": "Waiting...\\nSignal sent!\\nSignal received!"}
+    ],
+    "hints": [
+      "Create threading.Event().",
+      "Thread A calls event.wait().",
+      "Thread B calls event.set() to signal."
+    ],
+    "solution": "import threading\nimport time\n\ndef event_signaling():\n    event = threading.Event()\n    \n    def waiter():\n        print('Waiting...')\n        event.wait()\n        print('Signal received!')\n    \n    def signaler():\n        time.sleep(0.1)\n        print('Signal sent!')\n        event.set()\n    \n    t1 = threading.Thread(target=waiter)\n    t2 = threading.Thread(target=signaler)\n    \n    t1.start()\n    t2.start()\n    t1.join()\n    t2.join()"
+  },
+  {
+    "id": "q_conc_r5",
+    "title": "Basic ThreadPoolExecutor",
+    "prompt": "Use ThreadPoolExecutor to run 5 tasks concurrently with a pool of 3 workers. Each task should print its task number and return the number.",
+    "concept_taught": "Thread Pool Basics",
+    "starterCode": "from concurrent.futures import ThreadPoolExecutor\n\ndef run_pool_tasks():\n    \"\"\"Run 5 tasks in a pool of 3 workers.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "run_pool_tasks()", "expectedOutput": "[0, 1, 2, 3, 4]"}
+    ],
+    "hints": [
+      "Use ThreadPoolExecutor(max_workers=3).",
+      "Submit tasks with executor.submit().",
+      "Collect results with future.result()."
+    ],
+    "solution": "from concurrent.futures import ThreadPoolExecutor, as_completed\n\ndef run_pool_tasks():\n    def task(n):\n        print(f'Task {n}')\n        return n\n    \n    results = []\n    with ThreadPoolExecutor(max_workers=3) as executor:\n        futures = [executor.submit(task, i) for i in range(5)]\n        for future in futures:\n            results.append(future.result())\n    \n    return results"
+  },
+  {
+    "id": "q_conc_r6",
+    "title": "Semaphore Rate Limiting",
+    "prompt": "Use a Semaphore to limit concurrent access to a resource to only 2 threads at a time, even when 5 threads try to access it. Each thread should print 'Accessing' and 'Released'.",
+    "concept_taught": "Semaphore Usage",
+    "starterCode": "import threading\nimport time\n\ndef semaphore_demo():\n    \"\"\"Limit concurrent access to 2 using semaphore.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "semaphore_demo()", "expectedOutput": "Max 2 concurrent at any time"}
+    ],
+    "hints": [
+      "Create Semaphore(2) for 2 permits.",
+      "Use 'with semaphore' or acquire/release.",
+      "Semaphore blocks when permits exhausted."
+    ],
+    "solution": "import threading\nimport time\n\ndef semaphore_demo():\n    semaphore = threading.Semaphore(2)\n    \n    def access_resource(n):\n        with semaphore:\n            print(f'Thread {n}: Accessing')\n            time.sleep(0.1)\n            print(f'Thread {n}: Released')\n    \n    threads = []\n    for i in range(5):\n        t = threading.Thread(target=access_resource, args=(i,))\n        threads.append(t)\n        t.start()\n    \n    for t in threads:\n        t.join()"
+  }
+]

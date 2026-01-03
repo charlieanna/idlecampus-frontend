@@ -114,13 +114,13 @@ export default function IITJEECourseSelection({ subject }: IITJEECourseSelection
             </div>
             <div className="bg-white/10 backdrop-blur rounded-lg p-4">
               <div className="text-3xl font-bold">
-                {courses.reduce((sum, c) => sum + c.module_count, 0)}
+                {courses.reduce((sum, c) => sum + (c.module_count || 0), 0)}
               </div>
               <div className="text-white/90">Total Modules</div>
             </div>
             <div className="bg-white/10 backdrop-blur rounded-lg p-4">
               <div className="text-3xl font-bold">
-                {courses.reduce((sum, c) => sum + c.estimated_hours, 0)}+
+                {courses.reduce((sum, c) => sum + (c.estimated_hours || 0), 0)}+
               </div>
               <div className="text-white/90">Hours of Content</div>
             </div>
@@ -133,9 +133,9 @@ export default function IITJEECourseSelection({ subject }: IITJEECourseSelection
         <h2 className="text-3xl font-bold text-slate-900 mb-8">Choose a Course</h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {courses.map((course) => (
+          {courses.map((course, index) => (
             <Card
-              key={course.id}
+              key={course.id ?? course.slug ?? index}
               className="overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer group"
               onClick={() => handleCourseSelect(course.slug)}
             >

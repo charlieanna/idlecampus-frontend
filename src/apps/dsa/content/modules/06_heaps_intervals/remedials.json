@@ -1,0 +1,178 @@
+[
+  {
+    "id": "q_703",
+    "title": "Kth Largest Element in a Stream",
+    "prompt": "Design a class to find the kth largest element in a stream. Note that it is the kth largest element in the sorted order, not the kth distinct element. Implement KthLargest class with add(val) method.",
+    "concept_taught": "Min-Heap of Size K",
+    "starterCode": "import heapq\n\nclass KthLargest:\n    def __init__(self, k: int, nums: list[int]):\n        pass\n    \n    def add(self, val: int) -> int:\n        \"\"\"Add val and return kth largest.\"\"\"\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"KthLargest\",\"add\",\"add\",\"add\",\"add\",\"add\"], [[3,[4,5,8,2]],[3],[5],[10],[9],[4]]", "expectedOutput": "[null,4,5,5,8,8]"}
+    ],
+    "hints": [
+      "Keep a min-heap of size k.",
+      "The heap root is always the kth largest.",
+      "Only add if val > heap root, then pop root."
+    ],
+    "solution": "import heapq\n\nclass KthLargest:\n    def __init__(self, k: int, nums: list[int]):\n        self.k = k\n        self.heap = nums\n        heapq.heapify(self.heap)\n        while len(self.heap) > k:\n            heapq.heappop(self.heap)\n    \n    def add(self, val: int) -> int:\n        heapq.heappush(self.heap, val)\n        if len(self.heap) > self.k:\n            heapq.heappop(self.heap)\n        return self.heap[0]"
+  },
+  {
+    "id": "q_1046",
+    "title": "Last Stone Weight",
+    "prompt": "You are given an array of integers stones where stones[i] is the weight of the ith stone. On each turn, choose the heaviest two stones and smash them together. If they are equal, both are destroyed. If not, the lighter one is destroyed and the heavier loses weight equal to the lighter. Return the weight of the last remaining stone (or 0 if none).",
+    "concept_taught": "Max-Heap Simulation",
+    "starterCode": "import heapq\n\ndef lastStoneWeight(stones: list[int]) -> int:\n    \"\"\"Return weight of last remaining stone.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[2, 7, 4, 1, 8, 1]", "expectedOutput": "1"},
+      {"id": "test-2", "input": "[1]", "expectedOutput": "1"},
+      {"id": "test-3", "input": "[2, 2]", "expectedOutput": "0"}
+    ],
+    "hints": [
+      "Use max-heap (negate values in Python).",
+      "Pop two largest, push difference if not zero.",
+      "Continue until one or zero stones left."
+    ],
+    "solution": "import heapq\n\ndef lastStoneWeight(stones: list[int]) -> int:\n    heap = [-s for s in stones]\n    heapq.heapify(heap)\n    \n    while len(heap) > 1:\n        first = -heapq.heappop(heap)\n        second = -heapq.heappop(heap)\n        if first != second:\n            heapq.heappush(heap, -(first - second))\n    \n    return -heap[0] if heap else 0"
+  },
+  {
+    "id": "q_215",
+    "title": "Kth Largest Element in an Array",
+    "prompt": "Given an integer array nums and an integer k, return the kth largest element in the array. Note that it is the kth largest element in the sorted order, not the kth distinct element.",
+    "concept_taught": "Heap Selection vs Sorting",
+    "starterCode": "def findKthLargest(nums: list[int], k: int) -> int:\n    \"\"\"Return the kth largest element.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[3, 2, 1, 5, 6, 4], 2", "expectedOutput": "5"},
+      {"id": "test-2", "input": "[3, 2, 3, 1, 2, 4, 5, 5, 6], 4", "expectedOutput": "4"},
+      {"id": "test-3", "input": "[1], 1", "expectedOutput": "1"}
+    ],
+    "hints": [
+      "Min-heap of size k approach: O(n log k).",
+      "Or use heapq.nlargest(k, nums)[-1].",
+      "QuickSelect gives O(n) average."
+    ],
+    "solution": "import heapq\n\ndef findKthLargest(nums: list[int], k: int) -> int:\n    heap = []\n    for num in nums:\n        heapq.heappush(heap, num)\n        if len(heap) > k:\n            heapq.heappop(heap)\n    return heap[0]"
+  },
+  {
+    "id": "q_252",
+    "title": "Meeting Rooms",
+    "prompt": "Given an array of meeting time intervals where intervals[i] = [starti, endi], determine if a person could attend all meetings (i.e., no overlaps).",
+    "concept_taught": "Sorting Intervals",
+    "starterCode": "def canAttendMeetings(intervals: list[list[int]]) -> bool:\n    \"\"\"Return True if all meetings can be attended.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[[0, 30], [5, 10], [15, 20]]", "expectedOutput": "false"},
+      {"id": "test-2", "input": "[[7, 10], [2, 4]]", "expectedOutput": "true"},
+      {"id": "test-3", "input": "[[1, 5], [5, 10]]", "expectedOutput": "true"}
+    ],
+    "hints": [
+      "Sort intervals by start time.",
+      "Check if any meeting starts before previous ends.",
+      "If start[i] < end[i-1], there's overlap."
+    ],
+    "solution": "def canAttendMeetings(intervals: list[list[int]]) -> bool:\n    intervals.sort(key=lambda x: x[0])\n    \n    for i in range(1, len(intervals)):\n        if intervals[i][0] < intervals[i-1][1]:\n            return False\n    \n    return True"
+  },
+  {
+    "id": "q_973",
+    "title": "K Closest Points to Origin",
+    "prompt": "Given an array of points where points[i] = [xi, yi] represents a point on the X-Y plane and an integer k, return the k closest points to the origin (0, 0).",
+    "concept_taught": "Max-Heap for Min K",
+    "starterCode": "def kClosest(points: list[list[int]], k: int) -> list[list[int]]:\n    \"\"\"Return k closest points to origin.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[[1, 3], [-2, 2]], 1", "expectedOutput": "[[-2, 2]]"},
+      {"id": "test-2", "input": "[[3, 3], [5, -1], [-2, 4]], 2", "expectedOutput": "[[3, 3], [-2, 4]]"},
+      {"id": "test-3", "input": "[[0, 1], [1, 0]], 2", "expectedOutput": "[[0, 1], [1, 0]]"}
+    ],
+    "hints": [
+      "Distance = sqrt(x² + y²), but can compare x² + y².",
+      "Use max-heap of size k (negate distance).",
+      "Or use heapq.nsmallest with key function."
+    ],
+    "solution": "import heapq\n\ndef kClosest(points: list[list[int]], k: int) -> list[list[int]]:\n    return heapq.nsmallest(k, points, key=lambda p: p[0]**2 + p[1]**2)"
+  },
+  {
+    "id": "q_452",
+    "title": "Minimum Number of Arrows to Burst Balloons",
+    "prompt": "There are some spherical balloons on a wall. You are given a 2D array points where points[i] = [xstart, xend] represents a balloon. An arrow shot at x will burst all balloons where xstart <= x <= xend. Return the minimum number of arrows needed to burst all balloons.",
+    "concept_taught": "Greedy Intervals (End Time)",
+    "starterCode": "def findMinArrowShots(points: list[list[int]]) -> int:\n    \"\"\"Return minimum arrows needed.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[[10, 16], [2, 8], [1, 6], [7, 12]]", "expectedOutput": "2"},
+      {"id": "test-2", "input": "[[1, 2], [3, 4], [5, 6], [7, 8]]", "expectedOutput": "4"},
+      {"id": "test-3", "input": "[[1, 2], [2, 3], [3, 4], [4, 5]]", "expectedOutput": "2"}
+    ],
+    "hints": [
+      "Sort by end point.",
+      "Shoot at first balloon's end.",
+      "Skip all balloons that overlap with this shot."
+    ],
+    "solution": "def findMinArrowShots(points: list[list[int]]) -> int:\n    if not points:\n        return 0\n    \n    points.sort(key=lambda x: x[1])\n    arrows = 1\n    arrow_pos = points[0][1]\n    \n    for start, end in points[1:]:\n        if start > arrow_pos:\n            arrows += 1\n            arrow_pos = end\n    \n    return arrows"
+  },
+  {
+    "id": "q_228",
+    "title": "Summary Ranges",
+    "prompt": "You are given a sorted unique integer array nums. Return the smallest sorted list of ranges that cover all the numbers in the array exactly. Format: \"a\" for single number, \"a->b\" for range.",
+    "concept_taught": "Linear Interval Grouping",
+    "starterCode": "def summaryRanges(nums: list[int]) -> list[str]:\n    \"\"\"Return list of ranges covering all numbers.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[0, 1, 2, 4, 5, 7]", "expectedOutput": "[\"0->2\", \"4->5\", \"7\"]"},
+      {"id": "test-2", "input": "[0, 2, 3, 4, 6, 8, 9]", "expectedOutput": "[\"0\", \"2->4\", \"6\", \"8->9\"]"},
+      {"id": "test-3", "input": "[]", "expectedOutput": "[]"}
+    ],
+    "hints": [
+      "Track start of current range.",
+      "When gap found, close current range.",
+      "Format based on whether start == end."
+    ],
+    "solution": "def summaryRanges(nums: list[int]) -> list[str]:\n    if not nums:\n        return []\n    \n    result = []\n    start = nums[0]\n    \n    for i in range(1, len(nums) + 1):\n        if i == len(nums) or nums[i] != nums[i-1] + 1:\n            if start == nums[i-1]:\n                result.append(str(start))\n            else:\n                result.append(f\"{start}->{nums[i-1]}\")\n            if i < len(nums):\n                start = nums[i]\n    \n    return result"
+  },
+  {
+    "id": "q_621_rem",
+    "title": "Least Number of Unique Integers after K Removals",
+    "prompt": "Given an array of integers arr and an integer k. Find the least number of unique integers after removing exactly k elements. Remove elements with lowest frequency first.",
+    "concept_taught": "Counting and Sorting/Heap",
+    "starterCode": "def findLeastNumOfUniqueInts(arr: list[int], k: int) -> int:\n    \"\"\"Return least unique integers after k removals.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[5, 5, 4], 1", "expectedOutput": "1"},
+      {"id": "test-2", "input": "[4, 3, 1, 1, 3, 3, 2], 3", "expectedOutput": "2"},
+      {"id": "test-3", "input": "[1], 1", "expectedOutput": "0"}
+    ],
+    "hints": [
+      "Count frequency of each element.",
+      "Sort by frequency (ascending).",
+      "Remove elements starting with lowest frequency."
+    ],
+    "solution": "from collections import Counter\n\ndef findLeastNumOfUniqueInts(arr: list[int], k: int) -> int:\n    counts = sorted(Counter(arr).values())\n    \n    for i, count in enumerate(counts):\n        if k >= count:\n            k -= count\n        else:\n            return len(counts) - i\n    \n    return 0"
+  },
+  {
+    "id": "q_767",
+    "title": "Reorganize String",
+    "prompt": "Given a string s, rearrange the characters of s so that any two adjacent characters are not the same. Return any valid arrangement, or empty string if not possible.",
+    "concept_taught": "Max-Heap + Holdback",
+    "starterCode": "def reorganizeString(s: str) -> str:\n    \"\"\"Return rearranged string with no adjacent duplicates.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "\"aab\"", "expectedOutput": "\"aba\""},
+      {"id": "test-2", "input": "\"aaab\"", "expectedOutput": "\"\""},
+      {"id": "test-3", "input": "\"aabb\"", "expectedOutput": "\"abab\""}
+    ],
+    "hints": [
+      "If any char count > (n+1)/2, impossible.",
+      "Use max-heap to always pick most frequent.",
+      "Alternate between two most frequent chars."
+    ],
+    "solution": "from collections import Counter\nimport heapq\n\ndef reorganizeString(s: str) -> str:\n    counts = Counter(s)\n    max_count = max(counts.values())\n    \n    if max_count > (len(s) + 1) // 2:\n        return \"\"\n    \n    heap = [(-count, char) for char, count in counts.items()]\n    heapq.heapify(heap)\n    \n    result = []\n    prev = None\n    \n    while heap:\n        count, char = heapq.heappop(heap)\n        result.append(char)\n        \n        if prev:\n            heapq.heappush(heap, prev)\n        \n        if count + 1 < 0:\n            prev = (count + 1, char)\n        else:\n            prev = None\n    \n    return ''.join(result)"
+  },
+  {
+    "id": "q_355",
+    "title": "Design Twitter",
+    "prompt": "Design a simplified version of Twitter where users can post tweets, follow/unfollow another user, and see the 10 most recent tweets in their news feed.",
+    "concept_taught": "Merge K Sorted Lists Logic",
+    "starterCode": "import heapq\nfrom collections import defaultdict\n\nclass Twitter:\n    def __init__(self):\n        pass\n    \n    def postTweet(self, userId: int, tweetId: int) -> None:\n        pass\n    \n    def getNewsFeed(self, userId: int) -> list[int]:\n        pass\n    \n    def follow(self, followerId: int, followeeId: int) -> None:\n        pass\n    \n    def unfollow(self, followerId: int, followeeId: int) -> None:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "[\"Twitter\",\"postTweet\",\"getNewsFeed\",\"follow\",\"postTweet\",\"getNewsFeed\",\"unfollow\",\"getNewsFeed\"], [[],[1,5],[1],[1,2],[2,6],[1],[1,2],[1]]", "expectedOutput": "[null,null,[5],null,null,[6,5],null,[5]]"}
+    ],
+    "hints": [
+      "Store tweets with timestamp for ordering.",
+      "User follows set for each user.",
+      "Merge tweets from all followed users + self."
+    ],
+    "solution": "import heapq\nfrom collections import defaultdict\n\nclass Twitter:\n    def __init__(self):\n        self.time = 0\n        self.tweets = defaultdict(list)  # userId -> [(time, tweetId)]\n        self.follows = defaultdict(set)  # userId -> set of followeeIds\n    \n    def postTweet(self, userId: int, tweetId: int) -> None:\n        self.tweets[userId].append((self.time, tweetId))\n        self.time += 1\n    \n    def getNewsFeed(self, userId: int) -> list[int]:\n        heap = []\n        users = self.follows[userId] | {userId}\n        \n        for uid in users:\n            if self.tweets[uid]:\n                idx = len(self.tweets[uid]) - 1\n                time, tweet = self.tweets[uid][idx]\n                heap.append((-time, tweet, uid, idx))\n        \n        heapq.heapify(heap)\n        result = []\n        \n        while heap and len(result) < 10:\n            _, tweet, uid, idx = heapq.heappop(heap)\n            result.append(tweet)\n            if idx > 0:\n                time, tweet = self.tweets[uid][idx - 1]\n                heapq.heappush(heap, (-time, tweet, uid, idx - 1))\n        \n        return result\n    \n    def follow(self, followerId: int, followeeId: int) -> None:\n        self.follows[followerId].add(followeeId)\n    \n    def unfollow(self, followerId: int, followeeId: int) -> None:\n        self.follows[followerId].discard(followeeId)"
+  }
+]

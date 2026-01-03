@@ -1,0 +1,52 @@
+[
+  {
+    "id": "q_async_01",
+    "title": "Design Task Scheduler",
+    "prompt": "Design task scheduler that runs tasks at scheduled times. Implement schedule(task, delay_seconds) and run() which executes ready tasks.",
+    "constraints": ["Priority Queue (Min-Heap)", "No sleep() in run loop"],
+    "family_tree": {"remedial_id": "q_async_r1", "tutorial_id": "t_async_01"},
+    "starterCode": "import time\nimport heapq\n\nclass TaskScheduler:\n    def __init__(self):\n        pass\n    \n    def schedule(self, task: callable, delay_seconds: float) -> None:\n        \"\"\"Schedule task to run after delay_seconds.\"\"\"\n        pass\n    \n    def run(self) -> list:\n        \"\"\"Execute all tasks whose time has come. Return list of results.\"\"\"\n        pass",
+    "testCases": [{"id": "test-1", "input": "schedule(task1, 1.0), schedule(task2, 0.5), run() after 0.6s", "expectedOutput": "[task2_result]"}],
+    "hints": ["Use min-heap with (scheduled_time, task).", "In run(), pop all tasks where scheduled_time <= now.", "Return results of executed tasks."],
+    "solution": "import time\nimport heapq\n\nclass TaskScheduler:\n    def __init__(self):\n        self.tasks = []  # min-heap of (scheduled_time, id, task)\n        self.counter = 0  # for tie-breaking\n    \n    def schedule(self, task: callable, delay_seconds: float) -> None:\n        scheduled_time = time.time() + delay_seconds\n        heapq.heappush(self.tasks, (scheduled_time, self.counter, task))\n        self.counter += 1\n    \n    def run(self) -> list:\n        results = []\n        now = time.time()\n        while self.tasks and self.tasks[0][0] <= now:\n            _, _, task = heapq.heappop(self.tasks)\n            results.append(task())\n        return results"
+  },
+  {
+    "id": "q_async_02",
+    "title": "Design Delayed Task Queue",
+    "prompt": "Design queue with delayed execution. Implement put(task, delay) and take() which blocks until next task is ready.",
+    "constraints": ["Blocking Queue", "Condition Variables"],
+    "family_tree": {"remedial_id": "q_async_r2", "tutorial_id": "t_async_01"},
+    "starterCode": "import time\nimport threading\nimport heapq\n\nclass DelayedTaskQueue:\n    def __init__(self):\n        pass\n    \n    def put(self, task: callable, delay: float) -> None:\n        \"\"\"Add task to execute after delay seconds.\"\"\"\n        pass\n    \n    def take(self) -> callable:\n        \"\"\"Block until a task is ready, then return it.\"\"\"\n        pass",
+    "testCases": [{"id": "test-1", "input": "put(task, 1.0), take() blocks for ~1 second then returns task", "expectedOutput": "task returned after delay"}],
+    "hints": ["Use condition variable for blocking.", "Calculate wait time until next task.", "Wake up when new task added or timer expires."],
+    "solution": "import time\nimport threading\nimport heapq\n\nclass DelayedTaskQueue:\n    def __init__(self):\n        self.tasks = []  # (execute_time, counter, task)\n        self.counter = 0\n        self.lock = threading.Lock()\n        self.condition = threading.Condition(self.lock)\n    \n    def put(self, task: callable, delay: float) -> None:\n        execute_time = time.time() + delay\n        with self.condition:\n            heapq.heappush(self.tasks, (execute_time, self.counter, task))\n            self.counter += 1\n            self.condition.notify()\n    \n    def take(self) -> callable:\n        with self.condition:\n            while True:\n                if not self.tasks:\n                    self.condition.wait()\n                else:\n                    execute_time = self.tasks[0][0]\n                    delay = execute_time - time.time()\n                    if delay <= 0:\n                        _, _, task = heapq.heappop(self.tasks)\n                        return task\n                    self.condition.wait(timeout=delay)"
+  },
+  {
+    "id": "q_1834",
+    "title": "Single-Threaded CPU",
+    "prompt": "Given n tasks with enqueue times and processing times, return order CPU processes them using shortest job first (SJF) scheduling.",
+    "constraints": ["Priority Queue", "Simulation"],
+    "family_tree": {"remedial_id": "q_async_r3", "tutorial_id": "t_async_01"},
+    "starterCode": "def getOrder(tasks: list[list[int]]) -> list[int]:\n    \"\"\"Return order of task indices processed by CPU.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[[1, 2], [2, 4], [3, 2], [4, 1]]", "expectedOutput": "[0, 2, 3, 1]"},
+      {"id": "test-2", "input": "[[7, 10], [7, 12], [7, 5], [7, 4], [7, 2]]", "expectedOutput": "[4, 3, 2, 0, 1]"}
+    ],
+    "hints": ["Sort tasks by enqueue time, track original indices.", "Min-heap by (processing_time, index) for available tasks.", "Process available tasks, advance time."],
+    "solution": "def getOrder(tasks: list[list[int]]) -> list[int]:\n    import heapq\n    \n    # Add original indices and sort by enqueue time\n    indexed_tasks = sorted([(t[0], t[1], i) for i, t in enumerate(tasks)])\n    \n    result = []\n    heap = []  # (processing_time, index)\n    time = 0\n    i = 0\n    n = len(tasks)\n    \n    while i < n or heap:\n        if not heap and i < n and indexed_tasks[i][0] > time:\n            time = indexed_tasks[i][0]\n        \n        # Add all available tasks\n        while i < n and indexed_tasks[i][0] <= time:\n            heapq.heappush(heap, (indexed_tasks[i][1], indexed_tasks[i][2]))\n            i += 1\n        \n        # Process shortest task\n        proc_time, idx = heapq.heappop(heap)\n        time += proc_time\n        result.append(idx)\n    \n    return result"
+  },
+  {
+    "id": "q_253",
+    "title": "Meeting Rooms II",
+    "prompt": "Given array of meeting time intervals, find minimum number of conference rooms required.",
+    "constraints": ["Min-Heap", "Event Processing"],
+    "family_tree": {"remedial_id": "q_async_r4", "tutorial_id": "t_async_01"},
+    "starterCode": "def minMeetingRooms(intervals: list[list[int]]) -> int:\n    \"\"\"Return minimum conference rooms needed.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[[0, 30], [5, 10], [15, 20]]", "expectedOutput": "2"},
+      {"id": "test-2", "input": "[[7, 10], [2, 4]]", "expectedOutput": "1"}
+    ],
+    "hints": ["Sort by start time.", "Min-heap tracks end times of ongoing meetings.", "If start >= min_end, reuse room."],
+    "solution": "def minMeetingRooms(intervals: list[list[int]]) -> int:\n    import heapq\n    \n    if not intervals:\n        return 0\n    \n    intervals.sort(key=lambda x: x[0])\n    heap = []  # end times\n    \n    for start, end in intervals:\n        if heap and heap[0] <= start:\n            heapq.heappop(heap)\n        heapq.heappush(heap, end)\n    \n    return len(heap)"
+  }
+]

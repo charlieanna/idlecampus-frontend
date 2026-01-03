@@ -1,0 +1,46 @@
+[
+  {
+    "id": "q_ood_01",
+    "title": "Design In-Memory Database with Transactions",
+    "prompt": "Design key-value database with transaction support: begin(), set(key, value), get(key), commit(), rollback(). Support nested transactions.",
+    "constraints": ["Stack of HashMaps", "Nested Transaction Support"],
+    "family_tree": {"remedial_id": "q_ood_r1", "tutorial_id": "t_ood_01"},
+    "starterCode": "class InMemoryDB:\n    def __init__(self):\n        pass\n    \n    def begin(self) -> None:\n        \"\"\"Start a new transaction.\"\"\"\n        pass\n    \n    def set(self, key: str, value: int) -> None:\n        \"\"\"Set key to value in current transaction.\"\"\"\n        pass\n    \n    def get(self, key: str) -> int:\n        \"\"\"Get value for key. Return None if not found.\"\"\"\n        pass\n    \n    def commit(self) -> bool:\n        \"\"\"Commit current transaction. Return False if no transaction.\"\"\"\n        pass\n    \n    def rollback(self) -> bool:\n        \"\"\"Rollback current transaction. Return False if no transaction.\"\"\"\n        pass",
+    "testCases": [{"id": "test-1", "input": "[\"InMemoryDB\",\"set\",\"get\",\"begin\",\"set\",\"get\",\"rollback\",\"get\"], [[],[\"a\",1],[\"a\"],[],[\"a\",2],[\"a\"],[],[\"a\"]]", "expectedOutput": "[null,null,1,null,null,2,true,1]"}],
+    "hints": ["Stack of diffs for each transaction level.", "On get: search from top of stack down to base.", "Commit: merge top diff into next level."],
+    "solution": "class InMemoryDB:\n    def __init__(self):\n        self.data = {}\n        self.transaction_stack = []\n    \n    def begin(self) -> None:\n        self.transaction_stack.append({})\n    \n    def set(self, key: str, value: int) -> None:\n        if self.transaction_stack:\n            self.transaction_stack[-1][key] = value\n        else:\n            self.data[key] = value\n    \n    def get(self, key: str) -> int:\n        for diff in reversed(self.transaction_stack):\n            if key in diff:\n                return diff[key]\n        return self.data.get(key)\n    \n    def commit(self) -> bool:\n        if not self.transaction_stack:\n            return False\n        diff = self.transaction_stack.pop()\n        target = self.transaction_stack[-1] if self.transaction_stack else self.data\n        target.update(diff)\n        return True\n    \n    def rollback(self) -> bool:\n        if not self.transaction_stack:\n            return False\n        self.transaction_stack.pop()\n        return True"
+  },
+  {
+    "id": "q_ood_02",
+    "title": "Design Undo/Redo System",
+    "prompt": "Design text editor's undo/redo system. Implement execute(command), undo(), redo(). Commands support do and undo operations.",
+    "constraints": ["Command Pattern", "Two Stacks (Undo/Redo)"],
+    "family_tree": {"remedial_id": "q_ood_r2", "tutorial_id": "t_ood_01"},
+    "starterCode": "from abc import ABC, abstractmethod\n\nclass Command(ABC):\n    @abstractmethod\n    def execute(self) -> None:\n        pass\n    \n    @abstractmethod\n    def undo(self) -> None:\n        pass\n\nclass UndoRedoManager:\n    def __init__(self):\n        pass\n    \n    def execute(self, command: Command) -> None:\n        pass\n    \n    def undo(self) -> bool:\n        pass\n    \n    def redo(self) -> bool:\n        pass",
+    "testCases": [{"id": "test-1", "input": "execute(InsertCommand), execute(InsertCommand), undo(), redo()", "expectedOutput": "text changes tracked correctly"}],
+    "hints": ["Execute: push command to undo stack, clear redo stack.", "Undo: pop from undo, call undo(), push to redo.", "Redo: pop from redo, call execute(), push to undo."],
+    "solution": "from abc import ABC, abstractmethod\n\nclass Command(ABC):\n    @abstractmethod\n    def execute(self) -> None:\n        pass\n    \n    @abstractmethod\n    def undo(self) -> None:\n        pass\n\nclass UndoRedoManager:\n    def __init__(self):\n        self.undo_stack = []\n        self.redo_stack = []\n    \n    def execute(self, command: Command) -> None:\n        command.execute()\n        self.undo_stack.append(command)\n        self.redo_stack.clear()\n    \n    def undo(self) -> bool:\n        if not self.undo_stack:\n            return False\n        command = self.undo_stack.pop()\n        command.undo()\n        self.redo_stack.append(command)\n        return True\n    \n    def redo(self) -> bool:\n        if not self.redo_stack:\n            return False\n        command = self.redo_stack.pop()\n        command.execute()\n        self.undo_stack.append(command)\n        return True"
+  },
+  {
+    "id": "q_ood_03",
+    "title": "Design Version Control for Key-Value Store",
+    "prompt": "Design key-value store with versioning. Each set creates a new version. Implement set(key, value), get(key), get(key, version).",
+    "constraints": ["Version Tracking", "Immutable Snapshots"],
+    "family_tree": {"remedial_id": "q_ood_r3", "tutorial_id": "t_ood_01"},
+    "starterCode": "class VersionedKVStore:\n    def __init__(self):\n        pass\n    \n    def set(self, key: str, value: int) -> int:\n        \"\"\"Set key to value. Return version number.\"\"\"\n        pass\n    \n    def get(self, key: str) -> int:\n        \"\"\"Get latest value for key.\"\"\"\n        pass\n    \n    def get_at_version(self, key: str, version: int) -> int:\n        \"\"\"Get value at specific version.\"\"\"\n        pass",
+    "testCases": [{"id": "test-1", "input": "[\"VersionedKVStore\",\"set\",\"set\",\"get\",\"get_at_version\"], [[],[\"a\",1],[\"a\",2],[\"a\"],[\"a\",1]]", "expectedOutput": "[null,1,2,2,1]"}],
+    "hints": ["Store list of (version, value) per key.", "Global version counter incremented on each set.", "Binary search for get_at_version."],
+    "solution": "import bisect\n\nclass VersionedKVStore:\n    def __init__(self):\n        self.data = {}  # key -> [(version, value), ...]\n        self.version = 0\n    \n    def set(self, key: str, value: int) -> int:\n        self.version += 1\n        if key not in self.data:\n            self.data[key] = []\n        self.data[key].append((self.version, value))\n        return self.version\n    \n    def get(self, key: str) -> int:\n        if key not in self.data:\n            return None\n        return self.data[key][-1][1]\n    \n    def get_at_version(self, key: str, version: int) -> int:\n        if key not in self.data:\n            return None\n        history = self.data[key]\n        idx = bisect.bisect_right(history, (version, float('inf'))) - 1\n        if idx < 0:\n            return None\n        return history[idx][1]"
+  },
+  {
+    "id": "q_1146",
+    "title": "Snapshot Array",
+    "prompt": "Implement SnapshotArray with set(index, val), snap() returning snap_id, and get(index, snap_id).",
+    "constraints": ["Binary Search for Versions", "O(1) Snap, O(log S) Get"],
+    "family_tree": {"remedial_id": "q_ood_r4", "tutorial_id": "t_ood_01"},
+    "starterCode": "class SnapshotArray:\n    def __init__(self, length: int):\n        pass\n    \n    def set(self, index: int, val: int) -> None:\n        pass\n    \n    def snap(self) -> int:\n        pass\n    \n    def get(self, index: int, snap_id: int) -> int:\n        pass",
+    "testCases": [{"id": "test-1", "input": "[\"SnapshotArray\",\"set\",\"snap\",\"set\",\"get\"], [[3],[0,5],[],[0,6],[0,0]]", "expectedOutput": "[null,null,0,null,5]"}],
+    "hints": ["Store list of (snap_id, value) per index.", "Only store when value changes.", "Binary search to find value at snap_id."],
+    "solution": "import bisect\n\nclass SnapshotArray:\n    def __init__(self, length: int):\n        self.data = [[(-1, 0)] for _ in range(length)]\n        self.snap_id = 0\n    \n    def set(self, index: int, val: int) -> None:\n        self.data[index].append((self.snap_id, val))\n    \n    def snap(self) -> int:\n        self.snap_id += 1\n        return self.snap_id - 1\n    \n    def get(self, index: int, snap_id: int) -> int:\n        history = self.data[index]\n        idx = bisect.bisect_right(history, (snap_id, float('inf'))) - 1\n        return history[idx][1]"
+  }
+]

@@ -1,0 +1,68 @@
+[
+  {
+    "id": "q_1114",
+    "title": "Print in Order",
+    "prompt": "Ensure three threads call first(), second(), third() in order, regardless of thread scheduling.",
+    "constraints": ["Thread Coordination", "Use Semaphores or Condition Variables"],
+    "family_tree": {"remedial_id": "q_conc_r1", "tutorial_id": "t_conc_01"},
+    "starterCode": "import threading\n\nclass Foo:\n    def __init__(self):\n        pass\n    \n    def first(self, printFirst) -> None:\n        printFirst()\n    \n    def second(self, printSecond) -> None:\n        printSecond()\n    \n    def third(self, printThird) -> None:\n        printThird()",
+    "testCases": [{"id": "test-1", "input": "[1, 2, 3]", "expectedOutput": "\"firstsecondthird\""}],
+    "hints": ["Use two semaphores/events for barriers.", "first() signals second(), second() signals third().", "Initialize barriers to block second and third."],
+    "solution": "import threading\n\nclass Foo:\n    def __init__(self):\n        self.first_done = threading.Event()\n        self.second_done = threading.Event()\n    \n    def first(self, printFirst) -> None:\n        printFirst()\n        self.first_done.set()\n    \n    def second(self, printSecond) -> None:\n        self.first_done.wait()\n        printSecond()\n        self.second_done.set()\n    \n    def third(self, printThird) -> None:\n        self.second_done.wait()\n        printThird()"
+  },
+  {
+    "id": "q_1115",
+    "title": "Print FooBar Alternately",
+    "prompt": "Two threads call foo() and bar() to print 'foobar' n times alternately.",
+    "constraints": ["Alternating Execution", "Lock/Condition Pattern"],
+    "family_tree": {"remedial_id": "q_conc_r2", "tutorial_id": "t_conc_01"},
+    "starterCode": "import threading\n\nclass FooBar:\n    def __init__(self, n):\n        self.n = n\n    \n    def foo(self, printFoo) -> None:\n        for i in range(self.n):\n            printFoo()\n    \n    def bar(self, printBar) -> None:\n        for i in range(self.n):\n            printBar()",
+    "testCases": [{"id": "test-1", "input": "2", "expectedOutput": "\"foobarfoobar\""}],
+    "hints": ["Use two semaphores for ping-pong.", "foo waits on foo_sem, signals bar_sem after print.", "bar waits on bar_sem, signals foo_sem after print."],
+    "solution": "import threading\n\nclass FooBar:\n    def __init__(self, n):\n        self.n = n\n        self.foo_sem = threading.Semaphore(1)\n        self.bar_sem = threading.Semaphore(0)\n    \n    def foo(self, printFoo) -> None:\n        for i in range(self.n):\n            self.foo_sem.acquire()\n            printFoo()\n            self.bar_sem.release()\n    \n    def bar(self, printBar) -> None:\n        for i in range(self.n):\n            self.bar_sem.acquire()\n            printBar()\n            self.foo_sem.release()"
+  },
+  {
+    "id": "q_1117",
+    "title": "Building H2O",
+    "prompt": "Coordinate hydrogen and oxygen threads to form H2O molecules (2 H + 1 O at a time).",
+    "constraints": ["Barrier Synchronization", "Ratio-based Coordination (2:1)"],
+    "family_tree": {"remedial_id": "q_conc_r3", "tutorial_id": "t_conc_01"},
+    "starterCode": "import threading\n\nclass H2O:\n    def __init__(self):\n        pass\n    \n    def hydrogen(self, releaseHydrogen) -> None:\n        releaseHydrogen()\n    \n    def oxygen(self, releaseOxygen) -> None:\n        releaseOxygen()",
+    "testCases": [{"id": "test-1", "input": "\"HOH\"", "expectedOutput": "\"HHO\""}],
+    "hints": ["Use semaphores: 2 H permits, 1 O permit per molecule.", "Use barrier to synchronize 3 threads.", "Reset after each molecule."],
+    "solution": "import threading\n\nclass H2O:\n    def __init__(self):\n        self.h_sem = threading.Semaphore(2)\n        self.o_sem = threading.Semaphore(1)\n        self.barrier = threading.Barrier(3)\n    \n    def hydrogen(self, releaseHydrogen) -> None:\n        self.h_sem.acquire()\n        releaseHydrogen()\n        self.barrier.wait()\n        self.h_sem.release()\n    \n    def oxygen(self, releaseOxygen) -> None:\n        self.o_sem.acquire()\n        releaseOxygen()\n        self.barrier.wait()\n        self.o_sem.release()"
+  },
+  {
+    "id": "q_1226",
+    "title": "The Dining Philosophers",
+    "prompt": "Five philosophers at round table need both forks to eat. Prevent deadlock.",
+    "constraints": ["Deadlock Prevention", "Resource Ordering or Arbitrator"],
+    "family_tree": {"remedial_id": "q_conc_r4", "tutorial_id": "t_conc_01"},
+    "starterCode": "import threading\n\nclass DiningPhilosophers:\n    def __init__(self):\n        pass\n    \n    def wantsToEat(self, philosopher: int, pickLeftFork, pickRightFork, eat, putLeftFork, putRightFork) -> None:\n        pass",
+    "testCases": [{"id": "test-1", "input": "1", "expectedOutput": "[[4,2,1],[4,1,1],[0,1,1],[2,2,1],[2,1,1],[2,0,3],[2,1,2],[2,2,2],[4,0,3],[4,1,2],[0,2,1],[4,2,2],[3,2,1],[3,1,1],[0,0,3],[0,1,2],[0,2,2],[1,2,1],[1,1,1],[3,0,3],[3,1,2],[3,2,2],[1,0,3],[1,1,2],[1,2,2]]"}],
+    "hints": ["Resource ordering: always pick lower-numbered fork first.", "Or use semaphore to limit concurrent eaters.", "Prevents circular wait condition."],
+    "solution": "import threading\n\nclass DiningPhilosophers:\n    def __init__(self):\n        self.forks = [threading.Lock() for _ in range(5)]\n    \n    def wantsToEat(self, philosopher: int, pickLeftFork, pickRightFork, eat, putLeftFork, putRightFork) -> None:\n        left = philosopher\n        right = (philosopher + 1) % 5\n        first, second = min(left, right), max(left, right)\n        \n        with self.forks[first]:\n            with self.forks[second]:\n                pickLeftFork()\n                pickRightFork()\n                eat()\n                putLeftFork()\n                putRightFork()"
+  },
+  {
+    "id": "q_1242",
+    "title": "Web Crawler Multithreaded",
+    "prompt": "Implement multi-threaded web crawler to find all URLs from startUrl within same hostname.",
+    "constraints": ["Thread Pool", "Concurrent HashSet for visited URLs"],
+    "family_tree": {"remedial_id": "q_conc_r5", "tutorial_id": "t_conc_02"},
+    "starterCode": "from concurrent.futures import ThreadPoolExecutor\nfrom urllib.parse import urlparse\n\nclass Solution:\n    def crawl(self, startUrl: str, htmlParser) -> list[str]:\n        pass",
+    "testCases": [{"id": "test-1", "input": "[\"http://news.yahoo.com\",\"http://news.yahoo.com/news\",\"http://news.yahoo.com/news/topics/\",\"http://news.google.com\",\"http://news.yahoo.com/us\"]", "expectedOutput": "[\"http://news.yahoo.com\",\"http://news.yahoo.com/news\",\"http://news.yahoo.com/news/topics/\",\"http://news.yahoo.com/us\"]"}],
+    "hints": ["Use ThreadPoolExecutor for concurrent crawling.", "Thread-safe set for visited URLs.", "Filter URLs by hostname."],
+    "solution": "from concurrent.futures import ThreadPoolExecutor, as_completed\nfrom urllib.parse import urlparse\nimport threading\n\nclass Solution:\n    def crawl(self, startUrl: str, htmlParser) -> list[str]:\n        hostname = urlparse(startUrl).netloc\n        visited = {startUrl}\n        lock = threading.Lock()\n        \n        def crawl_url(url):\n            new_urls = []\n            for link in htmlParser.getUrls(url):\n                if urlparse(link).netloc == hostname:\n                    with lock:\n                        if link not in visited:\n                            visited.add(link)\n                            new_urls.append(link)\n            return new_urls\n        \n        with ThreadPoolExecutor(max_workers=16) as executor:\n            futures = {executor.submit(crawl_url, startUrl)}\n            while futures:\n                done, futures = set(), futures\n                for future in as_completed(futures):\n                    for url in future.result():\n                        done.add(executor.submit(crawl_url, url))\n                futures = done\n        \n        return list(visited)"
+  },
+  {
+    "id": "q_conc_06",
+    "title": "Thread-Safe Counter",
+    "prompt": "Implement thread-safe counter with increment(), decrement(), getValue().",
+    "constraints": ["Lock Usage", "Atomic Operations"],
+    "family_tree": {"remedial_id": "q_conc_r1", "tutorial_id": "t_conc_01"},
+    "starterCode": "import threading\n\nclass ThreadSafeCounter:\n    def __init__(self):\n        pass\n    \n    def increment(self) -> None:\n        pass\n    \n    def decrement(self) -> None:\n        pass\n    \n    def getValue(self) -> int:\n        pass",
+    "testCases": [{"id": "test-1", "input": "[\"ThreadSafeCounter\", \"increment\", \"increment\", \"getValue\", \"decrement\", \"getValue\"], [[], [], [], [], [], []]", "expectedOutput": "[null, null, null, 2, null, 1]"}],
+    "hints": ["Use Lock to protect counter modifications.", "Acquire lock before read/write, release after.", "Consider using RLock if methods can call each other."],
+    "solution": "import threading\n\nclass ThreadSafeCounter:\n    def __init__(self):\n        self.value = 0\n        self.lock = threading.Lock()\n    \n    def increment(self) -> None:\n        with self.lock:\n            self.value += 1\n    \n    def decrement(self) -> None:\n        with self.lock:\n            self.value -= 1\n    \n    def getValue(self) -> int:\n        with self.lock:\n            return self.value"
+  }
+]

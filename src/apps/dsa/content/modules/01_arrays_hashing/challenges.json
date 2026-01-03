@@ -1,0 +1,850 @@
+[
+  {
+    "id": "q_238",
+    "title": "Product of Array Except Self",
+    "prompt": "Given an integer array nums, return an array answer such that answer[i] is equal to the product of all the elements of nums except nums[i]. You must solve it without using division and in O(n) time.",
+    "constraints": [
+      "O(N) Time",
+      "O(1) Space (excluding output array)",
+      "NO Division"
+    ],
+    "family_tree": {
+      "remedial_id": "q_724",
+      "tutorial_id": "t_prefix_01"
+    },
+    "starterCode": "def productExceptSelf(nums: list[int]) -> list[int]:\n    \"\"\"Return array where answer[i] is product of all elements except nums[i].\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 2, 3, 4]",
+        "expectedOutput": "[24, 12, 8, 6]"
+      },
+      {
+        "id": "test-2",
+        "input": "[-1, 1, 0, -3, 3]",
+        "expectedOutput": "[0, 0, 9, 0, 0]"
+      },
+      {
+        "id": "test-3",
+        "input": "[2, 3]",
+        "expectedOutput": "[3, 2]"
+      }
+    ],
+    "hints": [
+      "Think about prefix and suffix products. For each index, the answer is prefix_product * suffix_product.",
+      "You can compute prefix products in one pass, then suffix products in another pass.",
+      "To achieve O(1) space, use the output array to store prefix products, then multiply with suffix on a second pass."
+    ],
+    "solution": "def productExceptSelf(nums: list[int]) -> list[int]:\n    n = len(nums)\n    answer = [1] * n\n    \n    # Calculate prefix products\n    prefix = 1\n    for i in range(n):\n        answer[i] = prefix\n        prefix *= nums[i]\n    \n    # Calculate suffix products and multiply\n    suffix = 1\n    for i in range(n - 1, -1, -1):\n        answer[i] *= suffix\n        suffix *= nums[i]\n    \n    return answer"
+  },
+  {
+    "id": "q_128",
+    "title": "Longest Consecutive Sequence",
+    "prompt": "Given an unsorted array of integers nums, return the length of the longest consecutive elements sequence. You must write an algorithm that runs in O(n) time.",
+    "constraints": [
+      "O(N) Time",
+      "NO Sorting"
+    ],
+    "family_tree": {
+      "remedial_id": "q_349",
+      "tutorial_id": "t_set_01"
+    },
+    "starterCode": "def longestConsecutive(nums: list[int]) -> int:\n    \"\"\"Return the length of the longest consecutive sequence.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[100, 4, 200, 1, 3, 2]",
+        "expectedOutput": "4"
+      },
+      {
+        "id": "test-2",
+        "input": "[0, 3, 7, 2, 5, 8, 4, 6, 0, 1]",
+        "expectedOutput": "9"
+      },
+      {
+        "id": "test-3",
+        "input": "[]",
+        "expectedOutput": "0"
+      }
+    ],
+    "hints": [
+      "Use a HashSet to store all numbers for O(1) lookup.",
+      "Only start counting from numbers that are the START of a sequence (num-1 not in set).",
+      "This avoids redundant counting and ensures O(n) time."
+    ],
+    "solution": "def longestConsecutive(nums: list[int]) -> int:\n    num_set = set(nums)\n    longest = 0\n    \n    for num in num_set:\n        # Only start counting if num is the start of a sequence\n        if num - 1 not in num_set:\n            current_num = num\n            current_streak = 1\n            \n            while current_num + 1 in num_set:\n                current_num += 1\n                current_streak += 1\n            \n            longest = max(longest, current_streak)\n    \n    return longest"
+  },
+  {
+    "id": "q_560",
+    "title": "Subarray Sum Equals K",
+    "prompt": "Given an array of integers nums and an integer k, return the total number of subarrays whose sum equals to k.",
+    "constraints": [
+      "O(N) Time",
+      "O(N) Space"
+    ],
+    "family_tree": {
+      "remedial_id": "q_724",
+      "tutorial_id": "t_hash_01"
+    },
+    "starterCode": "def subarraySum(nums: list[int], k: int) -> int:\n    \"\"\"Return count of subarrays with sum equal to k.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 1, 1], 2",
+        "expectedOutput": "2"
+      },
+      {
+        "id": "test-2",
+        "input": "[1, 2, 3], 3",
+        "expectedOutput": "2"
+      },
+      {
+        "id": "test-3",
+        "input": "[1, -1, 0], 0",
+        "expectedOutput": "3"
+      }
+    ],
+    "hints": [
+      "Use prefix sums: if prefix_sum[j] - prefix_sum[i] = k, then subarray (i,j] has sum k.",
+      "Store frequency of each prefix sum in a hashmap.",
+      "For each prefix sum, check how many times (current_sum - k) has appeared."
+    ],
+    "solution": "def subarraySum(nums: list[int], k: int) -> int:\n    count = 0\n    prefix_sum = 0\n    prefix_counts = {0: 1}  # Empty prefix has sum 0\n    \n    for num in nums:\n        prefix_sum += num\n        # Check if (prefix_sum - k) exists\n        if prefix_sum - k in prefix_counts:\n            count += prefix_counts[prefix_sum - k]\n        # Record current prefix sum\n        prefix_counts[prefix_sum] = prefix_counts.get(prefix_sum, 0) + 1\n    \n    return count"
+  },
+  {
+    "id": "q_41",
+    "title": "First Missing Positive",
+    "prompt": "Given an unsorted integer array nums, return the smallest positive integer that is not present in nums. You must implement an algorithm that runs in O(n) time and uses O(1) auxiliary space.",
+    "constraints": [
+      "O(N) Time",
+      "O(1) Space",
+      "In-Place Modification"
+    ],
+    "family_tree": {
+      "remedial_id": "q_448",
+      "tutorial_id": "t_arr_01"
+    },
+    "starterCode": "def firstMissingPositive(nums: list[int]) -> int:\n    \"\"\"Return the smallest missing positive integer.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 2, 0]",
+        "expectedOutput": "3"
+      },
+      {
+        "id": "test-2",
+        "input": "[3, 4, -1, 1]",
+        "expectedOutput": "2"
+      },
+      {
+        "id": "test-3",
+        "input": "[7, 8, 9, 11, 12]",
+        "expectedOutput": "1"
+      }
+    ],
+    "hints": [
+      "The answer must be in range [1, n+1] where n is array length.",
+      "Use the array itself as a hash table: place each number i at index i-1.",
+      "After placing all valid numbers, scan for the first index where nums[i] != i+1."
+    ],
+    "solution": "def firstMissingPositive(nums: list[int]) -> int:\n    n = len(nums)\n    \n    # Place each number i at index i-1\n    for i in range(n):\n        while 1 <= nums[i] <= n and nums[nums[i] - 1] != nums[i]:\n            # Swap nums[i] with nums[nums[i]-1]\n            correct_idx = nums[i] - 1\n            nums[i], nums[correct_idx] = nums[correct_idx], nums[i]\n    \n    # Find first missing positive\n    for i in range(n):\n        if nums[i] != i + 1:\n            return i + 1\n    \n    return n + 1"
+  },
+  {
+    "id": "q_271",
+    "title": "Encode and Decode Strings",
+    "prompt": "Design an algorithm to encode a list of strings to a single string and decode it back to the original list. The encoded string should be able to handle any characters including delimiters.",
+    "constraints": [
+      "Handle any delimiter",
+      "O(N) Time"
+    ],
+    "family_tree": {
+      "remedial_id": "q_443",
+      "tutorial_id": "t_str_01"
+    },
+    "starterCode": "class Codec:\n    def encode(self, strs: list[str]) -> str:\n        \"\"\"Encode a list of strings to a single string.\"\"\"\n        pass\n    \n    def decode(self, s: str) -> list[str]:\n        \"\"\"Decode a single string back to a list of strings.\"\"\"\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"Hello\", \"World\"]",
+        "expectedOutput": "[\"Hello\", \"World\"]"
+      },
+      {
+        "id": "test-2",
+        "input": "[\"\"]",
+        "expectedOutput": "[\"\"]"
+      },
+      {
+        "id": "test-3",
+        "input": "[\"a\", \"b:c\", \"d#e\"]",
+        "expectedOutput": "[\"a\", \"b:c\", \"d#e\"]"
+      }
+    ],
+    "hints": [
+      "You cannot simply use a delimiter like ',' because strings might contain that character.",
+      "Use length-prefixed encoding: store the length of each string before the string itself.",
+      "Format: 'length#string' - the '#' is safe because we know exactly how many characters to read."
+    ],
+    "solution": "class Codec:\n    def encode(self, strs: list[str]) -> str:\n        \"\"\"Encode using length-prefix format: 'len#str'\"\"\"\n        encoded = []\n        for s in strs:\n            encoded.append(f\"{len(s)}#{s}\")\n        return ''.join(encoded)\n    \n    def decode(self, s: str) -> list[str]:\n        \"\"\"Decode by reading length, then extracting string.\"\"\"\n        result = []\n        i = 0\n        while i < len(s):\n            # Find the '#' delimiter\n            j = i\n            while s[j] != '#':\n                j += 1\n            length = int(s[i:j])\n            # Extract the string\n            result.append(s[j + 1:j + 1 + length])\n            i = j + 1 + length\n        return result"
+  },
+  {
+    "id": "q_49",
+    "title": "Group Anagrams",
+    "prompt": "Given an array of strings strs, group the anagrams together. You can return the answer in any order.",
+    "constraints": [
+      "O(N*K) Time where K is max string length",
+      "Avoid Sorting Strings"
+    ],
+    "family_tree": {
+      "remedial_id": "q_242",
+      "tutorial_id": "t_str_01"
+    },
+    "starterCode": "def groupAnagrams(strs: list[str]) -> list[list[str]]:\n    \"\"\"Group strings that are anagrams of each other.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"eat\", \"tea\", \"tan\", \"ate\", \"nat\", \"bat\"]",
+        "expectedOutput": "[[\"bat\"], [\"nat\", \"tan\"], [\"ate\", \"eat\", \"tea\"]]"
+      },
+      {
+        "id": "test-2",
+        "input": "[\"\"]",
+        "expectedOutput": "[[\"\"]]"
+      },
+      {
+        "id": "test-3",
+        "input": "[\"a\"]",
+        "expectedOutput": "[[\"a\"]]"
+      }
+    ],
+    "hints": [
+      "Two strings are anagrams if they have the same character counts.",
+      "Use a tuple of character counts as the hash key instead of sorting.",
+      "Create a count array of size 26 for each string."
+    ],
+    "solution": "def groupAnagrams(strs: list[str]) -> list[list[str]]:\n    from collections import defaultdict\n    \n    groups = defaultdict(list)\n    \n    for s in strs:\n        # Create character count tuple as key\n        count = [0] * 26\n        for c in s:\n            count[ord(c) - ord('a')] += 1\n        groups[tuple(count)].append(s)\n    \n    return list(groups.values())"
+  },
+  {
+    "id": "q_36",
+    "title": "Valid Sudoku",
+    "prompt": "Determine if a 9 x 9 Sudoku board is valid. Only the filled cells need to be validated according to the rules: each row, column, and 3x3 sub-box must contain digits 1-9 without repetition.",
+    "constraints": [
+      "O(1) Time (fixed 9x9 board)",
+      "Single Pass"
+    ],
+    "family_tree": {
+      "remedial_id": "q_217",
+      "tutorial_id": "t_hash_01"
+    },
+    "starterCode": "def isValidSudoku(board: list[list[str]]) -> bool:\n    \"\"\"Return True if the Sudoku board is valid.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[\"5\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"],[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"],[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"],[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"],[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"],[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"],[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"],[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"],[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "[[\"8\",\"3\",\".\",\".\",\"7\",\".\",\".\",\".\",\".\"],[\"6\",\".\",\".\",\"1\",\"9\",\"5\",\".\",\".\",\".\"],[\".\",\"9\",\"8\",\".\",\".\",\".\",\".\",\"6\",\".\"],[\"8\",\".\",\".\",\".\",\"6\",\".\",\".\",\".\",\"3\"],[\"4\",\".\",\".\",\"8\",\".\",\"3\",\".\",\".\",\"1\"],[\"7\",\".\",\".\",\".\",\"2\",\".\",\".\",\".\",\"6\"],[\".\",\"6\",\".\",\".\",\".\",\".\",\"2\",\"8\",\".\"],[\".\",\".\",\".\",\"4\",\"1\",\"9\",\".\",\".\",\"5\"],[\".\",\".\",\".\",\".\",\"8\",\".\",\".\",\"7\",\"9\"]]",
+        "expectedOutput": "false"
+      }
+    ],
+    "hints": [
+      "Use three sets for each row, column, and 3x3 box.",
+      "The box index can be calculated as (row // 3) * 3 + (col // 3).",
+      "In a single pass, check if each number already exists in its row, column, or box."
+    ],
+    "solution": "def isValidSudoku(board: list[list[str]]) -> bool:\n    rows = [set() for _ in range(9)]\n    cols = [set() for _ in range(9)]\n    boxes = [set() for _ in range(9)]\n    \n    for r in range(9):\n        for c in range(9):\n            val = board[r][c]\n            if val == '.':\n                continue\n            \n            box_idx = (r // 3) * 3 + (c // 3)\n            \n            if val in rows[r] or val in cols[c] or val in boxes[box_idx]:\n                return False\n            \n            rows[r].add(val)\n            cols[c].add(val)\n            boxes[box_idx].add(val)\n    \n    return True"
+  },
+  {
+    "id": "q_31",
+    "title": "Next Permutation",
+    "prompt": "Given an array of integers nums, rearrange it to the next lexicographically greater permutation. If no such permutation exists (array is in descending order), rearrange to the lowest possible order (ascending). Modify the array in-place with O(1) extra memory.",
+    "constraints": [
+      "O(N) Time",
+      "O(1) Space",
+      "In-Place"
+    ],
+    "family_tree": {
+      "remedial_id": "q_344",
+      "tutorial_id": "t_ptr_01"
+    },
+    "starterCode": "def nextPermutation(nums: list[int]) -> None:\n    \"\"\"Modify nums in-place to the next permutation.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 2, 3]",
+        "expectedOutput": "[1, 3, 2]"
+      },
+      {
+        "id": "test-2",
+        "input": "[3, 2, 1]",
+        "expectedOutput": "[1, 2, 3]"
+      },
+      {
+        "id": "test-3",
+        "input": "[1, 1, 5]",
+        "expectedOutput": "[1, 5, 1]"
+      }
+    ],
+    "hints": [
+      "Find the first decreasing element from the right (pivot).",
+      "Swap it with the smallest element to its right that's larger than it.",
+      "Reverse the suffix after the pivot position."
+    ],
+    "solution": "def nextPermutation(nums: list[int]) -> None:\n    n = len(nums)\n    \n    # Find pivot (first decreasing element from right)\n    i = n - 2\n    while i >= 0 and nums[i] >= nums[i + 1]:\n        i -= 1\n    \n    if i >= 0:\n        # Find smallest element greater than pivot\n        j = n - 1\n        while nums[j] <= nums[i]:\n            j -= 1\n        nums[i], nums[j] = nums[j], nums[i]\n    \n    # Reverse suffix\n    left, right = i + 1, n - 1\n    while left < right:\n        nums[left], nums[right] = nums[right], nums[left]\n        left += 1\n        right -= 1"
+  },
+  {
+    "id": "q_54",
+    "title": "Spiral Matrix",
+    "prompt": "Given an m x n matrix, return all elements of the matrix in spiral order (clockwise from outside to inside).",
+    "constraints": [
+      "O(M*N) Time",
+      "Clean Code"
+    ],
+    "family_tree": {
+      "remedial_id": "q_1572",
+      "tutorial_id": "t_arr_02"
+    },
+    "starterCode": "def spiralOrder(matrix: list[list[int]]) -> list[int]:\n    \"\"\"Return elements in spiral order.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]",
+        "expectedOutput": "[1, 2, 3, 6, 9, 8, 7, 4, 5]"
+      },
+      {
+        "id": "test-2",
+        "input": "[[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12]]",
+        "expectedOutput": "[1, 2, 3, 4, 8, 12, 11, 10, 9, 5, 6, 7]"
+      },
+      {
+        "id": "test-3",
+        "input": "[[1]]",
+        "expectedOutput": "[1]"
+      }
+    ],
+    "hints": [
+      "Maintain four boundaries: top, bottom, left, right.",
+      "Traverse in order: right → down → left → up, shrinking boundaries after each.",
+      "Stop when boundaries cross."
+    ],
+    "solution": "def spiralOrder(matrix: list[list[int]]) -> list[int]:\n    if not matrix:\n        return []\n    \n    result = []\n    top, bottom = 0, len(matrix) - 1\n    left, right = 0, len(matrix[0]) - 1\n    \n    while top <= bottom and left <= right:\n        # Traverse right\n        for col in range(left, right + 1):\n            result.append(matrix[top][col])\n        top += 1\n        \n        # Traverse down\n        for row in range(top, bottom + 1):\n            result.append(matrix[row][right])\n        right -= 1\n        \n        # Traverse left\n        if top <= bottom:\n            for col in range(right, left - 1, -1):\n                result.append(matrix[bottom][col])\n            bottom -= 1\n        \n        # Traverse up\n        if left <= right:\n            for row in range(bottom, top - 1, -1):\n                result.append(matrix[row][left])\n            left += 1\n    \n    return result"
+  },
+  {
+    "id": "q_48",
+    "title": "Rotate Image",
+    "prompt": "You are given an n x n 2D matrix representing an image. Rotate the image by 90 degrees clockwise. You must rotate the image in-place without allocating another 2D matrix.",
+    "constraints": [
+      "In-Place",
+      "No Extra Matrix"
+    ],
+    "family_tree": {
+      "remedial_id": "q_867",
+      "tutorial_id": "t_arr_02"
+    },
+    "starterCode": "def rotate(matrix: list[list[int]]) -> None:\n    \"\"\"Rotate matrix 90 degrees clockwise in-place.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[1, 2, 3], [4, 5, 6], [7, 8, 9]]",
+        "expectedOutput": "[[7, 4, 1], [8, 5, 2], [9, 6, 3]]"
+      },
+      {
+        "id": "test-2",
+        "input": "[[5, 1, 9, 11], [2, 4, 8, 10], [13, 3, 6, 7], [15, 14, 12, 16]]",
+        "expectedOutput": "[[15, 13, 2, 5], [14, 3, 4, 1], [12, 6, 8, 9], [16, 7, 10, 11]]"
+      },
+      {
+        "id": "test-3",
+        "input": "[[1]]",
+        "expectedOutput": "[[1]]"
+      }
+    ],
+    "hints": [
+      "90° clockwise rotation = transpose + reverse each row.",
+      "Transpose swaps matrix[i][j] with matrix[j][i].",
+      "Alternatively, rotate layer by layer from outside to inside."
+    ],
+    "solution": "def rotate(matrix: list[list[int]]) -> None:\n    n = len(matrix)\n    \n    # Transpose the matrix\n    for i in range(n):\n        for j in range(i + 1, n):\n            matrix[i][j], matrix[j][i] = matrix[j][i], matrix[i][j]\n    \n    # Reverse each row\n    for i in range(n):\n        matrix[i].reverse()"
+  },
+  {
+    "id": "q_169",
+    "title": "Count Most Frequent Number",
+    "prompt": "Given an array of size n, find the majority element. The majority element is the element that appears more than ⌊n / 2⌋ times.",
+    "constraints": [
+      "O(N) Time",
+      "O(1) Space"
+    ],
+    "family_tree": {
+      "remedial_id": "q_217",
+      "tutorial_id": "t_hash_01"
+    },
+    "starterCode": "def majorityElement(nums: list[int]) -> int:\n    \"\"\"Return the majority element.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[3, 2, 3]",
+        "expectedOutput": "3"
+      },
+      {
+        "id": "test-2",
+        "input": "[2, 2, 1, 1, 1, 2, 2]",
+        "expectedOutput": "2"
+      }
+    ],
+    "hints": [
+      "Moore's Voting Algorithm.",
+      "If count is 0, assign new candidate.",
+      "Increment if same, decrement if different."
+    ],
+    "solution": "def majorityElement(nums: list[int]) -> int:\n    count = 0\n    candidate = None\n    \n    for num in nums:\n        if count == 0:\n            candidate = num\n        count += 1 if num == candidate else -1\n    \n    return candidate"
+  },
+  {
+    "id": "q_15",
+    "title": "Find Triple (3Sum)",
+    "prompt": "Given an integer array nums, return all the triplets [nums[i], nums[j], nums[k]] such that i != j, i != k, and j != k, and nums[i] + nums[j] + nums[k] == 0.",
+    "constraints": [
+      "O(N^2) Time",
+      "No Duplicates"
+    ],
+    "family_tree": {
+      "remedial_id": "q_1",
+      "tutorial_id": "t_ptr_01"
+    },
+    "starterCode": "def threeSum(nums: list[int]) -> list[list[int]]:\n    \"\"\"Return unique triplets summing to zero.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[-1, 0, 1, 2, -1, -4]",
+        "expectedOutput": "[[-1, -1, 2], [-1, 0, 1]]"
+      },
+      {
+        "id": "test-2",
+        "input": "[]",
+        "expectedOutput": "[]"
+      },
+      {
+        "id": "test-3",
+        "input": "[0]",
+        "expectedOutput": "[]"
+      }
+    ],
+    "hints": [
+      "Sort the array first.",
+      "Iterate fixed 'i', use two pointers for 'j' and 'k'.",
+      "Skip duplicates to ensure unique triplets."
+    ],
+    "solution": "def threeSum(nums: list[int]) -> list[list[int]]:\n    nums.sort()\n    result = []\n    n = len(nums)\n    \n    for i in range(n - 2):\n        if i > 0 and nums[i] == nums[i-1]:\n            continue\n        \n        l, r = i + 1, n - 1\n        while l < r:\n            s = nums[i] + nums[l] + nums[r]\n            if s < 0:\n                l += 1\n            elif s > 0:\n                r -= 1\n            else:\n                result.append([nums[i], nums[l], nums[r]])\n                while l < r and nums[l] == nums[l+1]:\n                    l += 1\n                while l < r and nums[r] == nums[r-1]:\n                    r -= 1\n                l += 1\n                r -= 1\n    return result"
+  },
+  {
+    "id": "q_567",
+    "title": "Permutation in String",
+    "prompt": "Given two strings s1 and s2, return true if s2 contains a permutation of s1.",
+    "constraints": [
+      "O(N) Time",
+      "Sliding Window"
+    ],
+    "family_tree": {
+      "remedial_id": "q_242",
+      "tutorial_id": "t_str_01"
+    },
+    "starterCode": "def checkInclusion(s1: str, s2: str) -> bool:\n    \"\"\"Return True if s2 contains permutation of s1.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "\"ab\", \"eidbaooo\"",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "\"ab\", \"eidboaoo\"",
+        "expectedOutput": "false"
+      }
+    ],
+    "hints": [
+      "Use a fixed-size sliding window of length len(s1).",
+      "Compare character counts of window vs s1.",
+      "Move window one step at a time."
+    ],
+    "solution": "def checkInclusion(s1: str, s2: str) -> bool:\n    if len(s1) > len(s2):\n        return False\n    \n    s1_count = [0] * 26\n    window_count = [0] * 26\n    \n    for i in range(len(s1)):\n        s1_count[ord(s1[i]) - ord('a')] += 1\n        window_count[ord(s2[i]) - ord('a')] += 1\n    \n    if s1_count == window_count:\n        return True\n    \n    for i in range(len(s1), len(s2)):\n        start_char = s2[i - len(s1)]\n        new_char = s2[i]\n        window_count[ord(start_char) - ord('a')] -= 1\n        window_count[ord(new_char) - ord('a')] += 1\n        if s1_count == window_count:\n            return True\n            \n    return False"
+  },
+  {
+    "id": "q_custom_max_pop",
+    "title": "Maximum Pop (Population Year)",
+    "prompt": "Given a list of people with their birth and death years, find the year with the maximum population.",
+    "constraints": [
+      "O(N) Time",
+      "Sweep Line"
+    ],
+    "family_tree": {
+      "remedial_id": "q_724",
+      "tutorial_id": "t_prefix_01"
+    },
+    "starterCode": "def maxPopulation(logs: list[list[int]]) -> int:\n    \"\"\"Return the earliest year with maximum population.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[1993, 1999], [2000, 2010]]",
+        "expectedOutput": "1993"
+      },
+      {
+        "id": "test-2",
+        "input": "[[1950, 1961], [1960, 1971], [1970, 1981]]",
+        "expectedOutput": "1960"
+      }
+    ],
+    "hints": [
+      "Use a difference array or line sweep.",
+      "Increment at birth year, decrement at death year.",
+      "Compute prefix sums to find population."
+    ],
+    "solution": "def maxPopulation(logs: list[list[int]]) -> int:\n    years = [0] * 101  # 1950 to 2050 offset\n    for birth, death in logs:\n        years[birth - 1950] += 1\n        years[death - 1950] -= 1\n    \n    max_pop = 0\n    max_year = 1950\n    current_pop = 0\n    \n    for i, change in enumerate(years):\n        current_pop += change\n        if current_pop > max_pop:\n            max_pop = current_pop\n            max_year = 1950 + i\n            \n    return max_year"
+  },
+  {
+    "id": "q_custom_ad_board",
+    "title": "AD Board Placement",
+    "prompt": "You have a billboard of size M and N advertisements with different lengths. Find the optimal way to place them to maximize exposure (simplified: total length used <= M).",
+    "constraints": [
+      "O(N log N)",
+      "Greedy"
+    ],
+    "family_tree": {
+      "remedial_id": "q_121",
+      "tutorial_id": "t_arr_01"
+    },
+    "starterCode": "def optimizeAdPlacement(M: int, ads: list[int]) -> int:\n    \"\"\"Return max total length of ads that fit in M.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "10, [2, 3, 5, 7]",
+        "expectedOutput": "10"
+      },
+      {
+        "id": "test-2",
+        "input": "5, [6, 7]",
+        "expectedOutput": "0"
+      }
+    ],
+    "hints": [
+      "Sort ads by length.",
+      "Greedily verify if they fit.",
+      "Simple Knapsack variation if values differ, else just sum."
+    ],
+    "solution": "def optimizeAdPlacement(M: int, ads: list[int]) -> int:\n    # Simplified: greedy fit smallest ads? or largest?\n    # If simply fitting max length, it's subset sum -> DP.\n    # For this 'Custom' problem, let's assume greedy max fit.\n    ads.sort()\n    total = 0\n    for ad in ads:\n        if total + ad <= M:\n            total += ad\n    return total"
+  },
+  {
+    "id": "q_34",
+    "title": "Find First and Last Position",
+    "prompt": "Given an array of integers nums sorted in non-decreasing order, find the starting and ending position of a given target value. If target is not found, return [-1, -1].",
+    "constraints": [
+      "O(log N) Time",
+      "Binary Search"
+    ],
+    "family_tree": {
+      "remedial_id": "q_704",
+      "tutorial_id": "t_arr_03"
+    },
+    "starterCode": "def searchRange(nums: list[int], target: int) -> list[int]:\n    \"\"\"Return start and end indices of target.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[5, 7, 7, 8, 8, 10], 8",
+        "expectedOutput": "[3, 4]"
+      },
+      {
+        "id": "test-2",
+        "input": "[5, 7, 7, 8, 8, 10], 6",
+        "expectedOutput": "[-1, -1]"
+      },
+      {
+        "id": "test-3",
+        "input": "[], 0",
+        "expectedOutput": "[-1, -1]"
+      }
+    ],
+    "hints": [
+      "Run binary search to find the *first* occurrence.",
+      "Run binary search to find the *last* occurrence.",
+      "Combine results."
+    ],
+    "solution": "def searchRange(nums: list[int], target: int) -> list[int]:\n    def findBound(isFirst):\n        l, r = 0, len(nums) - 1\n        bound = -1\n        while l <= r:\n            mid = (l + r) // 2\n            if nums[mid] == target:\n                bound = mid\n                if isFirst:\n                    r = mid - 1\n                else:\n                    l = mid + 1\n            elif nums[mid] < target:\n                l = mid + 1\n            else:\n                r = mid - 1\n        return bound\n    \n    return [findBound(True), findBound(False)]"
+  },
+  {
+    "id": "q_73",
+    "title": "Set Matrix Zeroes",
+    "prompt": "Given an m x n integer matrix matrix, if an element is 0, set its entire row and column to 0's.",
+    "constraints": [
+      "O(M*N) Time",
+      "O(1) Space"
+    ],
+    "family_tree": {
+      "remedial_id": "q_867",
+      "tutorial_id": "t_arr_04"
+    },
+    "starterCode": "def setZeroes(matrix: list[list[int]]) -> None:\n    \"\"\"Modify matrix in-place.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[1, 1, 1], [1, 0, 1], [1, 1, 1]]",
+        "expectedOutput": "[[1, 0, 1], [0, 0, 0], [1, 0, 1]]"
+      },
+      {
+        "id": "test-2",
+        "input": "[[0, 1, 2, 0], [3, 4, 5, 2], [1, 3, 1, 5]]",
+        "expectedOutput": "[[0, 0, 0, 0], [0, 4, 5, 0], [0, 3, 1, 0]]"
+      }
+    ],
+    "hints": [
+      "Use first row and first column as markers.",
+      "Handle the first row and column separately using flags.",
+      "Iterate through the rest of the matrix to set markers."
+    ],
+    "solution": "def setZeroes(matrix: list[list[int]]) -> None:\n    m, n = len(matrix), len(matrix[0])\n    first_row_zero = False\n    first_col_zero = False\n    \n    for i in range(m):\n        if matrix[i][0] == 0:\n            first_col_zero = True\n            break\n            \n    for j in range(n):\n        if matrix[0][j] == 0:\n            first_row_zero = True\n            break\n            \n    for i in range(1, m):\n        for j in range(1, n):\n            if matrix[i][j] == 0:\n                matrix[i][0] = 0\n                matrix[0][j] = 0\n                \n    for i in range(1, m):\n        for j in range(1, n):\n            if matrix[i][0] == 0 or matrix[0][j] == 0:\n                matrix[i][j] = 0\n                \n    if first_col_zero:\n        for i in range(m):\n            matrix[i][0] = 0\n            \n    if first_row_zero:\n        for j in range(n):\n            matrix[0][j] = 0"
+  },
+  {
+    "id": "q_523",
+    "title": "Continuous Subarray Sum",
+    "prompt": "Given an integer array nums and an integer k, return true if nums has a good subarray. A good subarray is a subarray where its length is at least two, and the sum of the elements of the subarray is a multiple of k.",
+    "constraints": [
+      "O(N) Time",
+      "Prefix Sum + HashMap"
+    ],
+    "family_tree": {
+      "remedial_id": "q_560",
+      "tutorial_id": "t_img_01"
+    },
+    "starterCode": "def checkSubarraySum(nums: list[int], k: int) -> bool:\n    \"\"\"Return True if valid subarray exists.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[23, 2, 4, 6, 7], 6",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "[23, 2, 6, 4, 7], 6",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-3",
+        "input": "[23, 2, 6, 4, 7], 13",
+        "expectedOutput": "false"
+      }
+    ],
+    "hints": [
+      "(sum_j - sum_i) % k == 0 implies sum_j % k == sum_i % k.",
+      "Store (prefix_sum % k) in a hashmap with its index.",
+      "Ensure index difference >= 2."
+    ],
+    "solution": "def checkSubarraySum(nums: list[int], k: int) -> bool:\n    remainder_map = {0: -1}\n    total = 0\n    \n    for i, num in enumerate(nums):\n        total += num\n        remainder = total % k\n        if remainder in remainder_map:\n            if i - remainder_map[remainder] >= 2:\n                return True\n        else:\n            remainder_map[remainder] = i\n            \n    return False"
+  },
+  {
+    "id": "q_1007",
+    "title": "Minimum Domino Rotations For Equal Row",
+    "prompt": "In a row of dominoes, tops[i] and bottoms[i] represent the top and bottom halves of the ith domino. A domino can be rotated to swap top and bottom. Return the minimum number of rotations so that all the values in tops are the same, or all the values in bottoms are the same. If it cannot be done, return -1.",
+    "constraints": [
+      "O(N) Time",
+      "Greedy"
+    ],
+    "family_tree": {
+      "remedial_id": "q_169",
+      "tutorial_id": "t_hash_01"
+    },
+    "starterCode": "def minDominoRotations(tops: list[int], bottoms: list[int]) -> int:\n    \"\"\"Return min rotations.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[2, 1, 2, 4, 2, 2], [5, 2, 6, 2, 3, 2]",
+        "expectedOutput": "2"
+      },
+      {
+        "id": "test-2",
+        "input": "[3, 5, 1, 2, 3], [3, 6, 3, 3, 4]",
+        "expectedOutput": "-1"
+      }
+    ],
+    "hints": [
+      "The target value must be either tops[0] or bottoms[0].",
+      "Check how many rotations are needed to make all tops equal to x, or all bottoms equal to x.",
+      "If neither x works, return -1."
+    ],
+    "solution": "def minDominoRotations(tops: list[int], bottoms: list[int]) -> int:\n    def check(x):\n        rotations_a = rotations_b = 0\n        for i in range(len(tops)):\n            if tops[i] != x and bottoms[i] != x:\n                return -1\n            elif tops[i] != x:\n                rotations_a += 1\n            elif bottoms[i] != x:\n                rotations_b += 1\n        return min(rotations_a, rotations_b)\n    \n    rotations = check(tops[0])\n    if rotations != -1 or tops[0] == bottoms[0]:\n        return rotations\n    else:\n        return check(bottoms[0])"
+  },
+  {
+    "id": "q_299",
+    "title": "Bulls and Cows",
+    "prompt": "You are playing the Bulls and Cows game with your friend. You write down a secret number and ask your friend to guess what the number is. When your friend makes a guess, you provide a hint with the number of 'bulls' (digits in the correct position) and 'cows' (digits in the wrong position). Return the hint in the format 'xAyB'.",
+    "constraints": [
+      "O(N) Time",
+      "HashMap/Array"
+    ],
+    "family_tree": {
+      "remedial_id": "q_1",
+      "tutorial_id": "t_arr_02"
+    },
+    "starterCode": "def getHint(secret: str, guess: str) -> str:\n    \"\"\"Return the hint xAyB.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "\"1807\", \"7810\"",
+        "expectedOutput": "\"1A3B\""
+      },
+      {
+        "id": "test-2",
+        "input": "\"1123\", \"0111\"",
+        "expectedOutput": "\"1A1B\""
+      }
+    ],
+    "hints": [
+      "Count matches at same index for 'A' (bulls).",
+      "Count frequency of other characters to find 'B' (cows)."
+    ],
+    "solution": "from collections import Counter\ndef getHint(secret: str, guess: str) -> str:\n    bulls = 0\n    cows = 0\n    s_count = Counter(secret)\n    g_count = Counter(guess)\n    \n    for i in range(len(secret)):\n        if secret[i] == guess[i]:\n            bulls += 1\n            # Decrease count for cows calc since we used it for bull\n            # Logic is simpler: total_matches - bulls = cows\n            \n    total_matches = sum((s_count & g_count).values())\n    cows = total_matches - bulls\n    return f\"{bulls}A{cows}B\""
+  },
+  {
+    "id": "q_334",
+    "title": "Increasing Triplet Subsequence",
+    "prompt": "Given an integer array nums, return true if there exists a triple of indices (i, j, k) such that i < j < k and nums[i] < nums[j] < nums[k]. If no such indices exists, return false.",
+    "constraints": [
+      "O(N) Time",
+      "O(1) Space",
+      "Greedy"
+    ],
+    "family_tree": {
+      "remedial_id": "q_121",
+      "tutorial_id": "t_arr_03"
+    },
+    "starterCode": "def increasingTriplet(nums: list[int]) -> bool:\n    \"\"\"Return True if increasing triplet exists.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1,2,3,4,5]",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "[5,4,3,2,1]",
+        "expectedOutput": "false"
+      },
+      {
+        "id": "test-3",
+        "input": "[2,1,5,0,4,6]",
+        "expectedOutput": "true"
+      }
+    ],
+    "hints": [
+      "Track the smallest number and the second smallest number seen so far.",
+      "If you find a number greater than both, that's the third number."
+    ],
+    "solution": "def increasingTriplet(nums: list[int]) -> bool:\n    first = float('inf')\n    second = float('inf')\n    for n in nums:\n        if n <= first:\n            first = n\n        elif n <= second:\n            second = n\n        else:\n            return True\n    return False"
+  },
+  {
+    "id": "q_849",
+    "title": "Maximize Distance to Closest Person",
+    "prompt": "You are given an array representing a row of seats where seats[i] = 1 represents a person sitting in the ith seat, and seats[i] = 0 represents that the ith seat is empty (0-indexed). There is at least one empty seat, and at least one person sitting. Return the maximum distance to the closest person.",
+    "constraints": [
+      "O(N) Time",
+      "Two Pointers/Greedy"
+    ],
+    "family_tree": {
+      "remedial_id": "q_485",
+      "tutorial_id": "t_arr_03"
+    },
+    "starterCode": "def maxDistToClosest(seats: list[int]) -> int:\n    \"\"\"Return max distance to closest person.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1,0,0,0,1,0,1]",
+        "expectedOutput": "2"
+      },
+      {
+        "id": "test-2",
+        "input": "[1,0,0,0]",
+        "expectedOutput": "3"
+      },
+      {
+        "id": "test-3",
+        "input": "[0,1]",
+        "expectedOutput": "1"
+      }
+    ],
+    "hints": [
+      "Distance is (zeros + 1) // 2 for middle seats.",
+      "For edge cases (start/end), distance is just the number of zeros."
+    ],
+    "solution": "def maxDistToClosest(seats: list[int]) -> int:\n    max_dist = 0\n    last_person = -1\n    n = len(seats)\n    \n    for i, seat in enumerate(seats):\n        if seat == 1:\n            if last_person == -1:\n                max_dist = i\n            else:\n                max_dist = max(max_dist, (i - last_person) // 2)\n            last_person = i\n            \n    max_dist = max(max_dist, n - 1 - last_person)\n    return max_dist"
+  },
+  {
+    "id": "q_914",
+    "title": "X of a Kind in a Deck of Cards",
+    "prompt": "You are given an integer array deck where deck[i] represents the number written on the ith card. Return true if you can split the deck into 1 or more groups such that: every group has exactly x cards where x > 1, and all the cards in one group have the same number.",
+    "constraints": [
+      "O(N) Time",
+      "GCD + HashMap"
+    ],
+    "family_tree": {
+      "remedial_id": "q_217",
+      "tutorial_id": "t_arr_02"
+    },
+    "starterCode": "def hasGroupsSizeX(deck: list[int]) -> bool:\n    \"\"\"Return True if valid partition exists.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1,2,3,4,4,3,2,1]",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "[1,1,1,2,2,2,3,3]",
+        "expectedOutput": "false"
+      },
+      {
+        "id": "test-3",
+        "input": "[1]",
+        "expectedOutput": "false"
+      }
+    ],
+    "hints": [
+      "Count frequencies of each card.",
+      "Find the Greatest Common Divisor (GCD) of all counts.",
+      "GCD must be >= 2."
+    ],
+    "solution": "from collections import Counter\nimport math\nfrom functools import reduce\n\ndef hasGroupsSizeX(deck: list[int]) -> bool:\n    count = Counter(deck)\n    gcd_val = reduce(math.gcd, count.values())\n    return gcd_val >= 2"
+  },
+  {
+    "id": "q_205",
+    "title": "Isomorphic Strings",
+    "prompt": "Given two strings s and t, determine if they are isomorphic. Two strings s and t are isomorphic if the characters in s can be replaced to get t. All occurrences of a character must be replaced with another character while preserving the order of characters. No two characters may map to the same character, but a character may map to itself.",
+    "constraints": [
+      "O(N) Time",
+      "Two HashMaps"
+    ],
+    "family_tree": {
+      "remedial_id": "q_290",
+      "tutorial_id": "t_arr_02"
+    },
+    "starterCode": "def isIsomorphic(s: str, t: str) -> bool:\n    \"\"\"Return True if strings are isomorphic.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "\"egg\", \"add\"",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "\"foo\", \"bar\"",
+        "expectedOutput": "false"
+      },
+      {
+        "id": "test-3",
+        "input": "\"paper\", \"title\"",
+        "expectedOutput": "true"
+      }
+    ],
+    "hints": [
+      "Use two maps: s_to_t and t_to_s.",
+      "Ensure consistency in both directions."
+    ],
+    "solution": "def isIsomorphic(s: str, t: str) -> bool:\n    s_to_t, t_to_s = {}, {}\n    for c1, c2 in zip(s, t):\n        if (c1 in s_to_t and s_to_t[c1] != c2) or \\\n           (c2 in t_to_s and t_to_s[c2] != c1):\n            return False\n        s_to_t[c1] = c2\n        t_to_s[c2] = c1\n    return True"
+  }
+]

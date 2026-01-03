@@ -1,0 +1,330 @@
+[
+  {
+    "id": "q_724",
+    "title": "Find Pivot Index",
+    "family_tree": {
+      "tutorial_module_id": "prefix-suffix-arrays"
+    },
+    "prompt": "Given an array of integers nums, calculate the pivot index of this array. The pivot index is the index where the sum of all the numbers strictly to the left of the index is equal to the sum of all the numbers strictly to the index's right. Return the leftmost pivot index. If no such index exists, return -1.",
+    "concept_taught": "Prefix Sums",
+    "starterCode": "def pivotIndex(nums: list[int]) -> int:\n    \"\"\"Return the pivot index where left sum equals right sum.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 7, 3, 6, 5, 6]",
+        "expectedOutput": "3"
+      },
+      {
+        "id": "test-2",
+        "input": "[1, 2, 3]",
+        "expectedOutput": "-1"
+      },
+      {
+        "id": "test-3",
+        "input": "[2, 1, -1]",
+        "expectedOutput": "0"
+      }
+    ],
+    "hints": [
+      "Calculate the total sum of the array first.",
+      "Iterate through the array, tracking the left sum.",
+      "At each index, right sum = total - left_sum - nums[i]."
+    ],
+    "solution": "def pivotIndex(nums: list[int]) -> int:\n    total = sum(nums)\n    left_sum = 0\n    \n    for i, num in enumerate(nums):\n        right_sum = total - left_sum - num\n        if left_sum == right_sum:\n            return i\n        left_sum += num\n    \n    return -1"
+  },
+  {
+    "id": "q_349",
+    "title": "Intersection of Two Arrays",
+    "prompt": "Given two integer arrays nums1 and nums2, return an array of their intersection. Each element in the result must be unique and you may return the result in any order.",
+    "concept_taught": "HashSet Usage",
+    "starterCode": "def intersection(nums1: list[int], nums2: list[int]) -> list[int]:\n    \"\"\"Return unique elements present in both arrays.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 2, 2, 1], [2, 2]",
+        "expectedOutput": "[2]"
+      },
+      {
+        "id": "test-2",
+        "input": "[4, 9, 5], [9, 4, 9, 8, 4]",
+        "expectedOutput": "[9, 4]"
+      },
+      {
+        "id": "test-3",
+        "input": "[1, 2, 3], [4, 5, 6]",
+        "expectedOutput": "[]"
+      }
+    ],
+    "hints": [
+      "Convert one array to a set for O(1) lookup.",
+      "Iterate through the other array and check membership.",
+      "Use set intersection: set1 & set2."
+    ],
+    "solution": "def intersection(nums1: list[int], nums2: list[int]) -> list[int]:\n    return list(set(nums1) & set(nums2))"
+  },
+  {
+    "id": "q_1",
+    "title": "Two Sum",
+    "prompt": "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice.",
+    "concept_taught": "HashMap Lookup",
+    "starterCode": "def twoSum(nums: list[int], target: int) -> list[int]:\n    \"\"\"Return indices of two numbers that add up to target.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[2, 7, 11, 15], 9",
+        "expectedOutput": "[0, 1]"
+      },
+      {
+        "id": "test-2",
+        "input": "[3, 2, 4], 6",
+        "expectedOutput": "[1, 2]"
+      },
+      {
+        "id": "test-3",
+        "input": "[3, 3], 6",
+        "expectedOutput": "[0, 1]"
+      }
+    ],
+    "hints": [
+      "For each number, you need to find if (target - num) exists.",
+      "Use a hashmap to store {value: index} as you iterate.",
+      "Check if complement exists before adding current number."
+    ],
+    "solution": "def twoSum(nums: list[int], target: int) -> list[int]:\n    seen = {}\n    for i, num in enumerate(nums):\n        complement = target - num\n        if complement in seen:\n            return [seen[complement], i]\n        seen[num] = i\n    return []"
+  },
+  {
+    "id": "q_448",
+    "title": "Find All Numbers Disappeared in an Array",
+    "prompt": "Given an array nums of n integers where nums[i] is in the range [1, n], return an array of all the integers in the range [1, n] that do not appear in nums.",
+    "concept_taught": "Index as Hash Key",
+    "starterCode": "def findDisappearedNumbers(nums: list[int]) -> list[int]:\n    \"\"\"Return all numbers from 1 to n missing from nums.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[4, 3, 2, 7, 8, 2, 3, 1]",
+        "expectedOutput": "[5, 6]"
+      },
+      {
+        "id": "test-2",
+        "input": "[1, 1]",
+        "expectedOutput": "[2]"
+      },
+      {
+        "id": "test-3",
+        "input": "[1, 2, 3]",
+        "expectedOutput": "[]"
+      }
+    ],
+    "hints": [
+      "Use the array itself as a hash table - index represents the number.",
+      "Mark visited numbers by negating the value at index (num-1).",
+      "Positive values indicate missing numbers."
+    ],
+    "solution": "def findDisappearedNumbers(nums: list[int]) -> list[int]:\n    # Mark visited indices by negating\n    for num in nums:\n        idx = abs(num) - 1\n        nums[idx] = -abs(nums[idx])\n    \n    # Collect indices with positive values\n    return [i + 1 for i, num in enumerate(nums) if num > 0]"
+  },
+  {
+    "id": "q_443",
+    "title": "String Compression",
+    "prompt": "Given an array of characters chars, compress it using the following algorithm: begin with an empty string s. For each group of consecutive repeating characters in chars, append the character followed by the group's length if it is greater than 1. Return the new length of the array.",
+    "concept_taught": "String Manipulation",
+    "starterCode": "def compress(chars: list[str]) -> int:\n    \"\"\"Compress the array in-place and return new length.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"a\",\"a\",\"b\",\"b\",\"c\",\"c\",\"c\"]",
+        "expectedOutput": "6"
+      },
+      {
+        "id": "test-2",
+        "input": "[\"a\"]",
+        "expectedOutput": "1"
+      },
+      {
+        "id": "test-3",
+        "input": "[\"a\",\"b\",\"b\",\"b\",\"b\",\"b\",\"b\",\"b\",\"b\",\"b\",\"b\",\"b\",\"b\"]",
+        "expectedOutput": "4"
+      }
+    ],
+    "hints": [
+      "Use two pointers: one for reading, one for writing.",
+      "Count consecutive identical characters.",
+      "Write character, then count digits if count > 1."
+    ],
+    "solution": "def compress(chars: list[str]) -> int:\n    write = 0\n    read = 0\n    \n    while read < len(chars):\n        char = chars[read]\n        count = 0\n        \n        while read < len(chars) and chars[read] == char:\n            read += 1\n            count += 1\n        \n        chars[write] = char\n        write += 1\n        \n        if count > 1:\n            for digit in str(count):\n                chars[write] = digit\n                write += 1\n    \n    return write"
+  },
+  {
+    "id": "q_242",
+    "title": "Valid Anagram",
+    "prompt": "Given two strings s and t, return true if t is an anagram of s, and false otherwise. An Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.",
+    "concept_taught": "Character Frequency Array",
+    "starterCode": "def isAnagram(s: str, t: str) -> bool:\n    \"\"\"Return True if t is an anagram of s.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "\"anagram\", \"nagaram\"",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "\"rat\", \"car\"",
+        "expectedOutput": "false"
+      },
+      {
+        "id": "test-3",
+        "input": "\"a\", \"ab\"",
+        "expectedOutput": "false"
+      }
+    ],
+    "hints": [
+      "Anagrams have the same character frequencies.",
+      "Use a frequency array of size 26 for lowercase letters.",
+      "Or use Counter/HashMap to count characters."
+    ],
+    "solution": "def isAnagram(s: str, t: str) -> bool:\n    if len(s) != len(t):\n        return False\n    \n    count = [0] * 26\n    for c in s:\n        count[ord(c) - ord('a')] += 1\n    for c in t:\n        count[ord(c) - ord('a')] -= 1\n    \n    return all(c == 0 for c in count)"
+  },
+  {
+    "id": "q_217",
+    "title": "Contains Duplicate",
+    "prompt": "Given an integer array nums, return true if any value appears at least twice in the array, and return false if every element is distinct.",
+    "concept_taught": "Basic Set Check",
+    "starterCode": "def containsDuplicate(nums: list[int]) -> bool:\n    \"\"\"Return True if any value appears more than once.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 2, 3, 1]",
+        "expectedOutput": "true"
+      },
+      {
+        "id": "test-2",
+        "input": "[1, 2, 3, 4]",
+        "expectedOutput": "false"
+      },
+      {
+        "id": "test-3",
+        "input": "[1, 1, 1, 3, 3, 4, 3, 2, 4, 2]",
+        "expectedOutput": "true"
+      }
+    ],
+    "hints": [
+      "Sets only store unique elements.",
+      "Compare length of set vs original array.",
+      "Or check if element exists in set as you iterate."
+    ],
+    "solution": "def containsDuplicate(nums: list[int]) -> bool:\n    return len(nums) != len(set(nums))"
+  },
+  {
+    "id": "q_344",
+    "title": "Reverse String",
+    "prompt": "Write a function that reverses a string. The input string is given as an array of characters s. You must do this by modifying the input array in-place with O(1) extra memory.",
+    "concept_taught": "Basic Swapping",
+    "starterCode": "def reverseString(s: list[str]) -> None:\n    \"\"\"Reverse the string in-place.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"h\",\"e\",\"l\",\"l\",\"o\"]",
+        "expectedOutput": "[\"o\",\"l\",\"l\",\"e\",\"h\"]"
+      },
+      {
+        "id": "test-2",
+        "input": "[\"H\",\"a\",\"n\",\"n\",\"a\",\"h\"]",
+        "expectedOutput": "[\"h\",\"a\",\"n\",\"n\",\"a\",\"H\"]"
+      },
+      {
+        "id": "test-3",
+        "input": "[\"a\"]",
+        "expectedOutput": "[\"a\"]"
+      }
+    ],
+    "hints": [
+      "Use two pointers: one at start, one at end.",
+      "Swap characters at both pointers.",
+      "Move pointers toward center until they meet."
+    ],
+    "solution": "def reverseString(s: list[str]) -> None:\n    left, right = 0, len(s) - 1\n    while left < right:\n        s[left], s[right] = s[right], s[left]\n        left += 1\n        right -= 1"
+  },
+  {
+    "id": "q_1572",
+    "title": "Matrix Diagonal Sum",
+    "prompt": "Given a square matrix mat, return the sum of the matrix diagonals. Only include the sum of all the elements on the primary diagonal and all the elements on the secondary diagonal that are not part of the primary diagonal.",
+    "concept_taught": "Matrix Traversal",
+    "starterCode": "def diagonalSum(mat: list[list[int]]) -> int:\n    \"\"\"Return sum of primary and secondary diagonals.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[1,2,3],[4,5,6],[7,8,9]]",
+        "expectedOutput": "25"
+      },
+      {
+        "id": "test-2",
+        "input": "[[1,1,1,1],[1,1,1,1],[1,1,1,1],[1,1,1,1]]",
+        "expectedOutput": "8"
+      },
+      {
+        "id": "test-3",
+        "input": "[[5]]",
+        "expectedOutput": "5"
+      }
+    ],
+    "hints": [
+      "Primary diagonal: mat[i][i]",
+      "Secondary diagonal: mat[i][n-1-i]",
+      "If n is odd, subtract center element (counted twice)."
+    ],
+    "solution": "def diagonalSum(mat: list[list[int]]) -> int:\n    n = len(mat)\n    total = 0\n    \n    for i in range(n):\n        total += mat[i][i]  # Primary diagonal\n        total += mat[i][n - 1 - i]  # Secondary diagonal\n    \n    # If odd size, center was counted twice\n    if n % 2 == 1:\n        total -= mat[n // 2][n // 2]\n    \n    return total"
+  },
+  {
+    "id": "q_867",
+    "title": "Transpose Matrix",
+    "prompt": "Given a 2D integer array matrix, return the transpose of matrix. The transpose of a matrix is the matrix flipped over its main diagonal, switching the matrix's row and column indices.",
+    "concept_taught": "Row/Col Swapping",
+    "starterCode": "def transpose(matrix: list[list[int]]) -> list[list[int]]:\n    \"\"\"Return the transpose of the matrix.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[1,2,3],[4,5,6],[7,8,9]]",
+        "expectedOutput": "[[1,4,7],[2,5,8],[3,6,9]]"
+      },
+      {
+        "id": "test-2",
+        "input": "[[1,2,3],[4,5,6]]",
+        "expectedOutput": "[[1,4],[2,5],[3,6]]"
+      },
+      {
+        "id": "test-3",
+        "input": "[[1]]",
+        "expectedOutput": "[[1]]"
+      }
+    ],
+    "hints": [
+      "New dimensions: rows become cols, cols become rows.",
+      "result[j][i] = matrix[i][j]",
+      "Use list comprehension for concise solution."
+    ],
+    "solution": "def transpose(matrix: list[list[int]]) -> list[list[int]]:\n    rows, cols = len(matrix), len(matrix[0])\n    return [[matrix[i][j] for i in range(rows)] for j in range(cols)]"
+  },
+  {
+    "id": "q_704",
+    "title": "Binary Search",
+    "prompt": "Given an array of integers nums which is sorted in ascending order, and an integer target, write a function to search target in nums. If target exists, then return its index. Otherwise, return -1.",
+    "concept_taught": "Divide and Conquer",
+    "starterCode": "def search(nums: list[int], target: int) -> int:\n    \"\"\"Return index of target in nums, or -1.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[-1,0,3,5,9,12], 9",
+        "expectedOutput": "4"
+      },
+      {
+        "id": "test-2",
+        "input": "[-1,0,3,5,9,12], 2",
+        "expectedOutput": "-1"
+      }
+    ],
+    "hints": [
+      "Find middle index: mid = (left + right) // 2.",
+      "If nums[mid] < target, search right half (left = mid + 1).",
+      "If nums[mid] > target, search left half (right = mid - 1)."
+    ],
+    "solution": "def search(nums: list[int], target: int) -> int:\n    left, right = 0, len(nums) - 1\n    while left <= right:\n        mid = (left + right) // 2\n        if nums[mid] == target:\n            return mid\n        elif nums[mid] < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1"
+  }
+]

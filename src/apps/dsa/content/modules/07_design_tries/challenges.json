@@ -1,0 +1,584 @@
+[
+  {
+    "id": "q_146",
+    "title": "LRU Cache",
+    "prompt": "Design a Least Recently Used (LRU) cache with O(1) get and put operations.",
+    "constraints": [
+      "O(1) Avg Time",
+      "Doubly Linked List + Map"
+    ],
+    "family_tree": {
+      "remedial_id": "q_706",
+      "tutorial_id": "t_des_02"
+    },
+    "starterCode": "class LRUCache:\n    def __init__(self, capacity: int):\n        pass\n    \n    def get(self, key: int) -> int:\n        pass\n    \n    def put(self, key: int, value: int) -> None:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"LRUCache\", \"put\", \"put\", \"get\", \"put\", \"get\", \"put\", \"get\", \"get\", \"get\"], [[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]",
+        "expectedOutput": "[null, null, null, 1, null, -1, null, -1, 3, 4]"
+      }
+    ],
+    "hints": [
+      "HashMap for O(1) access, doubly linked list for O(1) removal.",
+      "Head = LRU, Tail = MRU.",
+      "Move accessed nodes to tail."
+    ],
+    "solution": "class Node:\n    def __init__(self, key=0, val=0):\n        self.key, self.val = key, val\n        self.prev = self.next = None\n\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.cap = capacity\n        self.cache = {}\n        self.head, self.tail = Node(), Node()\n        self.head.next, self.tail.prev = self.tail, self.head\n    \n    def _remove(self, node):\n        node.prev.next, node.next.prev = node.next, node.prev\n    \n    def _add(self, node):\n        node.prev, node.next = self.tail.prev, self.tail\n        self.tail.prev.next = self.tail.prev = node\n    \n    def get(self, key: int) -> int:\n        if key not in self.cache: return -1\n        node = self.cache[key]\n        self._remove(node)\n        self._add(node)\n        return node.val\n    \n    def put(self, key: int, value: int) -> None:\n        if key in self.cache: self._remove(self.cache[key])\n        node = Node(key, value)\n        self.cache[key] = node\n        self._add(node)\n        if len(self.cache) > self.cap:\n            lru = self.head.next\n            self._remove(lru)\n            del self.cache[lru.key]"
+  },
+  {
+    "id": "q_212",
+    "title": "Word Search II",
+    "prompt": "Given m x n board and list of words, return all words found on the board by traversing adjacent cells.",
+    "constraints": [
+      "O(M*N*4^L) Time",
+      "Trie + Backtracking"
+    ],
+    "family_tree": {
+      "remedial_id": "q_79",
+      "tutorial_id": "t_trie_02"
+    },
+    "starterCode": "def findWords(board: list[list[str]], words: list[str]) -> list[str]:\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[\"o\",\"a\",\"a\",\"n\"],[\"e\",\"t\",\"a\",\"e\"],[\"i\",\"h\",\"k\",\"r\"],[\"i\",\"f\",\"l\",\"v\"]], [\"oath\",\"pea\",\"eat\",\"rain\"]",
+        "expectedOutput": "[\"eat\",\"oath\"]"
+      }
+    ],
+    "hints": [
+      "Build trie from words for efficient prefix lookup.",
+      "DFS from each cell, prune when no prefix matches.",
+      "Remove found words from trie to avoid duplicates."
+    ],
+    "solution": "def findWords(board, words):\n    trie = {}\n    for w in words:\n        node = trie\n        for c in w:\n            node = node.setdefault(c, {})\n        node['$'] = w\n    \n    result, m, n = [], len(board), len(board[0])\n    \n    def dfs(i, j, node):\n        c = board[i][j]\n        if c not in node: return\n        node = node[c]\n        if '$' in node:\n            result.append(node.pop('$'))\n        board[i][j] = '#'\n        for di, dj in [(0,1),(0,-1),(1,0),(-1,0)]:\n            ni, nj = i+di, j+dj\n            if 0 <= ni < m and 0 <= nj < n:\n                dfs(ni, nj, node)\n        board[i][j] = c\n    \n    for i in range(m):\n        for j in range(n):\n            dfs(i, j, trie)\n    return result"
+  },
+  {
+    "id": "q_208",
+    "title": "Implement Trie (Prefix Tree)",
+    "prompt": "Implement a trie with insert, search, and startsWith methods.",
+    "constraints": [
+      "O(L) Time",
+      "Tree of Arrays/Maps"
+    ],
+    "family_tree": {
+      "remedial_id": "q_648",
+      "tutorial_id": "t_trie_01"
+    },
+    "starterCode": "class Trie:\n    def __init__(self):\n        pass\n    \n    def insert(self, word: str) -> None:\n        pass\n    \n    def search(self, word: str) -> bool:\n        pass\n    \n    def startsWith(self, prefix: str) -> bool:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"Trie\", \"insert\", \"search\", \"search\", \"startsWith\", \"insert\", \"search\"], [[], [\"apple\"], [\"apple\"], [\"app\"], [\"app\"], [\"app\"], [\"app\"]]",
+        "expectedOutput": "[null, null, true, false, true, null, true]"
+      }
+    ],
+    "hints": [
+      "Each node has children dict and is_end flag.",
+      "Insert: create nodes for each char.",
+      "Search: traverse and check is_end."
+    ],
+    "solution": "class Trie:\n    def __init__(self):\n        self.children = {}\n        self.is_end = False\n    \n    def insert(self, word: str) -> None:\n        node = self\n        for c in word:\n            if c not in node.children:\n                node.children[c] = Trie()\n            node = node.children[c]\n        node.is_end = True\n    \n    def search(self, word: str) -> bool:\n        node = self\n        for c in word:\n            if c not in node.children:\n                return False\n            node = node.children[c]\n        return node.is_end\n    \n    def startsWith(self, prefix: str) -> bool:\n        node = self\n        for c in prefix:\n            if c not in node.children:\n                return False\n            node = node.children[c]\n        return True"
+  },
+  {
+    "id": "q_642",
+    "title": "Design Search Autocomplete System",
+    "prompt": "Design autocomplete system that returns top 3 historical hot sentences for each character typed.",
+    "constraints": [
+      "O(L) Time",
+      "Trie + Heap/Metadata"
+    ],
+    "family_tree": {
+      "remedial_id": "q_1268",
+      "tutorial_id": "t_trie_02"
+    },
+    "starterCode": "class AutocompleteSystem:\n    def __init__(self, sentences: list[str], times: list[int]):\n        pass\n    \n    def input(self, c: str) -> list[str]:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"AutocompleteSystem\", \"input\", \"input\", \"input\", \"input\"], [[[\"i love you\", \"island\", \"iroman\", \"i love leetcode\"], [5, 3, 2, 2]], [\"i\"], [\" \"], [\"a\"], [\"#\"]]",
+        "expectedOutput": "[null, [\"i love you\", \"island\", \"i love leetcode\"], [\"i love you\", \"i love leetcode\"], [], []]"
+      }
+    ],
+    "hints": [
+      "Store sentences with counts in trie.",
+      "Track current prefix as user types.",
+      "On '#', add current sentence to trie."
+    ],
+    "solution": "class AutocompleteSystem:\n    def __init__(self, sentences, times):\n        self.trie = {}\n        self.curr = ''\n        for s, t in zip(sentences, times):\n            self._add(s, t)\n    \n    def _add(self, s, t):\n        node = self.trie\n        for c in s:\n            node = node.setdefault(c, {})\n        node['#'] = node.get('#', 0) + t\n    \n    def _search(self, node, prefix):\n        results = []\n        def dfs(n, path):\n            if '#' in n:\n                results.append((-n['#'], path))\n            for c, child in n.items():\n                if c != '#':\n                    dfs(child, path + c)\n        dfs(node, prefix)\n        return [s for _, s in sorted(results)[:3]]\n    \n    def input(self, c: str) -> list[str]:\n        if c == '#':\n            self._add(self.curr, 1)\n            self.curr = ''\n            return []\n        self.curr += c\n        node = self.trie\n        for ch in self.curr:\n            if ch not in node:\n                return []\n            node = node[ch]\n        return self._search(node, self.curr)"
+  },
+  {
+    "id": "q_460",
+    "title": "LFU Cache",
+    "prompt": "Design Least Frequently Used (LFU) cache with O(1) operations.",
+    "constraints": [
+      "O(1) Time",
+      "Double Map + DLists"
+    ],
+    "family_tree": {
+      "remedial_id": "q_146",
+      "tutorial_id": "t_des_02"
+    },
+    "starterCode": "class LFUCache:\n    def __init__(self, capacity: int):\n        pass\n    \n    def get(self, key: int) -> int:\n        pass\n    \n    def put(self, key: int, value: int) -> None:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"LFUCache\", \"put\", \"put\", \"get\", \"put\", \"get\", \"get\", \"put\", \"get\", \"get\", \"get\"], [[2], [1, 1], [2, 2], [1], [3, 3], [2], [3], [4, 4], [1], [3], [4]]",
+        "expectedOutput": "[null, null, null, 1, null, -1, 3, null, -1, 3, 4]"
+      }
+    ],
+    "hints": [
+      "Map: key -> (value, freq). Map: freq -> OrderedDict of keys.",
+      "Track min_freq for O(1) eviction.",
+      "On access, move key from freq to freq+1 bucket."
+    ],
+    "solution": "from collections import defaultdict, OrderedDict\n\nclass LFUCache:\n    def __init__(self, capacity: int):\n        self.cap = capacity\n        self.min_freq = 0\n        self.key_val = {}\n        self.key_freq = {}\n        self.freq_keys = defaultdict(OrderedDict)\n    \n    def _update(self, key):\n        freq = self.key_freq[key]\n        del self.freq_keys[freq][key]\n        if not self.freq_keys[freq] and self.min_freq == freq:\n            self.min_freq += 1\n        self.key_freq[key] = freq + 1\n        self.freq_keys[freq + 1][key] = None\n    \n    def get(self, key: int) -> int:\n        if key not in self.key_val:\n            return -1\n        self._update(key)\n        return self.key_val[key]\n    \n    def put(self, key: int, value: int) -> None:\n        if self.cap <= 0:\n            return\n        if key in self.key_val:\n            self.key_val[key] = value\n            self._update(key)\n            return\n        if len(self.key_val) >= self.cap:\n            evict, _ = self.freq_keys[self.min_freq].popitem(last=False)\n            del self.key_val[evict]\n            del self.key_freq[evict]\n        self.key_val[key] = value\n        self.key_freq[key] = 1\n        self.freq_keys[1][key] = None\n        self.min_freq = 1"
+  },
+  {
+    "id": "q_380",
+    "title": "Insert Delete GetRandom O(1)",
+    "prompt": "Implement RandomizedSet with O(1) insert, remove, and getRandom.",
+    "constraints": [
+      "O(1) Time",
+      "Map + ArrayList (Swap & Pop)"
+    ],
+    "family_tree": {
+      "remedial_id": "q_705",
+      "tutorial_id": "t_des_03"
+    },
+    "starterCode": "import random\n\nclass RandomizedSet:\n    def __init__(self):\n        pass\n    \n    def insert(self, val: int) -> bool:\n        pass\n    \n    def remove(self, val: int) -> bool:\n        pass\n    \n    def getRandom(self) -> int:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"RandomizedSet\", \"insert\", \"remove\", \"insert\", \"getRandom\", \"remove\", \"insert\", \"getRandom\"], [[], [1], [2], [2], [], [1], [2], []]",
+        "expectedOutput": "[null, true, false, true, 2, true, false, 2]"
+      }
+    ],
+    "hints": [
+      "Array for O(1) random access, HashMap for O(1) lookup.",
+      "On remove: swap with last element, then pop.",
+      "Update indices in map after swap."
+    ],
+    "solution": "import random\n\nclass RandomizedSet:\n    def __init__(self):\n        self.vals = []\n        self.idx = {}\n    \n    def insert(self, val: int) -> bool:\n        if val in self.idx:\n            return False\n        self.idx[val] = len(self.vals)\n        self.vals.append(val)\n        return True\n    \n    def remove(self, val: int) -> bool:\n        if val not in self.idx:\n            return False\n        i = self.idx[val]\n        last = self.vals[-1]\n        self.vals[i] = last\n        self.idx[last] = i\n        self.vals.pop()\n        del self.idx[val]\n        return True\n    \n    def getRandom(self) -> int:\n        return random.choice(self.vals)"
+  },
+  {
+    "id": "q_211",
+    "title": "Design Add and Search Words Data Structure",
+    "prompt": "Design data structure for adding words and searching with '.' wildcard.",
+    "constraints": [
+      "O(M) Time",
+      "Trie + DFS"
+    ],
+    "family_tree": {
+      "remedial_id": "q_208",
+      "tutorial_id": "t_trie_01"
+    },
+    "starterCode": "class WordDictionary:\n    def __init__(self):\n        pass\n    \n    def addWord(self, word: str) -> None:\n        pass\n    \n    def search(self, word: str) -> bool:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"WordDictionary\",\"addWord\",\"addWord\",\"addWord\",\"search\",\"search\",\"search\",\"search\"], [[],[\"bad\"],[\"dad\"],[\"mad\"],[\"pad\"],[\"bad\"],[\".ad\"],[\"b..\"]]",
+        "expectedOutput": "[null,null,null,null,false,true,true,true]"
+      }
+    ],
+    "hints": [
+      "Use trie structure for addWord.",
+      "For search, DFS with branching on '.'.",
+      "Check all children when encountering '.'."
+    ],
+    "solution": "class WordDictionary:\n    def __init__(self):\n        self.children = {}\n        self.is_end = False\n    \n    def addWord(self, word: str) -> None:\n        node = self\n        for c in word:\n            if c not in node.children:\n                node.children[c] = WordDictionary()\n            node = node.children[c]\n        node.is_end = True\n    \n    def search(self, word: str) -> bool:\n        def dfs(i, node):\n            if i == len(word):\n                return node.is_end\n            c = word[i]\n            if c == '.':\n                return any(dfs(i + 1, child) for child in node.children.values())\n            if c not in node.children:\n                return False\n            return dfs(i + 1, node.children[c])\n        return dfs(0, self)"
+  },
+  {
+    "id": "q_588",
+    "title": "Design In-Memory File System",
+    "prompt": "Design in-memory file system with ls, mkdir, addContentToFile, readContentFromFile.",
+    "constraints": [
+      "O(L) Time",
+      "Trie-based Hierarchy"
+    ],
+    "family_tree": {
+      "remedial_id": "q_146",
+      "tutorial_id": "t_des_01"
+    },
+    "starterCode": "class FileSystem:\n    def __init__(self):\n        pass\n    \n    def ls(self, path: str) -> list[str]:\n        pass\n    \n    def mkdir(self, path: str) -> None:\n        pass\n    \n    def addContentToFile(self, filePath: str, content: str) -> None:\n        pass\n    \n    def readContentFromFile(self, filePath: str) -> str:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"FileSystem\", \"ls\", \"mkdir\", \"addContentToFile\", \"ls\", \"readContentFromFile\"], [[], [\"/\"], [\"/a/b/c\"], [\"/a/b/c/d\", \"hello\"], [\"/\"], [\"/a/b/c/d\"]]",
+        "expectedOutput": "[null, [], null, null, [\"a\"], \"hello\"]"
+      }
+    ],
+    "hints": [
+      "Use trie where nodes are directories.",
+      "Files are leaves with content attribute.",
+      "ls on file returns just filename, on dir returns sorted children."
+    ],
+    "solution": "class FileSystem:\n    def __init__(self):\n        self.root = {'children': {}, 'content': None}\n    \n    def _traverse(self, path):\n        node = self.root\n        if path == '/':\n            return node\n        for part in path.split('/')[1:]:\n            if part not in node['children']:\n                node['children'][part] = {'children': {}, 'content': None}\n            node = node['children'][part]\n        return node\n    \n    def ls(self, path: str) -> list[str]:\n        node = self._traverse(path)\n        if node['content'] is not None:\n            return [path.split('/')[-1]]\n        return sorted(node['children'].keys())\n    \n    def mkdir(self, path: str) -> None:\n        self._traverse(path)\n    \n    def addContentToFile(self, filePath: str, content: str) -> None:\n        node = self._traverse(filePath)\n        node['content'] = (node['content'] or '') + content\n    \n    def readContentFromFile(self, filePath: str) -> str:\n        return self._traverse(filePath)['content']"
+  },
+  {
+    "id": "q_432",
+    "title": "All O`one Data Structure",
+    "prompt": "Design data structure with O(1) inc, dec, getMaxKey, getMinKey.",
+    "constraints": [
+      "O(1) Time",
+      "Doubly Linked List of Buckets"
+    ],
+    "family_tree": {
+      "remedial_id": "q_347",
+      "tutorial_id": "t_des_02"
+    },
+    "starterCode": "class AllOne:\n    def __init__(self):\n        pass\n    \n    def inc(self, key: str) -> None:\n        pass\n    \n    def dec(self, key: str) -> None:\n        pass\n    \n    def getMaxKey(self) -> str:\n        pass\n    \n    def getMinKey(self) -> str:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"AllOne\", \"inc\", \"inc\", \"getMaxKey\", \"getMinKey\", \"inc\", \"getMaxKey\", \"getMinKey\"], [[], [\"hello\"], [\"hello\"], [], [], [\"leet\"], [], []]",
+        "expectedOutput": "[null, null, null, \"hello\", \"hello\", null, \"hello\", \"leet\"]"
+      }
+    ],
+    "hints": [
+      "Doubly linked list of count buckets.",
+      "Each bucket has set of keys with that count.",
+      "Map key -> bucket for O(1) move."
+    ],
+    "solution": "class AllOne:\n    def __init__(self):\n        self.head = {'count': 0, 'keys': set(), 'prev': None, 'next': None}\n        self.tail = {'count': float('inf'), 'keys': set(), 'prev': self.head, 'next': None}\n        self.head['next'] = self.tail\n        self.key_bucket = {}\n    \n    def _insert_after(self, node, count):\n        new = {'count': count, 'keys': set(), 'prev': node, 'next': node['next']}\n        node['next']['prev'] = new\n        node['next'] = new\n        return new\n    \n    def _remove(self, bucket):\n        bucket['prev']['next'] = bucket['next']\n        bucket['next']['prev'] = bucket['prev']\n    \n    def inc(self, key: str) -> None:\n        if key in self.key_bucket:\n            bucket = self.key_bucket[key]\n            bucket['keys'].remove(key)\n            new_count = bucket['count'] + 1\n            if bucket['next']['count'] != new_count:\n                new_bucket = self._insert_after(bucket, new_count)\n            else:\n                new_bucket = bucket['next']\n            new_bucket['keys'].add(key)\n            self.key_bucket[key] = new_bucket\n            if not bucket['keys']:\n                self._remove(bucket)\n        else:\n            if self.head['next']['count'] != 1:\n                new_bucket = self._insert_after(self.head, 1)\n            else:\n                new_bucket = self.head['next']\n            new_bucket['keys'].add(key)\n            self.key_bucket[key] = new_bucket\n    \n    def dec(self, key: str) -> None:\n        bucket = self.key_bucket[key]\n        bucket['keys'].remove(key)\n        if bucket['count'] == 1:\n            del self.key_bucket[key]\n        else:\n            new_count = bucket['count'] - 1\n            if bucket['prev']['count'] != new_count:\n                new_bucket = self._insert_after(bucket['prev'], new_count)\n            else:\n                new_bucket = bucket['prev']\n            new_bucket['keys'].add(key)\n            self.key_bucket[key] = new_bucket\n        if not bucket['keys']:\n            self._remove(bucket)\n    \n    def getMaxKey(self) -> str:\n        return next(iter(self.tail['prev']['keys']), '')\n    \n    def getMinKey(self) -> str:\n        return next(iter(self.head['next']['keys']), '')"
+  },
+  {
+    "id": "q_622",
+    "title": "Design Circular Queue",
+    "prompt": "Design circular queue with enQueue, deQueue, Front, Rear, isEmpty, isFull.",
+    "constraints": [
+      "O(1) Time",
+      "Array Pointers (Mod)"
+    ],
+    "family_tree": {
+      "remedial_id": "q_933",
+      "tutorial_id": "t_des_01"
+    },
+    "starterCode": "class MyCircularQueue:\n    def __init__(self, k: int):\n        pass\n    \n    def enQueue(self, value: int) -> bool:\n        pass\n    \n    def deQueue(self) -> bool:\n        pass\n    \n    def Front(self) -> int:\n        pass\n    \n    def Rear(self) -> int:\n        pass\n    \n    def isEmpty(self) -> bool:\n        pass\n    \n    def isFull(self) -> bool:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"MyCircularQueue\", \"enQueue\", \"enQueue\", \"enQueue\", \"enQueue\", \"Rear\", \"isFull\", \"deQueue\", \"enQueue\", \"Rear\"], [[3], [1], [2], [3], [4], [], [], [], [4], []]",
+        "expectedOutput": "[null, true, true, true, false, 3, true, true, true, 4]"
+      }
+    ],
+    "hints": [
+      "Use array with front and rear pointers.",
+      "Use modulo for circular wrapping.",
+      "Track size to distinguish empty from full."
+    ],
+    "solution": "class MyCircularQueue:\n    def __init__(self, k: int):\n        self.queue = [0] * k\n        self.size = 0\n        self.cap = k\n        self.front = 0\n    \n    def enQueue(self, value: int) -> bool:\n        if self.isFull():\n            return False\n        self.queue[(self.front + self.size) % self.cap] = value\n        self.size += 1\n        return True\n    \n    def deQueue(self) -> bool:\n        if self.isEmpty():\n            return False\n        self.front = (self.front + 1) % self.cap\n        self.size -= 1\n        return True\n    \n    def Front(self) -> int:\n        return -1 if self.isEmpty() else self.queue[self.front]\n    \n    def Rear(self) -> int:\n        return -1 if self.isEmpty() else self.queue[(self.front + self.size - 1) % self.cap]\n    \n    def isEmpty(self) -> bool:\n        return self.size == 0\n    \n    def isFull(self) -> bool:\n        return self.size == self.cap"
+  },
+  {
+    "id": "q_1146",
+    "title": "Snapshot Array",
+    "prompt": "Implement a SnapshotArray that supports set(index, val), snap(), and get(index, snap_id).",
+    "constraints": [
+      "O(log S) Get",
+      "Binary Search + Map"
+    ],
+    "family_tree": {
+      "remedial_id": "q_704",
+      "tutorial_id": "t_des_03"
+    },
+    "starterCode": "class SnapshotArray:\n    def __init__(self, length: int):\n        pass\n    \n    def set(self, index: int, val: int) -> None:\n        pass\n    \n    def snap(self) -> int:\n        pass\n    \n    def get(self, index: int, snap_id: int) -> int:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"SnapshotArray\",\"set\",\"snap\",\"set\",\"get\"], [[3],[0,5],[],[0,6],[0,0]]",
+        "expectedOutput": "[null,null,0,null,5]"
+      }
+    ],
+    "hints": [
+      "Store value changes for each index as a list of (snap_id, value).",
+      "Use binary search on the list of changes to find value at snap_id."
+    ],
+    "solution": "import bisect\n\nclass SnapshotArray:\n    def __init__(self, length: int):\n        self.history = [[(0, 0)] for _ in range(length)]\n        self.snap_id = 0\n    \n    def set(self, index: int, val: int) -> None:\n        self.history[index].append((self.snap_id, val))\n    \n    def snap(self) -> int:\n        self.snap_id += 1\n        return self.snap_id - 1\n    \n    def get(self, index: int, snap_id: int) -> int:\n        history = self.history[index]\n        i = bisect.bisect_right(history, (snap_id, float('inf'))) - 1\n        return history[i][1]"
+  },
+  {
+    "id": "q_981",
+    "title": "Time Based Key-Value Store",
+    "prompt": "Design a time-based key-value data structure that can store multiple values for the same key at different time stamps and retrieve the key's value at a certain timestamp.",
+    "constraints": [
+      "O(log N) Get",
+      "HashMap + Binary Search"
+    ],
+    "family_tree": {
+      "remedial_id": "q_1",
+      "tutorial_id": "t_des_03"
+    },
+    "starterCode": "class TimeMap:\n    def __init__(self):\n        pass\n    \n    def set(self, key: str, value: str, timestamp: int) -> None:\n        pass\n    \n    def get(self, key: str, timestamp: int) -> str:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"TimeMap\", \"set\", \"get\", \"get\", \"set\", \"get\", \"get\"], [[], [\"foo\", \"bar\", 1], [\"foo\", 1], [\"foo\", 3], [\"foo\", \"bar2\", 4], [\"foo\", 4], [\"foo\", 5]]",
+        "expectedOutput": "[null, null, \"bar\", \"bar\", null, \"bar2\", \"bar2\"]"
+      }
+    ],
+    "hints": [
+      "Use a hashmap where key maps to a list of (timestamp, value).",
+      "The list will be sorted by timestamp naturally.",
+      "Use binary search (upper bound) to find the value."
+    ],
+    "solution": "import bisect\nfrom collections import defaultdict\n\nclass TimeMap:\n    def __init__(self):\n        self.store = defaultdict(list)\n    \n    def set(self, key: str, value: str, timestamp: int) -> None:\n        self.store[key].append((timestamp, value))\n    \n    def get(self, key: str, timestamp: int) -> str:\n        if key not in self.store:\n            return \"\"\n        values = self.store[key]\n        i = bisect.bisect_right(values, (timestamp, chr(127))) - 1\n        if i >= 0:\n            return values[i][1]\n        return \"\""
+  },
+  {
+    "id": "q_359",
+    "title": "Logger Rate Limiter",
+    "prompt": "Design a logger system that receives a stream of messages along with their timestamps. Each unique message should only be printed at most every 10 seconds.",
+    "constraints": [
+      "O(1) Time",
+      "HashMap"
+    ],
+    "family_tree": {
+      "remedial_id": "q_1",
+      "tutorial_id": "t_hash_01"
+    },
+    "starterCode": "class Logger:\n    def __init__(self):\n        pass\n    \n    def shouldPrintMessage(self, timestamp: int, message: str) -> bool:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"Logger\", \"shouldPrintMessage\", \"shouldPrintMessage\", \"shouldPrintMessage\", \"shouldPrintMessage\", \"shouldPrintMessage\", \"shouldPrintMessage\"], [[], [1, \"foo\"], [2, \"bar\"], [3, \"foo\"], [8, \"bar\"], [10, \"foo\"], [11, \"foo\"]]",
+        "expectedOutput": "[null, true, true, false, false, false, true]"
+      }
+    ],
+    "hints": [
+      "Store the next valid timestamp for each message in a hashmap.",
+      "If current timestamp >= stored timestamp, update it to current + 10 and return True."
+    ],
+    "solution": "class Logger:\n    def __init__(self):\n        self.schedule = {}\n    \n    def shouldPrintMessage(self, timestamp: int, message: str) -> bool:\n        if message in self.schedule and timestamp < self.schedule[message]:\n            return False\n        self.schedule[message] = timestamp + 10\n        return True"
+  },
+  {
+    "id": "q_843",
+    "title": "Guess the Word",
+    "prompt": "You are given an array of unique strings allowedWords. Choose a word from it, ask master(word) to get matches. Guess the secret word in <= 10 guesses.",
+    "constraints": [
+      "Minimax / Random"
+    ],
+    "family_tree": {
+      "remedial_id": "q_1",
+      "tutorial_id": "t_des_01"
+    },
+    "starterCode": " # class Master:\n#     def guess(self, word: str) -> int:\n\ndef findSecretWord(allowedWords: list[str], master: 'Master') -> None:\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"acckzz\",\"ccbazz\",\"eiowzz\",\"abcczz\"], \"acckzz\"",
+        "expectedOutput": "You guessed the secret word correctly."
+      }
+    ],
+    "hints": [
+      "Minimax strategy to minimize worst-case pool size.",
+      "Randomly picking a word and filtering often works well enough.",
+      "Filter list: keep words that have same matches with guess as the result."
+    ],
+    "solution": "import random\n\ndef findSecretWord(allowedWords: list[str], master: 'Master') -> None:\n    def count_matches(w1, w2):\n        return sum(c1 == c2 for c1, c2 in zip(w1, w2))\n    \n    candidates = allowedWords\n    for _ in range(10):\n        guess = random.choice(candidates)\n        matches = master.guess(guess)\n        if matches == 6:\n            return\n        candidates = [w for w in candidates if count_matches(w, guess) == matches]"
+  },
+  {
+    "id": "q_410",
+    "title": "Split Array Largest Sum",
+    "prompt": "Given an integer array nums and an integer k, split nums into k non-empty subarrays such that the largest sum of any subarray is minimized. Return the minimized largest sum of the split.",
+    "constraints": [
+      "O(N log S) Time",
+      "Binary Search on Answer"
+    ],
+    "family_tree": {
+      "remedial_id": "q_1011",
+      "tutorial_id": "t_des_03"
+    },
+    "starterCode": "def splitArray(nums: list[int], k: int) -> int:\n    \"\"\"Return the minimized largest sum.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[7,2,5,10,8], 2",
+        "expectedOutput": "18"
+      },
+      {
+        "id": "test-2",
+        "input": "[1,2,3,4,5], 2",
+        "expectedOutput": "9"
+      }
+    ],
+    "hints": [
+      "The answer is between max(nums) and sum(nums).",
+      "Use binary search on this range.",
+      "Greedily check if a given sum is possible with <= k subarrays."
+    ],
+    "solution": "def splitArray(nums: list[int], k: int) -> int:\n    def canSplit(max_sum):\n        count = 1\n        current_sum = 0\n        for num in nums:\n            current_sum += num\n            if current_sum > max_sum:\n                count += 1\n                current_sum = num\n                if count > k:\n                    return False\n        return True\n        \n    left, right = max(nums), sum(nums)\n    while left < right:\n        mid = (left + right) // 2\n        if canSplit(mid):\n            right = mid\n        else:\n            left = mid + 1\n    return left"
+  },
+  {
+    "id": "q_1011",
+    "title": "Capacity To Ship Packages Within D Days",
+    "prompt": "A conveyor belt has packages that must be shipped from one port to another within days days. The ith package on the conveyor belt has a weight of weights[i]. Each day, we load the ship with packages on the conveyor belt (in the order given by weights). We may not load more weight than the maximum weight capacity of the ship. Return the least weight capacity of the ship that will result in all the packages on the conveyor belt being shipped within days days.",
+    "constraints": [
+      "O(N log S) Time",
+      "Binary Search on Answer"
+    ],
+    "family_tree": {
+      "remedial_id": "q_704",
+      "tutorial_id": "t_des_03"
+    },
+    "starterCode": "def shipWithinDays(weights: list[int], days: int) -> int:\n    \"\"\"Return min ship capacity.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1,2,3,4,5,6,7,8,9,10], 5",
+        "expectedOutput": "15"
+      },
+      {
+        "id": "test-2",
+        "input": "[3,2,2,4,1,4], 3",
+        "expectedOutput": "6"
+      },
+      {
+        "id": "test-3",
+        "input": "[1,2,3,1,1], 4",
+        "expectedOutput": "3"
+      }
+    ],
+    "hints": [
+      "The range of capacity is [max(weights), sum(weights)].",
+      "Binary search this range.",
+      "Check if a capacity is valid by simulating the shipping process."
+    ],
+    "solution": "def shipWithinDays(weights: list[int], days: int) -> int:\n    def canShip(capacity):\n        d = 1\n        current_load = 0\n        for w in weights:\n            current_load += w\n            if current_load > capacity:\n                d += 1\n                current_load = w\n                if d > days:\n                    return False\n        return True\n        \n    left, right = max(weights), sum(weights)\n    while left < right:\n        mid = (left + right) // 2\n        if canShip(mid):\n            right = mid\n        else:\n            left = mid + 1\n    return left"
+  },
+  {
+    "id": "q_911",
+    "title": "Online Election",
+    "prompt": "You are given two integer arrays persons and times. In an election, the ith vote was cast for persons[i] at time times[i]. Implement the TopVotedCandidate class: TopVotedCandidate(int[] persons, int[] times) Initializes the object with the persons and times arrays. int q(int t) Returns the number of the person that was leading the election at time t directly according to the latest vote cast at time t.",
+    "constraints": [
+      "O(N) Init, O(log N) Query",
+      "Binary Search + HashMap"
+    ],
+    "family_tree": {
+      "remedial_id": "q_704",
+      "tutorial_id": "t_des_03"
+    },
+    "starterCode": "class TopVotedCandidate:\n    def __init__(self, persons: list[int], times: list[int]):\n        pass\n    \n    def q(self, t: int) -> int:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"TopVotedCandidate\",\"q\",\"q\",\"q\",\"q\",\"q\",\"q\"], [[[0,1,1,0,0,1,0],[0,5,10,15,20,25,30]],[3],[12],[25],[15],[24],[8]]",
+        "expectedOutput": "[null,0,1,1,0,0,1]"
+      }
+    ],
+    "hints": [
+      "Precompute the leader at each time point in 'times'.",
+      "For query 't', use binary search to find the largest time <= t."
+    ],
+    "solution": "import bisect\nclass TopVotedCandidate:\n    def __init__(self, persons: list[int], times: list[int]):\n        self.times = times\n        self.leaders = []\n        count = {}\n        leader = -1\n        max_votes = 0\n        \n        for p in persons:\n            count[p] = count.get(p, 0) + 1\n            if count[p] >= max_votes:\n                if count[p] > max_votes or p != leader:\n                    leader = p\n                    max_votes = count[p]\n            self.leaders.append(leader)\n\n    def q(self, t: int) -> int:\n        i = bisect.bisect_right(self.times, t) - 1\n        return self.leaders[i]"
+  },
+  {
+    "id": "q_702",
+    "title": "Search in a Sorted Array of Unknown Size",
+    "prompt": "This is an interactive problem. You have a sorted array of unique elements and an unknown size. You do not have access to the array but you can use the ArrayReader interface to access it. You can call ArrayReader.get(i) that returns the value at the ith index (0-indexed). Return the index k of the hidden array where secret[k] == target. If the target is not found, return -1.",
+    "constraints": [
+      "O(log T) Time",
+      "Binary Search"
+    ],
+    "family_tree": {
+      "remedial_id": "q_704",
+      "tutorial_id": "t_des_03"
+    },
+    "starterCode": "# class ArrayReader:\n#    def get(self, index: int) -> int:\n#       pass\n\ndef search(reader, target: int) -> int:\n    \"\"\"Return index of target.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[-1,0,3,5,9,12], 9",
+        "expectedOutput": "4"
+      }
+    ],
+    "hints": [
+      "Find the search boundaries first.",
+      "Exponential search: Check index 1, 2, 4, 8... until value > target.",
+      "Then perform binary search."
+    ],
+    "solution": "def search(reader, target: int) -> int:\n    if reader.get(0) == target:\n        return 0\n    \n    left, right = 0, 1\n    while reader.get(right) < target:\n        left = right\n        right <<= 1\n        \n    while left <= right:\n        mid = (left + right) // 2\n        val = reader.get(mid)\n        if val == target:\n            return mid\n        elif val < target:\n            left = mid + 1\n        else:\n            right = mid - 1\n    return -1"
+  },
+  {
+    "id": "q_1087",
+    "title": "Brace Expansion",
+    "prompt": "You are given a string s representing a list of words. Each letter in the word has 1 or more options. If there is one option, the letter is represented as is. If there is more than one option, then curly braces delimit the options. For example, \"{a,b,c}\" represents options ['a', 'b', 'c']. Return all words that can be formed in lexicographical order.",
+    "constraints": [
+      "O(N*3^N/7) Time",
+      "Backtracking"
+    ],
+    "family_tree": {
+      "remedial_id": "q_17",
+      "tutorial_id": "t_des_03"
+    },
+    "starterCode": "def expand(s: str) -> list[str]:\n    \"\"\"Return all words in lexicographical order.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "\"{a,b}c{d,e}f\"",
+        "expectedOutput": "[\"acdf\",\"acef\",\"bcdf\",\"bcef\"]"
+      },
+      {
+        "id": "test-2",
+        "input": "\"abcd\"",
+        "expectedOutput": "[\"abcd\"]"
+      }
+    ],
+    "hints": [
+      "Parse string into a list of options.",
+      "Use backtracking to generate all combinations.",
+      "Sort result."
+    ],
+    "solution": "def expand(s: str) -> list[str]:\n    groups = []\n    i = 0\n    while i < len(s):\n        if s[i] == '{':\n            j = s.find('}', i)\n            groups.append(sorted(s[i+1:j].split(',')))\n            i = j + 1\n        else:\n            groups.append([s[i]])\n            i += 1\n    \n    res = []\n    def backtrack(idx, current):\n        if idx == len(groups):\n            res.append(\"\".join(current))\n            return\n        for char in groups[idx]:\n            current.append(char)\n            backtrack(idx + 1, current)\n            current.pop()\n            \n    backtrack(0, [])\n    return res"
+  },
+  {
+    "id": "q_1032",
+    "title": "Stream of Characters",
+    "prompt": "Design an algorithm that accepts a stream of characters and checks if a suffix of these characters is a string of a given array of strings words.",
+    "constraints": [
+      "O(W * L) Init, O(K) Query",
+      "Trie"
+    ],
+    "family_tree": {
+      "remedial_id": "q_208",
+      "tutorial_id": "t_des_02"
+    },
+    "starterCode": "class StreamChecker:\n    def __init__(self, words: list[str]):\n        pass\n    \n    def query(self, letter: str) -> bool:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"StreamChecker\",\"query\",\"query\",\"query\",\"query\",\"query\",\"query\",\"query\",\"query\",\"query\",\"query\",\"query\",\"query\"], [[[\"cd\",\"f\",\"kl\"]],[\"a\"],[\"b\"],[\"c\"],[\"d\"],[\"e\"],[\"f\"],[\"g\"],[\"h\"],[\"i\"],[\"j\"],[\"k\"],[\"l\"]]",
+        "expectedOutput": "[null,false,false,false,true,false,true,false,false,false,false,false,true]"
+      }
+    ],
+    "hints": [
+      "Store words in a Trie in REVERSE order.",
+      "Store stream of characters.",
+      "For each query, traverse Trie from newest character backwards."
+    ],
+    "solution": "class StreamChecker:\n    def __init__(self, words: list[str]):\n        self.trie = {}\n        self.stream = []\n        for w in words:\n            node = self.trie\n            for c in reversed(w):\n                if c not in node: node[c] = {}\n                node = node[c]\n            node['#'] = True\n\n    def query(self, letter: str) -> bool:\n        self.stream.append(letter)\n        node = self.trie\n        for i in range(len(self.stream) - 1, -1, -1):\n            c = self.stream[i]\n            if c not in node:\n                return False\n            node = node[c]\n            if '#' in node:\n                return True\n        return False"
+  },
+  {
+    "id": "q_307",
+    "title": "Range Sum Query - Mutable",
+    "prompt": "Given an integer array nums, handle multiple queries of the following types: 1. Update the value of an element in nums. 2. Calculate the sum of the elements of nums between indices left and right inclusive.",
+    "constraints": [
+      "O(log N) Update/Query",
+      "Segment Tree / BIT"
+    ],
+    "family_tree": {
+      "remedial_id": "q_303",
+      "tutorial_id": "t_des_03"
+    },
+    "starterCode": "class NumArray:\n    def __init__(self, nums: list[int]):\n        pass\n    \n    def update(self, index: int, val: int) -> None:\n        pass\n    \n    def sumRange(self, left: int, right: int) -> int:\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"NumArray\",\"sumRange\",\"update\",\"sumRange\"], [[[1,3,5]],[0,2],[1,2],[0,2]]",
+        "expectedOutput": "[null,9,null,8]"
+      }
+    ],
+    "hints": [
+      "Use a Segment Tree or Binary Indexed Tree (Fenwick Tree).",
+      "Segment Tree allows O(log N) updates and range sums."
+    ],
+    "solution": "class NumArray:\n    def __init__(self, nums: list[int]):\n        self.n = len(nums)\n        self.tree = [0] * (2 * self.n)\n        for i in range(self.n):\n            self.tree[self.n + i] = nums[i]\n        for i in range(self.n - 1, 0, -1):\n            self.tree[i] = self.tree[2 * i] + self.tree[2 * i + 1]\n\n    def update(self, index: int, val: int) -> None:\n        index += self.n\n        self.tree[index] = val\n        while index > 0:\n            left = index\n            right = index\n            if index % 2 == 0:\n                right = index + 1\n            else:\n                left = index - 1\n            self.tree[index // 2] = self.tree[left] + self.tree[right]\n            index //= 2\n\n    def sumRange(self, left: int, right: int) -> int:\n        left += self.n\n        right += self.n\n        total = 0\n        while left <= right:\n            if left % 2 == 1:\n                total += self.tree[left]\n                left += 1\n            if right % 2 == 0:\n                total += self.tree[right]\n                right -= 1\n            left //= 2\n            right //= 2\n        return total"
+  }
+]

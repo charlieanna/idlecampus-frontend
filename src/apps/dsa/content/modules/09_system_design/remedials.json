@@ -1,0 +1,66 @@
+[
+  {
+    "id": "q_sys_r1",
+    "title": "Simple Token Counter",
+    "prompt": "Implement a simple counter that tracks tokens. It should have add_tokens(count) and use_token() methods. use_token returns True if a token is available and consumes it, False otherwise.",
+    "concept_taught": "Basic Token Counting",
+    "starterCode": "class TokenCounter:\n    def __init__(self):\n        pass\n    \n    def add_tokens(self, count: int) -> None:\n        pass\n    \n    def use_token(self) -> bool:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "add_tokens(3), use_token() x 4", "expectedOutput": "[True, True, True, False]"}
+    ],
+    "hints": [
+      "Store token count as integer.",
+      "add_tokens increments the count.",
+      "use_token decrements if count > 0."
+    ],
+    "solution": "class TokenCounter:\n    def __init__(self):\n        self.tokens = 0\n    \n    def add_tokens(self, count: int) -> None:\n        self.tokens += count\n    \n    def use_token(self) -> bool:\n        if self.tokens > 0:\n            self.tokens -= 1\n            return True\n        return False"
+  },
+  {
+    "id": "q_sys_r2",
+    "title": "Time-based Expiry",
+    "prompt": "Implement a data structure that stores key-value pairs with expiry times. set(key, value, ttl_seconds) stores a value that expires after ttl_seconds. get(key) should return None if the entry has expired.",
+    "concept_taught": "Timestamp Comparisons",
+    "starterCode": "import time\n\nclass ExpiringCache:\n    def __init__(self):\n        pass\n    \n    def set(self, key: str, value: any, ttl_seconds: int) -> None:\n        pass\n    \n    def get(self, key: str) -> any:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "set('a', 1, 10), get('a'), wait 11s, get('a')", "expectedOutput": "[None, 1, None]"}
+    ],
+    "hints": [
+      "Store (value, expiry_time) pairs.",
+      "expiry_time = current_time + ttl_seconds.",
+      "On get, check if current_time < expiry_time."
+    ],
+    "solution": "import time\n\nclass ExpiringCache:\n    def __init__(self):\n        self.cache = {}\n    \n    def set(self, key: str, value: any, ttl_seconds: int) -> None:\n        expiry = time.time() + ttl_seconds\n        self.cache[key] = (value, expiry)\n    \n    def get(self, key: str) -> any:\n        if key not in self.cache:\n            return None\n        value, expiry = self.cache[key]\n        if time.time() > expiry:\n            del self.cache[key]\n            return None\n        return value"
+  },
+  {
+    "id": "q_sys_r3",
+    "title": "Simple Request Counter",
+    "prompt": "Implement a counter that tracks the number of requests in the last N seconds. add_request(timestamp) adds a request. get_count(timestamp) returns count of requests in [timestamp-N, timestamp].",
+    "concept_taught": "Sliding Window Concept",
+    "starterCode": "class RequestCounter:\n    def __init__(self, window_seconds: int):\n        pass\n    \n    def add_request(self, timestamp: int) -> None:\n        pass\n    \n    def get_count(self, timestamp: int) -> int:\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "window=5, add(1), add(2), add(6), get_count(6)", "expectedOutput": "2"}
+    ],
+    "hints": [
+      "Store list of request timestamps.",
+      "Remove timestamps outside the window.",
+      "Return length of remaining list."
+    ],
+    "solution": "from collections import deque\n\nclass RequestCounter:\n    def __init__(self, window_seconds: int):\n        self.window = window_seconds\n        self.requests = deque()\n    \n    def add_request(self, timestamp: int) -> None:\n        self.requests.append(timestamp)\n        self._cleanup(timestamp)\n    \n    def get_count(self, timestamp: int) -> int:\n        self._cleanup(timestamp)\n        return len(self.requests)\n    \n    def _cleanup(self, timestamp: int):\n        while self.requests and self.requests[0] <= timestamp - self.window:\n            self.requests.popleft()"
+  },
+  {
+    "id": "q_sys_r4",
+    "title": "Fixed Window Counter",
+    "prompt": "Implement a fixed window rate limiter that allows N requests per minute. Reset the count at the start of each minute. allow_request(timestamp) returns True if request is allowed.",
+    "concept_taught": "Fixed Window Rate Limiting",
+    "starterCode": "class FixedWindowLimiter:\n    def __init__(self, max_requests: int):\n        pass\n    \n    def allow_request(self, timestamp: int) -> bool:\n        \"\"\"timestamp is in seconds\"\"\"\n        pass",
+    "testCases": [
+      {"id": "test-1", "input": "max=2, allow(0), allow(30), allow(59), allow(60)", "expectedOutput": "[True, True, False, True]"}
+    ],
+    "hints": [
+      "Track current window start (minute).",
+      "Reset count when minute changes.",
+      "Allow if count < max_requests."
+    ],
+    "solution": "class FixedWindowLimiter:\n    def __init__(self, max_requests: int):\n        self.max_requests = max_requests\n        self.window_start = 0\n        self.count = 0\n    \n    def allow_request(self, timestamp: int) -> bool:\n        current_window = timestamp // 60\n        \n        if current_window != self.window_start:\n            self.window_start = current_window\n            self.count = 0\n        \n        if self.count < self.max_requests:\n            self.count += 1\n            return True\n        return False"
+  }
+]

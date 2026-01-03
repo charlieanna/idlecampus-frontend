@@ -1,0 +1,27 @@
+[
+  {
+    "id": "t_dp_01",
+    "title": "Concept: 1D Dynamic Programming",
+    "content": "Solve complex problems by breaking them down into simpler subproblems. Store results in an array `dp` where `dp[i]` depends on previous values (e.g. `dp[i-1]`, `dp[i-2]`)."
+  },
+  {
+    "id": "t_dp_02",
+    "title": "Concept: 2D Dynamic Programming",
+    "content": "Used when the state depends on two variables (e.g. two strings, or index + capacity). `dp[i][j]` represents the solution for the first `i` items with property `j`."
+  },
+  {
+    "id": "t_dp_03",
+    "title": "Concept: Interval DP",
+    "content": "For problems involving merging or splitting ranges (e.g. Burst Balloons, Matrix Chain Mult). Loop length `len` from 2 to N, start `i` from 0 to N-len, end `j = i + len - 1`."
+  },
+  {
+    "id": "t_dp_04",
+    "title": "Concept: 0/1 Knapsack Pattern",
+    "content": "For each item, you have a choice: Include it or Exclude it. \n`dp[i][w] = max(dp[i-1][w], val[i] + dp[i-1][w-wt[i]])`."
+  },
+  {
+    "id": "t_dp_05",
+    "title": "Concept: Memoization vs Tabulation",
+    "content": "Memoization is Top-Down (Recursive + Cache). Tabulation is Bottom-Up (Iterative + Table). Tabulation often saves stack space and can be optimized for space."
+  }
+]

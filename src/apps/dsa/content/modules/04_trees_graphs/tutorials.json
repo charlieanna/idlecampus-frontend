@@ -1,0 +1,27 @@
+[
+  {
+    "id": "t_tree_01",
+    "title": "Concept: Traversals (Pre/In/Post)",
+    "content": "Preorder (Root, Left, Right) - Copying. \nInorder (Left, Root, Right) - Sorting (BST). \nPostorder (Left, Right, Root) - Deleting/Bottom-up logic."
+  },
+  {
+    "id": "t_tree_02",
+    "title": "Concept: Global State in Recursion",
+    "content": "Sometimes the return value is not the answer. Use a global/class variable (like max_diameter) to track the best solution found while the recursion returns depth/height."
+  },
+  {
+    "id": "t_graph_01",
+    "title": "Concept: BFS (Shortest Path)",
+    "content": "Use BFS (Queue) to find the shortest path in an unweighted graph. It explores layer by layer. For weighted graphs, use Dijkstra."
+  },
+  {
+    "id": "t_graph_02",
+    "title": "Concept: Topological Sort",
+    "content": "For dependency resolution (DAGs), use Kahn's Algorithm (In-degree array) or DFS Post-order Reversal. It orders nodes such that for every edge u->v, u comes before v."
+  },
+  {
+    "id": "t_graph_03",
+    "title": "Concept: Union Find",
+    "content": "Identify connected components efficiently. Two operations: Find (get root) and Union (merge sets). Optimizations: Path Compression & Union by Rank."
+  }
+]

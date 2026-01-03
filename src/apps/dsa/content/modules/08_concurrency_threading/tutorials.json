@@ -1,0 +1,12 @@
+[
+  {
+    "id": "t_conc_01",
+    "title": "Concept: Race Conditions & Locks",
+    "content": "A Race Condition happens when two threads try to modify the same variable at the same time, leading to corrupted data.\n\nSolution: You must use a Lock (Mutex) or synchronized block around the critical section.\n\nPattern:\nlock.acquire()\ntry:\n  shared_resource += 1\nfinally:\n  lock.release()"
+  },
+  {
+    "id": "t_conc_02",
+    "title": "Concept: Thread Pools (ExecutorService)",
+    "content": "Creating a new thread for every task is expensive and crashes the OS. \n\nSolution: Use a Thread Pool (Worker Pool) to reuse a fixed number of threads (e.g., 10 threads processing 1000 tasks)."
+  }
+]

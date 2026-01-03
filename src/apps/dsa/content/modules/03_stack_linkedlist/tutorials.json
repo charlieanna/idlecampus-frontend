@@ -1,0 +1,32 @@
+[
+  {
+    "id": "t_ll_01",
+    "title": "Concept: Dummy Nodes",
+    "content": "When creating a new list or modifying the head, use a 'Dummy' node as a placeholder for the head. It simplifies edge cases where the head might change."
+  },
+  {
+    "id": "t_ll_02",
+    "title": "Concept: List Reversal",
+    "content": "To reverse a list, you need 3 pointers: Previous, Current, Next. \nLoop: \n1. Save Next (curr.next) \n2. Point Curr back (curr.next = prev) \n3. Shift Prev (prev = curr) \n4. Shift Curr (curr = next)"
+  },
+  {
+    "id": "t_ll_03",
+    "title": "Concept: Interweaving/Cloning",
+    "content": "For deep copies or complex merges, you can sometimes interweave nodes (A -> A' -> B -> B') to keep track of relationships without a Hash Map."
+  },
+  {
+    "id": "t_stk_01",
+    "title": "Concept: Stack LIFO",
+    "content": "Last-In, First-Out. Critical for processing nested structures (parentheses), recursion simulation, or reversing data."
+  },
+  {
+    "id": "t_stk_02",
+    "title": "Concept: Monotonic Stack",
+    "content": "A stack where elements are strictly increasing or decreasing. Used to find the 'next greater' or 'next smaller' element efficiently (O(N))."
+  },
+  {
+    "id": "t_ll_04",
+    "title": "Concept: Fast & Slow Pointers (Floyd)",
+    "content": "Use a Slow pointer (step 1) and Fast pointer (step 2). If they meet, there is a cycle. Can also be used to find the middle or Kth from end."
+  }
+]

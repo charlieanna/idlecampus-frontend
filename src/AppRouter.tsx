@@ -11,6 +11,7 @@ import GolangApp from './apps/golang/GolangApp';
 import GenericCourseApp from './apps/generic/GenericCourseApp';
 import IITJEECourseSelection from './apps/iit-jee/IITJEECourseSelection';
 import UpscApp from './apps/upsc/UpscApp';
+import DSAApp from './apps/dsa/DSAApp';
 import CourseSelectionDashboard from './components/CourseSelectionDashboard';
 import { ProgressiveModuleViewer } from './components/course/ProgressiveModuleViewer';
 import { ReviewSessionPrompt } from './components/course/ReviewSessionPrompt';
@@ -154,16 +155,26 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
       }
 
       // Fetch detailed course data using track-based API
+      console.log('🔍 Step 1: Fetching course...');
       const fullCourse = await apiService.fetchCourse(targetCourse.slug, track);
+      console.log('✅ Step 1 complete:', fullCourse?.title);
+      
+      console.log('🔍 Step 2: Fetching modules...');
       const modules = await apiService.fetchModules(targetCourse.slug, track);
+      console.log('✅ Step 2 complete:', modules?.length, 'modules');
+      
+      console.log('🔍 Step 3: Fetching labs...');
       const labs = await apiService.fetchLabs(track);
+      console.log('✅ Step 3 complete:', labs?.length, 'labs');
 
       if (!modules || modules.length === 0) {
         throw new Error('No modules found in course. Please check database seeds.');
       }
 
       // Transform API data
+      console.log('🔍 Step 4: Transforming course data...');
       const transformed = transformCourseData(fullCourse, modules, labs);
+      console.log('✅ Step 4 complete:', transformed.length, 'transformed modules');
 
       console.log('✅ Course data loaded:', {
         type: courseType,
@@ -441,6 +452,9 @@ export default function AppRouter() {
 
       {/* UPSC CSE Preparation Platform */}
       <Route path="/upsc/*" element={<UpscApp />} />
+
+      {/* DSA Course with Python */}
+      <Route path="/dsa/*" element={<DSAApp />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

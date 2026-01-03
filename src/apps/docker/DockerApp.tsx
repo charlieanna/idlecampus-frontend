@@ -85,10 +85,17 @@ Think of it like shipping a complete, self-contained kitchen (with your recipe, 
 
 ## Why Does This Matter?
 
-- **Consistency**: Your app runs the same way everywhere - on your laptop, your colleague's machine, test servers, and production.
-- **Isolation**: Each container is like a separate apartment. Problems in one don't affect others.
-- **Speed**: Containers start in seconds, not minutes like virtual machines.
-- **Efficiency**: Containers share the host's operating system, using far less resources than VMs.
+Docker containers provide several key advantages that make them essential for modern software development:
+
+- **Consistency**: Your app runs the same way everywhere - on your laptop, your colleague's machine, test servers, and production. No more "it works on my machine" problems.
+
+- **Isolation**: Each container is like a separate apartment. Problems in one don't affect others. If one application crashes or gets compromised, others remain safe.
+
+- **Speed**: Containers start in seconds, not minutes like virtual machines. This makes development faster and deployment more efficient.
+
+- **Efficiency**: Containers share the host's operating system, using far less resources than VMs. You can run many more applications on the same hardware.
+
+---
 
 Let's see Docker in action! First, let's check if Docker is running on your system.`
           },
@@ -422,9 +429,15 @@ Let's run an interactive Alpine Linux container (a tiny, 5MB Linux distribution)
             type: 'content',
             markdown: `You're now inside an Alpine Linux container! You can run commands like \`ls\`, \`cat /etc/os-release\`, or \`whoami\`.
 
-Type \`exit\` when you're done exploring.
+**Important**: You're inside a container now. Docker commands won't work here because Docker isn't installed inside containers by default. You can only run regular Linux commands.
+
+Type \`exit\` when you're done exploring to return to your host machine.
+
+---
 
 ## Running Containers in the Background
+
+Now that you're back on your host machine (after typing \`exit\`), you can run Docker commands again.
 
 For long-running services like web servers, you don't want to tie up your terminal. The \`-d\` flag runs containers in "detached" mode (background).
 
@@ -612,7 +625,7 @@ For detailed information about a container's configuration, use \`docker inspect
 
 ## Executing Commands in Running Containers
 
-Need to poke around inside a running container? Use \`docker exec\`.`
+Need to poke around inside a running container? Use \`docker exec\`. This command runs from your **host machine** and opens a shell inside the running container.`
           },
           {
             type: 'command',
@@ -626,7 +639,9 @@ Need to poke around inside a running container? Use \`docker exec\`.`
             type: 'content',
             markdown: `You're now inside the running nginx container! You can explore the filesystem, check configurations, or debug issues.
 
-Type \`exit\` to leave the container (the container keeps running!).
+**Remember**: While inside the container, you can only run regular Linux commands (like \`ls\`, \`cat\`, \`ps\`). Docker commands won't work here - you need to run them from your host machine.
+
+Type \`exit\` to leave the container and return to your host machine (the container keeps running!).
 
 ## Cleanup
 

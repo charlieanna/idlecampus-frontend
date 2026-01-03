@@ -1,0 +1,27 @@
+[
+  {
+    "id": "t_trie_01",
+    "title": "Concept: Trie (Prefix Tree)",
+    "content": "A Trie is a tree where each node represents a character. Useful for 'startsWith' queries. Each node has `children: Map<char, Node>` and `isEnd: boolean`."
+  },
+  {
+    "id": "t_trie_02",
+    "title": "Concept: Trie + DFS",
+    "content": "For Word Search problems, build a Trie from the dictionary. Then DFS the grid. If the current path's prefix is not in the Trie, prune the search immediately."
+  },
+  {
+    "id": "t_des_01",
+    "title": "Concept: System Design in Algo",
+    "content": "Understand constraints. Read-heavy? Optimize `get`. Write-heavy? Optimize `put`. Memory constrained? Use compact structures."
+  },
+  {
+    "id": "t_des_02",
+    "title": "Concept: The Linked Hash Map",
+    "content": "The secret to O(1) LRU/LFU. Use a HashMap for O(1) access to keys, and a Doubly Linked List for O(1) updates to the 'order' (move to head/tail)."
+  },
+  {
+    "id": "t_des_03",
+    "title": "Concept: Randomized O(1)",
+    "content": "To delete from an array in O(1), you must know the index. Map value -> index. To delete without gaps, Swap the target with the Last element, then Pop."
+  }
+]

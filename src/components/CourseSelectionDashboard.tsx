@@ -212,6 +212,20 @@ const baseCourses: Course[] = [
       'Hands-on coding exercises'
     ],
     color: 'from-cyan-400 to-blue-600'
+  },
+  {
+    id: 'dsa',
+    title: 'Data Structures & Algorithms',
+    description: 'Master DSA with Python: progressive lessons, in-browser coding, and mastery tracking',
+    icon: <Code className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'Progressive Python lessons',
+      'In-browser code execution',
+      'Mastery tracking & spaced repetition',
+      '11 comprehensive modules'
+    ],
+    color: 'from-yellow-500 to-orange-600'
   }
 ];
 

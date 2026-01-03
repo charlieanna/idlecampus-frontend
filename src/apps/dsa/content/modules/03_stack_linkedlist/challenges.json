@@ -1,0 +1,471 @@
+[
+  {
+    "id": "q_25",
+    "title": "Reverse Nodes in k-Group",
+    "prompt": "Given the head of a linked list, reverse the nodes of the list k at a time, and return the modified list. k is a positive integer <= list length. If the number of nodes is not a multiple of k, leave the remaining nodes as is.",
+    "constraints": [
+      "O(N) Time",
+      "O(1) Space"
+    ],
+    "family_tree": {
+      "remedial_id": "q_206",
+      "tutorial_id": "t_ll_02"
+    },
+    "starterCode": "class ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef reverseKGroup(head: ListNode, k: int) -> ListNode:\n    \"\"\"Reverse nodes k at a time.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 2, 3, 4, 5], 2",
+        "expectedOutput": "[2, 1, 4, 3, 5]"
+      },
+      {
+        "id": "test-2",
+        "input": "[1, 2, 3, 4, 5], 3",
+        "expectedOutput": "[3, 2, 1, 4, 5]"
+      },
+      {
+        "id": "test-3",
+        "input": "[1], 1",
+        "expectedOutput": "[1]"
+      }
+    ],
+    "hints": [
+      "Count k nodes ahead; if not enough, don't reverse.",
+      "Reverse k nodes using standard linked list reversal.",
+      "Connect reversed group to next group recursively or iteratively."
+    ],
+    "solution": "def reverseKGroup(head: ListNode, k: int) -> ListNode:\n    # Count k nodes\n    count = 0\n    node = head\n    while node and count < k:\n        node = node.next\n        count += 1\n    \n    if count < k:\n        return head\n    \n    # Reverse k nodes\n    prev, curr = None, head\n    for _ in range(k):\n        next_node = curr.next\n        curr.next = prev\n        prev = curr\n        curr = next_node\n    \n    # head is now the tail of reversed group\n    head.next = reverseKGroup(curr, k)\n    return prev"
+  },
+  {
+    "id": "q_23",
+    "title": "Merge k Sorted Lists",
+    "prompt": "You are given an array of k linked-lists, each sorted in ascending order. Merge all the linked-lists into one sorted linked-list and return it.",
+    "constraints": [
+      "O(N log k) Time",
+      "O(1) Space (Iterative)"
+    ],
+    "family_tree": {
+      "remedial_id": "q_21",
+      "tutorial_id": "t_ll_01"
+    },
+    "starterCode": "class ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef mergeKLists(lists: list[ListNode]) -> ListNode:\n    \"\"\"Merge k sorted linked lists.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[1, 4, 5], [1, 3, 4], [2, 6]]",
+        "expectedOutput": "[1, 1, 2, 3, 4, 4, 5, 6]"
+      },
+      {
+        "id": "test-2",
+        "input": "[]",
+        "expectedOutput": "[]"
+      },
+      {
+        "id": "test-3",
+        "input": "[[]]",
+        "expectedOutput": "[]"
+      }
+    ],
+    "hints": [
+      "Use a min-heap to always get the smallest node among all list heads.",
+      "Alternatively, use divide and conquer: merge pairs of lists.",
+      "Divide and conquer: O(N log k) where N is total nodes."
+    ],
+    "solution": "def mergeKLists(lists: list[ListNode]) -> ListNode:\n    import heapq\n    \n    # Min heap of (val, index, node)\n    heap = []\n    for i, node in enumerate(lists):\n        if node:\n            heapq.heappush(heap, (node.val, i, node))\n    \n    dummy = ListNode(0)\n    curr = dummy\n    \n    while heap:\n        val, i, node = heapq.heappop(heap)\n        curr.next = node\n        curr = curr.next\n        \n        if node.next:\n            heapq.heappush(heap, (node.next.val, i, node.next))\n    \n    return dummy.next"
+  },
+  {
+    "id": "q_138",
+    "title": "Copy List with Random Pointer",
+    "prompt": "A linked list has each node with a next pointer and a random pointer that can point to any node or null. Construct a deep copy of the list.",
+    "constraints": [
+      "O(N) Time",
+      "O(1) Space (Interweaving)"
+    ],
+    "family_tree": {
+      "remedial_id": "q_141",
+      "tutorial_id": "t_ll_03"
+    },
+    "starterCode": "class Node:\n    def __init__(self, val, next=None, random=None):\n        self.val = val\n        self.next = next\n        self.random = random\n\ndef copyRandomList(head: Node) -> Node:\n    \"\"\"Create deep copy of list with random pointers.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[[7, null], [13, 0], [11, 4], [10, 2], [1, 0]]",
+        "expectedOutput": "[[7, null], [13, 0], [11, 4], [10, 2], [1, 0]]"
+      },
+      {
+        "id": "test-2",
+        "input": "[[1, 1], [2, 1]]",
+        "expectedOutput": "[[1, 1], [2, 1]]"
+      },
+      {
+        "id": "test-3",
+        "input": "[]",
+        "expectedOutput": "[]"
+      }
+    ],
+    "hints": [
+      "O(N) space: Use a hashmap to map original nodes to their copies.",
+      "O(1) space: Interweave copied nodes (A->A'->B->B'), set random pointers, then separate.",
+      "Random pointer of copy = original.random.next (the copy)."
+    ],
+    "solution": "def copyRandomList(head: Node) -> Node:\n    if not head:\n        return None\n    \n    # Step 1: Interweave copies\n    curr = head\n    while curr:\n        copy = Node(curr.val, curr.next)\n        curr.next = copy\n        curr = copy.next\n    \n    # Step 2: Set random pointers\n    curr = head\n    while curr:\n        if curr.random:\n            curr.next.random = curr.random.next\n        curr = curr.next.next\n    \n    # Step 3: Separate lists\n    dummy = Node(0)\n    copy_curr = dummy\n    curr = head\n    while curr:\n        copy_curr.next = curr.next\n        copy_curr = copy_curr.next\n        curr.next = curr.next.next\n        curr = curr.next\n    \n    return dummy.next"
+  },
+  {
+    "id": "q_224",
+    "title": "Basic Calculator",
+    "prompt": "Given a string s representing a valid expression with +, -, parentheses, and non-negative integers, implement a basic calculator to evaluate it.",
+    "constraints": [
+      "O(N) Time",
+      "Stack Usage"
+    ],
+    "family_tree": {
+      "remedial_id": "q_150",
+      "tutorial_id": "t_stk_01"
+    },
+    "starterCode": "def calculate(s: str) -> int:\n    \"\"\"Evaluate the expression string.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "\"1 + 1\"",
+        "expectedOutput": "2"
+      },
+      {
+        "id": "test-2",
+        "input": "\" 2-1 + 2 \"",
+        "expectedOutput": "3"
+      },
+      {
+        "id": "test-3",
+        "input": "\"(1+(4+5+2)-3)+(6+8)\"",
+        "expectedOutput": "23"
+      }
+    ],
+    "hints": [
+      "Use a stack to handle parentheses - push current result and sign when seeing '('.",
+      "Track running result and current sign (+1 or -1).",
+      "When seeing ')', pop the sign and previous result, combine."
+    ],
+    "solution": "def calculate(s: str) -> int:\n    stack = []\n    result = 0\n    num = 0\n    sign = 1\n    \n    for char in s:\n        if char.isdigit():\n            num = num * 10 + int(char)\n        elif char == '+':\n            result += sign * num\n            num = 0\n            sign = 1\n        elif char == '-':\n            result += sign * num\n            num = 0\n            sign = -1\n        elif char == '(':\n            stack.append(result)\n            stack.append(sign)\n            result = 0\n            sign = 1\n        elif char == ')':\n            result += sign * num\n            num = 0\n            result *= stack.pop()  # sign before parenthesis\n            result += stack.pop()  # result before parenthesis\n    \n    result += sign * num\n    return result"
+  },
+  {
+    "id": "q_853",
+    "title": "Car Fleet",
+    "prompt": "N cars heading to the same destination on a one-lane road. Given positions and speeds, calculate how many car fleets will arrive at the destination.",
+    "constraints": [
+      "O(N log N) Time (Sorting)",
+      "Monotonic Stack approach"
+    ],
+    "family_tree": {
+      "remedial_id": "q_739",
+      "tutorial_id": "t_stk_02"
+    },
+    "starterCode": "def carFleet(target: int, position: list[int], speed: list[int]) -> int:\n    \"\"\"Return number of car fleets that arrive at target.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "12, [10, 8, 0, 5, 3], [2, 4, 1, 1, 3]",
+        "expectedOutput": "3"
+      },
+      {
+        "id": "test-2",
+        "input": "10, [3], [3]",
+        "expectedOutput": "1"
+      },
+      {
+        "id": "test-3",
+        "input": "100, [0, 2, 4], [4, 2, 1]",
+        "expectedOutput": "1"
+      }
+    ],
+    "hints": [
+      "Calculate time each car needs to reach target: (target - pos) / speed.",
+      "Sort cars by position (closest to target first).",
+      "Cars form a fleet if a faster car catches up to a slower one ahead."
+    ],
+    "solution": "def carFleet(target: int, position: list[int], speed: list[int]) -> int:\n    # Pair positions and speeds, sort by position descending\n    cars = sorted(zip(position, speed), reverse=True)\n    \n    fleets = 0\n    prev_time = 0\n    \n    for pos, spd in cars:\n        time = (target - pos) / spd\n        if time > prev_time:\n            fleets += 1\n            prev_time = time\n    \n    return fleets"
+  },
+  {
+    "id": "q_316",
+    "title": "Remove Duplicate Letters",
+    "prompt": "Given a string s, remove duplicate letters so that every letter appears once and only once. Return the smallest in lexicographical order among all possible results.",
+    "constraints": [
+      "O(N) Time",
+      "Monotonic Stack + Greedy"
+    ],
+    "family_tree": {
+      "remedial_id": "q_496",
+      "tutorial_id": "t_stk_02"
+    },
+    "starterCode": "def removeDuplicateLetters(s: str) -> str:\n    \"\"\"Return smallest string with each char appearing once.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "\"bcabc\"",
+        "expectedOutput": "\"abc\""
+      },
+      {
+        "id": "test-2",
+        "input": "\"cbacdcbc\"",
+        "expectedOutput": "\"acdb\""
+      },
+      {
+        "id": "test-3",
+        "input": "\"abcd\"",
+        "expectedOutput": "\"abcd\""
+      }
+    ],
+    "hints": [
+      "Use a monotonic increasing stack for result characters.",
+      "Pop larger chars if the same char appears later in string.",
+      "Track last occurrence of each character and which are already in stack."
+    ],
+    "solution": "def removeDuplicateLetters(s: str) -> str:\n    last_occurrence = {c: i for i, c in enumerate(s)}\n    stack = []\n    in_stack = set()\n    \n    for i, char in enumerate(s):\n        if char in in_stack:\n            continue\n        \n        # Pop chars that are larger and appear later\n        while stack and stack[-1] > char and last_occurrence[stack[-1]] > i:\n            in_stack.remove(stack.pop())\n        \n        stack.append(char)\n        in_stack.add(char)\n    \n    return ''.join(stack)"
+  },
+  {
+    "id": "q_143",
+    "title": "Reorder List",
+    "prompt": "Given head of a singly linked list L0→L1→…→Ln-1→Ln, reorder it to: L0→Ln→L1→Ln-1→L2→Ln-2→…",
+    "constraints": [
+      "O(N) Time",
+      "O(1) Space"
+    ],
+    "family_tree": {
+      "remedial_id": "q_876",
+      "tutorial_id": "t_ll_02"
+    },
+    "starterCode": "class ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef reorderList(head: ListNode) -> None:\n    \"\"\"Reorder list in-place.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 2, 3, 4]",
+        "expectedOutput": "[1, 4, 2, 3]"
+      },
+      {
+        "id": "test-2",
+        "input": "[1, 2, 3, 4, 5]",
+        "expectedOutput": "[1, 5, 2, 4, 3]"
+      },
+      {
+        "id": "test-3",
+        "input": "[1]",
+        "expectedOutput": "[1]"
+      }
+    ],
+    "hints": [
+      "Find the middle using slow/fast pointers.",
+      "Reverse the second half of the list.",
+      "Merge the two halves by alternating nodes."
+    ],
+    "solution": "def reorderList(head: ListNode) -> None:\n    if not head or not head.next:\n        return\n    \n    # Find middle\n    slow, fast = head, head\n    while fast.next and fast.next.next:\n        slow = slow.next\n        fast = fast.next.next\n    \n    # Reverse second half\n    prev, curr = None, slow.next\n    slow.next = None\n    while curr:\n        next_node = curr.next\n        curr.next = prev\n        prev = curr\n        curr = next_node\n    \n    # Merge two halves\n    first, second = head, prev\n    while second:\n        tmp1, tmp2 = first.next, second.next\n        first.next = second\n        second.next = tmp1\n        first, second = tmp1, tmp2"
+  },
+  {
+    "id": "q_2",
+    "title": "Add Two Numbers",
+    "prompt": "Given two non-empty linked lists representing two non-negative integers in reverse order, add the two numbers and return the sum as a linked list.",
+    "constraints": [
+      "O(N) Time",
+      "Math/Carry Logic"
+    ],
+    "family_tree": {
+      "remedial_id": "q_66",
+      "tutorial_id": "t_ll_01"
+    },
+    "starterCode": "class ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef addTwoNumbers(l1: ListNode, l2: ListNode) -> ListNode:\n    \"\"\"Add two numbers represented as linked lists.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[2, 4, 3], [5, 6, 4]",
+        "expectedOutput": "[7, 0, 8]"
+      },
+      {
+        "id": "test-2",
+        "input": "[0], [0]",
+        "expectedOutput": "[0]"
+      },
+      {
+        "id": "test-3",
+        "input": "[9, 9, 9, 9], [9, 9, 9]",
+        "expectedOutput": "[8, 9, 9, 0, 1]"
+      }
+    ],
+    "hints": [
+      "Add digit by digit, tracking carry.",
+      "Sum = l1.val + l2.val + carry; new digit = sum % 10; carry = sum // 10.",
+      "Don't forget to handle remaining carry after both lists end."
+    ],
+    "solution": "def addTwoNumbers(l1: ListNode, l2: ListNode) -> ListNode:\n    dummy = ListNode(0)\n    curr = dummy\n    carry = 0\n    \n    while l1 or l2 or carry:\n        val1 = l1.val if l1 else 0\n        val2 = l2.val if l2 else 0\n        \n        total = val1 + val2 + carry\n        carry = total // 10\n        curr.next = ListNode(total % 10)\n        curr = curr.next\n        \n        l1 = l1.next if l1 else None\n        l2 = l2.next if l2 else None\n    \n    return dummy.next"
+  },
+  {
+    "id": "q_19",
+    "title": "Remove Nth Node From End of List",
+    "prompt": "Given the head of a linked list, remove the nth node from the end of the list and return its head.",
+    "constraints": [
+      "O(N) Time",
+      "One Pass"
+    ],
+    "family_tree": {
+      "remedial_id": "q_237",
+      "tutorial_id": "t_ll_04"
+    },
+    "starterCode": "class ListNode:\n    def __init__(self, val=0, next=None):\n        self.val = val\n        self.next = next\n\ndef removeNthFromEnd(head: ListNode, n: int) -> ListNode:\n    \"\"\"Remove nth node from end.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 2, 3, 4, 5], 2",
+        "expectedOutput": "[1, 2, 3, 5]"
+      },
+      {
+        "id": "test-2",
+        "input": "[1], 1",
+        "expectedOutput": "[]"
+      },
+      {
+        "id": "test-3",
+        "input": "[1, 2], 1",
+        "expectedOutput": "[1]"
+      }
+    ],
+    "hints": [
+      "Use two pointers, n nodes apart.",
+      "When fast pointer reaches end, slow is at (n+1)th from end.",
+      "Use dummy node to handle edge case of removing head."
+    ],
+    "solution": "def removeNthFromEnd(head: ListNode, n: int) -> ListNode:\n    dummy = ListNode(0, head)\n    slow = fast = dummy\n    \n    # Move fast n+1 steps ahead\n    for _ in range(n + 1):\n        fast = fast.next\n    \n    # Move both until fast reaches end\n    while fast:\n        slow = slow.next\n        fast = fast.next\n    \n    # Remove the nth node\n    slow.next = slow.next.next\n    return dummy.next"
+  },
+  {
+    "id": "q_146",
+    "title": "LRU Cache",
+    "prompt": "Design a data structure for Least Recently Used (LRU) cache. Implement get(key) and put(key, value) in O(1) time. When capacity is exceeded, evict the least recently used item.",
+    "constraints": [
+      "O(1) Time Operations",
+      "Doubly Linked List + HashMap"
+    ],
+    "family_tree": {
+      "remedial_id": "q_706",
+      "tutorial_id": "t_ll_03"
+    },
+    "starterCode": "class LRUCache:\n    def __init__(self, capacity: int):\n        pass\n    \n    def get(self, key: int) -> int:\n        \"\"\"Return value if exists, else -1.\"\"\"\n        pass\n    \n    def put(self, key: int, value: int) -> None:\n        \"\"\"Add or update key-value pair.\"\"\"\n        pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[\"LRUCache\", \"put\", \"put\", \"get\", \"put\", \"get\", \"put\", \"get\", \"get\", \"get\"], [[2], [1, 1], [2, 2], [1], [3, 3], [2], [4, 4], [1], [3], [4]]",
+        "expectedOutput": "[null, null, null, 1, null, -1, null, -1, 3, 4]"
+      }
+    ],
+    "hints": [
+      "Use a hashmap for O(1) access and a doubly linked list for O(1) removal/insertion.",
+      "Most recently used at tail, least recently used at head.",
+      "On access or update, move node to tail."
+    ],
+    "solution": "class Node:\n    def __init__(self, key=0, val=0):\n        self.key = key\n        self.val = val\n        self.prev = None\n        self.next = None\n\nclass LRUCache:\n    def __init__(self, capacity: int):\n        self.capacity = capacity\n        self.cache = {}  # key -> Node\n        self.head = Node()  # dummy head (LRU end)\n        self.tail = Node()  # dummy tail (MRU end)\n        self.head.next = self.tail\n        self.tail.prev = self.head\n    \n    def _remove(self, node):\n        node.prev.next = node.next\n        node.next.prev = node.prev\n    \n    def _add_to_tail(self, node):\n        node.prev = self.tail.prev\n        node.next = self.tail\n        self.tail.prev.next = node\n        self.tail.prev = node\n    \n    def get(self, key: int) -> int:\n        if key not in self.cache:\n            return -1\n        node = self.cache[key]\n        self._remove(node)\n        self._add_to_tail(node)\n        return node.val\n    \n    def put(self, key: int, value: int) -> None:\n        if key in self.cache:\n            self._remove(self.cache[key])\n        node = Node(key, value)\n        self.cache[key] = node\n        self._add_to_tail(node)\n        \n        if len(self.cache) > self.capacity:\n            lru = self.head.next\n            self._remove(lru)\n            del self.cache[lru.key]"
+  },
+  {
+    "id": "q_custom_delete_alt",
+    "title": "Delete Alternate Nodes",
+    "prompt": "Given a linked list, delete every alternate node (delete 2nd, 4th, 6th...) starting from the head.",
+    "constraints": [
+      "O(N) Time",
+      "O(1) Space"
+    ],
+    "family_tree": {
+      "remedial_id": "q_237",
+      "tutorial_id": "t_ll_01"
+    },
+    "starterCode": "def deleteAlt(head: ListNode) -> ListNode:\n    \"\"\"Delete every other node.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1, 2, 3, 4, 5]",
+        "expectedOutput": "[1, 3, 5]"
+      },
+      {
+        "id": "test-2",
+        "input": "[1, 2]",
+        "expectedOutput": "[1]"
+      },
+      {
+        "id": "test-3",
+        "input": "[1]",
+        "expectedOutput": "[1]"
+      }
+    ],
+    "hints": [
+      "Iterate through list.",
+      "Set curr.next = curr.next.next.",
+      "Ensure you don't access null properties."
+    ],
+    "solution": "def deleteAlt(head: ListNode) -> ListNode:\n    if not head:\n        return None\n    \n    prev = head\n    node = head.next\n    \n    while prev and node:\n        prev.next = node.next\n        node = None\n        prev = prev.next\n        if prev:\n            node = prev.next\n            \n    return head"
+  },
+  {
+    "id": "q_369",
+    "title": "Plus One Linked List",
+    "prompt": "Given a non-negative integer represented as a linked list of digits, plus one to the integer. The digits are stored such that the most significant digit is at the head of the list.",
+    "constraints": [
+      "O(N) Time",
+      "O(1) Space (Iterative) or O(N) (Recursive)"
+    ],
+    "family_tree": {
+      "remedial_id": "q_206",
+      "tutorial_id": "t_ll_01"
+    },
+    "starterCode": "def plusOne(head: ListNode) -> ListNode:\n    \"\"\"Return head of linked list after adding one.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "[1,2,3]",
+        "expectedOutput": "[1,2,4]"
+      },
+      {
+        "id": "test-2",
+        "input": "[0]",
+        "expectedOutput": "[1]"
+      },
+      {
+        "id": "test-3",
+        "input": "[9,9]",
+        "expectedOutput": "[1,0,0]"
+      }
+    ],
+    "hints": [
+      "Reverse the list, add one, then reverse back.",
+      "Or finding the rightmost non-nine digit and increment it."
+    ],
+    "solution": "def plusOne(head: ListNode) -> ListNode:\n    sentinel = ListNode(0)\n    sentinel.next = head\n    not_nine = sentinel\n    \n    # FIND rightmost not-nine\n    curr = head\n    while curr:\n        if curr.val != 9:\n            not_nine = curr\n        curr = curr.next\n    \n    not_nine.val += 1\n    not_nine = not_nine.next\n    \n    # Set all following nines to zero\n    while not_nine:\n        not_nine.val = 0\n        not_nine = not_nine.next\n        \n    return sentinel if sentinel.val != 0 else sentinel.next"
+  },
+  {
+    "id": "q_394",
+    "title": "Decode String",
+    "prompt": "Given an encoded string, return its decoded string. The encoding rule is: k[encoded_string], where the encoded_string inside the square brackets is being repeated exactly k times. You may assume that the input string is always valid.",
+    "constraints": [
+      "O(N) Time",
+      "Stack"
+    ],
+    "family_tree": {
+      "remedial_id": "q_20",
+      "tutorial_id": "t_stk_01"
+    },
+    "starterCode": "def decodeString(s: str) -> str:\n    \"\"\"Return decoded string.\"\"\"\n    pass",
+    "testCases": [
+      {
+        "id": "test-1",
+        "input": "\"3[a]2[bc]\"",
+        "expectedOutput": "\"aaabcbc\""
+      },
+      {
+        "id": "test-2",
+        "input": "\"3[a2[c]]\"",
+        "expectedOutput": "\"accaccacc\""
+      },
+      {
+        "id": "test-3",
+        "input": "\"2[abc]3[cd]ef\"",
+        "expectedOutput": "\"abcabccdcdcdef\""
+      }
+    ],
+    "hints": [
+      "Use a stack to keep track of previous strings and repetition counts.",
+      "When ']', pop repetition count and previous string, then build new current string."
+    ],
+    "solution": "def decodeString(s: str) -> str:\n    stack = []\n    curr_str = \"\"\n    curr_num = 0\n    \n    for c in s:\n        if c.isdigit():\n            curr_num = curr_num * 10 + int(c)\n        elif c == \"[\":\n            stack.append(curr_str)\n            stack.append(curr_num)\n            curr_str = \"\"\n            curr_num = 0\n        elif c == \"]\":\n            num = stack.pop()\n            prev_str = stack.pop()\n            curr_str = prev_str + num * curr_str\n        else:\n            curr_str += c\n            \n    return curr_str"
+  }
+]

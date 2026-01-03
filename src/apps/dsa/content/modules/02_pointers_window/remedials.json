@@ -1,0 +1,182 @@
+[
+  {
+    "id": "q_125",
+    "title": "Valid Palindrome",
+    "prompt": "A phrase is a palindrome if, after converting all uppercase letters into lowercase letters and removing all non-alphanumeric characters, it reads the same forward and backward. Given a string s, return true if it is a palindrome, or false otherwise.",
+    "concept_taught": "Converging Pointers",
+    "starterCode": "def isPalindrome(s: str) -> bool:\n    \"\"\"Return True if s is a valid palindrome.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "\"A man, a plan, a canal: Panama\"", "expectedOutput": "true"},
+      {"id": "test-2", "input": "\"race a car\"", "expectedOutput": "false"},
+      {"id": "test-3", "input": "\" \"", "expectedOutput": "true"}
+    ],
+    "hints": [
+      "Use two pointers: one at start, one at end.",
+      "Skip non-alphanumeric characters.",
+      "Compare lowercase versions of characters."
+    ],
+    "solution": "def isPalindrome(s: str) -> bool:\n    left, right = 0, len(s) - 1\n    \n    while left < right:\n        while left < right and not s[left].isalnum():\n            left += 1\n        while left < right and not s[right].isalnum():\n            right -= 1\n        \n        if s[left].lower() != s[right].lower():\n            return False\n        \n        left += 1\n        right -= 1\n    \n    return True"
+  },
+  {
+    "id": "q_167",
+    "title": "Two Sum II - Input Array Is Sorted",
+    "prompt": "Given a 1-indexed array of integers numbers that is already sorted in non-decreasing order, find two numbers such that they add up to a specific target number. Return the indices of the two numbers (1-indexed).",
+    "concept_taught": "Shrinking Search Space",
+    "starterCode": "def twoSum(numbers: list[int], target: int) -> list[int]:\n    \"\"\"Return 1-indexed positions of two numbers that sum to target.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[2, 7, 11, 15], 9", "expectedOutput": "[1, 2]"},
+      {"id": "test-2", "input": "[2, 3, 4], 6", "expectedOutput": "[1, 3]"},
+      {"id": "test-3", "input": "[-1, 0], -1", "expectedOutput": "[1, 2]"}
+    ],
+    "hints": [
+      "Since array is sorted, use two pointers.",
+      "If sum < target, move left pointer right.",
+      "If sum > target, move right pointer left."
+    ],
+    "solution": "def twoSum(numbers: list[int], target: int) -> list[int]:\n    left, right = 0, len(numbers) - 1\n    \n    while left < right:\n        current_sum = numbers[left] + numbers[right]\n        if current_sum == target:\n            return [left + 1, right + 1]\n        elif current_sum < target:\n            left += 1\n        else:\n            right -= 1\n    \n    return []"
+  },
+  {
+    "id": "q_121",
+    "title": "Best Time to Buy and Sell Stock",
+    "prompt": "You are given an array prices where prices[i] is the price of a given stock on the ith day. You want to maximize your profit by choosing a single day to buy one stock and choosing a different day in the future to sell that stock. Return the maximum profit you can achieve from this transaction. If you cannot achieve any profit, return 0.",
+    "concept_taught": "Basic Sliding Window",
+    "starterCode": "def maxProfit(prices: list[int]) -> int:\n    \"\"\"Return maximum profit from one buy and one sell.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[7, 1, 5, 3, 6, 4]", "expectedOutput": "5"},
+      {"id": "test-2", "input": "[7, 6, 4, 3, 1]", "expectedOutput": "0"},
+      {"id": "test-3", "input": "[2, 4, 1]", "expectedOutput": "2"}
+    ],
+    "hints": [
+      "Track the minimum price seen so far.",
+      "At each day, calculate profit if selling today.",
+      "Keep track of maximum profit seen."
+    ],
+    "solution": "def maxProfit(prices: list[int]) -> int:\n    min_price = float('inf')\n    max_profit = 0\n    \n    for price in prices:\n        min_price = min(min_price, price)\n        max_profit = max(max_profit, price - min_price)\n    \n    return max_profit"
+  },
+  {
+    "id": "q_283",
+    "title": "Move Zeroes",
+    "prompt": "Given an integer array nums, move all 0's to the end of it while maintaining the relative order of the non-zero elements. You must do this in-place without making a copy of the array.",
+    "concept_taught": "Fast and Slow Pointers",
+    "starterCode": "def moveZeroes(nums: list[int]) -> None:\n    \"\"\"Move all zeroes to end in-place.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[0, 1, 0, 3, 12]", "expectedOutput": "[1, 3, 12, 0, 0]"},
+      {"id": "test-2", "input": "[0]", "expectedOutput": "[0]"},
+      {"id": "test-3", "input": "[1, 2, 3]", "expectedOutput": "[1, 2, 3]"}
+    ],
+    "hints": [
+      "Use slow pointer to track position for next non-zero.",
+      "Fast pointer scans through array.",
+      "Swap non-zero elements to slow position."
+    ],
+    "solution": "def moveZeroes(nums: list[int]) -> None:\n    slow = 0\n    \n    for fast in range(len(nums)):\n        if nums[fast] != 0:\n            nums[slow], nums[fast] = nums[fast], nums[slow]\n            slow += 1"
+  },
+  {
+    "id": "q_3",
+    "title": "Longest Substring Without Repeating Characters",
+    "prompt": "Given a string s, find the length of the longest substring without repeating characters.",
+    "concept_taught": "Dynamic Sliding Window",
+    "starterCode": "def lengthOfLongestSubstring(s: str) -> int:\n    \"\"\"Return length of longest substring without repeating chars.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "\"abcabcbb\"", "expectedOutput": "3"},
+      {"id": "test-2", "input": "\"bbbbb\"", "expectedOutput": "1"},
+      {"id": "test-3", "input": "\"pwwkew\"", "expectedOutput": "3"}
+    ],
+    "hints": [
+      "Use sliding window with a set for seen characters.",
+      "Expand right to add characters.",
+      "Shrink left when duplicate found."
+    ],
+    "solution": "def lengthOfLongestSubstring(s: str) -> int:\n    seen = set()\n    left = 0\n    max_len = 0\n    \n    for right in range(len(s)):\n        while s[right] in seen:\n            seen.remove(s[left])\n            left += 1\n        seen.add(s[right])\n        max_len = max(max_len, right - left + 1)\n    \n    return max_len"
+  },
+  {
+    "id": "q_567",
+    "title": "Permutation in String",
+    "prompt": "Given two strings s1 and s2, return true if s2 contains a permutation of s1, or false otherwise. In other words, return true if one of s1's permutations is the substring of s2.",
+    "concept_taught": "Fixed Sliding Window",
+    "starterCode": "def checkInclusion(s1: str, s2: str) -> bool:\n    \"\"\"Return True if s2 contains a permutation of s1.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "\"ab\", \"eidbaooo\"", "expectedOutput": "true"},
+      {"id": "test-2", "input": "\"ab\", \"eidboaoo\"", "expectedOutput": "false"},
+      {"id": "test-3", "input": "\"adc\", \"dcda\"", "expectedOutput": "true"}
+    ],
+    "hints": [
+      "Use fixed window of size len(s1).",
+      "Compare character frequencies of window with s1.",
+      "Slide window and update frequencies."
+    ],
+    "solution": "def checkInclusion(s1: str, s2: str) -> bool:\n    from collections import Counter\n    \n    if len(s1) > len(s2):\n        return False\n    \n    s1_count = Counter(s1)\n    window = Counter(s2[:len(s1)])\n    \n    if window == s1_count:\n        return True\n    \n    for i in range(len(s1), len(s2)):\n        window[s2[i]] += 1\n        left_char = s2[i - len(s1)]\n        window[left_char] -= 1\n        if window[left_char] == 0:\n            del window[left_char]\n        \n        if window == s1_count:\n            return True\n    \n    return False"
+  },
+  {
+    "id": "q_88",
+    "title": "Merge Sorted Array",
+    "prompt": "You are given two integer arrays nums1 and nums2, sorted in non-decreasing order, and two integers m and n, representing the number of elements in nums1 and nums2 respectively. Merge nums2 into nums1 as one sorted array. nums1 has length m + n.",
+    "concept_taught": "Pointers from End",
+    "starterCode": "def merge(nums1: list[int], m: int, nums2: list[int], n: int) -> None:\n    \"\"\"Merge nums2 into nums1 in-place.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[1,2,3,0,0,0], 3, [2,5,6], 3", "expectedOutput": "[1,2,2,3,5,6]"},
+      {"id": "test-2", "input": "[1], 1, [], 0", "expectedOutput": "[1]"},
+      {"id": "test-3", "input": "[0], 0, [1], 1", "expectedOutput": "[1]"}
+    ],
+    "hints": [
+      "Start from the end to avoid overwriting.",
+      "Compare elements from end of both arrays.",
+      "Place larger element at end of nums1."
+    ],
+    "solution": "def merge(nums1: list[int], m: int, nums2: list[int], n: int) -> None:\n    p1, p2, p = m - 1, n - 1, m + n - 1\n    \n    while p2 >= 0:\n        if p1 >= 0 and nums1[p1] > nums2[p2]:\n            nums1[p] = nums1[p1]\n            p1 -= 1\n        else:\n            nums1[p] = nums2[p2]\n            p2 -= 1\n        p -= 1"
+  },
+  {
+    "id": "q_26",
+    "title": "Remove Duplicates from Sorted Array",
+    "prompt": "Given an integer array nums sorted in non-decreasing order, remove the duplicates in-place such that each unique element appears only once. The relative order of the elements should be kept the same. Return the number of unique elements.",
+    "concept_taught": "In-place Modification with Pointers",
+    "starterCode": "def removeDuplicates(nums: list[int]) -> int:\n    \"\"\"Remove duplicates in-place and return count of unique elements.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[1, 1, 2]", "expectedOutput": "2"},
+      {"id": "test-2", "input": "[0,0,1,1,1,2,2,3,3,4]", "expectedOutput": "5"},
+      {"id": "test-3", "input": "[1]", "expectedOutput": "1"}
+    ],
+    "hints": [
+      "Slow pointer marks position for next unique element.",
+      "Fast pointer scans for new unique values.",
+      "When new value found, place at slow and increment."
+    ],
+    "solution": "def removeDuplicates(nums: list[int]) -> int:\n    if not nums:\n        return 0\n    \n    slow = 0\n    \n    for fast in range(1, len(nums)):\n        if nums[fast] != nums[slow]:\n            slow += 1\n            nums[slow] = nums[fast]\n    \n    return slow + 1"
+  },
+  {
+    "id": "q_977",
+    "title": "Squares of a Sorted Array",
+    "prompt": "Given an integer array nums sorted in non-decreasing order, return an array of the squares of each number sorted in non-decreasing order.",
+    "concept_taught": "Converging Pointers Choice",
+    "starterCode": "def sortedSquares(nums: list[int]) -> list[int]:\n    \"\"\"Return sorted array of squared values.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "[-4, -1, 0, 3, 10]", "expectedOutput": "[0, 1, 9, 16, 100]"},
+      {"id": "test-2", "input": "[-7, -3, 2, 3, 11]", "expectedOutput": "[4, 9, 9, 49, 121]"},
+      {"id": "test-3", "input": "[1]", "expectedOutput": "[1]"}
+    ],
+    "hints": [
+      "Largest squares are at the ends (due to negatives).",
+      "Use two pointers at both ends.",
+      "Build result array from right to left."
+    ],
+    "solution": "def sortedSquares(nums: list[int]) -> list[int]:\n    n = len(nums)\n    result = [0] * n\n    left, right = 0, n - 1\n    pos = n - 1\n    \n    while left <= right:\n        left_sq = nums[left] ** 2\n        right_sq = nums[right] ** 2\n        \n        if left_sq > right_sq:\n            result[pos] = left_sq\n            left += 1\n        else:\n            result[pos] = right_sq\n            right -= 1\n        pos -= 1\n    \n    return result"
+  },
+  {
+    "id": "q_392",
+    "title": "Is Subsequence",
+    "prompt": "Given two strings s and t, return true if s is a subsequence of t, or false otherwise. A subsequence is a string that can be derived from another string by deleting some or no characters without changing the order of the remaining characters.",
+    "concept_taught": "Simple Two Pointers",
+    "starterCode": "def isSubsequence(s: str, t: str) -> bool:\n    \"\"\"Return True if s is a subsequence of t.\"\"\"\n    pass",
+    "testCases": [
+      {"id": "test-1", "input": "\"abc\", \"ahbgdc\"", "expectedOutput": "true"},
+      {"id": "test-2", "input": "\"axc\", \"ahbgdc\"", "expectedOutput": "false"},
+      {"id": "test-3", "input": "\"\", \"ahbgdc\"", "expectedOutput": "true"}
+    ],
+    "hints": [
+      "Use pointer for s and pointer for t.",
+      "Move s pointer only when characters match.",
+      "Always move t pointer forward."
+    ],
+    "solution": "def isSubsequence(s: str, t: str) -> bool:\n    if not s:\n        return True\n    \n    s_ptr = 0\n    \n    for char in t:\n        if char == s[s_ptr]:\n            s_ptr += 1\n            if s_ptr == len(s):\n                return True\n    \n    return False"
+  }
+]

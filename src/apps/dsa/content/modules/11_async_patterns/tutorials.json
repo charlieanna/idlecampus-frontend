@@ -1,0 +1,7 @@
+[
+  {
+    "id": "t_async_01",
+    "title": "Concept: Deferred Execution (Promises)",
+    "content": "How to schedule a task to run 'in 5 seconds'? Do not use sleep(). Use a Priority Queue or a Timer/Scheduler service that polls for tasks where 'execution_time <= now'."
+  }
+]

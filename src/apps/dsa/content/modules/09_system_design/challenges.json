@@ -1,0 +1,46 @@
+[
+  {
+    "id": "q_sys_01",
+    "title": "Design Rate Limiter",
+    "prompt": "Design a rate limiter using Token Bucket algorithm. Limit requests per client in a time window.",
+    "constraints": ["Token Bucket Algorithm", "O(1) Time Complexity"],
+    "family_tree": {"remedial_id": "q_sys_r1", "tutorial_id": "t_sys_01"},
+    "starterCode": "import time\n\nclass RateLimiter:\n    def __init__(self, capacity: int, refill_rate: float):\n        \"\"\"capacity: max tokens, refill_rate: tokens per second\"\"\"\n        pass\n    \n    def allow_request(self) -> bool:\n        \"\"\"Return True if request is allowed.\"\"\"\n        pass",
+    "testCases": [{"id": "test-1", "input": "RateLimiter(5, 1.0), 10 requests in 2 seconds", "expectedOutput": "First 5 allowed, then depends on refill"}],
+    "hints": ["Track tokens and last_refill_time.", "On request: refill tokens based on elapsed time.", "Allow if tokens >= 1, then decrement."],
+    "solution": "import time\n\nclass RateLimiter:\n    def __init__(self, capacity: int, refill_rate: float):\n        self.capacity = capacity\n        self.tokens = capacity\n        self.refill_rate = refill_rate\n        self.last_refill = time.time()\n    \n    def allow_request(self) -> bool:\n        now = time.time()\n        elapsed = now - self.last_refill\n        self.tokens = min(self.capacity, self.tokens + elapsed * self.refill_rate)\n        self.last_refill = now\n        \n        if self.tokens >= 1:\n            self.tokens -= 1\n            return True\n        return False"
+  },
+  {
+    "id": "q_362",
+    "title": "Design Hit Counter",
+    "prompt": "Design hit counter that counts hits in past 5 minutes (300 seconds).",
+    "constraints": ["Sliding Window", "O(1) or O(300) Space"],
+    "family_tree": {"remedial_id": "q_sys_r2", "tutorial_id": "t_sys_01"},
+    "starterCode": "class HitCounter:\n    def __init__(self):\n        pass\n    \n    def hit(self, timestamp: int) -> None:\n        pass\n    \n    def getHits(self, timestamp: int) -> int:\n        pass",
+    "testCases": [{"id": "test-1", "input": "[\"HitCounter\",\"hit\",\"hit\",\"hit\",\"getHits\",\"hit\",\"getHits\",\"getHits\"], [[],[1],[2],[3],[4],[300],[300],[301]]", "expectedOutput": "[null,null,null,null,3,null,4,3]"}],
+    "hints": ["Use circular array of size 300.", "Store (timestamp, count) at index timestamp % 300.", "On getHits, sum counts within window."],
+    "solution": "class HitCounter:\n    def __init__(self):\n        self.times = [0] * 300\n        self.hits = [0] * 300\n    \n    def hit(self, timestamp: int) -> None:\n        idx = timestamp % 300\n        if self.times[idx] != timestamp:\n            self.times[idx] = timestamp\n            self.hits[idx] = 1\n        else:\n            self.hits[idx] += 1\n    \n    def getHits(self, timestamp: int) -> int:\n        total = 0\n        for i in range(300):\n            if timestamp - self.times[i] < 300:\n                total += self.hits[i]\n        return total"
+  },
+  {
+    "id": "q_359",
+    "title": "Logger Rate Limiter",
+    "prompt": "Design logger that prints message at most every 10 seconds per unique message.",
+    "constraints": ["HashMap + Timestamp Check", "O(1) Time"],
+    "family_tree": {"remedial_id": "q_sys_r3", "tutorial_id": "t_sys_01"},
+    "starterCode": "class Logger:\n    def __init__(self):\n        pass\n    \n    def shouldPrintMessage(self, timestamp: int, message: str) -> bool:\n        pass",
+    "testCases": [{"id": "test-1", "input": "[\"Logger\", \"shouldPrintMessage\", \"shouldPrintMessage\", \"shouldPrintMessage\", \"shouldPrintMessage\", \"shouldPrintMessage\", \"shouldPrintMessage\"], [[], [1, \"foo\"], [2, \"bar\"], [3, \"foo\"], [8, \"bar\"], [10, \"foo\"], [11, \"foo\"]]", "expectedOutput": "[null, true, true, false, false, false, true]"}],
+    "hints": ["Map message -> last printed timestamp.", "Allow if not in map or timestamp - last >= 10.", "Update timestamp on allow."],
+    "solution": "class Logger:\n    def __init__(self):\n        self.msg_time = {}\n    \n    def shouldPrintMessage(self, timestamp: int, message: str) -> bool:\n        if message not in self.msg_time or timestamp - self.msg_time[message] >= 10:\n            self.msg_time[message] = timestamp\n            return True\n        return False"
+  },
+  {
+    "id": "q_sys_04",
+    "title": "API Rate Limiter with Multiple Limits",
+    "prompt": "Design rate limiter supporting multiple limits (e.g., 10/sec AND 100/min). Return True if allowed.",
+    "constraints": ["Multiple Token Buckets", "Composite Pattern"],
+    "family_tree": {"remedial_id": "q_sys_r1", "tutorial_id": "t_sys_01"},
+    "starterCode": "import time\n\nclass MultiRateLimiter:\n    def __init__(self, limits: list[tuple[int, int]]):\n        \"\"\"limits: list of (max_requests, window_seconds)\"\"\"\n        pass\n    \n    def allow_request(self) -> bool:\n        pass",
+    "testCases": [{"id": "test-1", "input": "MultiRateLimiter([(10, 1), (100, 60)])", "expectedOutput": "True for first 10 requests per second, up to 100 per minute"}],
+    "hints": ["Create separate limiter for each constraint.", "Request allowed only if ALL limiters allow.", "Use sliding window or token bucket for each."],
+    "solution": "import time\nfrom collections import deque\n\nclass MultiRateLimiter:\n    def __init__(self, limits: list[tuple[int, int]]):\n        self.limits = limits  # (max_requests, window_seconds)\n        self.windows = [deque() for _ in limits]\n    \n    def allow_request(self) -> bool:\n        now = time.time()\n        allowed = True\n        \n        for i, (max_req, window) in enumerate(self.limits):\n            # Remove expired timestamps\n            while self.windows[i] and now - self.windows[i][0] > window:\n                self.windows[i].popleft()\n            \n            if len(self.windows[i]) >= max_req:\n                allowed = False\n        \n        if allowed:\n            for window in self.windows:\n                window.append(now)\n        \n        return allowed"
+  }
+]

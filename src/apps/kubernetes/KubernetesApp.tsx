@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { GripVertical, Box, Check, Lock } from 'lucide-react';
 import * as ResizablePrimitive from 'react-resizable-panels';
-import { Terminal } from '../../components/course/Terminal';
+import { XTerminal } from '../../components/course/XTerminal';
 import { CourseNavigation, Module } from '../../components/course/CourseNavigation';
 import { CourseSidebar } from '../../components/course/CourseSidebar';
 import { LessonViewer } from '../../components/course/LessonViewer';
@@ -739,13 +739,15 @@ export default function App({ courseModules: propCourseModules }: AppProps = {})
         <ResizableHandle withHandle />
 
         <ResizablePanel defaultSize={40} minSize={25}>
-          <Terminal
+          <XTerminal
             expectedCommand={isQuiz ? null : expectedCommand}
-            onCommand={
-              isQuiz
-                ? handleQuizCommand
-                : handleTerminalCommand
-            }
+            sessionId="kubernetes-course"
+            onCommand={(command) => {
+              // Track command for lesson progress
+              if (!isQuiz) {
+                handleTerminalCommand(command);
+              }
+            }}
           />
         </ResizablePanel>
       </ResizablePanelGroup>
