@@ -396,8 +396,13 @@ export function CodeEditor({ lab, onComplete }: CodeEditorProps) {
         {/* Right: Test Cases / Output */}
         <div className="w-2/5 flex flex-col">
           {/* Tabs */}
-          <div className="flex border-b border-gray-700">
+          <div className="flex border-b border-gray-700" role="tablist">
             <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'tests'}
+              aria-controls="tests-panel"
+              id="tests-tab"
               onClick={() => setActiveTab('tests')}
               className={`flex-1 px-4 py-2 text-sm ${
                 activeTab === 'tests' ? 'bg-gray-800 border-b-2 border-blue-500' : 'bg-gray-900'
@@ -406,6 +411,11 @@ export function CodeEditor({ lab, onComplete }: CodeEditorProps) {
               Test Cases
             </button>
             <button
+              type="button"
+              role="tab"
+              aria-selected={activeTab === 'output'}
+              aria-controls="output-panel"
+              id="output-tab"
               onClick={() => setActiveTab('output')}
               className={`flex-1 px-4 py-2 text-sm ${
                 activeTab === 'output' ? 'bg-gray-800 border-b-2 border-blue-500' : 'bg-gray-900'
@@ -418,7 +428,13 @@ export function CodeEditor({ lab, onComplete }: CodeEditorProps) {
           {/* Tab Content */}
           <ScrollArea className="flex-1 p-4">
             {activeTab === 'tests' && (
-              <div className="space-y-4">
+              <div
+                className="space-y-4"
+                role="tabpanel"
+                id="tests-panel"
+                aria-labelledby="tests-tab"
+                tabIndex={0}
+              >
                 {validationResult ? (
                   <>
                     <div className="p-3 bg-gray-800 rounded">
@@ -513,7 +529,12 @@ export function CodeEditor({ lab, onComplete }: CodeEditorProps) {
             )}
 
             {activeTab === 'output' && (
-              <div>
+              <div
+                role="tabpanel"
+                id="output-panel"
+                aria-labelledby="output-tab"
+                tabIndex={0}
+              >
                 <div className="mb-3">
                   <label className="block text-xs text-gray-400 mb-1">
                     Custom Input (optional):
@@ -547,8 +568,10 @@ export function CodeEditor({ lab, onComplete }: CodeEditorProps) {
               <p className="text-sm text-gray-300">{hint}</p>
             </div>
             <button
+              type="button"
               onClick={() => setShowHint(false)}
               className="text-gray-400 hover:text-white text-xl leading-none"
+              aria-label="Close hint"
             >
               ×
             </button>
