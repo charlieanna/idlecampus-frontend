@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Box, Code, Network, Server, Terminal, Shield, Cloud, Radio, Database, Globe, FlaskConical, Calculator, BookOpen } from 'lucide-react';
+import { Box, Code, Network, Server, Terminal, Shield, Cloud, Radio, Database, Globe, FlaskConical, Calculator, BookOpen, GraduationCap } from 'lucide-react';
 import { Card } from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
@@ -85,7 +85,7 @@ const baseCourses: Course[] = [
       '3 challenges: Tiny URL, Food Blog, Todo App',
       'Pass/fail with bottleneck detection'
     ],
-    color: 'from-indigo-500 to-indigo-700'
+    color: 'from-blue-600 to-cyan-600'
   },
   {
     id: 'aws',
@@ -141,7 +141,7 @@ const baseCourses: Course[] = [
       'Circuit breaking & retries',
       'Service mesh concepts'
     ],
-    color: 'from-teal-500 to-teal-700'
+    color: 'from-purple-500 to-purple-700'
   },
   {
     id: 'chemistry',
@@ -155,7 +155,7 @@ const baseCourses: Course[] = [
       'IRT adaptive difficulty',
       'FSRS spaced repetition'
     ],
-    color: 'from-emerald-500 to-emerald-700'
+    color: 'from-green-600 to-green-800'
   },
   {
     id: 'mathematics',
@@ -169,7 +169,7 @@ const baseCourses: Course[] = [
       'Trigonometry & Vectors',
       'Formula mastery with SR'
     ],
-    color: 'from-violet-500 to-violet-700'
+    color: 'from-purple-600 to-purple-800'
   },
   {
     id: 'upsc',
@@ -183,7 +183,21 @@ const baseCourses: Course[] = [
       'Current affairs daily',
       'AI-powered evaluation'
     ],
-    color: 'from-amber-500 to-amber-700'
+    color: 'from-orange-600 to-orange-800'
+  },
+  {
+    id: 'cat',
+    title: 'CAT Exam Preparation',
+    description: 'Comprehensive preparation for Common Admission Test (MBA entrance)',
+    icon: <GraduationCap className="w-12 h-12" />,
+    status: 'available',
+    features: [
+      'Quantitative Aptitude (QA)',
+      'Data Interpretation & Logical Reasoning',
+      'Verbal Ability & Reading Comprehension',
+      'Mock tests & performance analytics'
+    ],
+    color: 'from-red-600 to-red-800'
   },
   {
     id: 'golang',
@@ -318,11 +332,10 @@ export default function CourseSelectionDashboard() {
 
                 {/* Action Button */}
                 <Button
-                  className={`w-full ${
-                    course.status === 'available'
-                      ? 'bg-gradient-to-r ' + course.color + ' hover:opacity-90'
-                      : 'bg-slate-300 cursor-not-allowed'
-                  }`}
+                  className={`w-full ${course.status === 'available'
+                    ? 'bg-gradient-to-r ' + course.color + ' hover:opacity-90'
+                    : 'bg-slate-300 cursor-not-allowed'
+                    }`}
                   disabled={course.status === 'coming-soon'}
                   onClick={(e) => {
                     e.stopPropagation();

@@ -10,6 +10,7 @@ import GolangApp from './apps/golang/GolangApp';
 import GenericCourseApp from './apps/generic/GenericCourseApp';
 import IITJEECourseSelection from './apps/iit-jee/IITJEECourseSelection';
 import UpscApp from './apps/upsc/UpscApp';
+import CatApp from './apps/cat/CatApp';
 import DSAApp from './apps/dsa/DSAApp';
 import CourseSelectionDashboard from './components/CourseSelectionDashboard';
 import { ProgressiveModuleViewer } from './components/course/ProgressiveModuleViewer';
@@ -449,6 +450,9 @@ export default function AppRouter() {
 
       {/* UPSC CSE Preparation Platform */}
       <Route path="/upsc/*" element={<UpscApp />} />
+
+      {/* CAT MBA Entrance Preparation */}
+      <Route path="/cat/*" element={<CatApp />} />
 
       {/* DSA Course with Python */}
       <Route path="/dsa/*" element={<DSAApp />} />
