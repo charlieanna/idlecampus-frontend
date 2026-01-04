@@ -1,8 +1,6 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
 import { Card } from "../ui/card";
 import { Badge } from "../ui/badge";
-import { ScrollArea } from "../ui/scroll-area";
 
 /**
  * Integrated Backtracking Lesson for DSA Course
@@ -13,10 +11,15 @@ import { ScrollArea } from "../ui/scroll-area";
 export function TreeFirstWorkshop() {
   const [activeExercise, setActiveExercise] = useState(0);
 
-  const exercises = [
+  const exercises: Array<{
+    title: string;
+    difficulty: 'Easy' | 'Medium' | 'Hard';
+    description: string;
+    constraints: string[];
+  }> = [
     {
       title: "Combination Sum III",
-      difficulty: "Hard" as const,
+      difficulty: "Hard",
       description: "Find all combinations of k numbers that sum to n",
       constraints: [
         "Use only numbers 1-9",
@@ -26,7 +29,7 @@ export function TreeFirstWorkshop() {
     },
     {
       title: "Generate Parentheses",
-      difficulty: "Medium" as const,
+      difficulty: "Medium",
       description: "Generate all valid combinations of n pairs of parentheses",
       constraints: [
         "Must be well-formed (balanced)",

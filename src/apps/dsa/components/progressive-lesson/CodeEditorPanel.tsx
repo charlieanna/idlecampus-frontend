@@ -24,7 +24,7 @@ import type {
   ProgressiveLessonProgress,
   NormalizedTestCase
 } from './types';
-import type { ProgressiveLesson } from '../../types/progressive-lesson-enhanced';
+import type { ProgressiveLesson, LessonSection } from '../../types/progressive-lesson-enhanced';
 
 // Constants for solution wrapper generation
 const SOLUTION_DEFINITION_REGEX = /def\s+solution\s*\(/i;
@@ -858,13 +858,13 @@ interface ExerciseCodeEditorProps {
   hintsUsed: Map<string, number>;
   bruteForceSolved: Set<string>;
   showBruteForceBlocker: Set<string>;
-  onUpdateProgress: (updates: Partial<ProgressiveLessonProgress>) => void;
-  onHintRequest: (sectionId: string) => void;
-  onExpandLesson: (sectionId: string) => void;
-  onCollapseDescription: (sectionId: string) => void;
-  onBruteForceSolved: (sectionId: string) => void;
-  onShowBruteForceBlocker: (sectionId: string) => void;
-  onHighlightBruteForceBlocker: (sectionId: string | null) => void;
+  onUpdateProgress?: (updates: Partial<ProgressiveLessonProgress>) => void;
+  onHintRequest?: (sectionId: string) => void;
+  onExpandLesson?: (sectionId: string) => void;
+  onCollapseDescription?: (sectionId: string) => void;
+  onBruteForceSolved?: (sectionId: string) => void;
+  onShowBruteForceBlocker?: (sectionId: string) => void;
+  onHighlightBruteForceBlocker?: (sectionId: string | null) => void;
 }
 
 const ExerciseCodeEditor: React.FC<ExerciseCodeEditorProps> = ({
@@ -1117,7 +1117,7 @@ const ExerciseCodeEditor: React.FC<ExerciseCodeEditorProps> = ({
 
       // Check for brute force solution
       if (allTestsPassed && complexity && complexity.time === 'O(n log n)') {
-        onBruteForceSolved(exercise.id);
+        onBruteForceSolved?.(exercise.id);
       }
 
       // Increment attempts on every run (not just successful ones)
@@ -1137,7 +1137,7 @@ const ExerciseCodeEditor: React.FC<ExerciseCodeEditorProps> = ({
         });
 
         // Find current section index and unlock next section if it exists
-        const currentSectionIndex = progressiveLesson.sections.findIndex(s => s.id === exerciseWithComplexity.id);
+        const currentSectionIndex = progressiveLesson.sections.findIndex((s: LessonSection | undefined) => s?.id === exerciseWithComplexity.id);
         if (currentSectionIndex >= 0 && currentSectionIndex < progressiveLesson.sections.length - 1) {
           const nextSection = progressiveLesson.sections[currentSectionIndex + 1];
           // Unlock the next section
@@ -1156,7 +1156,7 @@ const ExerciseCodeEditor: React.FC<ExerciseCodeEditorProps> = ({
           .filter(sp => sp.status === 'completed').length;
         const overallProgress = Math.round((completedCount / progressiveLesson.sections.length) * 100);
 
-        onExpandLesson(exercise.id);
+        onExpandLesson?.(exercise.id);
         // Ensure description is visible when exercise completes - expand it if collapsed
         // We'll handle this in the parent component by ensuring it's not in collapsedDescriptions
 
@@ -1189,7 +1189,7 @@ const ExerciseCodeEditor: React.FC<ExerciseCodeEditorProps> = ({
         .filter(sp => sp.status === 'completed').length;
       const overallProgress = Math.round((completedCount / progressiveLesson.sections.length) * 100);
 
-      onUpdateProgress({
+      onUpdateProgress?.({
         sectionsProgress: updatedSectionProgress,
         overallProgress: overallProgress
       });
@@ -1245,13 +1245,13 @@ const ExerciseCodeEditor: React.FC<ExerciseCodeEditorProps> = ({
   }
 
   // Calculate if there's a next section
-  const currentSectionIndex = progressiveLesson.sections.findIndex(s => s?.id === exerciseWithComplexity.id);
+  const currentSectionIndex = progressiveLesson.sections.findIndex((s: LessonSection | undefined) => s?.id === exerciseWithComplexity.id);
   const hasNextSection = currentSectionIndex >= 0 && currentSectionIndex < progressiveLesson.sections.length - 1;
 
   // Handler for "Continue" button
   const handleNext = () => {
     if (hasNextSection) {
-      onUpdateProgress({
+      onUpdateProgress?.({
         currentSectionIndex: currentSectionIndex + 1
       });
       // Scroll to top of the page when navigating to next section
@@ -1335,10 +1335,10 @@ const ExerciseCodeEditor: React.FC<ExerciseCodeEditorProps> = ({
 
         // Check for brute force blocker
         if (currentHintLevel >= 5 && !bruteForceSolved.has(exerciseWithComplexity.id)) {
-          onShowBruteForceBlocker(exerciseWithComplexity.id);
-          onExpandLesson(exerciseWithComplexity.id);
-          onHighlightBruteForceBlocker(exerciseWithComplexity.id);
-          setTimeout(() => onHighlightBruteForceBlocker(null), 1000);
+          onShowBruteForceBlocker?.(exerciseWithComplexity.id);
+          onExpandLesson?.(exerciseWithComplexity.id);
+          onHighlightBruteForceBlocker?.(exerciseWithComplexity.id);
+          setTimeout(() => onHighlightBruteForceBlocker?.(null), 1000);
 
           setTimeout(() => {
             const blockerSection = document.querySelector(`[data-brute-force-blocker="${exerciseWithComplexity.id}"]`);
@@ -1350,9 +1350,9 @@ const ExerciseCodeEditor: React.FC<ExerciseCodeEditorProps> = ({
           return;
         }
 
-        onHintRequest(exerciseWithComplexity.id);
-        onExpandLesson(exerciseWithComplexity.id);
-        onCollapseDescription(exerciseWithComplexity.id);
+        onHintRequest?.(exerciseWithComplexity.id);
+        onExpandLesson?.(exerciseWithComplexity.id);
+        onCollapseDescription?.(exerciseWithComplexity.id);
 
         setTimeout(() => {
           const hintsSection = document.querySelector(`[data-hints-section="${exerciseWithComplexity.id}"]`);
@@ -1837,9 +1837,9 @@ interface PracticeExerciseEditorProps {
   progressiveLessonProgress: ProgressiveLessonProgress;
   hintsUsed: Map<string, number>;
   expandedLessons: Set<string>;
-  onUpdateProgress: (updates: Partial<ProgressiveLessonProgress>) => void;
-  onHintRequest: (sectionId: string) => void;
-  onExpandLesson: (sectionId: string) => void;
+  onUpdateProgress?: (updates: Partial<ProgressiveLessonProgress>) => void;
+  onHintRequest?: (sectionId: string) => void;
+  onExpandLesson?: (sectionId: string) => void;
 }
 
 const PracticeExerciseEditor: React.FC<PracticeExerciseEditorProps> = ({
@@ -1856,6 +1856,7 @@ const PracticeExerciseEditor: React.FC<PracticeExerciseEditorProps> = ({
   // Convert practice exercise to ExerciseSection format for ExerciseCodeEditor
   const exerciseSection: ExerciseSection = {
     type: 'exercise',
+    placement: 'practice',
     id: `${currentSection.id}-practice`,
     title: practiceExercise.title,
     instruction: practiceExercise.instruction,
@@ -1867,7 +1868,9 @@ const PracticeExerciseEditor: React.FC<PracticeExerciseEditorProps> = ({
       expected: tc.expectedOutput,
     })) || [],
     difficulty: practiceExercise.difficulty || 'easy',
-    solution: practiceExercise.solution,
+    solution: typeof practiceExercise.solution === 'string'
+      ? { afterAttempt: 1, text: practiceExercise.solution }
+      : practiceExercise.solution,
     targetComplexity: undefined,
     hints: [],
   };
@@ -1904,7 +1907,7 @@ interface QuickQuizPanelProps {
   readingQuizAnswers: Map<string, { answer: number | null; completed: boolean }>;
   progressiveLessonProgress: ProgressiveLessonProgress;
   onQuizAnswer?: (questionId: string, answer: number) => void;
-  onUpdateProgress: (updates: Partial<ProgressiveLessonProgress>) => void;
+  onUpdateProgress?: (updates: Partial<ProgressiveLessonProgress>) => void;
 }
 
 const QuickQuizPanel: React.FC<QuickQuizPanelProps> = ({
@@ -1957,7 +1960,7 @@ const QuickQuizPanel: React.FC<QuickQuizPanelProps> = ({
         completedAt: new Date(),
       });
 
-      onUpdateProgress({
+      onUpdateProgress?.({
         sectionsProgress: updatedSectionProgress,
       });
     }
@@ -2082,7 +2085,7 @@ interface FollowingQuizPanelProps {
   progressiveLessonProgress: ProgressiveLessonProgress;
   currentSection: any;
   onQuizAnswer?: (questionId: string, answer: number) => void;
-  onUpdateProgress: (updates: Partial<ProgressiveLessonProgress>) => void;
+  onUpdateProgress?: (updates: Partial<ProgressiveLessonProgress>) => void;
 }
 
 const FollowingQuizPanel: React.FC<FollowingQuizPanelProps> = ({
@@ -2165,7 +2168,7 @@ const FollowingQuizPanel: React.FC<FollowingQuizPanelProps> = ({
           completedAt: new Date(),
         });
 
-        onUpdateProgress({
+        onUpdateProgress?.({
           sectionsProgress: updatedSectionProgress,
         });
       }
@@ -2329,13 +2332,13 @@ interface NextExerciseEditorProps {
   showBruteForceBlocker: Set<string>;
   expandedLessons: Set<string>;
   collapsedDescriptions: Set<string>;
-  onUpdateProgress: (updates: Partial<ProgressiveLessonProgress>) => void;
-  onHintRequest: (sectionId: string) => void;
-  onExpandLesson: (sectionId: string) => void;
-  onCollapseDescription: (sectionId: string) => void;
-  onBruteForceSolved: (sectionId: string) => void;
-  onShowBruteForceBlocker: (sectionId: string) => void;
-  onHighlightBruteForceBlocker: (sectionId: string | null) => void;
+  onUpdateProgress?: (updates: Partial<ProgressiveLessonProgress>) => void;
+  onHintRequest?: (sectionId: string) => void;
+  onExpandLesson?: (sectionId: string) => void;
+  onCollapseDescription?: (sectionId: string) => void;
+  onBruteForceSolved?: (sectionId: string) => void;
+  onShowBruteForceBlocker?: (sectionId: string) => void;
+  onHighlightBruteForceBlocker?: (sectionId: string | null) => void;
 }
 
 const NextExerciseEditor: React.FC<NextExerciseEditorProps> = ({

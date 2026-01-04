@@ -6,6 +6,7 @@ import { Search, CheckCircle2, XCircle, ArrowRight, Lightbulb, Code2 } from 'luc
 import { TrieManualBuilder, TrieInsertAnimation } from './TrieManualBuilder';
 import { TriePerformanceComparison } from './TriePerformanceComparison';
 import { TrieSearchVisualization } from './TrieSearchVisualization';
+import { TrieTaskEditor } from './TrieTaskEditor';
 
 /**
  * Comprehensive Trie Lesson - Learn > Task > Learn > Task Format

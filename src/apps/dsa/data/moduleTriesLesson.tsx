@@ -1,4 +1,4 @@
-import { ProgressiveLesson } from '../types/progressive-lesson-enhanced';
+import { ProgressiveLesson, LessonSection } from '../types/progressive-lesson-enhanced';
 import { module12TriesLessonSmartPracticeExercises } from './exercises/moduleTriesLessonSmartPracticeExercises';
 
 export const module12TriesLesson: ProgressiveLesson = {
@@ -1546,5 +1546,5 @@ If NO  → consider hash set/map (exact lookup) or other indexing.</code></pre>
         },
     
     ...module12TriesLessonSmartPracticeExercises,
-    ],
+    ].filter(Boolean) as LessonSection[],
 };

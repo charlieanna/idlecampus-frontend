@@ -1,4 +1,4 @@
-import { ProgressiveLesson } from '../types/progressive-lesson-enhanced';
+import { ProgressiveLesson, LessonSection } from '../types/progressive-lesson-enhanced';
 import { Module1Intro } from '../components/core/lessons/Module1Intro';
 import { module1ArrayIterationLessonSmartPracticeExercises } from './exercises/moduleArrayIterationLessonSmartPracticeExercises';
 
@@ -8,8 +8,7 @@ export const module1ArrayIterationLesson: ProgressiveLesson = {
         description: 'Learn to optimize array problems by identifying and removing bottlenecks',
         unlockMode: 'sequential',
         sections: [
-                // SECTION 1: Introduction
-
+                // SECTION 1: Introduction (placeholder removed)
 
                 // SECTION 2: Test-Case-First Methodology
                 {
@@ -872,5 +871,5 @@ Now adjacent intervals might overlap!</code></pre>
                 },
         
         ...module1ArrayIterationLessonSmartPracticeExercises,
-        ],
+        ].filter(Boolean) as LessonSection[],
 };

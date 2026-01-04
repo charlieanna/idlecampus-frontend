@@ -15,7 +15,7 @@ import {
 import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { renderStyledText } from '../../utils/styledTextRenderer';
-import type { InlineExercise } from './InlineMiniEditor';
+import type { InlineExercise } from '../../types/progressive-lesson-enhanced';
 
 interface EnhancedReadingSectionProps {
   content: string | ReactNode;

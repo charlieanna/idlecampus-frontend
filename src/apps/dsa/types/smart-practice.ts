@@ -233,8 +233,6 @@ export interface Example {
   visual?: string;           // URL to diagram/animation
 }
 
-import type { ProblemHintStep } from './dsa-course';
-
 export interface HintLevel extends ProblemHintStep {
   level: 1 | 2 | 3 | 4 | 5;
   hint: string;

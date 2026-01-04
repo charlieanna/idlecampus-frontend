@@ -1,4 +1,4 @@
-import { ProgressiveLesson } from '../types/progressive-lesson-enhanced';
+import { ProgressiveLesson, LessonSection } from '../types/progressive-lesson-enhanced';
 import { module3BitManipulationLessonSmartPracticeExercises } from './exercises/moduleBitManipulationLessonSmartPracticeExercises';
 
 export const module3BitManipulationLesson: ProgressiveLesson = {
@@ -226,5 +226,5 @@ n &amp; (n-1) = 0100  ← Still has bits set
     },
   
   ...module3BitManipulationLessonSmartPracticeExercises,
-  ],
+  ].filter(Boolean) as LessonSection[],
 };

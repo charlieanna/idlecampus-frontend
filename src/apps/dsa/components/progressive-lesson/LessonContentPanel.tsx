@@ -306,13 +306,13 @@ const LessonContentPanel: React.FC<LessonContentPanelProps> = ({
                 </div>
                 <div className="space-y-2">
                   {exerciseSection.hints
-                    .filter((hint: { afterAttempt: number; text: string }) =>
+                    .filter((hint) =>
                       hint.afterAttempt <= (hintsUsed.get(exerciseSection.id) || 0)
                     )
-                    .map((hint: { afterAttempt: number; text: string }, idx: number) => (
+                    .map((hint, idx: number) => (
                       <div key={idx} className="flex items-start gap-2 text-sm text-amber-900">
                         <span className="font-medium text-amber-600 flex-shrink-0">#{idx + 1}:</span>
-                        <span>{hint.text}</span>
+                        <span>{hint.text || hint.question || ''}</span>
                       </div>
                     ))
                   }

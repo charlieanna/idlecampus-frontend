@@ -1,4 +1,4 @@
-import { ProgressiveLesson } from '../types/progressive-lesson-enhanced';
+import { ProgressiveLesson, LessonSection } from '../types/progressive-lesson-enhanced';
 import { DummyNodeDiagram } from '../components/core/DummyNodeDiagram';
 import { LinkedListStructureDiagram } from '../components/core/LinkedListDiagram';
 import { module5LinkedListLessonSmartPracticeExercises } from './exercises/moduleLinkedListLessonSmartPracticeExercises';
@@ -966,5 +966,5 @@ return dummy.next
     },
   
   ...module5LinkedListLessonSmartPracticeExercises,
-  ],
+  ].filter(Boolean) as LessonSection[],
 };

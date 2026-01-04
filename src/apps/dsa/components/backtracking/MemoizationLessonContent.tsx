@@ -3,10 +3,9 @@ import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription } from '../ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { 
-  Brain, 
-  Zap, 
-  GitBranch,
+import {
+  Brain,
+  Zap,
   AlertCircle,
   CheckCircle,
   Code2,

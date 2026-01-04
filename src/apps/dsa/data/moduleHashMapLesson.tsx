@@ -1,4 +1,4 @@
-import { ProgressiveLesson } from '../types/progressive-lesson-enhanced';
+import { ProgressiveLesson, LessonSection } from '../types/progressive-lesson-enhanced';
 import { module2HashMapLessonSmartPracticeExercises } from './exercises/moduleHashMapLessonSmartPracticeExercises';
 
 export const module2HashMapLesson: ProgressiveLesson = {
@@ -2076,5 +2076,5 @@ def word_pattern(pattern, s):
         },
     
     ...module2HashMapLessonSmartPracticeExercises,
-    ],
+    ].filter(Boolean) as LessonSection[],
 };

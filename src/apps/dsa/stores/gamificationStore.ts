@@ -393,9 +393,12 @@ export const useGamificationStore = create<GamificationState>()(
                 currentMastery: 100,
                 decayPercentage: 0,
                 classification: 'fresh' as DecayClassification,
+                isStrength: false,
+                isWeakness: false,
                 lastPracticedAt: Date.now(),
                 practiceCountAfterModule: 0,
-                problemsSolvedInModule: 0,
+                problemCount: 0,
+                solvedProblemsInModule: 0,
               };
               newMasteryMap.set(id, masteryRecord);
             }

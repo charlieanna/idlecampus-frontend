@@ -1,4 +1,4 @@
-import { ProgressiveLesson } from '../types/progressive-lesson-enhanced';
+import { ProgressiveLesson, LessonSection } from '../types/progressive-lesson-enhanced';
 import { module10HeapsLessonSmartPracticeExercises } from './exercises/moduleHeapsLessonSmartPracticeExercises';
 
 export const module10HeapsLesson: ProgressiveLesson = {
@@ -917,5 +917,5 @@ max_val = -heapq.heappop(arr)  # Get maximum
 
     // PHASE 8: COMPLETE MINHEAP CLASS
     ...module10HeapsLessonSmartPracticeExercises,
-  ],
+  ].filter(Boolean) as LessonSection[],
 };

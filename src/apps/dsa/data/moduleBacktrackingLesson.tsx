@@ -1,4 +1,4 @@
-import { ProgressiveLesson } from '../types/progressive-lesson-enhanced';
+import { ProgressiveLesson, LessonSection } from '../types/progressive-lesson-enhanced';
 import { module11BacktrackingLessonSmartPracticeExercises } from './exercises/moduleBacktrackingLessonSmartPracticeExercises';
 
 export const module11BacktrackingLesson: ProgressiveLesson = {
@@ -2885,5 +2885,6 @@ def fib(n):
             autoMarkComplete: false,
         },
     
-        ...module11BacktrackingLessonSmartPracticeExercises,],
+        ...module11BacktrackingLessonSmartPracticeExercises,
+    ].filter(Boolean) as LessonSection[],
 };

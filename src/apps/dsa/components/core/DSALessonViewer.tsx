@@ -14,6 +14,9 @@ import BacktrackingTreeLesson from "./BacktrackingTreeLesson";
 import PracticeProblemsSection from "./PracticeProblemsSection";
 import TrieIntegratedLesson from "./TrieIntegratedLesson";
 import { TimeComplexityCard } from "./TimeComplexityCard";
+import { TimeComplexityIntegratedLesson } from "./TimeComplexityIntegratedLesson";
+import { TimeComplexityVisualization } from "./TimeComplexityVisualization";
+import { TimeComplexityStageManager } from "./TimeComplexityStageManager";
 import { renderStyledText } from "../../utils/styledTextRenderer";
 
 interface DSALessonViewerProps {
@@ -162,7 +165,7 @@ export function DSALessonViewer({
                   }}
                   className="max-w-none"
                 >
-                  {renderStyledText(item.content, true)}
+                  {item.content && renderStyledText(item.content, true)}
                 </motion.div>
               );
             }
@@ -196,10 +199,8 @@ export function DSALessonViewer({
               item.type === "component" &&
               item.componentName
             ) {
-              const ComponentMap: Record<
-                string,
-                React.ComponentType
-              > = {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              const ComponentMap: Record<string, React.ComponentType<any>> = {
                 SubsetsStepByStep: SubsetsStepByStep,
                 CombinationsStepByStep: CombinationsStepByStep,
                 PermutationsManualBuilder:

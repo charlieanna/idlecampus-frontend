@@ -7,6 +7,6 @@ export const module14EdgeCaseDrillsLesson: ProgressiveLesson = {
   description: 'This final module covers advanced algorithms, mixed-technique problems, and interview strategies. Students consolidate their learning, tackle complex multi-pattern problems, and prepare for real interviews.',
   unlockMode: 'sequential',
   sections: [
-    ,
-        ...module14EdgeCaseDrillsLessonSmartPracticeExercises,],
+    ...module14EdgeCaseDrillsLessonSmartPracticeExercises,
+  ],
 };

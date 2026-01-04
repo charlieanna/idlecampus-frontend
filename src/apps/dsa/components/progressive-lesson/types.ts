@@ -95,7 +95,7 @@ export interface ExerciseBasedLessonProps extends ProgressiveLessonState {
   runPythonCode: (code: string) => Promise<{ output: string; error?: string }>;
   setCurrentModuleIndex?: (index: number) => void;
   setCurrentPracticeModule?: (module: number) => void;
-  onNavigateToSmartPractice?: () => void;
+  onNavigateToSmartPractice?: (moduleIndex?: number) => void;
 }
 
 /**
@@ -137,7 +137,7 @@ export interface LessonContentPanelProps extends ProgressiveLessonState {
   runPythonCode: (code: string) => Promise<{ output: string; error?: string }>;
   setCurrentModuleIndex?: (index: number) => void;
   setCurrentPracticeModule?: (module: number) => void;
-  onNavigateToSmartPractice?: () => void;
+  onNavigateToSmartPractice?: (moduleIndex?: number) => void;
 }
 
 /**

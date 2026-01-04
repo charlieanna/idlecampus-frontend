@@ -1,8 +1,6 @@
-import React from 'react';
 import { Card } from '../ui/card';
 import { Alert } from '../ui/alert';
-import { motion } from 'framer-motion';
-import { Lightbulb, ChevronRight, AlertCircle, CheckCircle, Sparkles } from 'lucide-react';
+import { Lightbulb, CheckCircle, Sparkles } from 'lucide-react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 
 const CoreTheoryLessonContent: React.FC = () => {

@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Badge } from '../ui/badge';
 import { ScrollArea } from '../ui/scroll-area';
@@ -289,7 +288,7 @@ except Exception as e:
 
   // Find decayed concepts that need review
   const findDecayedConcepts = () => {
-    const { challenges, remedials } = moduleContent;
+    const { challenges, remedials: _remedials } = moduleContent;
 
     return challenges
       .filter((c: any) => {

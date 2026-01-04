@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import CodeEditor from './CodeEditor';
+import { CodeEditor } from './CodeEditor';
 import { useExerciseState } from '../../hooks/useExerciseState';
 
 /**

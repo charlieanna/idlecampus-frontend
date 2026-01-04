@@ -59,7 +59,7 @@ export function detectLinkedListProblem(
   const codeHasNodeClass = code.includes('class Node') || starterCode.includes('class Node');
   const codeHasRandomPointer = code.includes('.random') || starterCode.includes('.random');
   
-  return (
+  return Boolean(
     codeHasListNode ||
     codeHasNodeClass ||
     codeHasRandomPointer ||

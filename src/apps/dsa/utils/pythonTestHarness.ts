@@ -16,18 +16,20 @@ import { NormalizedTestCase } from '../components/progressive-lesson/types';
  */
 export interface SmartPracticeTestCase {
     input: string;
-    expectedOutput: string;
+    expectedOutput?: string;
+    expected?: string; // Alias for expectedOutput (some lessons use this)
     hidden?: boolean;
 }
 
 /**
  * Convert Smart Practice test cases to normalized format
+ * Handles both expectedOutput and expected fields
  */
 export const normalizeSmartPracticeTestCases = (testCases: SmartPracticeTestCase[]): NormalizedTestCase[] => {
     return testCases.map(tc => ({
         mode: 'snippet' as const,
         inputExpr: tc.input,
-        expectedExpr: tc.expectedOutput
+        expectedExpr: tc.expectedOutput || tc.expected || ''
     }));
 };
 

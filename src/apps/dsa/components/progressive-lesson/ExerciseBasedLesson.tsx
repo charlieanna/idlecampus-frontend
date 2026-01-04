@@ -82,40 +82,38 @@ const ExerciseBasedLesson: React.FC<ExerciseBasedLessonProps> = ({
         }
       }
     }
-  }, [currentSection.id, currentSection.type, currentSection.instruction, progressiveLessonProgress.sectionsProgress, collapsedDescriptions, setCollapsedDescriptions]);
+  }, [currentSection.id, currentSection.type, progressiveLessonProgress.sectionsProgress, collapsedDescriptions, setCollapsedDescriptions]);
 
   // Callback functions for CodeEditorPanel
   const handleUpdateProgress = (updates: Partial<ProgressiveLessonProgress>) => {
-    setProgressiveLessonProgress(prev => {
-      // Ensure we always create a new Map reference for React to detect changes
-      const newSectionsProgress = updates.sectionsProgress 
-        ? new Map(updates.sectionsProgress) 
-        : new Map(prev.sectionsProgress);
-      
-      const newProgress = {
-        ...prev,
-        ...updates,
-        sectionsProgress: newSectionsProgress,
-      };
-      
-      // If any section was just completed, ensure its description is expanded (visible)
-      if (updates.sectionsProgress) {
-        const completedSectionIds = Array.from(updates.sectionsProgress.entries())
-          .filter(([_, progress]) => progress.status === 'completed')
-          .map(([id, _]) => id);
-        
-        if (completedSectionIds.length > 0) {
-          // Remove completed sections from collapsedDescriptions to ensure they're visible
-          const newCollapsed = new Set(collapsedDescriptions);
-          completedSectionIds.forEach(id => newCollapsed.delete(id));
-          if (newCollapsed.size !== collapsedDescriptions.size) {
-            setCollapsedDescriptions(newCollapsed);
-          }
+    // Ensure we always create a new Map reference for React to detect changes
+    const newSectionsProgress = updates.sectionsProgress
+      ? new Map(updates.sectionsProgress)
+      : new Map(progressiveLessonProgress.sectionsProgress);
+
+    const newProgress: ProgressiveLessonProgress = {
+      ...progressiveLessonProgress,
+      ...updates,
+      sectionsProgress: newSectionsProgress,
+    };
+
+    // If any section was just completed, ensure its description is expanded (visible)
+    if (updates.sectionsProgress) {
+      const completedSectionIds = Array.from(updates.sectionsProgress.entries())
+        .filter(([_, progress]) => progress.status === 'completed')
+        .map(([id]) => id);
+
+      if (completedSectionIds.length > 0) {
+        // Remove completed sections from collapsedDescriptions to ensure they're visible
+        const newCollapsed = new Set(collapsedDescriptions);
+        completedSectionIds.forEach(id => newCollapsed.delete(id));
+        if (newCollapsed.size !== collapsedDescriptions.size) {
+          setCollapsedDescriptions(newCollapsed);
         }
       }
-      
-      return newProgress;
-    });
+    }
+
+    setProgressiveLessonProgress(newProgress);
   };
 
   const handleHintRequest = (sectionId: string) => {

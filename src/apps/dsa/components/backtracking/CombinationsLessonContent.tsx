@@ -1,6 +1,6 @@
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
-import { AlertCircle, CheckCircle, XCircle, ArrowRight } from "lucide-react";
+import { AlertCircle, CheckCircle, XCircle } from "lucide-react";
 
 interface CombinationsLessonContentProps {
   onNext?: () => void;

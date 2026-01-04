@@ -76,7 +76,7 @@ export interface Module15Config {
 // Module structure mapping
 // Note: Modules renumbered - Module 3 is now Array+HashMap (was 4), Module 4 is Python OOP (was 4.5)
 // Bit Manipulation moved to Module 16 (outside this unified journey scope)
-const MODULE_INFO = {
+const MODULE_INFO: Record<number, { name: string; itemCount: number; concepts: string[] }> = {
   0.5: { name: 'Python Basics', itemCount: 13, concepts: ['python-fundamentals', 'control-flow', 'collections'] },
   1: { name: 'Array Iteration', itemCount: 12, concepts: ['two-pointers', 'sliding-window', 'array-partitioning'] },
   2: { name: 'Hash Maps', itemCount: 9, concepts: ['hash-map', 'frequency-counting', 'two-sum'] },

@@ -28,6 +28,14 @@ export interface ReadingSection {
       afterAttempt: number;
       text: string;
     };
+    // Optional target complexity to teach time/space explicitly per exercise
+    targetComplexity?: {
+      time: string;
+      space: string;
+      notes?: string;
+    };
+    // Solution explanation (markdown)
+    solutionExplanation?: string;
   };
 
   // OR: Quick quiz instead of coding exercise
@@ -105,6 +113,12 @@ export interface ExerciseSection {
   isVerification?: boolean; // true = verification exercise in Learn Mode, false/undefined = practice
   isPracticeOnly?: boolean; // true = only in Smart Practice, not in Learn Mode (exercises to filter out)
   conceptFamily?: string; // e.g., 'dp-fundamentals', '1d-dp', '2d-dp' for grouping
+
+  // Optional reading time for exercises that have reading content
+  estimatedReadTime?: number; // in seconds (typically used for reading sections)
+
+  // Auto-complete flag for exercises that don't require explicit completion
+  autoMarkComplete?: boolean;
 
   // Prerequisite help when user struggles
   prerequisiteHelp?: PrerequisiteHelp[];
@@ -189,8 +203,8 @@ export interface SectionProgress {
   sectionId: string;
   status: 'locked' | 'unlocked' | 'in-progress' | 'completed';
   attempts: number;
-  completedAt?: Date;
-  startedAt?: Date;
+  completedAt?: Date | string;
+  startedAt?: Date | string;
   timeSpent: number; // in seconds
   solutionViewed?: boolean; // True if user gave up and looked at the solution
   hintsUsedCount?: number; // Number of hints used for this exercise
@@ -201,9 +215,9 @@ export interface ProgressiveLessonProgress {
   currentSectionIndex: number;
   sectionsProgress: Map<string, SectionProgress>;
   overallProgress: number; // 0-100%
-  startedAt: Date;
-  lastActivityAt: Date;
-  completedAt?: Date; // When the entire lesson was completed
+  startedAt: Date | string;
+  lastActivityAt: Date | string;
+  completedAt?: Date | string; // When the entire lesson was completed
   totalTimeSpent: number; // in seconds
 }
 
@@ -222,7 +236,7 @@ export function isSectionUnlocked(
 // Helper function to check if exercise is required for progress
 export function isProgressGated(section: LessonSection): boolean {
   if (section.type === 'exercise' || section.type === 'quiz') {
-    return section.requiredForProgress;
+    return section.requiredForProgress ?? false;
   }
   return false;
 }

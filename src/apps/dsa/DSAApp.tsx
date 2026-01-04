@@ -133,13 +133,20 @@ const STORAGE_KEY_HINTS = 'dsa-course-hints';
 const STORAGE_KEY_POSITION = 'dsa-course-position';
 const STORAGE_KEY_SOLVED_PROBLEMS = 'dsa-course-solved-problems';
 
+// Helper to serialize Date or string to ISO string
+const toISOStringOrPassthrough = (value: Date | string | undefined): string | undefined => {
+  if (!value) return undefined;
+  if (value instanceof Date) return value.toISOString();
+  return value; // Already a string
+};
+
 // Serialize ProgressiveLessonProgress for localStorage
 const serializeProgress = (progress: ProgressiveLessonProgress): object => ({
   ...progress,
   sectionsProgress: Array.from(progress.sectionsProgress.entries()),
-  startedAt: progress.startedAt?.toISOString(),
-  lastActivityAt: progress.lastActivityAt?.toISOString(),
-  completedAt: progress.completedAt?.toISOString(),
+  startedAt: toISOStringOrPassthrough(progress.startedAt),
+  lastActivityAt: toISOStringOrPassthrough(progress.lastActivityAt),
+  completedAt: toISOStringOrPassthrough(progress.completedAt),
 });
 
 // Deserialize ProgressiveLessonProgress from localStorage

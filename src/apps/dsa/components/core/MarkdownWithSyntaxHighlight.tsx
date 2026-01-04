@@ -2,6 +2,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import type { CSSProperties } from 'react';
 
 interface MarkdownWithSyntaxHighlightProps {
   children: string;
@@ -17,22 +18,23 @@ export function MarkdownWithSyntaxHighlight({
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
-          code({ node, inline, className, children, ...props }) {
+          code({ className, children, ...props }) {
             const match = /language-(\w+)/.exec(className || '');
             const language = match ? match[1] : '';
+            // Check if this is a block code (has a language) vs inline code
+            const isBlock = Boolean(language);
 
-            return !inline && language ? (
+            return isBlock ? (
               <SyntaxHighlighter
-                style={vscDarkPlus}
+                style={vscDarkPlus as Record<string, CSSProperties>}
                 language={language}
                 PreTag="div"
                 className="rounded-lg !mt-2 !mb-4"
-                {...props}
               >
                 {String(children).replace(/\n$/, '')}
               </SyntaxHighlighter>
             ) : (
-              <code className={`${className} bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-sm`} {...props}>
+              <code className={`${className || ''} bg-slate-100 text-slate-800 px-1.5 py-0.5 rounded text-sm`} {...props}>
                 {children}
               </code>
             );

@@ -274,7 +274,7 @@ export function PythonEditor({
                                 exit={{ height: 0, opacity: 0 }}
                                 className="mt-2 text-sm text-yellow-800"
                               >
-                                {hint}
+                                {typeof hint === 'string' ? hint : hint.body}
                               </motion.div>
                             )}
                           </AnimatePresence>

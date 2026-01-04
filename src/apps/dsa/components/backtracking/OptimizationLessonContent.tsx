@@ -1,17 +1,16 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Card } from '../ui/card';
 import { Button } from '../ui/button';
 import { Alert, AlertDescription } from '../ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
+import { Tabs, TabsContent } from '../ui/tabs';
 import { Badge } from '../ui/badge';
-import { 
-  Zap, 
+import {
+  Zap,
   Scissors,
   FastForward,
   GitBranch,
   AlertTriangle,
   CheckCircle,
-  Code2,
   TrendingUp,
   BarChart3,
   Gauge

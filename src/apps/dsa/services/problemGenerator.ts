@@ -766,7 +766,8 @@ export async function generateCompleteProblemBank(): Promise<AdaptiveProblem[]> 
 
   const dpProblems = ProblemGenerator.generateDPVariations();allProblems.push(...dpProblems);
 
-  // Add more families...return allProblems;
+  // Add more families...
+  return allProblems;
 }
 
 // ============= Export =============

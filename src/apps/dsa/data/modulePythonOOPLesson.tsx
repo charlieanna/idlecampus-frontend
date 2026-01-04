@@ -1,4 +1,4 @@
-import { ProgressiveLesson } from '../types/progressive-lesson-enhanced';
+import { ProgressiveLesson, LessonSection } from '../types/progressive-lesson-enhanced';
 import { module4_5PythonOOPLessonSmartPracticeExercises } from './exercises/modulePythonOOPLessonSmartPracticeExercises';
 
 export const module4_5PythonOOPLesson: ProgressiveLesson = {
@@ -976,5 +976,5 @@ print(largest)  # 3
             celebrationMessage: 'Python OOP & Libraries Mastered! 🎉'
         },
         ...module4_5PythonOOPLessonSmartPracticeExercises,
-    ]
+    ].filter(Boolean) as LessonSection[],
 };

@@ -160,7 +160,7 @@ export interface PracticeState {
     timeSpentMs: number,
     timeBudgetMs: number
   ) => void;
-  getActiveSpeedGoals: () => Array<{ familyTag: string; targetMs: number; lastUpdatedAt: number }>;
+  getActiveSpeedGoals: () => Array<{ familyTag: string; targetMs: number; lastUpdatedAt: number; recentOnTime?: boolean[] }>;
   getMasteryForProblem: (problemId: string) => ProblemMastery | null;
   getCurrentMastery: (problemId: string) => number;
   getReviewStatusForProblem: (problemId: string) => ReviewStatus | null;
@@ -253,7 +253,7 @@ export const usePracticeStore = create<PracticeState>()(
         recordHintReveal: (problemId, hint) => {
           let createdStep: HintUsageStep | null = null;
           set((state) => {
-            if (!problemId || !hint) return null;
+            if (!problemId || !hint) return {};
 
             const hintsUsed = new Map(state.hintsUsed);
             hintsUsed.set(problemId, (hintsUsed.get(problemId) || 0) + 1);
@@ -292,9 +292,9 @@ export const usePracticeStore = create<PracticeState>()(
 
         recordHintFeedback: (problemId, hintId, resolution) =>
           set((state) => {
-            if (!problemId || !hintId) return null;
+            if (!problemId || !hintId) return {};
             const usage = state.hintUsage.get(problemId);
-            if (!usage) return null;
+            if (!usage) return {};
 
             const updatedSteps = usage.steps.map((step) =>
               step.hintId === hintId
@@ -331,7 +331,7 @@ export const usePracticeStore = create<PracticeState>()(
 
         resetHintUsageForProblem: (problemId) =>
           set((state) => {
-            if (!problemId) return null;
+            if (!problemId) return {};
             const hintUsage = new Map(state.hintUsage);
             hintUsage.delete(problemId);
 

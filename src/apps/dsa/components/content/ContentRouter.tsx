@@ -31,19 +31,16 @@
  * ```
  */
 
-import React from 'react';
 import { PracticeDashboard } from '../core/PracticeDashboard';
-import { LeetCodeProblemPage } from '../core/LeetCodeProblemPage';
 import LinkedListPracticeSection from '../core/LinkedListPracticeSection';
 import ExerciseBasedLesson from '../progressive-lesson/ExerciseBasedLesson';
 import QuizBasedLesson from '../progressive-lesson/QuizBasedLesson';
 import { ReadingOnlyLesson } from '../progressive-lesson/ReadingOnlyLesson';
-import { SmartPracticeView } from '../smart-practice/SmartPracticeView';
 import { AdaptiveStreamView } from '../core/AdaptiveStreamView';
 import { ProblemValidator } from '../core/ProblemValidator';
 import type { ContentRouterProps } from './types';
-import type { DSAProblem } from '../../types/dsa-course';
 import { dsaModules } from '../../data/dsaCourseData';
+import type { DSAProblem } from '../../types/dsa-course';
 
 export function ContentRouter({
   currentModule,
@@ -51,20 +48,20 @@ export function ContentRouter({
   totalModules,
   isProgressiveLesson,
   progressiveLesson,
-  currentProblemId,
+  currentProblemId: _currentProblemId,
   setCurrentProblemId,
   allProblems,
   setCurrentModuleIndex,
   setCurrentPracticeModule,
-  onNavigateToSmartPractice,
-  solvedProblems,
-  setSolvedProblems,
-  handlePracticeCodeRun,
-  getRecommendedProblems,
+  onNavigateToSmartPractice: _onNavigateToSmartPractice,
+  solvedProblems: _solvedProblems,
+  setSolvedProblems: _setSolvedProblems,
+  handlePracticeCodeRun: _handlePracticeCodeRun,
+  getRecommendedProblems: _getRecommendedProblems,
   colors,
-  studiedModules,
-  problemFamilyMappings,
-  dsaProblems,
+  studiedModules: _studiedModules,
+  problemFamilyMappings: _problemFamilyMappings,
+  dsaProblems: _dsaProblems,
   showLinkedListPractice,
   setShowLinkedListPractice,
   module5LinkedListLesson,
@@ -76,8 +73,8 @@ export function ContentRouter({
   setExercisesWithBeforeQuizCompleted,
   showingBeforeQuizExplanation,
   setShowingBeforeQuizExplanation,
-  submissionAttempts,
-  setSubmissionAttempts,
+  submissionAttempts: _submissionAttempts,
+  setSubmissionAttempts: _setSubmissionAttempts,
   hintsUsed,
   setHintsUsed,
   expandedLessons,
@@ -95,15 +92,15 @@ export function ContentRouter({
   progressiveQuizIndex,
   setProgressiveQuizIndex,
   runPythonCode,
-  renderStyledText,
-  cleanInstruction,
-  ensureSolutionWrapper,
-  buildPythonTestHarness,
-  parsePythonTestResults,
-  formatTestResultsOutput,
-  getDefaultPracticeForSection,
-  isSectionUnlocked,
-  calculateLessonProgress,
+  renderStyledText: _renderStyledText,
+  cleanInstruction: _cleanInstruction,
+  ensureSolutionWrapper: _ensureSolutionWrapper,
+  buildPythonTestHarness: _buildPythonTestHarness,
+  parsePythonTestResults: _parsePythonTestResults,
+  formatTestResultsOutput: _formatTestResultsOutput,
+  getDefaultPracticeForSection: _getDefaultPracticeForSection,
+  isSectionUnlocked: _isSectionUnlocked,
+  calculateLessonProgress: _calculateLessonProgress,
 }: ContentRouterProps) {
 
   // ═══════════════════════════════════════════════════════════

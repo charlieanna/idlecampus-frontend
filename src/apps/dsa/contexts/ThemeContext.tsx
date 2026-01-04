@@ -199,15 +199,15 @@ export function ThemeProvider({ children }: ThemeProviderProps) {
       root.style.setProperty(`--theme-${key}`, value);
     });
 
-    // Apply class for global styles
+    // Apply class for global styles (both 'dark' for Tailwind and 'dark-theme' for custom CSS)
     if (isDark) {
-      root.classList.add('dark-theme');
+      root.classList.add('dark', 'dark-theme');
       root.classList.remove('light-theme');
       root.style.backgroundColor = colors.background;
       root.style.color = colors.text;
     } else {
       root.classList.add('light-theme');
-      root.classList.remove('dark-theme');
+      root.classList.remove('dark', 'dark-theme');
       root.style.backgroundColor = colors.background;
       root.style.color = colors.text;
     }

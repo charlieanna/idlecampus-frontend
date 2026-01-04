@@ -1,6 +1,6 @@
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
-import { AlertCircle, Target, Zap, TreePine } from "lucide-react";
+import { AlertCircle, Zap } from "lucide-react";
 import CombinationSumTreeVisualization from "./CombinationSumTreeVisualization";
 import CombinationSumStepByStep from "./CombinationSumStepByStep";
 import CombinationSumExplanation from "./CombinationSumExplanation";

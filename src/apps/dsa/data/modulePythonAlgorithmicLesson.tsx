@@ -1,4 +1,4 @@
-import { ProgressiveLesson } from '../types/progressive-lesson-enhanced';
+import { ProgressiveLesson, LessonSection } from '../types/progressive-lesson-enhanced';
 import { module00b_PythonAlgorithmicLessonSmartPracticeExercises } from './exercises/modulePythonAlgorithmicLessonSmartPracticeExercises';
 
 export const module00b_PythonAlgorithmicLesson: ProgressiveLesson = {
@@ -358,5 +358,5 @@ q.popleft()  # Returns 0</code></pre>
       estimatedReadTime: 120
     },
     ...module00b_PythonAlgorithmicLessonSmartPracticeExercises,
-  ]
+  ].filter(Boolean) as LessonSection[],
 };

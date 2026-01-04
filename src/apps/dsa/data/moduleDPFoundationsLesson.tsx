@@ -1,4 +1,4 @@
-import { ProgressiveLesson } from '../types/progressive-lesson-enhanced';
+import { ProgressiveLesson, LessonSection } from '../types/progressive-lesson-enhanced';
 import { module9DynamicProgrammingLessonSmartPracticeExercises } from './exercises/moduleDPFoundationsLessonSmartPracticeExercises';
 
 export const module9DynamicProgrammingLesson: ProgressiveLesson = {
@@ -465,5 +465,5 @@ No match: dp[i][j] = max(dp[i-1][j], dp[i][j-1])
     },
   
   ...module9DynamicProgrammingLessonSmartPracticeExercises,
-  ],
+  ].filter(Boolean) as LessonSection[],
 };

@@ -1,4 +1,4 @@
-import { ProgressiveLesson } from '../types/progressive-lesson-enhanced';
+import { ProgressiveLesson, LessonSection } from '../types/progressive-lesson-enhanced';
 import { module11DynamicProgrammingLessonSmartPracticeExercises } from './exercises/moduleDynamicProgrammingLessonSmartPracticeExercises';
 
 export const module11DynamicProgrammingLesson: ProgressiveLesson = {
@@ -1741,5 +1741,5 @@ Result: &quot;mississ&quot; + &quot;i&quot; = &quot;mississi&quot; ≠ &quot;mis
         },
     
     ...module11DynamicProgrammingLessonSmartPracticeExercises,
-    ],
+    ].filter(Boolean) as LessonSection[],
 };
