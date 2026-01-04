@@ -42,6 +42,7 @@ import { TieredChallenge } from "../types/challengeTiers";
 import type { DatabaseSchema } from "../types/challengeTiers";
 import { TestRunner } from "../simulation/testRunner";
 import { apiService } from "../../../../services/api";
+import { Button } from "../../../../components/ui/button";
 
 // Import example challenges
 import { tieredChallenges } from "../challenges/tieredChallenges";
@@ -1874,13 +1875,13 @@ if __name__ == "__main__":
 
                 {/* Submit Button */}
                 <div className="p-4 border-t border-gray-200 bg-gray-50">
-                  <button
+                  <Button
                     onClick={handleSubmit}
-                    disabled={isRunning}
+                    loading={isRunning}
                     className="w-full px-6 py-3 text-base font-semibold text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed rounded-lg transition-colors shadow-md hover:shadow-lg"
                   >
-                    {isRunning ? "⏳ Running Tests..." : "▶️ Submit Solution"}
-                  </button>
+                    {isRunning ? "Running Tests..." : "▶️ Submit Solution"}
+                  </Button>
                 </div>
               </div>
             )}
