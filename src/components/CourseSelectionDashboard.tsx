@@ -85,7 +85,7 @@ const baseCourses: Course[] = [
       '3 challenges: Tiny URL, Food Blog, Todo App',
       'Pass/fail with bottleneck detection'
     ],
-    color: 'from-blue-600 to-cyan-600'
+    color: 'from-blue-500 to-cyan-500'
   },
   {
     id: 'aws',
@@ -155,7 +155,7 @@ const baseCourses: Course[] = [
       'IRT adaptive difficulty',
       'FSRS spaced repetition'
     ],
-    color: 'from-teal-600 to-teal-800'
+    color: 'from-green-500 to-green-700'
   },
   {
     id: 'mathematics',
@@ -169,7 +169,7 @@ const baseCourses: Course[] = [
       'Trigonometry & Vectors',
       'Formula mastery with SR'
     ],
-    color: 'from-fuchsia-600 to-fuchsia-800'
+    color: 'from-purple-500 to-purple-700'
   },
   {
     id: 'upsc',
@@ -183,7 +183,7 @@ const baseCourses: Course[] = [
       'Current affairs daily',
       'AI-powered evaluation'
     ],
-    color: 'from-orange-600 to-orange-800'
+    color: 'from-orange-500 to-orange-700'
   },
   {
     id: 'cat',
@@ -197,7 +197,7 @@ const baseCourses: Course[] = [
       'Verbal Ability & Reading Comprehension',
       'Mock tests & performance analytics'
     ],
-    color: 'from-red-600 to-red-800'
+    color: 'from-red-500 to-red-700'
   },
   {
     id: 'golang',
