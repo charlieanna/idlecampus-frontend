@@ -186,20 +186,6 @@ const baseCourses: Course[] = [
     color: 'from-amber-500 to-amber-700'
   },
   {
-    id: 'coding-interview',
-    title: 'Coding Interview Prep',
-    description: 'Master data structures, algorithms, and coding interview patterns',
-    icon: <Code className="w-12 h-12" />,
-    status: 'available',
-    features: [
-      'Monaco code editor',
-      'Multiple languages',
-      'Test case validation',
-      'Time & space complexity analysis'
-    ],
-    color: 'from-pink-500 to-pink-700'
-  },
-  {
     id: 'golang',
     title: 'Go Programming Fundamentals',
     description: 'Master Go programming from basics to advanced concurrency patterns',
@@ -245,7 +231,6 @@ export default function CourseSelectionDashboard() {
     'iit-jee-inorganic-chemistry': 'chemistry',
     // Some math seeds may use a different slug; include known ones
     'iit-jee-mathematics': 'mathematics',
-    'coding-interview-mastery': 'coding-interview',
     'golang-fundamentals': 'golang',
   } as Record<string, string>), []);
 

@@ -4,7 +4,6 @@ import KubernetesApp from './apps/kubernetes/KubernetesApp';
 import DockerApp from './apps/docker/DockerApp';
 import LinuxApp from './apps/linux/LinuxApp';
 import SecurityApp from './apps/security/SecurityApp';
-import CodingInterviewApp from './apps/coding-interview/CodingInterviewApp';
 import SystemDesignApp from './apps/system-design/SystemDesignApp';
 import PythonApp from './apps/python/PythonApp';
 import GolangApp from './apps/golang/GolangApp';
@@ -24,7 +23,7 @@ import { authService } from './services/auth';
 // TYPES
 // ============================================
 
-type CourseType = 'kubernetes' | 'docker' | 'docker-bootcamp' | 'coding-interview' | 'system-design' | 'system_design' | 'aws' | 'envoy' | 'postgresql' | 'networking' | 'linux' | 'security' | 'chemistry' | 'mathematics';
+type CourseType = 'kubernetes' | 'docker' | 'docker-bootcamp' | 'system-design' | 'system_design' | 'aws' | 'envoy' | 'postgresql' | 'networking' | 'linux' | 'security' | 'chemistry' | 'mathematics';
 
 interface CourseData {
   type: CourseType;
@@ -43,7 +42,6 @@ function LoadingScreen({ courseType }: { courseType?: string }) {
     'docker': 'Docker',
     'docker-bootcamp': 'Docker Bootcamp',
     'kubernetes': 'Kubernetes',
-    'coding-interview': 'Coding Interview',
     'system-design': 'System Design',
     'system_design': 'System Design',
     'aws': 'AWS Cloud Architecture',
@@ -430,8 +428,7 @@ export default function AppRouter() {
       <Route path="/docker-bootcamp" element={<CoursePageWrapper courseType="docker-bootcamp" />} />
       <Route path="/docker/progressive/:moduleSlug" element={<ProgressiveModuleWrapper />} />
       <Route path="/kubernetes" element={<CoursePageWrapper courseType="kubernetes" />} />
-      <Route path="/coding-interview" element={<CodingInterviewApp />} />
-      <Route path="/system-design/*" element={<SystemDesignApp />} />
+            <Route path="/system-design/*" element={<SystemDesignApp />} />
       <Route path="/python" element={<PythonApp />} />
       <Route path="/golang" element={<GolangApp />} />
 

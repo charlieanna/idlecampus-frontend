@@ -358,6 +358,7 @@ function ModuleCard({
       `}
       style={{
         backgroundColor,
+        backgroundImage: `linear-gradient(to right, ${backgroundColor}, transparent)`,
         borderColor,
         textDecoration: 'none',
       }}
