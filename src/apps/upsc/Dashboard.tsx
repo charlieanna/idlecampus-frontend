@@ -98,17 +98,17 @@ export default function Dashboard() {
         )}
 
         {/* Overall Progress */}
-        <div className="bg-white rounded-lg border border-slate-200 p-6">
+        <div className="bg-white rounded-lg border border-slate-200 p-6 shadow-sm hover:shadow-md transition-shadow">
           <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 bg-blue-50 rounded-lg">
-              <Target className="w-5 h-5 text-blue-600" />
+            <div className="p-2 bg-indigo-50 rounded-lg">
+              <Target className="w-5 h-5 text-indigo-600" />
             </div>
             <h3 className="text-sm font-medium text-slate-600">Overall Progress</h3>
           </div>
           <p className="text-3xl font-bold text-slate-900">{overallProgress.toFixed(1)}%</p>
-          <div className="mt-2 bg-slate-100 rounded-full h-2">
+          <div className="mt-2 bg-slate-100 rounded-full h-2 overflow-hidden">
             <div
-              className="bg-blue-600 h-2 rounded-full transition-all"
+              className="bg-gradient-to-r from-indigo-500 to-blue-600 h-2 rounded-full transition-all duration-1000 ease-out"
               style={{ width: `${overallProgress}%` }}
             />
           </div>
@@ -359,37 +359,50 @@ export default function Dashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100 p-6">
-        <h2 className="text-lg font-semibold text-slate-900 mb-4">Quick Actions</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <button
-            onClick={() => navigate('/upsc/practice')}
-            className="bg-white hover:bg-slate-50 rounded-lg p-4 text-center border border-slate-200 transition-colors"
-          >
-            <FileText className="w-6 h-6 text-blue-600 mx-auto mb-2" />
-            <span className="text-sm font-medium text-slate-900">Practice</span>
-          </button>
-          <button
-            onClick={() => navigate('/upsc/tests')}
-            className="bg-white hover:bg-slate-50 rounded-lg p-4 text-center border border-slate-200 transition-colors"
-          >
-            <Award className="w-6 h-6 text-purple-600 mx-auto mb-2" />
-            <span className="text-sm font-medium text-slate-900">Mock Test</span>
-          </button>
-          <button
-            onClick={() => navigate('/upsc/writing')}
-            className="bg-white hover:bg-slate-50 rounded-lg p-4 text-center border border-slate-200 transition-colors"
-          >
-            <FileText className="w-6 h-6 text-green-600 mx-auto mb-2" />
-            <span className="text-sm font-medium text-slate-900">Write Answer</span>
-          </button>
-          <button
-            onClick={() => navigate('/upsc/current-affairs')}
-            className="bg-white hover:bg-slate-50 rounded-lg p-4 text-center border border-slate-200 transition-colors"
-          >
-            <TrendingUp className="w-6 h-6 text-orange-600 mx-auto mb-2" />
-            <span className="text-sm font-medium text-slate-900">Daily News</span>
-          </button>
+      <div className="bg-gradient-to-br from-indigo-600 via-blue-600 to-blue-700 rounded-xl border border-blue-500 p-8 text-white shadow-lg relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-blue-400/10 rounded-full -ml-32 -mb-32 blur-3xl" />
+        
+        <div className="relative z-10">
+          <h2 className="text-xl font-bold mb-6">Quick Actions</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button
+              onClick={() => navigate('/upsc/practice')}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10 transition-all hover:scale-105 active:scale-95 group"
+            >
+              <div className="bg-white rounded-lg p-2 w-10 h-10 flex items-center justify-center mx-auto mb-3 shadow-sm group-hover:shadow-md transition-shadow">
+                <FileText className="w-5 h-5 text-blue-600" />
+              </div>
+              <span className="text-sm font-semibold">Practice</span>
+            </button>
+            <button
+              onClick={() => navigate('/upsc/tests')}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10 transition-all hover:scale-105 active:scale-95 group"
+            >
+              <div className="bg-white rounded-lg p-2 w-10 h-10 flex items-center justify-center mx-auto mb-3 shadow-sm group-hover:shadow-md transition-shadow">
+                <Award className="w-5 h-5 text-purple-600" />
+              </div>
+              <span className="text-sm font-semibold">Mock Test</span>
+            </button>
+            <button
+              onClick={() => navigate('/upsc/writing')}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10 transition-all hover:scale-105 active:scale-95 group"
+            >
+              <div className="bg-white rounded-lg p-2 w-10 h-10 flex items-center justify-center mx-auto mb-3 shadow-sm group-hover:shadow-md transition-shadow">
+                <FileText className="w-5 h-5 text-green-600" />
+              </div>
+              <span className="text-sm font-semibold">Write Answer</span>
+            </button>
+            <button
+              onClick={() => navigate('/upsc/current-affairs')}
+              className="bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-xl p-4 text-center border border-white/10 transition-all hover:scale-105 active:scale-95 group"
+            >
+              <div className="bg-white rounded-lg p-2 w-10 h-10 flex items-center justify-center mx-auto mb-3 shadow-sm group-hover:shadow-md transition-shadow">
+                <TrendingUp className="w-5 h-5 text-orange-600" />
+              </div>
+              <span className="text-sm font-semibold">Daily News</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>

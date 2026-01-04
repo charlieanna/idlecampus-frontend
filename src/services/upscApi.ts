@@ -1,7 +1,7 @@
 // UPSC API Service
 // Handles all API calls to the UPSC backend
 
-const API_BASE_URL = 'http://localhost:3000/api/v1/upsc';
+const API_BASE_URL = `${window.location.origin.replace(':5000', ':3001')}/api/v1/upsc`;
 
 // ============================================
 // TYPES
