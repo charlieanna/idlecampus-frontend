@@ -157,11 +157,11 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
       console.log('🔍 Step 1: Fetching course...');
       const fullCourse = await apiService.fetchCourse(targetCourse.slug, track);
       console.log('✅ Step 1 complete:', fullCourse?.title);
-      
+
       console.log('🔍 Step 2: Fetching modules...');
       const modules = await apiService.fetchModules(targetCourse.slug, track);
       console.log('✅ Step 2 complete:', modules?.length, 'modules');
-      
+
       console.log('🔍 Step 3: Fetching labs...');
       const labs = await apiService.fetchLabs(track);
       console.log('✅ Step 3 complete:', labs?.length, 'labs');
@@ -260,17 +260,17 @@ function CoursePageWrapper({ courseType }: { courseType: ApiCourseType }) {
 
       {/* Show review prompt if needed */}
       {authService.isAuthenticated() &&
-       progressTracking.needsReview &&
-       progressTracking.resumePoint &&
-       !progressTracking.reviewActive && (
-        <ReviewSessionPrompt
-          resumePoint={progressTracking.resumePoint.resume_point}
-          daysSinceLastAccess={progressTracking.resumePoint.days_since_last_access}
-          courseName={courseData.title}
-          onStartReview={handleStartReview}
-          onSkipReview={handleSkipReview}
-        />
-      )}
+        progressTracking.needsReview &&
+        progressTracking.resumePoint &&
+        !progressTracking.reviewActive && (
+          <ReviewSessionPrompt
+            resumePoint={progressTracking.resumePoint.resume_point}
+            daysSinceLastAccess={progressTracking.resumePoint.days_since_last_access}
+            courseName={courseData.title}
+            onStartReview={handleStartReview}
+            onSkipReview={handleSkipReview}
+          />
+        )}
 
       {courseType === 'linux' ? (
         <LinuxApp courseModules={courseData.modules} />
@@ -429,7 +429,7 @@ export default function AppRouter() {
       <Route path="/docker-bootcamp" element={<CoursePageWrapper courseType="docker-bootcamp" />} />
       <Route path="/docker/progressive/:moduleSlug" element={<ProgressiveModuleWrapper />} />
       <Route path="/kubernetes" element={<CoursePageWrapper courseType="kubernetes" />} />
-            <Route path="/system-design/*" element={<SystemDesignApp />} />
+      <Route path="/system-design/*" element={<SystemDesignApp />} />
       <Route path="/python" element={<PythonApp />} />
       <Route path="/golang" element={<GolangApp />} />
 

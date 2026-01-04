@@ -155,7 +155,7 @@ const baseCourses: Course[] = [
       'IRT adaptive difficulty',
       'FSRS spaced repetition'
     ],
-    color: 'from-green-600 to-green-800'
+    color: 'from-teal-600 to-teal-800'
   },
   {
     id: 'mathematics',
@@ -169,7 +169,7 @@ const baseCourses: Course[] = [
       'Trigonometry & Vectors',
       'Formula mastery with SR'
     ],
-    color: 'from-purple-600 to-purple-800'
+    color: 'from-fuchsia-600 to-fuchsia-800'
   },
   {
     id: 'upsc',
