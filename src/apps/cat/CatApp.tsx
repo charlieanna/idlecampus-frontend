@@ -11,6 +11,9 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import CatSectionPage from './pages/CatSectionPage';
+import CatTopicPage from './pages/CatTopicPage';
+import ExamInterface from './pages/exam/ExamInterface';
 
 // ============================================
 // NAVIGATION
@@ -116,53 +119,11 @@ function Sidebar({ isOpen, onClose }: { isOpen: boolean; onClose: () => void }) 
 }
 
 // Placeholder components for sections
-function QuantSection() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-slate-900 mb-4">Quantitative Aptitude</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {['Arithmetic', 'Algebra', 'Geometry', 'Number System', 'Modern Math', 'Data Sufficiency'].map((topic) => (
-          <div key={topic} className="bg-white rounded-lg border border-slate-200 p-4 hover:shadow-md transition-shadow cursor-pointer">
-            <h3 className="font-semibold text-slate-900">{topic}</h3>
-            <p className="text-sm text-slate-500 mt-1">Practice problems & concepts</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// function QuantSection() { ... removed ... }
 
-function DILRSection() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-slate-900 mb-4">Data Interpretation & Logical Reasoning</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {['Tables & Charts', 'Bar Graphs', 'Pie Charts', 'Arrangements', 'Puzzles', 'Blood Relations'].map((topic) => (
-          <div key={topic} className="bg-white rounded-lg border border-slate-200 p-4 hover:shadow-md transition-shadow cursor-pointer">
-            <h3 className="font-semibold text-slate-900">{topic}</h3>
-            <p className="text-sm text-slate-500 mt-1">Practice sets available</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// function DILRSection() { ... removed ... }
 
-function VARCSection() {
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold text-slate-900 mb-4">Verbal Ability & Reading Comprehension</h1>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {['Reading Comprehension', 'Para Jumbles', 'Sentence Correction', 'Critical Reasoning', 'Para Summary', 'Odd One Out'].map((topic) => (
-          <div key={topic} className="bg-white rounded-lg border border-slate-200 p-4 hover:shadow-md transition-shadow cursor-pointer">
-            <h3 className="font-semibold text-slate-900">{topic}</h3>
-            <p className="text-sm text-slate-500 mt-1">Build verbal skills</p>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// function VARCSection() { ... removed ... }
 
 function MockTests() {
   return (
@@ -242,9 +203,11 @@ export default function CatApp() {
         <main className="flex-1 overflow-y-auto">
           <Routes>
             <Route path="/" element={<Dashboard />} />
-            <Route path="/quant" element={<QuantSection />} />
-            <Route path="/dilr" element={<DILRSection />} />
-            <Route path="/varc" element={<VARCSection />} />
+            {/* Dynamic Section Page (e.g., /cat/quant) */}
+            <Route path="/:sectionId" element={<CatSectionPage />} />
+            {/* Dynamic Topic Page (e.g., /cat/quant/arithmetic-time-work) */}
+            <Route path="/:sectionId/:topicId" element={<CatTopicPage />} />
+
             <Route path="/mock-tests" element={<MockTests />} />
             <Route path="/analytics" element={<Analytics />} />
             <Route path="*" element={<Navigate to="/cat" replace />} />
