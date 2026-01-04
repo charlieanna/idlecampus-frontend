@@ -615,6 +615,33 @@ export default function GolangApp() {
         setError(null);
 
         const rawModules = await apiService.fetchModules(courseSlug, 'golang').catch(() => []);
+        
+        if (rawModules.length === 0) {
+          const codeLabs = await apiService.fetchCodeLabs({ language: 'go' }).catch(() => ({ challenges: [] }));
+          if (codeLabs.challenges && codeLabs.challenges.length > 0) {
+            const mockModule: Module = {
+              id: 1,
+              slug: 'basics',
+              title: 'Basics',
+              description: 'Go Language Fundamentals',
+              sequence_order: 1,
+              estimated_minutes: 60,
+              items: codeLabs.challenges.map((c: any, index: number) => ({
+                id: c.id,
+                module_item_id: index,
+                sequence_order: index,
+                item_type: 'HandsOnLab',
+                title: c.title,
+                description: c.description,
+                content: c.starter_code,
+                difficulty: c.difficulty
+              }))
+            };
+            setModules([mockModule]);
+            return;
+          }
+        }
+
         const normalized = (rawModules || []).map((mod: any) => ({
           ...mod,
           items: (mod.items || []).sort((a: ModuleItem, b: ModuleItem) => (a.sequence_order ?? 0) - (b.sequence_order ?? 0))

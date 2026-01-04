@@ -294,6 +294,18 @@ const challenges = new Map<string, CodeLabChallenge>([
   [tinyUrlHashFunction.id, tinyUrlHashFunction],
   [tinyUrlRateLimiter.id, tinyUrlRateLimiter],
   [tinyUrlCollisionHandling.id, tinyUrlCollisionHandling],
+  ['golang_basics', {
+    id: 'golang_basics',
+    title: 'Go Hello World',
+    description: 'Learn the basics of Go programming language.',
+    difficulty: 'easy',
+    starter_code: 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n}',
+    test_cases: [],
+    hints: ['Check the syntax'],
+    solution: 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n}',
+    time_limit: 5,
+    memory_limit: 128,
+  }]
 ]);
 
 /**
