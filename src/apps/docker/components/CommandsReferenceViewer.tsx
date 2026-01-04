@@ -209,7 +209,7 @@ export default function CommandsReferenceViewer() {
     const fetchCommands = async () => {
       try {
         setLoading(true);
-        const response = await fetch('http://localhost:3000/api/v1/docker/commands');
+        const response = await fetch(`${window.location.origin.replace(':5000', ':3001')}/api/v1/docker/commands`);
 
         if (!response.ok) {
           throw new Error(`Failed to fetch commands: ${response.status}`);

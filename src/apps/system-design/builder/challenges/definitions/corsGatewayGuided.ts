@@ -56,7 +56,7 @@ const corsGatewayRequirementsPhase: RequirementsGatheringContent = {
       id: 'allowed-origins',
       category: 'functional',
       question: "Which origins should we allow to call our APIs?",
-      answer: "We have three types of allowed origins:\n\n**Production domains:**\n- https://app.example.com (main web app)\n- https://mobile.example.com (mobile web)\n\n**Development:**\n- http://localhost:3000 (local development)\n\n**Partner domains:**\n- https://partner.acme.com (verified partner)\n\n**Security rules:**\n- NEVER use wildcard `*` with credentials\n- Only allow HTTPS in production (except localhost)\n- Maintain whitelist of allowed origins",
+      answer: "We have three types of allowed origins:\n\n**Production domains:**\n- https://app.example.com (main web app)\n- https://mobile.example.com (mobile web)\n\n**Development:**\n- http://localhost:5000 (local development)\n\n**Partner domains:**\n- https://partner.acme.com (verified partner)\n\n**Security rules:**\n- NEVER use wildcard `*` with credentials\n- Only allow HTTPS in production (except localhost)\n- Maintain whitelist of allowed origins",
       importance: 'critical',
       revealsRequirement: 'FR-2',
       learningPoint: "Explicitly whitelist allowed origins - wildcard (*) is dangerous with credentials",

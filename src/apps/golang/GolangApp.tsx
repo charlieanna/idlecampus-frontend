@@ -614,7 +614,7 @@ export default function GolangApp() {
         setLoading(true);
         setError(null);
 
-        const rawModules = await apiService.fetchModules(courseSlug, 'golang');
+        const rawModules = await apiService.fetchModules(courseSlug, 'golang').catch(() => []);
         const normalized = (rawModules || []).map((mod: any) => ({
           ...mod,
           items: (mod.items || []).sort((a: ModuleItem, b: ModuleItem) => (a.sequence_order ?? 0) - (b.sequence_order ?? 0))

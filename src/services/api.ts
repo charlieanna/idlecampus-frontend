@@ -1,6 +1,6 @@
 // API service for fetching Kubernetes course content from Rails backend
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+const API_BASE_URL = `${window.location.origin.replace(':5000', ':3001')}/api/v1`;
 
 export interface Course {
   id: number;
