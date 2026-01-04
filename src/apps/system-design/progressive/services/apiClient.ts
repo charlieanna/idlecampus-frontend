@@ -8,7 +8,7 @@
 import axios, { AxiosInstance, AxiosError, AxiosRequestConfig } from 'axios';
 
 // API Configuration
-const API_BASE_URL = import.meta.env.VITE_PROGRESSIVE_FLOW_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_PROGRESSIVE_FLOW_API_URL || 'http://localhost:3000';
 const API_TIMEOUT = 30000; // 30 seconds
 const MAX_RETRIES = 3;
 

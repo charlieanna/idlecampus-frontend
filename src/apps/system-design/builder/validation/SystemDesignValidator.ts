@@ -323,7 +323,7 @@ export class SystemDesignValidator {
       }
 
       // Step 4: Call backend validation API
-      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3001';
+      const backendUrl = import.meta.env.VITE_BACKEND_URL || 'http://localhost:3000';
       const response = await fetch(`${backendUrl}/api/v1/system-design/${problem.id}/validate`, {
         method: 'POST',
         headers: {
