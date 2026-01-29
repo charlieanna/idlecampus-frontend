@@ -1,5 +1,7 @@
 import { TestCase, TestResult, Solution } from '../../types/testCase';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '../../../../../components/ui/button';
+import { useState } from 'react';
 
 interface SubmissionResultsPanelProps {
   testCases: TestCase[];
@@ -20,6 +22,22 @@ export function SubmissionResultsPanel({
   onShowSolution,
   hasChallengeSolution = false,
 }: SubmissionResultsPanelProps) {
+  const [loadingSolution, setLoadingSolution] = useState<number | null>(null);
+  const [loadingChallengeSolution, setLoadingChallengeSolution] = useState(false);
+
+  const handleShowSolution = async (index: number, solution?: Solution) => {
+    setLoadingSolution(index);
+    await new Promise(resolve => setTimeout(resolve, 200)); // Simulate async
+    onShowSolution(solution);
+    setLoadingSolution(null);
+  };
+
+  const handleShowChallengeSolution = async () => {
+    setLoadingChallengeSolution(true);
+    await new Promise(resolve => setTimeout(resolve, 200)); // Simulate async
+    onShowSolution(undefined);
+    setLoadingChallengeSolution(false);
+  };
   // Calculate overall results
   const totalTests = testCases.length;
   // Count passed/failed by checking each test case's result in the Map
@@ -270,12 +288,13 @@ export function SubmissionResultsPanel({
                 {/* Show Solution button for this test case */}
                 {testCase.solution && (
                   <div className="mt-2 pt-2 border-t border-gray-200">
-                    <button
-                      onClick={() => onShowSolution(testCase.solution)}
+                    <Button
+                      onClick={() => handleShowSolution(index, testCase.solution)}
+                      loading={loadingSolution === index}
                       className="w-full px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded transition-colors"
                     >
-                      📋 Load Solution for {testCase.name}
-                    </button>
+                      Load Solution for {testCase.name}
+                    </Button>
                   </div>
                 )}
               </motion.div>
@@ -309,23 +328,21 @@ export function SubmissionResultsPanel({
           )}
 
           <div className="flex gap-2">
-            <button
+            <Button
               onClick={onEditDesign}
               className="flex-1 px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-300 rounded transition-colors"
             >
               ✏️ Edit Design
-            </button>
+            </Button>
             {/* Only show Solution button if challenge has a challenge-level solution */}
             {hasChallengeSolution && (
-              <button
-                onClick={() => {
-                  // Load challenge-level solution (pass undefined to use fallback)
-                  onShowSolution(undefined);
-                }}
+              <Button
+                onClick={handleShowChallengeSolution}
+                loading={loadingChallengeSolution}
                 className="flex-1 px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded transition-colors"
               >
                 💡 Solution
-              </button>
+              </Button>
             )}
           </div>
         </div>
